@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aréna Rosemère | GameGroundz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981',
+                        primaryHover: '#059669',
+                        dark: '#0f172a',
+                        darker: '#020617',
+                        light: '#f8fafc',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glow': '0 0 20px rgba(16, 185, 129, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-white text-slate-800 font-sans antialiased">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 w-full z-50 bg-white border-b border-slate-200 shadow-sm" id="navbar">
+        <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='index.html'">
+                    <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
+                    <span class="font-bold text-2xl tracking-tight text-dark">Game<span class="text-primary">Groundz</span></span>
+                </div>
+                
+                <div class="hidden md:flex flex-1 max-w-xl mx-8 relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-search text-slate-400"></i>
+                    </div>
+                    <input type="text" class="block w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-full text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-custom bg-slate-50 hover:bg-white" placeholder="Search by location or facility name...">
+                </div>
+
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
+                    <a href="#" class="text-slate-600 hover:text-dark font-medium transition-custom">Log in</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Header -->
+        <div class="mb-6 flex justify-between items-end">
+            <div>
+                <h1 class="text-3xl font-extrabold text-dark tracking-tight mb-2">Aréna Rosemère</h1>
+                <div class="flex items-center text-sm font-medium text-slate-600">
+                    <span class="flex items-center"><i class="fa-solid fa-star text-yellow-400 mr-1.5 text-base"></i> 4.9 <span class="text-slate-400 font-normal underline ml-1 cursor-pointer hover:text-dark">(128 reviews)</span></span>
+                    <span class="mx-3 text-slate-300">•</span>
+                    <span class="flex items-center text-slate-500"><i class="fa-solid fa-medal text-primary mr-1.5"></i> Superhost Facility</span>
+                    <span class="mx-3 text-slate-300">•</span>
+                    <span class="flex items-center underline cursor-pointer hover:text-dark"><i class="fa-solid fa-location-dot mr-1.5"></i> Rosemère, QC</span>
+                </div>
+            </div>
+            <div class="hidden sm:flex space-x-4">
+                <button class="flex items-center text-sm font-semibold text-slate-600 hover:text-dark bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg transition-custom">
+                    <i class="fa-solid fa-arrow-up-from-bracket mr-2"></i> Share
+                </button>
+                <button class="flex items-center text-sm font-semibold text-slate-600 hover:text-red-500 bg-slate-100 hover:bg-red-50 px-4 py-2 rounded-lg transition-custom group">
+                    <i class="fa-regular fa-heart mr-2 group-hover:font-solid"></i> Save
+                </button>
+            </div>
+        </div>
+
+        <!-- Image Gallery (Bento Grid) -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2 h-auto md:h-[450px] mb-12 rounded-2xl overflow-hidden cursor-pointer group">
+            <div class="md:col-span-2 md:row-span-2 relative h-64 md:h-full overflow-hidden">
+                <img src="images/arena_rosemere_real.jpg" alt="Main Rink View" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 bg-slate-100">
+            </div>
+            <div class="hidden md:block relative overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1582239454476-cda1b52a4505?auto=format&fit=crop&w=800&q=80" alt="Ice Resurfacer" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+            </div>
+            <div class="hidden md:block relative overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=800&q=80" alt="Locker Room" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+            </div>
+            <div class="hidden md:block relative overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=800&q=80" alt="Scoreboard" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+            </div>
+            <div class="hidden md:block relative overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1481824429379-07aa5e5b6191?auto=format&fit=crop&w=800&q=80" alt="Lobby" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                    <button class="bg-white/90 backdrop-blur text-dark px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-white transition-custom text-sm flex items-center">
+                        <i class="fa-solid fa-images mr-2"></i> Show all photos
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-12 relative">
+            
+            <!-- Left Column: Details -->
+            <div class="flex-1 lg:max-w-[700px]">
+                
+                <!-- Host Info and Quick Specs -->
+                <div class="flex justify-between items-center pb-8 border-b border-slate-200">
+                    <div>
+                        <h2 class="text-2xl font-bold text-dark mb-2 border-b-0 pb-0" id="header-subtitle">Professional NHL-sized Ice Rink</h2>
+                        <div class="flex flex-wrap gap-2 text-sm text-slate-600 font-medium" id="header-basics">
+                            <!-- Dynamic Basics -->
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Host" class="w-14 h-14 rounded-full object-cover border border-slate-200 mb-1">
+                        <span class="text-xs text-slate-500 font-medium">Operated by <br><strong>Metro Sports</strong></span>
+                    </div>
+                </div>
+
+                <!-- Features Details -->
+                <div id="facility-features-container" class="py-8 border-b border-slate-200 space-y-6">
+                    <div class="flex items-start">
+                        <i class="fa-solid fa-snowflake text-2xl text-slate-700 mt-1 mr-4 w-6 text-center"></i>
+                        <div>
+                            <h3 class="font-bold text-dark mb-1">Premium Ice Quality</h3>
+                            <p class="text-slate-500 text-sm leading-relaxed">Resurfaced before every rental block with our state-of-the-art Olympia resurfacer.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="py-8 border-b border-slate-200">
+                    <h2 class="text-2xl font-bold text-dark mb-4">About this facility</h2>
+                    <div id="facility-description-container" class="text-slate-600 leading-relaxed font-light space-y-4 text-[17px]">
+                        <p>Loading description...</p>
+                    </div>
+                    <button class="mt-4 font-bold text-primary hover:text-dark transition-custom underline">Show more <i class="fa-solid fa-chevron-down text-xs ml-1"></i></button>
+                </div>
+
+                <!-- Amenities -->
+                <div class="py-8 border-b border-slate-200">
+                    <h2 class="text-2xl font-bold text-dark mb-6">What this place offers</h2>
+                    <div class="grid grid-cols-2 gap-y-4 gap-x-8 text-slate-600" id="standard-amenities-container">
+                        <!-- Dynamic Amenities -->
+                    </div>
+                </div>
+
+                <!-- Availability Calendar Mockup -->
+                <div class="py-8 border-b border-slate-200">
+                    <h2 class="text-2xl font-bold text-dark mb-2">Availability</h2>
+                    <p class="text-slate-500 mb-6">Select available time slots to book.</p>
+                    
+                    <div class="bg-white border text-center border-slate-200 rounded-2xl p-6 shadow-sm">
+                        <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-100">
+                            <button class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-custom" id="prev-month-btn"><i class="fa-solid fa-chevron-left"></i></button>
+                            <h3 class="font-bold text-lg text-dark" id="current-month-display">November 2026</h3>
+                            <button class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-custom" id="next-month-btn"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        
+                        <!-- Dynamic visual calendar -->
+                        <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-4" id="calendar-grid">
+                            <!-- Populated via JS -->
+                        </div>
+                        <div class="flex flex-wrap justify-center sm:justify-between items-center gap-3 sm:gap-4 text-sm pt-4 border-t border-slate-100 text-slate-500">
+                            <span class="flex items-center"><div class="w-3 h-3 bg-white border border-slate-300 rounded-sm mr-2"></div> Available</span>
+                            <span class="flex items-center"><div class="w-3 h-3 bg-red-100 border border-red-200 rounded-sm mr-2"></div> Fully Booked</span>
+                            <span class="flex items-center"><div class="w-3 h-3 bg-primary rounded-sm mr-2 shadow-sm"></div> Selected</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Sticky Booking Widget -->
+            <div class="hidden lg:block w-[380px] relative">
+                <div class="sticky top-28 bg-white border border-slate-200 shadow-xl rounded-2xl p-6 shadow-soft">
+                    
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <span class="text-2xl font-bold text-dark">$197</span><span class="text-slate-500 font-medium"> / hour</span>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <span class="flex items-center font-bold text-sm"><i class="fa-solid fa-star text-yellow-400 text-xs mr-1"></i> 4.9</span>
+                            <span class="text-xs text-slate-400 underline">128 reviews</span>
+                        </div>
+                    </div>
+
+                    <!-- Booking Form -->
+                    <div class="border border-slate-300 rounded-xl mb-4 relative">
+                        <div class="flex border-b border-slate-300 relative">
+                            <div class="flex-1 p-3 border-r border-slate-300 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tl-xl">
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="booking-date">Date</label>
+                                <input type="date" id="booking-date" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none" style="color-scheme: light;" value="2026-11-06">
+                            </div>
+                            <div class="flex-1 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tr-xl" id="time-slot-trigger">
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer">Time Slots</label>
+                                <div class="text-sm font-medium text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap" id="slots-summary">2 Slots Selected</div>
+                                <div class="absolute right-3 top-4 text-slate-400"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                            </div>
+                            
+                            <!-- Time Slot Dropdown (Moved outside trigger for proper z-index and scrolling) -->
+                            <div id="time-slot-dropdown" class="absolute top-[70px] right-0 w-[260px] bg-white border border-slate-200 shadow-2xl rounded-xl z-[60] hidden">
+                                <div class="p-2 max-h-64 overflow-y-auto" id="available-slots-list">
+                                    <!-- Populated via JS -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-b-xl">
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="activity-type">Activity Type</label>
+                            <select id="activity-type" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none pr-6">
+                                <option value="practice">Hockey Practice</option>
+                                <option value="game">Hockey Game (Adult League)</option>
+                                <option value="skating">Free Skating</option>
+                                <option value="event">Private Event</option>
+                            </select>
+                            <div class="absolute right-3 top-6 text-slate-400 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- Time slot chips -->
+                    <div class="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-100">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Selected Slots (Nov 6)</h4>
+                        <div class="flex flex-wrap gap-2" id="selected-slots-container">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+
+                    <button id="reserve-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-lg transition-custom shadow-glow mb-4">
+                        Reserve Now
+                    </button>
+                    <p class="text-center text-sm text-slate-500 mb-6 font-medium">You won't be charged yet</p>
+
+                    <!-- Price breakdown -->
+                    <div class="space-y-3 text-slate-600 pb-4 border-b border-slate-200">
+                        <div class="flex justify-between text-base">
+                            <span class="underline cursor-pointer" id="price-calculation">$197 x 2 hours</span>
+                            <span id="subtotal-amount">$394.00</span>
+                        </div>
+                        <div class="flex justify-between text-base">
+                            <span class="underline cursor-pointer">Processing fee</span>
+                            <span>$15.00</span>
+                        </div>
+                        <div class="flex justify-between text-base">
+                            <span class="underline cursor-pointer">Taxes</span>
+                            <span id="tax-amount">$61.35</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between font-extrabold text-dark text-lg pt-4">
+                        <span>Total <span class="text-sm font-normal text-slate-500">(CAD)</span></span>
+                        <span id="total-amount">$470.35</span>
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <!-- Mobile Sticky Booking Footer -->
+    <div class="fixed bottom-0 w-full bg-white border-t border-slate-200 p-4 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] lg:hidden z-40 flex justify-between items-center">
+        <div>
+            <span class="text-lg font-bold text-dark">$197 <span class="text-sm font-normal text-slate-500">/ hour</span></span>
+            <div class="text-xs font-semibold text-primary"><i class="fa-solid fa-bolt"></i> Instant Book</div>
+        </div>
+        <button id="mobile-reserve-btn" class="bg-primary text-white px-8 py-3 rounded-full font-bold shadow-glow hover:bg-primaryHover transition-custom">
+            Reserve
+        </button>
+    </div>
+
+    <!-- Checkout Modal Layout -->
+    <div id="checkout-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" id="checkout-backdrop"></div>
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-xl w-full border border-slate-200">
+                
+                <!-- Modal Header -->
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="text-xl leading-6 font-extrabold text-dark flex items-center">
+                        <i class="fa-solid fa-lock text-slate-400 mr-2 text-base"></i> Secure Checkout
+                    </h3>
+                    <button id="close-checkout" class="text-slate-400 hover:text-slate-600 focus:outline-none transition-custom w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                
+                <!-- Modal Body -->
+                <form id="checkout-form" class="px-6 py-6" onsubmit="event.preventDefault();">
+                    
+                    <!-- Summary Box in Modal -->
+                    <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-4 mb-6 flex justify-between items-center">
+                        <div>
+                            <div class="text-xs text-blue-600 font-bold uppercase tracking-wide mb-1">Booking Summary</div>
+                            <div class="text-dark font-medium" id="modal-summary-text">Aréna Rosemère - 2 slots</div>
+                        </div>
+                        <div class="text-2xl font-extrabold text-dark" id="modal-total-price">$470.35</div>
+                    </div>
+
+                    <!-- Contact Info -->
+                    <h4 class="text-sm font-bold text-dark uppercase tracking-wide mb-3">1. Contact Information</h4>
+                    <div class="space-y-4 mb-8">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                            <input type="text" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="Jane Doe">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                                <input type="email" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="jane@example.com">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                                <input type="tel" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="(555) 123-4567">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Info (Stripe mock) -->
+                    <h4 class="text-sm font-bold text-dark uppercase tracking-wide mb-3 flex items-center justify-between">
+                        <span>2. Payment Details</span>
+                        <div class="flex space-x-1">
+                            <i class="fa-brands fa-cc-visa text-slate-400 text-lg"></i>
+                            <i class="fa-brands fa-cc-mastercard text-slate-400 text-lg"></i>
+                            <i class="fa-brands fa-cc-amex text-slate-400 text-lg"></i>
+                        </div>
+                    </h4>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+                        <div class="mb-4">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Card Number</label>
+                            <div class="relative">
+                                <input type="text" required class="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom font-mono text-sm" placeholder="0000 0000 0000 0000">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-regular fa-credit-card text-slate-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Expiration (MM/YY)</label>
+                                <input type="text" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom font-mono text-sm" placeholder="MM/YY">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">CVC</label>
+                                <div class="relative">
+                                    <input type="text" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom font-mono text-sm" placeholder="123">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-circle-question text-slate-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submit-payment-btn" class="w-full bg-dark hover:bg-slate-800 text-white py-4 rounded-xl font-bold text-lg transition-custom shadow-lg flex items-center justify-center">
+                        <i class="fa-solid fa-lock mr-2"></i> Pay <span id="btn-total-price" class="ml-1">$470.35</span>
+                    </button>
+                    <p class="text-center text-xs text-slate-400 mt-4"><i class="fa-solid fa-shield-halved mr-1"></i> Payments are processed securely via Stripe. Your card detail is not stored.</p>
+                </form>
+
+                <!-- Success State (Hidden initially) -->
+                <div id="checkout-success" class="px-6 py-12 text-center hidden">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fa-solid fa-check text-4xl text-green-500"></i>
+                    </div>
+                    <h3 class="text-3xl font-extrabold text-dark mb-2">Booking Confirmed!</h3>
+                    <p class="text-slate-600 mb-8 max-w-sm mx-auto">Your facility has been successfully booked. A confirmation email with details and receipt has been sent.</p>
+                    <button onclick="window.location.reload()" class="bg-slate-100 hover:bg-slate-200 text-dark px-8 py-3 rounded-xl font-bold transition-custom">
+                        Back to Facility
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <script>
+        // Booking Widget Logic
+        document.addEventListener('DOMContentLoaded', async () => {
+            let hourlyRate = 197;
+            let pricingRules = [];
+            const processingFee = 15;
+            const taxRate = 0.14975; // ~15% tax in Quebec
+
+            function getPriceForTimeSlot(timeStr, basePrice, rules) {
+                if (!rules || rules.length === 0) return parseFloat(basePrice);
+                const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+                if (!match) return parseFloat(basePrice);
+                
+                let h = parseInt(match[1]);
+                const isPM = match[3].toUpperCase() === 'PM';
+                if (isPM && h !== 12) h += 12;
+                if (!isPM && h === 12) h = 0;
+                
+                const time24 = `${h.toString().padStart(2, '0')}:${match[2]}`;
+                for (let i = 0; i < rules.length; i++) {
+                    const rule = rules[i];
+                    if (time24 >= rule.start && time24 < rule.end) {
+                        return parseFloat(rule.price);
+                    }
+                }
+                return parseFloat(basePrice);
+            }
+            
+            // Available mock slots
+            const availableSlots = [
+                { id: 1, time: "4:00 PM - 5:00 PM" },
+                { id: 2, time: "5:00 PM - 6:00 PM" },
+                { id: 3, time: "6:00 PM - 7:00 PM" },
+                { id: 4, time: "9:00 PM - 10:00 PM" }
+            ];
+            
+            let selectedSlotIds = new Set(); // Start with no slots selected
+
+            const trigger = document.getElementById('time-slot-trigger');
+            const dropdown = document.getElementById('time-slot-dropdown');
+            const slotsList = document.getElementById('available-slots-list');
+            const slotsSummary = document.getElementById('slots-summary');
+            const selectedContainer = document.getElementById('selected-slots-container');
+            const reserveBtn = document.getElementById('reserve-btn');
+
+            let bookedSlotIds = new Set(); // Stores IDs of already booked slots
+
+            async function fetchBookedSlots(dateStr) {
+                if (!currentFacilityId) return new Set();
+                try {
+                    const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                    const response = await fetch(`${API_BASE_URL}/api/bookings/${currentFacilityId}?date=${dateStr}`);
+                    if (response.ok) {
+                        const bookings = await response.json();
+                        let bookedIds = new Set();
+                        bookings.forEach(b => {
+                            if (b.time_slots) {
+                                b.time_slots.split(',').forEach(id => bookedIds.add(parseInt(id)));
+                            }
+                        });
+                        return bookedIds;
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch booked slots:", err);
+                }
+                return new Set();
+            }
+
+            const priceCalcEl = document.getElementById('price-calculation');
+            const subtotalEl = document.getElementById('subtotal-amount');
+            const taxEl = document.getElementById('tax-amount');
+            const totalEl = document.getElementById('total-amount');
+
+            // DOM Elements for Modal
+            const modal = document.getElementById('checkout-modal');
+            const backdrop = document.getElementById('checkout-backdrop');
+            const closeModalBtn = document.getElementById('close-checkout');
+            const chekoutForm = document.getElementById('checkout-form');
+            const paymentSubmitBtn = document.getElementById('submit-payment-btn');
+            const successState = document.getElementById('checkout-success');
+            
+            // Modal display values
+            const modalSummaryText = document.getElementById('modal-summary-text');
+            const modalTotalPrice = document.getElementById('modal-total-price');
+            const btnTotalPrice = document.getElementById('btn-total-price');
+            const mobileReserveBtn = document.getElementById('mobile-reserve-btn');
+            
+            let currentTotal = 0;
+            let currentFacilityName = "Aréna Rosemère"; // Default
+            let currentFacilityId = null;
+
+            // --- FETCH FACILITY DATA ---
+            const urlParams = new URLSearchParams(window.location.search);
+            const facilityIdParam = urlParams.get('id');
+
+            if (facilityIdParam) {
+                try {
+                    const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                    const response = await fetch(`${API_BASE_URL}/api/facilities/${facilityIdParam}`);
+                    if (!response.ok) throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                    
+                    const text = await response.text();
+                    if (!text) throw new Error("Server returned an empty response. Port 3000 might be taken by another app. Please navigate directly to the Node server URL: http://localhost:3000/");
+                    
+                    let facility;
+                    try {
+                        facility = JSON.parse(text);
+                    } catch (e) {
+                        throw new Error("Invalid JSON received. Ensure you are viewing the site via the backend server at http://localhost:3000.");
+                    }
+                    
+                    // Update global state
+                    hourlyRate = facility.base_price || facility.price || 197;
+                    try {
+                        pricingRules = JSON.parse(facility.pricing_rules || '[]');
+                    } catch (e) {
+                        pricingRules = [];
+                    }
+                    currentFacilityName = facility.name;
+                    currentFacilityId = facility.id;
+
+                    // Update UI elements
+                    document.title = `${facility.name} - GameGroundz`;
+                    
+                    // Image Gallery Logic
+                    const mainImg = document.querySelector('.md\\:col-span-2.md\\:row-span-2 img');
+                    const mainImgContainer = document.querySelector('.md\\:col-span-2.md\\:row-span-2');
+                    const secondaryImgs = document.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-4 > div:not(.md\\:col-span-2)');
+                    const gridContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-4');
+
+                    if(mainImg) mainImg.src = facility.image_url;
+
+                    // Hide placeholder extra images if no gallery provided
+                    let hasGallery = false;
+                    try {
+                        let parsedPhotos = JSON.parse(facility.photos || '[]');
+                        if (parsedPhotos.length > 0) hasGallery = true;
+                    } catch(e) {}
+
+                    if (!hasGallery) {
+                        // Hide the other 4 divs
+                        secondaryImgs.forEach(div => div.classList.add('hidden', 'md:hidden'));
+                        // Make main image span the whole grid
+                        if (gridContainer && mainImgContainer) {
+                            gridContainer.classList.remove('md:grid-cols-4');
+                            gridContainer.classList.add('md:grid-cols-1');
+                            mainImgContainer.classList.remove('md:col-span-2', 'md:row-span-2');
+                            mainImgContainer.classList.add('col-span-1', 'row-span-1', 'h-[450px]');
+                        }
+                    }
+
+                    // Dynamic Description
+                    const descContainer = document.getElementById('facility-description-container');
+                    if(descContainer) {
+                        if (facility.description && facility.description.trim() !== '') {
+                            // If owner provided a custom description, display it. Replace newlines with <br>
+                            descContainer.innerHTML = `<p>${facility.description.replace(/\n/g, '<br>')}</p>`;
+                        } else {
+                            // Fallback to generic description
+                            const facilityTypeLabel = facility.type === 'ice' ? 'ice hockey' : 
+                                                      facility.type === 'turf' ? 'synthetic turf' : 
+                                                      facility.type === 'court' ? 'hardwood court' : facility.type;
+                            
+                            descContainer.innerHTML = `
+                                <p><strong>${facility.name}</strong> is a premier ${facilityTypeLabel} facility located in the heart of ${facility.location.split(',')[0]}. Our state-of-the-art playing surface features excellent lighting and amenities for practices or games.</p>
+                                <p>Perfect for team practices, adult leagues, private coaching sessions, or corporate events.</p>
+                                <p class="font-medium text-dark mt-4">Included in your rental:</p>
+                                <ul class="list-disc pl-5 space-y-1 text-base text-slate-600">
+                                    <li>Standard playing surface time</li>
+                                    <li>Use of standard equipment (nets/hoops)</li>
+                                    <li>Scoreboard access and controller</li>
+                                    <li>Dressing rooms and showers</li>
+                                </ul>
+                            `;
+                        }
+                    }
+
+                    // Header Section
+                    const titleEl = document.querySelector('h1.text-3xl.font-extrabold');
+                    if(titleEl) titleEl.textContent = facility.name;
+                    
+                    const subtitleEl = document.getElementById('header-subtitle');
+                    if(subtitleEl) {
+                        if (facility.subtitle && facility.subtitle.trim() !== '') {
+                            subtitleEl.textContent = facility.subtitle;
+                        } else {
+                            const subtitleText = facility.type === 'ice' ? 'Professional NHL-sized Ice Rink' :
+                                                 facility.type === 'turf' ? 'Premium Synthetic Turf Field' :
+                                                 facility.type === 'court' ? 'Professional Hardwood Court' :
+                                                 facility.type === 'gym' ? 'Fully Equipped Fitness Center' : 'Premium Sports Facility';
+                            subtitleEl.textContent = subtitleText;
+                        }
+                    }
+
+                    // Dynamic Basics
+                    const basicsContainer = document.getElementById('header-basics');
+                    if (basicsContainer) {
+                        let basicsArr = [];
+                        if (facility.size_info) basicsArr.push(`<span>${facility.size_info}</span>`);
+                        basicsArr.push(`<span>${facility.environment.charAt(0).toUpperCase() + facility.environment.slice(1)}</span>`);
+                        if (facility.capacity > 0) basicsArr.push(`<span>Max ${facility.capacity} players</span>`);
+                        if (facility.locker_rooms > 0) basicsArr.push(`<span>${facility.locker_rooms} Locker Rooms</span>`);
+                        
+                        basicsContainer.innerHTML = basicsArr.join('<span class="text-slate-300">•</span>');
+                    }
+
+                    const headerStats = document.querySelector('div.flex.items-center.text-sm.font-medium.text-slate-600');
+                    if(headerStats) {
+                        headerStats.innerHTML = `
+                            <span class="flex items-center"><i class="fa-solid fa-star text-yellow-400 mr-1.5 text-base"></i> ${facility.rating || '4.9'} <span class="text-slate-400 font-normal underline ml-1 cursor-pointer hover:text-dark">(${facility.reviews_count || 0} reviews)</span></span>
+                            <span class="mx-3 text-slate-300">•</span>
+                            <span class="flex items-center text-slate-500"><i class="fa-solid fa-medal text-primary mr-1.5"></i> Superhost Facility</span>
+                            <span class="mx-3 text-slate-300">•</span>
+                            <span class="flex items-center underline cursor-pointer hover:text-dark"><i class="fa-solid fa-location-dot mr-1.5"></i> ${facility.location}</span>
+                        `;
+                    }
+
+                    // Price
+                    const priceEl = document.querySelector('.sticky.top-28 .text-2xl.font-bold.text-dark');
+                    if(priceEl && priceEl.parentElement) {
+                        priceEl.parentElement.innerHTML = `<span class="text-2xl font-bold text-dark">From $${hourlyRate}</span><span class="text-slate-500 font-medium"> / hour</span>`;
+                    }
+
+                    // Tags
+                    const typeDisplay = facility.type.charAt(0).toUpperCase() + facility.type.slice(1);
+                    const envDisplay = facility.environment.charAt(0).toUpperCase() + facility.environment.slice(1);
+                    const tagContainer = document.querySelector('.flex.flex-wrap.gap-2.mb-6');
+                    if(tagContainer) {
+                        tagContainer.innerHTML = `
+                            <span class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-semibold">${typeDisplay}</span>
+                            <span class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-semibold">${envDisplay}</span>
+                        `;
+                    }
+                    
+                    // Features
+                    const featuresContainer = document.getElementById('facility-features-container');
+                    if (featuresContainer) {
+                        let featuresHtml = '';
+                        let parsedFeatures = [];
+                        
+                        try {
+                            if (facility.features) {
+                                parsedFeatures = JSON.parse(facility.features);
+                            }
+                        } catch(e) {}
+                        
+                        if (parsedFeatures && parsedFeatures.length > 0) {
+                            parsedFeatures.forEach(feature => {
+                                featuresHtml += `
+                                    <div class="flex items-start">
+                                        <i class="fa-solid fa-check text-2xl text-primary mt-1 mr-4 w-6 text-center"></i>
+                                        <div>
+                                            <h3 class="font-bold text-dark mb-1">${feature.title}</h3>
+                                            <p class="text-slate-500 text-sm leading-relaxed">${feature.description}</p>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            // Default generic features based on instant book
+                            let instantBookHtml = facility.is_instant_book === 1 ? `
+                                <div class="flex items-start">
+                                    <i class="fa-solid fa-bolt text-2xl text-primary mt-1 mr-4 w-6 text-center"></i>
+                                    <div>
+                                        <h3 class="font-bold text-dark mb-1">Instant Booking Ready</h3>
+                                        <p class="text-slate-500 text-sm leading-relaxed">No waiting for approval. Pick your slot, pay, and your booking is confirmed immediately.</p>
+                                    </div>
+                                </div>
+                            ` : '';
+                            
+                            featuresHtml = `
+                                <div class="flex items-start">
+                                    <i class="fa-solid fa-stopwatch text-2xl text-slate-700 mt-1 mr-4 w-6 text-center"></i>
+                                    <div>
+                                        <h3 class="font-bold text-dark mb-1">Standard Rental Block</h3>
+                                        <p class="text-slate-500 text-sm leading-relaxed">Access to the facility for your selected time slots.</p>
+                                    </div>
+                                </div>
+                                ${instantBookHtml}
+                            `;
+                        }
+                        
+                        featuresContainer.innerHTML = featuresHtml;
+                    }
+                    
+                    // Standard Amenities
+                    const amenitiesContainer = document.getElementById('standard-amenities-container');
+                    if (amenitiesContainer) {
+                        let amenitiesHtml = '';
+                        let parsedAmenities = [];
+                        try {
+                            if (facility.amenities) {
+                                parsedAmenities = JSON.parse(facility.amenities);
+                            }
+                        } catch(e) {}
+
+                        const amenityMeta = {
+                            "wifi": { icon: "fa-wifi", text: "Wifi" },
+                            "parking": { icon: "fa-square-parking", text: "Free parking" },
+                            "tv": { icon: "fa-tv", text: "TV" },
+                            "first_aid": { icon: "fa-truck-medical", text: "First Aid Kit" },
+                            "accessibility": { icon: "fa-wheelchair", text: "Wheelchair accessible" },
+                            "concessions": { icon: "fa-utensils", text: "Concessions" },
+                            "locker_rooms": { icon: "fa-door-open", text: "Locker Rooms" },
+                            "showers": { icon: "fa-shower", text: "Showers" },
+                            "pro_shop": { icon: "fa-shop", text: "Pro Shop" },
+                            "beer": { icon: "fa-beer-mug-empty", text: "Beer" }
+                        };
+
+                        if (parsedAmenities && parsedAmenities.length > 0) {
+                            parsedAmenities.forEach(am => {
+                                const meta = amenityMeta[am] || { icon: "fa-check", text: am };
+                                amenitiesHtml += `<div class="flex items-center"><i class="fa-solid ${meta.icon} w-8 text-xl text-slate-400"></i> ${meta.text}</div>`;
+                            });
+                        } else {
+                            amenitiesHtml = '<div class="col-span-2 text-slate-400 italic">No standard amenities listed.</div>';
+                        }
+                        amenitiesContainer.innerHTML = amenitiesHtml;
+                    }
+
+
+                    // Mobile Footer Price
+                    const mobilePriceContainer = document.querySelector('.fixed.bottom-0 .text-lg.font-bold.text-dark');
+                    if (mobilePriceContainer) {
+                        mobilePriceContainer.innerHTML = `From $${hourlyRate} <span class="text-sm font-normal text-slate-500">/ hour</span>`;
+                    }
+
+                    // Re-render pricing calculation to use new hourly rate
+                    render();
+
+                } catch (error) {
+                    console.error("Error fetching facility details:", error);
+                    // Could redirect to a 404 or show an error banner
+                }
+            }
+
+
+            function toggleDropdown(e) {
+                dropdown.classList.toggle('hidden');
+                e.stopPropagation();
+            }
+
+            trigger.addEventListener('click', toggleDropdown);
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            function openModal() {
+                if (selectedSlotIds.size === 0) {
+                    alert("Please select at least one time slot.");
+                    return;
+                }
+                modalSummaryText.innerHTML = `${currentFacilityName} <br><span class="text-slate-500 text-sm font-normal">${selectedSlotIds.size} hour(s)</span>`;
+                modalTotalPrice.textContent = `$${currentTotal.toFixed(2)}`;
+                btnTotalPrice.textContent = `$${currentTotal.toFixed(2)}`;
+                
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+
+            // Handle reserve button clicks
+            reserveBtn.addEventListener('click', openModal);
+            if(mobileReserveBtn) mobileReserveBtn.addEventListener('click', openModal);
+            
+            closeModalBtn.addEventListener('click', closeModal);
+            backdrop.addEventListener('click', closeModal);
+
+            // Handle Payment Submission
+            chekoutForm.addEventListener('submit', async (e) => {
+                e.preventDefault(); // Prevent page reload
+                
+                const originalText = paymentSubmitBtn.innerHTML;
+                paymentSubmitBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin mr-2'></i> Processing Payment...";
+                paymentSubmitBtn.disabled = true;
+                paymentSubmitBtn.classList.add('opacity-80', 'cursor-not-allowed');
+
+                try {
+                     const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                     // Create practical mock booking
+                     const bookingResponse = await fetch(`${API_BASE_URL}/api/bookings`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            facility_id: currentFacilityId || 1,
+                            booking_date: selectedDateStr, 
+                            time_slots: Array.from(selectedSlotIds).join(','),
+                            total_price: Math.round(currentTotal)
+                        })
+                     });
+
+                     if(!bookingResponse.ok) throw new Error("Booking failed");
+
+                    setTimeout(() => {
+                        chekoutForm.classList.add('hidden');
+                        document.querySelector('.bg-slate-50.px-6.py-4').classList.add('hidden'); // hide modal header
+                        successState.classList.remove('hidden');
+                    }, 1000);
+
+                } catch (error) {
+                    console.error("Booking Error", error);
+                    alert("There was an error processing your booking.");
+                    paymentSubmitBtn.innerHTML = originalText;
+                    paymentSubmitBtn.disabled = false;
+                    paymentSubmitBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                }
+            });
+
+            function render() {
+                // Update dropdown list
+                slotsList.innerHTML = '';
+                availableSlots.forEach(slot => {
+                    const isBooked = bookedSlotIds.has(slot.id);
+                    const isSelected = selectedSlotIds.has(slot.id);
+                    const div = document.createElement('div');
+                    
+                    if (isBooked) {
+                         div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg flex justify-between items-center mb-1 text-slate-400 bg-slate-50 cursor-not-allowed opacity-60 border border-transparent`;
+                         div.innerHTML = `<span>${slot.time} <span class="text-[10px] ml-1 uppercase bg-slate-200 text-slate-500 px-1 py-0.5 rounded">Booked</span></span>`;
+                    } else {
+                         div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg cursor-pointer flex justify-between items-center mb-1 transition-custom ${isSelected ? 'bg-primary/10 text-primary border border-primary/20' : 'hover:bg-slate-100 text-slate-700 border border-transparent'}`;
+                         div.innerHTML = `
+                            <span>${slot.time}</span>
+                            ${isSelected ? '<i class="fa-solid fa-check text-sm"></i>' : ''}
+                        `;
+                        div.onclick = (e) => {
+                            e.stopPropagation();
+                            if (isSelected) {
+                                selectedSlotIds.delete(slot.id);
+                            } else {
+                                selectedSlotIds.add(slot.id);
+                            }
+                            render();
+                        };
+                    }
+                    slotsList.appendChild(div);
+                });
+
+                // Update summary text
+                const count = selectedSlotIds.size;
+                slotsSummary.textContent = count === 0 ? "Select Times" : `${count} Slot${count > 1 ? 's' : ''} Selected`;
+
+                // Update chips
+                selectedContainer.innerHTML = '';
+                if (count === 0) {
+                    selectedContainer.innerHTML = '<span class="text-sm text-slate-400 italic">No slots selected</span>';
+                } else {
+                    availableSlots.forEach(slot => {
+                        if (selectedSlotIds.has(slot.id)) {
+                            const span = document.createElement('span');
+                            span.className = 'px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-sm font-semibold flex items-center shadow-sm';
+                            span.innerHTML = `${slot.time} <i class="fa-solid fa-xmark ml-2 text-xs opacity-60 hover:opacity-100 cursor-pointer"></i>`;
+                            span.querySelector('i').onclick = (e) => {
+                                e.stopPropagation();
+                                selectedSlotIds.delete(slot.id);
+                                render();
+                            };
+                            selectedContainer.appendChild(span);
+                        }
+                    });
+                }
+
+                // Calculate pricing
+                const hours = count; // 1 slot = 1 hour
+                if (hours > 0) {
+                    let subtotal = 0;
+                    selectedSlotIds.forEach(slotId => {
+                        const slot = availableSlots.find(s => s.id === slotId);
+                        if (slot) {
+                            subtotal += getPriceForTimeSlot(slot.time, hourlyRate, pricingRules);
+                        }
+                    });
+                    
+                    const tax = subtotal * taxRate;
+                    currentTotal = subtotal + processingFee + tax; // update global total
+
+                    if (hours === 1) {
+                        priceCalcEl.textContent = `$${subtotal.toFixed(0)} x 1 hour`;
+                    } else {
+                        priceCalcEl.textContent = `Multiple slots (avg $${(subtotal/hours).toFixed(0)}/hr)`;
+                    }
+                    subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+                    taxEl.textContent = `$${tax.toFixed(2)}`;
+                    totalEl.textContent = `$${currentTotal.toFixed(2)}`;
+                } else {
+                    currentTotal = 0;
+                    priceCalcEl.textContent = `$${hourlyRate} x 0 hours`;
+                    subtotalEl.textContent = `$0.00`;
+                    taxEl.textContent = `$0.00`;
+                    totalEl.textContent = `$0.00`;
+                }
+            }
+
+            // --- CALENDAR LOGIC ---
+            let currentDate = new Date(2026, 10, 1); // Nov 2026 default for mockup
+            let selectedDateStr = "2026-11-06"; // Default selection matches booking widget
+            const bookingDateInput = document.getElementById('booking-date');
+            
+            // Sync initial state if bookingDateInput exists
+            if (bookingDateInput && bookingDateInput.value) {
+                const parseDate = new Date(bookingDateInput.value);
+                if (!isNaN(parseDate.getTime())) {
+                    currentDate = new Date(parseDate.getFullYear(), parseDate.getMonth(), 1);
+                    selectedDateStr = bookingDateInput.value;
+                }
+            }
+            
+            const calendarGrid = document.getElementById('calendar-grid');
+            const monthDisplay = document.getElementById('current-month-display');
+            const prevMonthBtn = document.getElementById('prev-month-btn');
+            const nextMonthBtn = document.getElementById('next-month-btn');
+
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+            function renderCalendar() {
+                if (!calendarGrid || !monthDisplay) return;
+                calendarGrid.innerHTML = '';
+                
+                monthDisplay.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+                
+                // Add Headers
+                dayNames.forEach(day => {
+                    const header = document.createElement('div');
+                    header.className = "text-xs font-semibold text-slate-400 uppercase py-2";
+                    header.innerText = day;
+                    calendarGrid.appendChild(header);
+                });
+
+                const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+                const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+
+                // Add empty tiles for days before the 1st
+                for (let i = 0; i < firstDay; i++) {
+                    const emptyTile = document.createElement('div');
+                    calendarGrid.appendChild(emptyTile);
+                }
+
+                // Add day tiles
+                // We'll mock out some days as booked (e.g. 4th) or past.
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dayTile = document.createElement('div');
+                    
+                    const m = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+                    const d = i.toString().padStart(2, '0');
+                    const dateStr = `${currentDate.getFullYear()}-${m}-${d}`;
+
+                    let status = "available";
+                    if (i < 4 && currentDate.getMonth() === 10 && currentDate.getFullYear() === 2026) status = "past";
+                    if (i === 4 && currentDate.getMonth() === 10 && currentDate.getFullYear() === 2026) status = "booked";
+                    
+                    if (dateStr === selectedDateStr) {
+                        status = "selected";
+                    }
+
+                    if (status === "past") {
+                        dayTile.className = "aspect-square flex flex-col items-center justify-center rounded-xl text-slate-300 font-medium";
+                        dayTile.innerHTML = `<span>${i}</span>`;
+                    } else if (status === "booked") {
+                        dayTile.className = "aspect-square flex flex-col items-center justify-center rounded-xl bg-red-50 text-slate-400 font-medium cursor-not-allowed border border-red-100/50 relative overflow-hidden group";
+                        dayTile.innerHTML = `<span class="z-10 relative">${i}</span><div class="w-full h-1 bg-red-200 absolute bottom-0 rounded-b-xl"></div>`;
+                    } else if (status === "selected") {
+                        dayTile.className = "aspect-square flex flex-col items-center justify-center rounded-xl bg-primary text-white font-bold border-2 border-primary shadow-glow cursor-pointer transition-custom";
+                        dayTile.innerHTML = `<span class="z-10 relative">${i}</span>`;
+                        // Can still click to unselect or just keep it selected
+                    } else {
+                        // available
+                        dayTile.className = "aspect-square flex flex-col items-center justify-center rounded-xl bg-slate-50 text-dark font-medium border border-slate-200 hover:border-primary hover:text-primary cursor-pointer transition-custom shadow-sm";
+                        dayTile.innerHTML = `<span class="z-10 relative">${i}</span>`;
+                        
+                        dayTile.onclick = async () => {
+                            selectedDateStr = dateStr;
+                            if (bookingDateInput) {
+                                bookingDateInput.value = dateStr;
+                            }
+                            // Reset time slots for a new day
+                            selectedSlotIds.clear();
+                            renderCalendar();
+                            
+                            // Highlight time slots as if they reloaded (visual cue)
+                            const slotsSummary = document.getElementById('slots-summary');
+                            if (slotsSummary) slotsSummary.textContent = "Loading slots...";
+                            
+                            bookedSlotIds = await fetchBookedSlots(selectedDateStr);
+                            if (slotsSummary) slotsSummary.textContent = "Select Times";
+                            render(); // update widget pricing
+                        };
+                    }
+
+                    calendarGrid.appendChild(dayTile);
+                }
+            }
+
+            if (prevMonthBtn) {
+                prevMonthBtn.onclick = () => {
+                    currentDate.setMonth(currentDate.getMonth() - 1);
+                    renderCalendar();
+                };
+            }
+            if (nextMonthBtn) {
+                nextMonthBtn.onclick = () => {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    renderCalendar();
+                };
+            }
+            
+            if (bookingDateInput) {
+                bookingDateInput.addEventListener('change', (e) => {
+                    selectedDateStr = e.target.value;
+                    const newDate = new Date(selectedDateStr);
+                    if (!isNaN(newDate.getTime())) {
+                        currentDate = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
+                    }
+                    renderCalendar();
+                });
+            }
+
+            // Sync initial calendar render
+            renderCalendar();
+
+            // Initial render call for booking widget
+            if (currentFacilityId) {
+                fetchBookedSlots(selectedDateStr).then(booked => {
+                    bookedSlotIds = booked;
+                    render();
+                });
+            } else {
+                render();
+            }
+        });
+    </script>
+</body>
+</html>

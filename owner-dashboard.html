@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Your Facility | GameGroundz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981',
+                        primaryHover: '#059669',
+                        dark: '#0f172a',
+                        darker: '#020617',
+                        light: '#f8fafc',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glow': '0 0 20px rgba(16, 185, 129, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 w-full z-50 bg-white border-b border-slate-200 shadow-sm" id="navbar">
+        <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='index.html'">
+                    <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
+                    <span class="font-bold text-2xl tracking-tight text-dark">Game<span class="text-primary">Groundz</span></span>
+                    <span class="ml-4 pl-4 border-l border-slate-300 font-medium text-slate-500">Host Dashboard</span>
+                </div>
+                <div class="flex flex-1 max-w-xl mx-8 relative"></div>
+                <div class="flex items-center space-x-6">
+                    <a href="index.html" class="text-slate-600 hover:text-dark font-medium transition-custom text-sm">Return to GameGroundz</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-[800px] mx-auto w-full px-4 py-12">
+        <div class="mb-8 text-center">
+            <h1 class="text-3xl font-extrabold text-dark tracking-tight mb-2">List your sports facility</h1>
+            <p class="text-slate-500 text-lg">Earn money by renting your unused hours to local athletes.</p>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+            <form id="add-facility-form" class="space-y-8">
+                
+                <!-- Facility Basics -->
+                <div>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">1. The Basics</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Facility Name</label>
+                            <input type="text" id="fac-name" required class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="e.g. Aréna Rosemère">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Surface Type</label>
+                                <select id="fac-type" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
+                                    <option value="ice">Ice Rink</option>
+                                    <option value="soccer">Soccer Field (Turf)</option>
+                                    <option value="basketball">Basketball Court</option>
+                                    <option value="tennis">Tennis Court</option>
+                                    <option value="football">Football Field</option>
+                                    <option value="gym">Training Gym</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Environment</label>
+                                <select id="fac-env" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
+                                    <option value="indoor">Indoor</option>
+                                    <option value="outdoor">Outdoor</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="relative">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Facility Address</label>
+                            <input type="text" id="fac-location" autocomplete="off" required class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="Full Address (e.g. 123 Main St, Montreal, QC)" style="background: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z\'/><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M15 11a3 3 0 11-6 0 3 3 0 016 0z\'/></svg>') no-repeat 10px center; background-size: 20px;">
+                            <ul id="autocomplete-list" class="absolute z-50 w-full bg-white mt-1 rounded-xl shadow-xl border border-slate-100 hidden max-h-60 overflow-y-auto left-0 text-slate-800 text-left text-sm"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facility Basics & Capacity -->
+                <div>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">2. Share some basics about your place</h2>
+                    
+                    <div class="space-y-6">
+                        <!-- Locker Rooms -->
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100 pb-4">
+                            <span class="text-slate-700 font-semibold">Locker Rooms</span>
+                            <div class="flex items-center gap-4">
+                                <button type="button" onclick="const p=this.nextElementSibling; p.textContent=Math.max(0, parseInt(p.textContent)-1)" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
+                                    <i class="fa-solid fa-minus text-xs"></i>
+                                </button>
+                                <span id="fac-locker-rooms" class="w-4 text-center text-slate-700 font-medium">0</span>
+                                <button type="button" onclick="const p=this.previousElementSibling; p.textContent=parseInt(p.textContent)+1" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Capacity -->
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100 pb-4">
+                            <span class="text-slate-700 font-semibold">Maximum capacity of individuals</span>
+                            <div class="flex items-center gap-4">
+                                <button type="button" onclick="const p=this.nextElementSibling; p.textContent=Math.max(0, parseInt(p.textContent)-5)" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
+                                    <i class="fa-solid fa-minus text-xs"></i>
+                                </button>
+                                <span id="fac-capacity" class="w-6 text-center text-slate-700 font-medium">0</span>
+                                <button type="button" onclick="const p=this.previousElementSibling; p.textContent=parseInt(p.textContent)+5" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Size -->
+                        <div>
+                            <label class="block text-xl font-bold text-dark mb-4">Size</label>
+                            <input type="text" id="fac-size" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="Enter size (e.g. 10,000 sq ft, 200x85 ft)">
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <span class="text-sm text-slate-500 font-medium py-1.5 pr-2">Suggestions:</span>
+                                <button type="button" onclick="const input = document.getElementById('fac-size'); input.value = 'NHL size (standard)'; document.querySelectorAll('.size-pill').forEach(el=>el.classList.remove('bg-slate-200','border-slate-800')); this.classList.add('bg-slate-200','border-slate-800');" class="size-pill px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:border-slate-800 transition-custom bg-white">NHL size (standard)</button>
+                                <button type="button" onclick="const input = document.getElementById('fac-size'); input.value = '3vs3 size (mini)'; document.querySelectorAll('.size-pill').forEach(el=>el.classList.remove('bg-slate-200','border-slate-800')); this.classList.add('bg-slate-200','border-slate-800');" class="size-pill px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:border-slate-800 transition-custom bg-white">3vs3 size (mini)</button>
+                                <button type="button" onclick="const input = document.getElementById('fac-size'); input.value = 'Olympic size'; document.querySelectorAll('.size-pill').forEach(el=>el.classList.remove('bg-slate-200','border-slate-800')); this.classList.add('bg-slate-200','border-slate-800');" class="size-pill px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:border-slate-800 transition-custom bg-white">Olympic size</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Services / Amenities -->
+                <div>
+                    <h2 class="text-xl font-bold text-dark mb-2 border-b border-slate-100 pb-2">3. Services</h2>
+                    <p class="text-slate-500 mb-6 flex justify-between items-center text-sm">
+                        <span>Select the amenities provided at your facility.</span>
+                        <span class="text-xs italic">Click to select/deselect</span>
+                    </p>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="amenities-container">
+                        <!-- Wifi -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="wifi">
+                            <i class="fa-solid fa-wifi text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Wifi</span>
+                        </div>
+                        <!-- Parking -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="parking">
+                            <i class="fa-solid fa-square-parking text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Free parking</span>
+                        </div>
+                        <!-- TV -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="tv">
+                            <i class="fa-solid fa-tv text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">TV</span>
+                        </div>
+                        <!-- First Aid -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="first_aid">
+                            <i class="fa-solid fa-truck-medical text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">First Aid Kit</span>
+                        </div>
+                        <!-- Wheelchair -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="accessibility">
+                            <i class="fa-solid fa-wheelchair text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Wheelchair accessible</span>
+                        </div>
+                        <!-- Concessions -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="concessions">
+                            <i class="fa-solid fa-utensils text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Concessions</span>
+                        </div>
+                        <!-- Pro Shop -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="pro_shop">
+                            <i class="fa-solid fa-shop text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Pro Shop</span>
+                        </div>
+                        <!-- Beer -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="beer">
+                            <i class="fa-solid fa-beer-mug-empty text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Beer</span>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    // Add click listeners to amenity cards immediately after rendering
+                    document.querySelectorAll('.amenity-card').forEach(card => {
+                        card.addEventListener('click', function() {
+                            this.classList.toggle('border-slate-800');
+                            this.classList.toggle('bg-slate-50');
+                            this.classList.toggle('border-slate-200');
+                        });
+                    });
+                </script>
+
+                <!-- Facility Details -->
+                <div>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">4. Facility Details</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Subtitle / Headline</label>
+                            <input type="text" id="fac-subtitle" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="e.g. Professional NHL-sized Ice Rink">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">About this facility (Description)</label>
+                            <textarea id="fac-description" rows="4" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="Detailed description of your facility, its history, and what makes it special..."></textarea>
+                        </div>
+                        
+                        <div class="mb-4 pt-2">
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Key Features & Amenities</label>
+                            <p class="text-xs text-slate-500 mb-4">Highlight the best parts of your facility with a short title and description.</p>
+                            
+                            <div id="features-container" class="space-y-3 mb-4">
+                                <!-- Dynamic feature rows go here -->
+                            </div>
+                            
+                            <button type="button" id="add-feature-btn" class="text-sm font-bold text-primary hover:text-primaryHover flex items-center transition-custom bg-primary/10 px-4 py-2 rounded-lg">
+                                <i class="fa-solid fa-plus mr-2"></i> Add a Feature
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing & Booking -->
+                <div>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">5. Pricing & Booking</h2>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Rules</label>
+                        <p class="text-xs text-slate-500 mb-4">Set up your hourly pricing for different times of the day. The lowest price will be shown as your baseline.</p>
+                        
+                        <div id="pricing-rules-container" class="space-y-3 mb-4">
+                            <!-- Dynamic rule rows go here -->
+                        </div>
+                        
+                        <button type="button" id="add-rule-btn" class="text-sm font-bold text-primary hover:text-primaryHover flex items-center transition-custom bg-primary/10 px-4 py-2 rounded-lg">
+                            <i class="fa-solid fa-plus mr-2"></i> Add a Time Slot
+                        </button>
+                    </div>
+
+                    <div class="flex flex-col justify-end pt-4 border-t border-slate-100">
+                        <label class="flex items-center group cursor-pointer">
+                            <input type="checkbox" id="fac-instant" class="w-5 h-5 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer transition-custom" checked>
+                            <span class="ml-3 text-slate-700 font-semibold group-hover:text-dark">Allow Instant Booking</span>
+                        </label>
+                        <p class="text-xs text-slate-400 mt-1 ml-8">Enable players to book without manual approval.</p>
+                    </div>
+                </div>
+
+                <!-- Media -->
+                <div>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">6. Photos</h2>
+                    
+                    <div class="relative border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition-custom cursor-pointer overflow-hidden">
+                        <input type="file" id="fac-image-file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*">
+                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-primary text-2xl mx-auto mb-4 shadow-sm pointer-events-none">
+                            <i class="fa-solid fa-images"></i>
+                        </div>
+                        <p class="font-medium text-slate-700 mb-1 pointer-events-none">Drag and drop your photos here</p>
+                        <p class="text-sm text-slate-500 pointer-events-none">or paste an image URL below</p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Main Image URL</label>
+                        <input type="text" id="fac-image-url" required class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="https://images.unsplash.com/photo-1574629810360...">
+                    </div>
+                </div>
+
+                <div id="submit-error" class="hidden text-red-500 text-sm font-medium bg-red-50 p-3 rounded-xl border border-red-100"></div>
+                <div id="submit-success" class="hidden text-green-700 text-sm font-medium bg-green-50 p-4 rounded-xl border border-green-200 flex items-start">
+                    <i class="fa-solid fa-circle-check text-green-500 mt-0.5 mr-3 text-lg"></i>
+                    <div>
+                        <strong class="block mb-1">Listing Created Successfully!</strong>
+                        Your facility is now live on GameGroundz. You will be redirected to the actual listing in 3 seconds.
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-end">
+                    <button type="button" class="text-slate-500 hover:text-dark font-medium px-6 py-3 mr-2 transition-custom" onclick="window.history.back()">Cancel</button>
+                    <button type="submit" id="submit-btn" class="bg-primary hover:bg-primaryHover text-white px-8 py-3 rounded-xl font-bold transition-custom shadow-glow flex items-center">
+                        <i class="fa-solid fa-plus mr-2"></i> Create Listing
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Features Logic
+        const featuresContainer = document.getElementById('features-container');
+        const addFeatureBtn = document.getElementById('add-feature-btn');
+
+        function createFeatureRow(title = "", description = "") {
+            const row = document.createElement('div');
+            row.className = 'flex items-start gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 feature-row relative';
+            row.innerHTML = `
+                <div class="flex-1 space-y-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Feature Title</label>
+                        <input type="text" class="feature-title w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm" placeholder="e.g. Premium Ice Quality" value="${title}">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Description</label>
+                        <input type="text" class="feature-desc w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm" placeholder="e.g. Resurfaced before every rental..." value="${description}">
+                    </div>
+                </div>
+                <button type="button" class="remove-feature-btn mt-6 w-8 h-8 rounded-full flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 transition-custom flex-shrink-0" title="Remove Feature">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            `;
+            
+            row.querySelector('.remove-feature-btn').addEventListener('click', () => {
+                row.remove();
+            });
+            
+            featuresContainer.appendChild(row);
+        }
+
+        if(featuresContainer) {
+            // Optional: Start with one empty feature row or let them click add
+            addFeatureBtn.addEventListener('click', () => {
+                createFeatureRow();
+            });
+        }
+
+        // Pricing Rules Logic
+        const rulesContainer = document.getElementById('pricing-rules-container');
+        const addRuleBtn = document.getElementById('add-rule-btn');
+
+        function createRuleRow(start = "08:00", end = "22:00", price = 150) {
+            const row = document.createElement('div');
+            row.className = 'flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 pricing-rule-row relative';
+            row.innerHTML = `
+                <div class="flex-1 dropdown-container relative">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Start Time</label>
+                    <div class="relative custom-select-wrapper">
+                        <div class="custom-select w-full px-3 py-2 border border-slate-300 rounded-lg focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary bg-white cursor-pointer flex justify-between items-center text-sm transition-custom">
+                            <span class="selected-time text-slate-700 font-medium">${start}</span>
+                            <i class="fa-regular fa-clock text-slate-400"></i>
+                        </div>
+                        <input type="hidden" class="rule-start" value="${start}" required>
+                        <div class="custom-options absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg hidden max-h-48 overflow-y-auto hidden-scrollbar py-1">
+                            ${generateTimeOptions()}
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1 dropdown-container relative">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">End Time</label>
+                    <div class="relative custom-select-wrapper">
+                        <div class="custom-select w-full px-3 py-2 border border-slate-300 rounded-lg focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary bg-white cursor-pointer flex justify-between items-center text-sm transition-custom">
+                            <span class="selected-time text-slate-700 font-medium">${end}</span>
+                            <i class="fa-regular fa-clock text-slate-400"></i>
+                        </div>
+                        <input type="hidden" class="rule-end" value="${end}" required>
+                        <div class="custom-options absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg hidden max-h-48 overflow-y-auto hidden-scrollbar py-1">
+                             ${generateTimeOptions()}
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Price (CAD)/hr</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 font-medium text-sm">$</span>
+                        <input type="number" class="rule-price w-full pl-7 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm" value="${price}" min="1" required>
+                    </div>
+                </div>
+                <button type="button" class="remove-rule-btn mt-5 w-8 h-8 rounded-full flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 transition-custom" title="Remove Rule">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            `;
+            
+            row.querySelector('.remove-rule-btn').addEventListener('click', () => {
+                if (rulesContainer.children.length > 1) {
+                    row.remove();
+                } else {
+                    alert("You must have at least one pricing rule.");
+                }
+            });
+            
+            // Custom Dropdown Logic for this row
+            const selects = row.querySelectorAll('.custom-select');
+            selects.forEach(select => {
+                select.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    // Close others
+                    document.querySelectorAll('.custom-options').forEach(opt => {
+                        if (opt !== this.nextElementSibling.nextElementSibling) {
+                            opt.classList.add('hidden');
+                        }
+                    });
+                    this.nextElementSibling.nextElementSibling.classList.toggle('hidden');
+                });
+            });
+
+            const optionsList = row.querySelectorAll('.custom-options');
+            optionsList.forEach(list => {
+                const options = list.querySelectorAll('.custom-option');
+                options.forEach(option => {
+                    option.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const val = this.dataset.value;
+                        const text = this.textContent.trim();
+                        const wrapper = this.closest('.custom-select-wrapper');
+                        wrapper.querySelector('.selected-time').textContent = text;
+                        wrapper.querySelector('input[type="hidden"]').value = val;
+                        list.classList.add('hidden');
+                        
+                        // Highlight selected
+                        options.forEach(o => o.classList.remove('bg-primary/10', 'text-primary', 'font-bold'));
+                        this.classList.add('bg-primary/10', 'text-primary', 'font-bold');
+                    });
+                });
+            });
+
+            rulesContainer.appendChild(row);
+        }
+
+        function generateTimeOptions() {
+            let html = '';
+            for (let i = 0; i < 24; i++) {
+                for (let j = 0; j < 60; j += 30) {
+                    const h = i.toString().padStart(2, '0');
+                    const m = j.toString().padStart(2, '0');
+                    const time24 = `${h}:${m}`;
+                    
+                    let period = 'AM';
+                    let h12 = i;
+                    if (h12 >= 12) {
+                        period = 'PM';
+                        if (h12 > 12) h12 -= 12;
+                    }
+                    if (h12 === 0) h12 = 12;
+                    
+                    const time12 = `${h12}:${m} ${period}`;
+                    html += `<div class="custom-option px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-custom" data-value="${time24}">${time12}</div>`;
+                }
+            }
+            return html;
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.custom-options').forEach(opt => {
+                opt.classList.add('hidden');
+            });
+        });
+
+        if(rulesContainer) {
+            // Initialize with one rule
+            createRuleRow();
+
+            addRuleBtn.addEventListener('click', () => {
+                createRuleRow("08:00", "22:00", 150);
+            });
+        }
+        // Autocomplete for Location Field
+        const searchInput = document.getElementById('fac-location');
+        const autocompleteList = document.getElementById('autocomplete-list');
+
+        if(searchInput) {
+            let debounceTimer;
+            searchInput.addEventListener('input', function() {
+                const val = this.value;
+                autocompleteList.innerHTML = '';
+                
+                if (!val || val.trim().length === 0) {
+                    autocompleteList.classList.add('hidden');
+                    return false;
+                }
+                
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&addressdetails=1&limit=5`);
+                        if (!response.ok) throw new Error("Network response was not ok");
+                        const data = await response.json();
+                        
+                        autocompleteList.innerHTML = '';
+                        
+                        if (data && data.length > 0) {
+                            autocompleteList.classList.remove('hidden');
+                            data.forEach(item => {
+                                const b = document.createElement("li");
+                                b.className = "px-4 py-3 cursor-pointer hover:bg-slate-50 border-b border-slate-50 last:border-0 font-medium transition-custom flex items-center";
+                                b.innerHTML = "<i class='fa-solid fa-location-dot text-slate-400 mr-3 mt-1 self-start'></i>";
+                                b.innerHTML += `<div><span class="text-slate-600">${item.display_name}</span></div>`;
+                                // Escape single quotes in value
+                                b.innerHTML += `<input type='hidden' value='${item.display_name.replace(/'/g, "&#39;")}'>`;
+                                
+                                b.addEventListener("click", function(e) {
+                                    searchInput.value = this.getElementsByTagName("input")[0].value;
+                                    autocompleteList.innerHTML = '';
+                                    autocompleteList.classList.add('hidden');
+                                });
+                                autocompleteList.appendChild(b);
+                            });
+                        } else {
+                            autocompleteList.classList.add('hidden');
+                        }
+                    } catch (error) {
+                        console.error("Geocoding error:", error);
+                        autocompleteList.classList.add('hidden');
+                    }
+                }, 500); // 500ms debounce
+            });
+
+            document.addEventListener("click", function (e) {
+                if (e.target !== searchInput) {
+                    autocompleteList.classList.add('hidden');
+                }
+            });
+        }
+
+        const facImageFile = document.getElementById('fac-image-file');
+        const facImageUrl = document.getElementById('fac-image-url');
+
+        if (facImageFile && facImageUrl) {
+            facImageFile.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        facImageUrl.value = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        document.getElementById('add-facility-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submit-btn');
+            const errorDiv = document.getElementById('submit-error');
+            const successDiv = document.getElementById('submit-success');
+            
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving...';
+            btn.disabled = true;
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+            errorDiv.classList.add('hidden');
+            
+            // Build pricing rules array
+            const pricingRules = Array.from(document.querySelectorAll('.pricing-rule-row')).map(row => ({
+                start: row.querySelector('.rule-start').value,
+                end: row.querySelector('.rule-end').value,
+                price: parseInt(row.querySelector('.rule-price').value, 10)
+            }));
+            
+            // Base price is the lowest price in the rules
+            const basePrice = pricingRules.length > 0 ? Math.min(...pricingRules.map(r => r.price)) : 100;
+
+            // Build features array
+            const features = Array.from(document.querySelectorAll('.feature-row')).map(row => {
+                const title = row.querySelector('.feature-title').value.trim();
+                const desc = row.querySelector('.feature-desc').value.trim();
+                if (title) {
+                    return { title: title, description: desc };
+                }
+                return null;
+            }).filter(f => f !== null);
+
+            const payload = {
+                name: document.getElementById('fac-name').value,
+                subtitle: document.getElementById('fac-subtitle').value,
+                description: document.getElementById('fac-description').value,
+                features: features,
+                locker_rooms: parseInt(document.getElementById('fac-locker-rooms').textContent, 10),
+                capacity: parseInt(document.getElementById('fac-capacity').textContent, 10),
+                size_info: document.getElementById('fac-size').value,
+                amenities: Array.from(document.querySelectorAll('.amenity-card.border-slate-800')).map(el => el.dataset.amenity),
+                type: document.getElementById('fac-type').value,
+                environment: document.getElementById('fac-env').value,
+                location: document.getElementById('fac-location').value,
+                base_price: basePrice,
+                pricing_rules: pricingRules,
+                image_url: document.getElementById('fac-image-url').value,
+                is_instant_book: document.getElementById('fac-instant').checked ? 1 : 0
+            };
+
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                
+                const res = await fetch(`${API_BASE_URL}/api/facilities`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'omit'
+                });
+                
+                const data = await res.json();
+                
+                if(!res.ok) throw new Error(data.error || 'Failed to create listing');
+                
+                successDiv.classList.remove('hidden');
+                
+                // Redirect after 3 seconds to the new facility page
+                setTimeout(() => {
+                    window.location.href = `facility.html?id=${data.facility_id || data.id}`;
+                }, 3000);
+                
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.classList.remove('hidden');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-80', 'cursor-not-allowed');
+            }
+        });
+    </script>
+</body>
+</html>

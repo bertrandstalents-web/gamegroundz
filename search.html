@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Sports Surfaces | GameGroundz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981',
+                        primaryHover: '#059669',
+                        dark: '#0f172a',
+                        darker: '#020617',
+                        light: '#f8fafc',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glow': '0 0 20px rgba(16, 185, 129, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Navbar (Sticky, solid BG) -->
+    <nav class="sticky top-0 w-full z-50 bg-white border-b border-slate-200 shadow-sm" id="navbar">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='index.html'">
+                    <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
+                    <span class="font-bold text-2xl tracking-tight text-dark">Game<span class="text-primary">Groundz</span></span>
+                </div>
+                
+                <!-- Search Bar in Nav -->
+                <div class="hidden md:flex flex-1 max-w-xl mx-8 relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-search text-slate-400"></i>
+                    </div>
+                    <div class="relative w-full">
+                        <input type="text" id="navLocationSearch" autocomplete="off" class="block w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-full text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-custom bg-slate-50 hover:bg-white" placeholder="Search by location or facility name...">
+                        <ul id="nav-autocomplete-list" class="absolute z-50 w-full bg-white mt-2 rounded-xl shadow-xl border border-slate-100 hidden max-h-60 overflow-y-auto left-0 text-slate-800 text-left text-sm"></ul>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="search.html" class="text-primary font-bold transition-custom">Find a Surface</a>
+                    <a href="#" class="text-slate-600 hover:text-dark font-medium transition-custom">Log in</a>
+                    <a href="owner-dashboard.html" class="bg-dark hover:bg-slate-800 text-white px-5 py-2 rounded-full font-medium transition-custom shadow-sm text-sm">List Your Facility</a>
+                </div>
+
+                <div class="md:hidden flex items-center">
+                    <button class="text-slate-600 hover:text-dark focus:outline-none"><i class="fa-solid fa-bars text-2xl"></i></button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
+        
+        <!-- Sidebar Filters -->
+        <aside class="w-full lg:w-72 flex-shrink-0">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-28">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-bold text-lg text-dark">Filters</h3>
+                    <button class="text-sm text-primary hover:text-primaryHover font-medium">Clear All</button>
+                </div>
+                
+                <!-- Filter: Sport Type -->
+                <div class="mb-6">
+                    <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Sport Surface</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center group cursor-pointer">
+                            <input type="checkbox" value="all" id="filter-all" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer" checked>
+                            <span class="ml-3 text-slate-600 group-hover:text-dark">All Surfaces</span>
+                        </label>
+                        <label class="flex items-center group cursor-pointer">
+                            <input type="checkbox" value="ice" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                            <span class="ml-3 text-slate-600 group-hover:text-dark">Ice Rink</span>
+                        </label>
+                        <label class="flex items-center group cursor-pointer">
+                            <input type="checkbox" value="soccer" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                            <span class="ml-3 text-slate-600 group-hover:text-dark">Soccer Field (Turf)</span>
+                        </label>
+                        <label class="flex items-center group cursor-pointer">
+                            <input type="checkbox" value="basketball" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                            <span class="ml-3 text-slate-600 group-hover:text-dark">Basketball Court</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Filter: Environment -->
+                <div class="mb-6 border-t border-slate-100 pt-6">
+                    <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Environment</h4>
+                    <div class="flex bg-slate-100 p-1 rounded-xl">
+                        <button class="env-btn flex-1 py-1.5 text-sm font-medium bg-white text-dark rounded-lg shadow-sm" data-active="true">Any</button>
+                        <button class="env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark">Indoor</button>
+                        <button class="env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark">Outdoor</button>
+                    </div>
+                </div>
+
+                <!-- Filter: Price -->
+                <div class="mb-6 border-t border-slate-100 pt-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="font-semibold text-slate-800 text-sm uppercase tracking-wide">Price per Hour</h4>
+                    </div>
+                    <input type="range" id="price-range" class="w-full accent-primary h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="300" value="200" step="10">
+                    <div class="flex justify-between text-sm text-slate-500 mt-2 font-medium">
+                        <span>$0</span>
+                        <span id="price-display">Up to $200</span>
+                    </div>
+                </div>
+
+                <!-- Filter: Date & Time -->
+                <div class="mb-6 border-t border-slate-100 pt-6">
+                    <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Availability</h4>
+                    <input type="date" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-3">
+                    <select class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                        <option>Any Time</option>
+                        <option>Morning (6am - 12pm)</option>
+                        <option>Afternoon (12pm - 5pm)</option>
+                        <option>Evening (5pm - 11pm)</option>
+                    </select>
+                </div>
+
+                <button id="apply-filters-btn" class="w-full bg-dark hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-custom flex items-center justify-center">
+                    Apply Filters
+                </button>
+            </div>
+        </aside>
+
+        <!-- Search Results -->
+        <div class="flex-1">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-dark">Sports Surfaces in your area</h1>
+                    <p class="text-slate-500 text-sm mt-1" id="results-count">Showing 24 available facilities</p>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-medium text-slate-500">Sort by:</span>
+                    <select class="border-none bg-transparent font-semibold text-dark outline-none cursor-pointer focus:ring-0 text-sm">
+                        <option>Recommended</option>
+                        <option>Price: Low to High</option>
+                        <option>Price: High to Low</option>
+                        <option>Highest Rated</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Results and Map Area -->
+            <div class="flex flex-col xl:flex-row gap-6 mt-6">
+                
+                <!-- Results Grid -->
+                <div class="flex-1 w-full">
+                    <div id="facilitiesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8">
+                        <!-- Facilities will be injected here -->
+                        <div class="col-span-full flex justify-center py-12">
+                             <i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="flex justify-center mt-6 mb-8 hidden" id="pagination">
+                        <nav class="flex items-center gap-1">
+                            <button id="prev-page" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-dark transition-custom">
+                                <i class="fa-solid fa-chevron-left text-sm"></i>
+                            </button>
+                            <span id="current-page-display" class="px-4 font-bold text-dark">Page 1</span>
+                            <button id="next-page" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-dark transition-custom">
+                                <i class="fa-solid fa-chevron-right text-sm"></i>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Map View -->
+                <div class="hidden xl:block w-[450px] flex-shrink-0 h-[calc(100vh-120px)] sticky top-28 rounded-2xl overflow-hidden shadow-soft border border-slate-200 z-10" id="map">
+                    <!-- Leaflet map goes here -->
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        // Navbar blur and sticky behavior
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 10) {
+                nav.classList.add('shadow-md');
+            } else {
+                nav.classList.remove('shadow-md');
+            }
+        });
+
+        // Autocomplete for Location Search via Nominatim API
+        const searchInput = document.getElementById('navLocationSearch');
+        const autocompleteList = document.getElementById('nav-autocomplete-list');
+        let searchTimeout;
+
+        if(searchInput) {
+            searchInput.addEventListener('input', function() {
+                const val = this.value;
+                autocompleteList.innerHTML = '';
+                
+                clearTimeout(searchTimeout);
+                
+                if (!val) {
+                    autocompleteList.classList.add('hidden');
+                    return false;
+                }
+                
+                autocompleteList.classList.remove('hidden');
+                autocompleteList.innerHTML = '<li class="px-4 py-3 text-slate-400 text-sm italic"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Searching...</li>';
+
+                searchTimeout = setTimeout(async () => {
+                    try {
+                        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&addressdetails=1&limit=5&countrycodes=us,ca`);
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        const data = await response.json();
+                        
+                        autocompleteList.innerHTML = '';
+                        
+                        if (data.length > 0) {
+                            data.forEach(item => {
+                                const displayName = item.display_name;
+                                
+                                const b = document.createElement("li");
+                                b.className = "px-4 py-3 cursor-pointer hover:bg-slate-50 border-b border-slate-50 last:border-0 font-medium transition-custom flex items-center";
+                                b.innerHTML = "<i class='fa-solid fa-location-dot text-slate-400 mr-3 shrink-0'></i>";
+                                b.innerHTML += `<div class="truncate text-sm" title="${displayName}">${displayName}</div>`;
+                                b.innerHTML += `<input type='hidden' value='${displayName.replace(/'/g, "&#39;")}'>`;
+                                
+                                b.addEventListener("click", function(e) {
+                                    searchInput.value = this.getElementsByTagName("input")[0].value;
+                                    autocompleteList.innerHTML = '';
+                                    autocompleteList.classList.add('hidden');
+                                    // Pan directly using known coords
+                                    if (map) {
+                                        map.setView([item.lat, item.lon], 10);
+                                        // fetchFacilities relies on map bounds, so we trigger an update here.
+                                        // The 'moveend' event handles triggering updateListingsFromMapBounds.
+                                    }
+                                });
+                                autocompleteList.appendChild(b);
+                            });
+                        } else {
+                            autocompleteList.innerHTML = '<li class="px-4 py-3 text-slate-400 text-sm">No results found</li>';
+                        }
+                    } catch (error) {
+                        console.error("Autocomplete error:", error);
+                        autocompleteList.innerHTML = '<li class="px-4 py-3 text-red-500 text-sm">Error fetching results</li>';
+                    }
+                }, 400);
+            });
+
+            document.addEventListener("click", function (e) {
+                if (e.target !== searchInput) {
+                    autocompleteList.classList.add('hidden');
+                }
+            });
+
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    autocompleteList.innerHTML = '';
+                    autocompleteList.classList.add('hidden');
+                    panMapToLocation(this.value);
+                }
+            });
+        }
+        
+        async function panMapToLocation(locationName) {
+            if (!map || !locationName) return;
+            const coords = locationCoordinates[locationName];
+            if (coords) {
+                map.setView([coords.lat, coords.lng], 10);
+                return;
+            } 
+            
+            // If exact match not found, try partial match in dictionary
+            const match = Object.keys(locationCoordinates).find(key => key.toLowerCase().includes(locationName.toLowerCase()));
+            if (match) {
+                map.setView([locationCoordinates[match].lat, locationCoordinates[match].lng], 10);
+                return;
+            }
+
+            // Fallback: Fetch from Nominatim
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationName)}&limit=1&countrycodes=us,ca`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.length > 0) {
+                        map.setView([data[0].lat, data[0].lon], 10);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to geocode location fallback:", err);
+            }
+        }
+
+        // Price Range Slider Logic
+        const priceRange = document.getElementById('price-range');
+        const priceDisplay = document.getElementById('price-display');
+        
+        if(priceRange && priceDisplay) {
+            priceRange.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (value == 300) {
+                    priceDisplay.textContent = 'Any price';
+                } else {
+                    priceDisplay.textContent = `Up to $${value}`;
+                }
+            });
+        }
+
+        // Environment Buttons Toggle Logic
+        const envButtons = document.querySelectorAll('.env-btn');
+        let selectedEnv = '';
+        envButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Reset all
+                envButtons.forEach(b => {
+                    b.className = 'env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark transition-custom';
+                    b.removeAttribute('data-active');
+                });
+                // Set active
+                e.target.className = 'env-btn flex-1 py-1.5 text-sm font-medium bg-white text-dark rounded-lg shadow-sm transition-custom';
+                e.target.setAttribute('data-active', 'true');
+
+                if (e.target.innerText === 'Any') selectedEnv = '';
+                else selectedEnv = e.target.innerText.toLowerCase();
+            });
+        });
+
+        // Backend Integration
+        const facilitiesGrid = document.getElementById('facilitiesGrid');
+        const resultsCountEl = document.getElementById('results-count');
+        const applyBtn = document.getElementById('apply-filters-btn');
+        const pagination = document.getElementById('pagination');
+
+        // Function to build standard facility card HTML
+        function createFacilityCard(facility) {
+            const isInstantBook = facility.is_instant_book === 1;
+            const bookStatusHtml = isInstantBook 
+                ? '<span class="text-primary font-bold"><i class="fa-solid fa-bolt mr-1"></i> Instant Book</span>'
+                : '<span class="text-slate-500 font-medium whitespace-nowrap">Request to Book</span>';
+
+            const typeDisplay = facility.type.charAt(0).toUpperCase() + facility.type.slice(1);
+            const envDisplay = facility.environment.charAt(0).toUpperCase() + facility.environment.slice(1);
+
+            return `
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick="window.location.href='facility.html?id=${facility.id}'">
+                    <div class="relative h-48 hover-zoom-img-container">
+                        <img src="${facility.image_url}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
+                        <div class="absolute top-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-slate-800 border border-slate-200">
+                            <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating} (${facility.reviews_count})
+                        </div>
+                        <button class="absolute top-3 right-3 w-8 h-8 bg-white/80 hover:bg-white backdrop-blur rounded-full flex items-center justify-center text-slate-500 hover:text-red-500 transition-custom z-10 shadow-sm">
+                            <i class="fa-regular fa-heart text-sm"></i>
+                        </button>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="text-lg font-bold text-dark group-hover:text-primary transition-custom truncate pr-4">${facility.name}</h3>
+                            <span class="font-bold text-dark whitespace-nowrap">From $${facility.base_price}<span class="text-xs font-normal text-slate-500">/hr</span></span>
+                        </div>
+                        <p class="text-slate-500 text-xs mb-3 flex items-center">
+                            <i class="fa-solid fa-location-dot mr-1"></i> ${facility.location}
+                        </p>
+                        <div class="flex gap-1.5 mb-4 overflow-hidden">
+                            <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[11px] font-semibold whitespace-nowrap">${typeDisplay}</span>
+                            <span class="px-2 py-0.5 bg-slate-100 text-slate-600 border border-transparent rounded text-[11px] font-semibold whitespace-nowrap">${envDisplay}</span>
+                        </div>
+                        <div class="border-t border-slate-100 pt-3 flex justify-between items-center text-xs">
+                            ${bookStatusHtml}
+                            <span class="text-slate-500 font-medium">Available Today</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        let map;
+        let markers = [];
+        let currentPage = 1;
+        const limitPerPage = 50; // Increased to fetch all relevant facilities for the map
+        let allFetchedFacilities = []; // Store fetched facilities globally
+
+        function initMap() {
+            // Default center around Montreal
+            map = L.map('map').setView([45.5017, -73.5673], 10);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+            }).addTo(map);
+
+            // Listen for map move/zoom events
+            map.on('moveend', () => {
+                updateListingsFromMapBounds();
+            });
+        }
+
+        const locationCoordinates = {
+            'Rosemère, QC': { lat: 45.6372, lng: -73.7997 },
+            'Boisbriand, QC': { lat: 45.6181, lng: -73.8378 },
+            'Blainville, QC': { lat: 45.6738, lng: -73.8763 },
+            "Saint-Roch-de-l'Achigan, QC": { lat: 45.8525, lng: -73.5786 },
+            'Laval, QC': { lat: 45.6028, lng: -73.7169 },
+            'Deux-Montagnes, QC': { lat: 45.5410, lng: -73.8893 },
+            'Montreal, QC': { lat: 45.5017, lng: -73.5673 },
+            'Toronto, ON': { lat: 43.651070, lng: -79.347015 },
+            'Ottawa, ON': { lat: 45.421530, lng: -75.697193 },
+            'Vancouver, BC': { lat: 49.282729, lng: -123.120738 },
+            'Calgary, AB': { lat: 51.0447, lng: -114.0719 },
+            'Edmonton, AB': { lat: 53.5461, lng: -113.4938 },
+            'Halifax, NS': { lat: 44.6488, lng: -63.5752 },
+            'New York, NY': { lat: 40.7128, lng: -74.0060 },
+            'Los Angeles, CA': { lat: 34.0522, lng: -118.2437 }
+        };
+
+        function updateMapMarkers(facilities, preventFitBounds = false) {
+            if (!map) return;
+            
+            // Clear existing
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            if (facilities.length === 0) return;
+
+            const bounds = L.latLngBounds();
+
+            facilities.forEach((f, i) => {
+                let mockLat, mockLng;
+                
+                // Find if the facility's full location string contains any of our known city keys
+                const matchingCityKey = Object.keys(locationCoordinates).find(city => f.location.includes(city));
+
+                if (matchingCityKey) {
+                    // Add tiny random offset so markers at same location don't overlap exactly
+                    mockLat = locationCoordinates[matchingCityKey].lat + (Math.random() - 0.5) * 0.005;
+                    mockLng = locationCoordinates[matchingCityKey].lng + (Math.random() - 0.5) * 0.005;
+                } else {
+                    mockLat = 45.5017 + (Math.random() - 0.5) * 0.2;
+                    mockLng = -73.5673 + (Math.random() - 0.5) * 0.2;
+                }
+                
+                // Save generated coordinates back to the object for filtering later
+                f.lat = mockLat;
+                f.lng = mockLng;
+                
+                const marker = L.marker([mockLat, mockLng]).addTo(map);
+                
+                const popupContent = `
+                    <div class="w-48 cursor-pointer" onclick="window.location.href='facility.html?id=${f.id}'">
+                        <img src="${f.image_url}" class="w-full h-24 object-cover rounded-lg mb-2">
+                        <div class="font-bold text-sm truncate hover:text-primary transition-custom">${f.name}</div>
+                        <div class="font-bold text-primary">From $${f.base_price}<span class="text-xs text-slate-500 font-normal">/hr</span></div>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+                bounds.extend([mockLat, mockLng]);
+            });
+
+            // Set a slightly tighter padding and lower maxZoom for better context display
+            if (!preventFitBounds) {
+                map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12, animate: false });
+            }
+        }
+
+        function updateListingsFromMapBounds() {
+            if (!map || allFetchedFacilities.length === 0) return;
+
+            const mapContainer = document.getElementById('map');
+            const isMapVisible = window.getComputedStyle(mapContainer).display !== 'none';
+
+            let visibleFacilities = allFetchedFacilities;
+
+            if (isMapVisible) {
+                const bounds = map.getBounds();
+                
+                // Filter facilities that fall within the current map view
+                visibleFacilities = allFetchedFacilities.filter(f => {
+                    if (f.lat && f.lng) {
+                        return bounds.contains(L.latLng(f.lat, f.lng));
+                    }
+                    return false;
+                });
+            } else {
+                // Map is hidden (e.g., mobile), filter by distance from map center (50km radius)
+                const center = map.getCenter();
+                visibleFacilities = allFetchedFacilities.filter(f => {
+                    if (f.lat && f.lng) {
+                        // distanceTo returns distance in meters
+                        return center.distanceTo(L.latLng(f.lat, f.lng)) < 50000; 
+                    }
+                    return false;
+                });
+            }
+
+            facilitiesGrid.innerHTML = '';
+            
+            if (visibleFacilities.length === 0) {
+                 const msgSuffix = isMapVisible ? ' in this map area' : '';
+                 facilitiesGrid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 text-lg">No facilities match your criteria${msgSuffix}.</div>`;
+                 resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">0</span> available facilities`;
+            } else {
+                visibleFacilities.forEach(facility => {
+                    facilitiesGrid.innerHTML += createFacilityCard(facility);
+                });
+                const msgSuffix = isMapVisible ? ' in this area' : '';
+                resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">${visibleFacilities.length}</span> facilities${msgSuffix}`;
+            }
+            
+            // Hide pagination since we are scrolling the map now
+            pagination.classList.add('hidden');
+        }
+
+        // Handle window resize to invalidate map size if it becomes visible
+        window.addEventListener('resize', () => {
+            const mapContainer = document.getElementById('map');
+            if (map && mapContainer && window.getComputedStyle(mapContainer).display !== 'none') {
+                map.invalidateSize();
+                updateListingsFromMapBounds();
+            } else if (mapContainer && window.getComputedStyle(mapContainer).display === 'none') {
+                updateListingsFromMapBounds();
+            }
+        });
+
+        async function fetchFacilities(filters = {}, preventFitBounds = false) {
+            try {
+                facilitiesGrid.style.opacity = '0.5';
+                
+                const params = new URLSearchParams();
+                if (filters.maxPrice && filters.maxPrice < 300) params.append('maxPrice', filters.maxPrice);
+                if (filters.environment) params.append('environment', filters.environment);
+                if (filters.types && filters.types.length > 0) params.append('types', filters.types.join(','));
+                
+                params.append('limit', limitPerPage);
+                params.append('offset', (currentPage - 1) * limitPerPage);
+                
+                const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                const response = await fetch(`${API_BASE_URL}/api/facilities?` + params.toString());
+                
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+                allFetchedFacilities = data; // Store globally
+                
+                facilitiesGrid.innerHTML = '';
+                if (data.length === 0) {
+                    facilitiesGrid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 text-lg">No facilities match your criteria. Try adjusting your filters.</div>';
+                    resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">0</span> available facilities`;
+                    pagination.classList.add('hidden');
+                    updateMapMarkers([]);
+                } else {
+                    updateMapMarkers(data, preventFitBounds);
+                    // Instead of raw render, we trigger the map bounds render immediately
+                    // The map bounds might take a fraction of a second to settle after fitBounds
+                    setTimeout(updateListingsFromMapBounds, 50);
+                }
+                facilitiesGrid.style.opacity = '1';
+                
+            } catch (error) {
+                console.error("Error fetching facilities:", error);
+                facilitiesGrid.innerHTML = `<div class="col-span-full bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 text-center">${error.message}</div>`;
+                facilitiesGrid.style.opacity = '1';
+            }
+        }
+
+        // Apply Filters API Call
+        if(applyBtn && resultsCountEl) {
+            applyBtn.addEventListener('click', () => {
+                currentPage = 1; // reset string on filter
+                const originalText = applyBtn.innerHTML;
+                applyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Filtering...';
+                applyBtn.disabled = true;
+
+                const maxPrice = priceRange ? parseInt(priceRange.value) : 300;
+                
+                // Get checked types
+                const typeCheckboxes = document.querySelectorAll('.type-filter:checked');
+                const selectedTypes = [];
+                let isAll = false;
+                typeCheckboxes.forEach(cb => {
+                    if(cb.value === 'all') isAll = true;
+                    else selectedTypes.push(cb.value);
+                });
+
+                fetchFacilities({ 
+                    maxPrice: maxPrice,
+                    environment: selectedEnv,
+                    types: isAll ? [] : selectedTypes
+                }, true).finally(() => {
+                    applyBtn.innerHTML = originalText;
+                    applyBtn.disabled = false;
+                });
+            });
+        }
+
+        // Type filter "All" logic
+        const filterAll = document.getElementById('filter-all');
+        const typeFilters = document.querySelectorAll('.type-filter');
+        typeFilters.forEach(cb => {
+            if (cb.value !== 'all') {
+                cb.addEventListener('change', () => {
+                    if (cb.checked) filterAll.checked = false;
+                });
+            } else {
+                cb.addEventListener('change', () => {
+                    if (cb.checked) {
+                        typeFilters.forEach(other => {
+                            if (other.value !== 'all') other.checked = false;
+                        });
+                    }
+                });
+            }
+        });
+
+        // Pagination buttons
+        document.getElementById('prev-page')?.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                applyBtn.click();
+            }
+        });
+        document.getElementById('next-page')?.addEventListener('click', () => {
+            currentPage++;
+            applyBtn.click();
+        });
+
+        // Load initially
+        document.addEventListener('DOMContentLoaded', async () => {
+            initMap();
+            
+            // Check for explicit URL parameters first
+            const urlParams = new URLSearchParams(window.location.search);
+            const explicitLocation = urlParams.get('location');
+            const explicitType = urlParams.get('type');
+            
+            // Handle pre-selected sport type
+            if (explicitType) {
+                const typeCheckbox = document.querySelector(`.type-filter[value="${explicitType}"]`);
+                if (typeCheckbox) {
+                    // Uncheck 'all' and check the specific type
+                    document.getElementById('filter-all').checked = false;
+                    typeCheckbox.checked = true;
+                }
+            }
+
+            if (explicitLocation) {
+                // User explicitly searched for a location, bypass geolocation
+                const navSearch = document.getElementById('navLocationSearch');
+                if (navSearch) navSearch.value = explicitLocation;
+                
+                // Pan map and fetch results
+                await panMapToLocation(explicitLocation);
+                
+                // Construct initial filters based on URL
+                const typeCheckboxes = document.querySelectorAll('.type-filter:checked');
+                const selectedTypes = [];
+                let isAll = false;
+                typeCheckboxes.forEach(cb => {
+                    if (cb.value === 'all') isAll = true;
+                    else selectedTypes.push(cb.value);
+                });
+                
+                fetchFacilities({ types: isAll ? [] : selectedTypes }, true);
+                
+            } else if ("geolocation" in navigator) {
+                // No explicit location, try geolocation to center the map on the user
+                const resultsCountEl = document.getElementById('results-count');
+                if (resultsCountEl) resultsCountEl.innerHTML = `Locating you <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i>`;
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const userLat = position.coords.latitude;
+                        const userLng = position.coords.longitude;
+                        if (map) {
+                            map.setView([userLat, userLng], 10);
+                        }
+                        // Fetch facilities after we have panned the map to their area
+                        // Pass true to prevent fit bounds from breaking the user's location setting
+                        
+                        // Construct initial filters for geolocation fetch
+                        const typeCheckboxes = document.querySelectorAll('.type-filter:checked');
+                        const selectedTypes = [];
+                        let isAll = false;
+                        typeCheckboxes.forEach(cb => {
+                            if (cb.value === 'all') isAll = true;
+                            else selectedTypes.push(cb.value);
+                        });
+                        
+                        fetchFacilities({ types: isAll ? [] : selectedTypes }, true);
+                    },
+                    (error) => {
+                        console.warn("Geolocation error/denied:", error);
+                        // Fallback: fetch facilities using default map center
+                        const typeCheckboxes = document.querySelectorAll('.type-filter:checked');
+                        const selectedTypes = [];
+                        let isAll = false;
+                        typeCheckboxes.forEach(cb => {
+                            if (cb.value === 'all') isAll = true;
+                            else selectedTypes.push(cb.value);
+                        });
+                        fetchFacilities({ types: isAll ? [] : selectedTypes }, false);
+                    }, 
+                    { timeout: 5000 } // Give up after 5 seconds
+                );
+            } else {
+                fetchFacilities({}, false);
+            }
+        });
+    </script>
+</body>
+</html>

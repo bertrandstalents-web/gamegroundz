@@ -1,0 +1,13 @@
+Server running on http://localhost:3000
+Connected to the SQLite database.
+NotFoundError: Not Found
+    at createHttpError (/Users/tommybertrand/.gemini/antigravity/scratch/gamegroundz/node_modules/send/index.js:861:12)
+    at SendStream.error (/Users/tommybertrand/.gemini/antigravity/scratch/gamegroundz/node_modules/send/index.js:168:31)
+    at SendStream.pipe (/Users/tommybertrand/.gemini/antigravity/scratch/gamegroundz/node_modules/send/index.js:468:14)
+    at sendfile (/Users/tommybertrand/.gemini/antigravity/scratch/gamegroundz/node_modules/express/lib/response.js:1014:8)
+    at ServerResponse.sendFile (/Users/tommybertrand/.gemini/antigravity/scratch/gamegroundz/node_modules/express/lib/response.js:411:3)
+    at /Users/tommybertrand/.gemini/antigravity/scratch/gamegroundz/server.js:293:21
+    at Layer.handleRequest (/Users/tommybertrand/.gemini/antigravity/scratch/gamegroundz/node_modules/router/lib/layer.js:152:17)
+    at trimPrefix (/Users/tommybertrand/.gemini/antigravity/scratch/gamegroundz/node_modules/router/index.js:342:13)
+    at /Users/tommybertrand/.gemini/antigravity/scratch/gamegroundz/node_modules/router/index.js:297:9
+    at processParams (/Users/tommybertrand/.gemini/antigravity/scratch/gamegroundz/node_modules/router/index.js:582:12)

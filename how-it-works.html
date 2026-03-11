@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How It Works | GameGroundz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981', // Emerald
+                        primaryHover: '#059669',
+                        dark: '#0f172a',
+                        darker: '#020617',
+                        light: '#f8fafc',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glow': '0 0 20px rgba(16, 185, 129, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light text-slate-800 font-sans antialiased">
+    
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 glass transition-custom border-b border-slate-200" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='index.html'">
+                    <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
+                    <span class="font-bold text-2xl tracking-tight text-dark">Game<span class="text-primary">Groundz</span></span>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
+                    <a href="how-it-works.html" class="text-primary font-bold transition-custom">How it Works</a>
+                    <div class="h-6 w-px bg-slate-300"></div>
+                    <a href="#" class="text-slate-600 hover:text-dark font-medium transition-custom">Log in</a>
+                    <a href="owner-dashboard.html" class="bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-full font-medium transition-custom shadow-md hover:shadow-lg">List Your Facility</a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-slate-600 hover:text-dark focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-100">
+            <div class="px-4 pt-2 pb-6 space-y-2">
+                <a href="search.html" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary">Find a Surface</a>
+                <a href="how-it-works.html" class="block px-3 py-3 rounded-md text-base font-bold text-primary bg-primary/5">How it Works</a>
+                <a href="#" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary">Log in</a>
+                <a href="owner-dashboard.html" class="block px-3 py-3 mt-4 text-center rounded-full text-base font-medium bg-dark text-white hover:bg-slate-800">List Your Facility</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <header class="pt-32 pb-16 bg-white border-b border-slate-200">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-dark mb-6">How GameGroundz Works</h1>
+            <p class="text-xl text-slate-500 font-light leading-relaxed">
+                Whether you're an athlete looking to book a rink, or a facility owner looking to fill up your calendar, we make the process entirely seamless.
+            </p>
+        </div>
+    </header>
+
+    <!-- For Renters Section -->
+    <section class="py-20 bg-light">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="inline-block py-1 px-3 rounded-full bg-blue-100 text-blue-600 font-bold text-sm tracking-widest uppercase mb-4"><i class="fa-solid fa-users mr-2"></i> For Athletes & Teams</span>
+                <h2 class="text-3xl font-extrabold text-dark">Rent a surface in 3 easy steps</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+                <!-- Step 1 -->
+                <div class="text-center group">
+                    <div class="w-20 h-20 mx-auto bg-white border border-slate-200 rounded-2xl flex items-center justify-center shadow-soft mb-6 group-hover:-translate-y-2 transition-transform duration-300">
+                        <i class="fa-solid fa-magnifying-glass text-3xl text-blue-500"></i>
+                    </div>
+                    <div class="text-sm font-bold text-blue-500 uppercase tracking-wider mb-2">Step 1</div>
+                    <h3 class="text-xl font-bold text-dark mb-3">Find a Facility</h3>
+                    <p class="text-slate-600">Search by location, sport, availability, and price. Filter exactly what you need.</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="text-center group">
+                    <div class="w-20 h-20 mx-auto bg-white border border-slate-200 rounded-2xl flex items-center justify-center shadow-soft mb-6 group-hover:-translate-y-2 transition-transform duration-300">
+                        <i class="fa-solid fa-calendar-check text-3xl text-blue-500"></i>
+                    </div>
+                    <div class="text-sm font-bold text-blue-500 uppercase tracking-wider mb-2">Step 2</div>
+                    <h3 class="text-xl font-bold text-dark mb-3">Book Instantly</h3>
+                    <p class="text-slate-600">Select your date and time slots, and securely process your payment online.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="text-center group">
+                    <div class="w-20 h-20 mx-auto bg-white border border-slate-200 rounded-2xl flex items-center justify-center shadow-soft mb-6 group-hover:-translate-y-2 transition-transform duration-300">
+                        <i class="fa-solid fa-stopwatch text-3xl text-blue-500"></i>
+                    </div>
+                    <div class="text-sm font-bold text-blue-500 uppercase tracking-wider mb-2">Step 3</div>
+                    <h3 class="text-xl font-bold text-dark mb-3">Play Your Game</h3>
+                    <p class="text-slate-600">Show up to the rink, present your digital confirmation, and get right to playing.</p>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <a href="search.html" class="inline-flex bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-custom shadow-lg hover:shadow-xl">
+                    Find a Surface Now <i class="fa-solid fa-arrow-right ml-2 mt-1"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- For Owners Section -->
+    <section class="py-20 bg-dark text-white relative overflow-hidden">
+        <!-- Abstract Background styling -->
+        <div class="absolute inset-0 z-0 opacity-10 pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16">
+                <span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 font-bold text-sm tracking-widest uppercase mb-4"><i class="fa-solid fa-building mr-2"></i> For Facility Owners</span>
+                <h2 class="text-3xl font-extrabold text-white">Manage & Monetize your Spaces</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-5xl mx-auto">
+                
+                <div class="space-y-8">
+                    <!-- Point 1 -->
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-white/10 backdrop-blur rounded-xl border border-white/20 flex items-center justify-center text-primary text-xl">
+                                1
+                            </div>
+                        </div>
+                        <div class="ml-6">
+                            <h3 class="text-xl font-bold text-white mb-2">List your facility</h3>
+                            <p class="text-slate-400">Describe your rinks or fields, upload photos, and set your pricing models entirely on your terms.</p>
+                        </div>
+                    </div>
+
+                    <!-- Point 2 -->
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-white/10 backdrop-blur rounded-xl border border-white/20 flex items-center justify-center text-primary text-xl">
+                                2
+                            </div>
+                        </div>
+                        <div class="ml-6">
+                            <h3 class="text-xl font-bold text-white mb-2">Sync your calendar</h3>
+                            <p class="text-slate-400">Manage all your open slots on a sleek dashboard. Avoid double bookings and instantly push empty slots out to thousands of athletes.</p>
+                        </div>
+                    </div>
+
+                    <!-- Point 3 -->
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-white/10 backdrop-blur rounded-xl border border-white/20 flex items-center justify-center text-primary text-xl">
+                                3
+                            </div>
+                        </div>
+                        <div class="ml-6">
+                            <h3 class="text-xl font-bold text-white mb-2">Get paid securely</h3>
+                            <p class="text-slate-400">Customers pay upfront via Stripe. No more chasing down cash or cheques at the door. Withdraw earnings straight to your bank.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Owner UI Mockup Image placeholder -->
+                <div class="bg-slate-800 rounded-2xl border border-slate-700 shadow-2xl overflow-hidden hidden lg:block">
+                    <div class="bg-slate-900 border-b border-slate-700 px-4 py-3 flex items-center">
+                        <div class="flex space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div class="mx-auto text-xs text-slate-500 font-mono">owner-dashboard.gamegroundz.com</div>
+                    </div>
+                    <div class="p-6">
+                        <div class="h-8 bg-slate-700 rounded-md w-1/3 mb-6"></div>
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="h-24 bg-primary/20 border border-primary/30 rounded-xl"></div>
+                            <div class="h-24 bg-slate-700/50 rounded-xl border border-slate-700"></div>
+                            <div class="h-24 bg-slate-700/50 rounded-xl border border-slate-700"></div>
+                        </div>
+                        <div class="h-40 bg-slate-700/30 border border-slate-700 rounded-xl"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-16">
+                <a href="owner-dashboard.html" class="inline-flex bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-xl font-bold text-lg transition-custom shadow-glow hover:shadow-lg">
+                    List Your Facility <i class="fa-solid fa-arrow-right ml-2 mt-1"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-24 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-extrabold text-dark mb-12 text-center">Frequently Asked Questions</h2>
+            
+            <div class="space-y-6">
+                <!-- FAQ 1 -->
+                <div class="border border-slate-200 rounded-xl p-6 hover:shadow-md transition-custom">
+                    <h4 class="text-lg font-bold text-dark mb-2">Can I cancel a booking?</h4>
+                    <p class="text-slate-600 text-sm leading-relaxed">Yes, bookings can be cancelled up to 48 hours in advance for a full refund. Cancellations made within 48 hours may be subject to a fee depending on the facility's specific policy.</p>
+                </div>
+
+                <!-- FAQ 2 -->
+                <div class="border border-slate-200 rounded-xl p-6 hover:shadow-md transition-custom">
+                    <h4 class="text-lg font-bold text-dark mb-2">How much does it cost to list a facility?</h4>
+                    <p class="text-slate-600 text-sm leading-relaxed">It is completely free to list your facility on GameGroundz. We only take a small percentage processing fee when a successful booking is made through our platform.</p>
+                </div>
+
+                <!-- FAQ 3 -->
+                <div class="border border-slate-200 rounded-xl p-6 hover:shadow-md transition-custom">
+                    <h4 class="text-lg font-bold text-dark mb-2">Do you only support Ice Rinks?</h4>
+                    <p class="text-slate-600 text-sm leading-relaxed">While we started focusing heavily on ice arenas in Quebec, we support all types of sports surfaces including soccer fields, basketball courts, and multi-sport gyms.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-darker text-slate-400 py-12 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8 pb-8 border-b border-slate-800">
+                <div class="col-span-1 md:col-span-1">
+                    <div class="flex items-center mb-4">
+                        <i class="fa-solid fa-layer-group text-primary text-2xl mr-2"></i>
+                        <span class="font-bold text-xl text-white">GameGroundz</span>
+                    </div>
+                    <p class="text-sm">The easiest way to discover and reserve sports facilities in your area.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Platform</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="search.html" class="hover:text-primary transition-custom">Find a Surface</a></li>
+                        <li><a href="how-it-works.html" class="hover:text-primary transition-custom">How it Works</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Pricing</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Partners</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="owner-dashboard.html" class="hover:text-primary transition-custom">List your Facility</a></li>
+                        <li><a href="owner-dashboard.html" class="hover:text-primary transition-custom">Owner Dashboard</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Partner API</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Support</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-primary transition-custom">Help Center</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Terms & Privacy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row justify-between items-center text-sm">
+                <p>&copy; 2026 GameGroundz. All rights reserved.</p>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <a href="#" class="text-slate-400 hover:text-white transition-custom"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-custom"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-custom"><i class="fa-brands fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Shrink navbar on scroll
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 20) {
+                navbar.classList.add('shadow-md', 'bg-white/90');
+            } else {
+                navbar.classList.remove('shadow-md', 'bg-white/90');
+            }
+        });
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>

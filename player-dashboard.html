@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings | GameGroundz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981',
+                        primaryHover: '#059669',
+                        dark: '#0f172a',
+                        darker: '#020617',
+                        light: '#f8fafc',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 w-full z-50 bg-white border-b border-slate-200 shadow-sm">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='index.html'">
+                    <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
+                    <span class="font-bold text-2xl tracking-tight text-dark">Game<span class="text-primary">Groundz</span></span>
+                </div>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
+                    <a href="#" id="nav-logout-btn" class="text-slate-600 hover:text-red-500 font-medium transition-custom">Log out</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+        <div class="mb-8">
+            <h1 class="text-3xl font-extrabold text-dark tracking-tight mb-2">My Bookings</h1>
+            <p class="text-slate-600">View and manage your upcoming and past facility reservations.</p>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <!-- Sidebar Navigation -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sticky top-28">
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="#" class="flex items-center px-4 py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom">
+                                <i class="fa-solid fa-calendar-check w-6"></i> Bookings
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom">
+                                <i class="fa-solid fa-user w-6"></i> Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom">
+                                <i class="fa-solid fa-credit-card w-6"></i> Payment Methods
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bookings List -->
+            <div class="lg:col-span-3">
+                <div id="bookings-container" class="space-y-4">
+                    <div class="flex justify-center py-12">
+                        <i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('bookings-container');
+            
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                const response = await fetch(`${API_BASE_URL}/api/bookings/my`, {credentials: 'include'});
+                
+                if (response.status === 401) {
+                    container.innerHTML = `
+                        <div class="bg-white rounded-2xl p-8 text-center border border-slate-200">
+                            <i class="fa-solid fa-lock text-4xl text-slate-300 mb-4"></i>
+                            <h3 class="text-xl font-bold text-dark mb-2">Please log in</h3>
+                            <p class="text-slate-500 mb-6">You need to be logged in to view your bookings.</p>
+                            <a href="index.html" class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primaryHover transition-custom cursor-pointer inline-block">Go to Login</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (!response.ok) throw new Error("Failed to fetch bookings");
+                const bookings = await response.json();
+
+                if (bookings.length === 0) {
+                    container.innerHTML = `
+                        <div class="bg-white rounded-2xl p-8 text-center border border-slate-200">
+                            <i class="fa-solid fa-calendar-xmark text-4xl text-slate-300 mb-4"></i>
+                            <h3 class="text-xl font-bold text-dark mb-2">No bookings yet</h3>
+                            <p class="text-slate-500 mb-6">You haven't booked any sports surfaces yet. When you do, they will appear here.</p>
+                            <a href="search.html" class="bg-dark text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition-custom inline-block">Find a Surface</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = '';
+                bookings.forEach(booking => {
+                    // Simple formatting assuming booking_date is YYYY-MM-DD
+                    const dateObj = new Date(booking.booking_date);
+                    const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+                    
+                    // Simple total duration based on slots stored like "1,2"
+                    const slotsCount = booking.time_slots ? booking.time_slots.split(',').length : 1;
+
+                    container.innerHTML += `
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col md:flex-row gap-6 hover:shadow-md transition-custom">
+                            <div class="w-full md:w-48 h-32 rounded-xl overflow-hidden flex-shrink-0 relative">
+                                <img src="${booking.image_url}" class="w-full h-full object-cover">
+                                <div class="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded text-xs font-bold shadow-sm">
+                                    <span class="text-primary uppercase tracking-wide">${booking.status}</span>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col justify-between">
+                                <div>
+                                    <h3 class="text-xl font-bold text-dark mb-1 cursor-pointer hover:text-primary transition-custom" onclick="window.location.href='facility.html?id=${booking.facility_id}'">${booking.facility_name}</h3>
+                                    <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${booking.location}</p>
+                                    
+                                    <div class="flex flex-wrap gap-4 text-sm font-medium text-slate-700">
+                                        <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><i class="fa-regular fa-calendar mr-2 text-slate-400"></i>${formattedDate}</div>
+                                        <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><i class="fa-regular fa-clock mr-2 text-slate-400"></i>${slotsCount} Hour(s)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col justify-between items-end min-w-[120px] pt-2 md:pt-0 border-t md:border-t-0 md:border-l border-slate-100 md:pl-6">
+                                <div class="text-xl font-extrabold text-dark">$${booking.total_price ? booking.total_price.toFixed(2) : '197.00'}</div>
+                                <div class="flex flex-col gap-2 w-full mt-4 md:mt-0">
+                                    <button class="w-full text-center text-sm font-bold text-primary hover:text-primaryHover border border-primary/20 bg-primary/5 hover:bg-primary/10 py-2 rounded-lg transition-custom">Receipt</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+            } catch (error) {
+                container.innerHTML = `<div class="bg-red-50 text-red-600 p-4 rounded-xl text-center font-medium">${error.message}</div>`;
+            }
+
+            // Logout handling
+            const logoutBtn = document.getElementById('nav-logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    if(confirm("Are you sure you want to log out?")) {
+                        const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                        await fetch(`${API_BASE_URL}/api/auth/logout`, {method: 'POST', credentials: 'omit'});
+                        localStorage.removeItem('user');
+                        window.location.href = 'index.html';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
