@@ -781,7 +781,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body),
-                    credentials: 'same-origin' // Changed from omit to establish secure session
+                    credentials: 'include' // Changed from same-origin to establish secure session across ports
                 });
 
                 const data = await res.json();
@@ -845,8 +845,14 @@
                     mobileLoginBtn.textContent = `Hi, ${user.name}`;
                     mobileLoginBtn.removeEventListener('click', openAuthModal);
                 }
-                if (listBtn) listBtn.textContent = "Host Dashboard";
-                if (mobileListBtn) mobileListBtn.textContent = "Host Dashboard";
+                if (listBtn) {
+                    listBtn.textContent = user.role === 'admin' ? "Admin Dashboard" : "Host Dashboard";
+                    listBtn.href = user.role === 'admin' ? "admin-dashboard.html" : "owner-dashboard.html";
+                }
+                if (mobileListBtn) {
+                    mobileListBtn.textContent = user.role === 'admin' ? "Admin Dashboard" : "Host Dashboard";
+                    mobileListBtn.href = user.role === 'admin' ? "admin-dashboard.html" : "owner-dashboard.html";
+                }
             } else {
                 if (loginBtn) {
                     loginBtn.textContent = "Log in";

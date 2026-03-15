@@ -133,6 +133,7 @@
                 <button onclick="switchTab('facilities')" id="tab-btn-facilities" class="pb-4 font-bold text-lg border-b-2 border-primary text-primary transition-custom">My Facilities</button>
                 <button onclick="switchTab('reservations')" id="tab-btn-reservations" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Reservations</button>
                 <button onclick="switchTab('calendar')" id="tab-btn-calendar" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Calendar</button>
+                <button onclick="switchTab('discounts')" id="tab-btn-discounts" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Discounts</button>
                 <button onclick="switchTab('add-new')" id="tab-btn-add-new" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Add New Facility</button>
             </div>
 
@@ -261,6 +262,99 @@
                         </div>
                     </div>
                     <!-- /Modal -->
+                </div>
+            </div>
+
+            <!-- Tab: Discounts -->
+            <div id="tab-discounts" class="hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 relative">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-100 pb-6 gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-dark mb-2">Discount Manager</h2>
+                            <p class="text-slate-500">Create promotional discounts for specific facilities to boost bookings.</p>
+                        </div>
+                        <div class="w-full md:w-64">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Select Facility to Manage</label>
+                            <select id="discount-facility-select" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white cursor-pointer font-medium text-slate-800 shadow-sm" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;" onchange="loadFacilityDiscounts()">
+                                <option value="" disabled selected>Loading facilities...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end mb-6">
+                        <button onclick="openDiscountModal()" id="btn-create-discount" class="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg font-bold transition-custom text-sm flex items-center shadow-sm disabled:opacity-50" disabled>
+                            <i class="fa-solid fa-plus mr-2"></i> Create Discount
+                        </button>
+                    </div>
+
+                    <div id="host-discounts-list" class="space-y-4">
+                        <div class="text-center py-8 text-slate-500">
+                            <i class="fa-solid fa-tags text-4xl mb-4 text-slate-300"></i>
+                            <p class="text-lg font-medium">Select a facility to view its discounts.</p>
+                        </div>
+                    </div>
+
+                    <!-- Add Discount Modal -->
+                    <div id="discount-modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+                        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-100">
+                            <div class="bg-primary p-6 flex justify-between items-center text-white">
+                                <h3 class="font-bold text-lg flex items-center tracking-wide uppercase">
+                                    <i class="fa-solid fa-tag mr-3 text-xl"></i>
+                                    New Discount
+                                </h3>
+                                <button type="button" onclick="closeDiscountModal()" class="text-white/80 hover:text-white transition-custom w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center">
+                                    <i class="fa-solid fa-xmark text-lg"></i>
+                                </button>
+                            </div>
+                            <form id="create-discount-form" class="p-8 space-y-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Discount Type<span class="text-red-500">*</span></label>
+                                    <select id="disc-type" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white">
+                                        <option value="percentage">Percentage (%)</option>
+                                        <option value="fixed_amount">Fixed Amount ($)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Discount Value<span class="text-red-500">*</span></label>
+                                    <input type="number" id="disc-value" required min="1" step="0.01" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none shadow-sm" placeholder="e.g. 20">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Start Date</label>
+                                        <input type="date" id="disc-start" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">End Date</label>
+                                        <input type="date" id="disc-end" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none shadow-sm">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Recurring Day</label>
+                                    <select id="disc-recurring" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white">
+                                        <option value="">None (One-time or Date Range)</option>
+                                        <option value="0">Sunday</option>
+                                        <option value="1">Monday</option>
+                                        <option value="2">Tuesday</option>
+                                        <option value="3">Wednesday</option>
+                                        <option value="4">Thursday</option>
+                                        <option value="5">Friday</option>
+                                        <option value="6">Saturday</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center mt-2">
+                                    <input type="checkbox" id="disc-last-minute" class="w-5 h-5 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary">
+                                    <label class="ml-3 text-sm font-semibold text-slate-700">Last-Minute Discount (within 24h)</label>
+                                </div>
+                                <div class="pt-4 border-t border-slate-100 flex justify-end gap-3 items-center">
+                                    <button type="button" onclick="closeDiscountModal()" class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-custom font-medium shadow-sm bg-white">Cancel</button>
+                                    <button type="submit" id="disc-submit-btn" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-bold transition-custom shadow-md">
+                                        Save Discount
+                                    </button>
+                                </div>
+                                <div id="disc-error" class="hidden text-red-500 text-sm font-medium bg-red-50 p-3 rounded-xl border border-red-100 mt-2"></div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -503,6 +597,16 @@
                         </label>
                         <p class="text-xs text-slate-400 mt-1 ml-8">Enable players to book without manual approval.</p>
                     </div>
+
+                    <div id="listing-status-container" class="hidden flex-col justify-end pt-4 border-t border-slate-100 mt-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Listing Visibility Status</label>
+                        <select id="fac-listing-status" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
+                            <option value="pending">Active / Pending Approval</option>
+                            <option value="paused">Paused (Temporarily disabled)</option>
+                            <option value="hidden">Hidden (Not visible to public)</option>
+                        </select>
+                        <p class="text-xs text-slate-500 mt-2">Pause your listing if you are temporarily closed or need a break. Hidden removes it from search.</p>
+                    </div>
                 </div>
 
                 <!-- Media -->
@@ -545,27 +649,28 @@
     </main>
 
     <script>
-        // Tab Navigation Logic
         function switchTab(tabId) {
             // Hide all tabs
             document.getElementById('tab-facilities').classList.add('hidden');
             document.getElementById('tab-reservations').classList.add('hidden');
             document.getElementById('tab-calendar').classList.add('hidden');
             document.getElementById('tab-add-new').classList.add('hidden');
+            const discTab = document.getElementById('tab-discounts');
+            if(discTab) discTab.classList.add('hidden');
             
             // Show selected tab
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
 
             // Reset tab button styles
-            const btns = ['facilities', 'reservations', 'calendar', 'add-new'];
+            const btns = ['facilities', 'reservations', 'calendar', 'add-new', 'discounts'];
             btns.forEach(btn => {
                 const el = document.getElementById(`tab-btn-${btn}`);
-                el.className = 'pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom';
+                if(el) el.className = 'pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom';
             });
 
             // Active button styles
             const activeBtn = document.getElementById(`tab-btn-${tabId}`);
-            activeBtn.className = 'pb-4 font-bold text-lg border-b-2 border-primary text-primary transition-custom';
+            if(activeBtn) activeBtn.className = 'pb-4 font-bold text-lg border-b-2 border-primary text-primary transition-custom';
         }
 
         // Fetch Host Data Overview
@@ -577,7 +682,7 @@
                 const facRes = await fetch(`${API_BASE_URL}/api/host/facilities`, { credentials: 'include' });
                 if (facRes.status === 401) {
                     localStorage.removeItem('gg_user');
-                    window.location.href = 'login.html';
+                    window.location.href = 'index.html';
                     return;
                 }
                 if (!facRes.ok) throw new Error("Failed to fetch facilities");
@@ -589,7 +694,7 @@
                 const bookRes = await fetch(`${API_BASE_URL}/api/host/bookings`, { credentials: 'include' });
                 if (bookRes.status === 401) {
                     localStorage.removeItem('gg_user');
-                    window.location.href = 'login.html';
+                    window.location.href = 'index.html';
                     return;
                 }
                 if (!bookRes.ok) throw new Error("Failed to fetch bookings");
@@ -641,22 +746,40 @@
 
             // Populate Calendar form select
             const selectEl = document.getElementById('calendar-facility-select');
+            const discSelectEl = document.getElementById('discount-facility-select');
             const prevVal = selectEl.value;
+            const prevDiscVal = discSelectEl ? discSelectEl.value : '';
             
             selectEl.innerHTML = '<option value="" disabled selected>Choose a facility</option>';
+            if(discSelectEl) discSelectEl.innerHTML = '<option value="" disabled selected>Choose a facility</option>';
+
             facilities.forEach(fac => {
                 selectEl.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
+                if(discSelectEl) discSelectEl.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
             });
 
             if (prevVal) {
                 selectEl.value = prevVal;
             }
+            if (prevDiscVal && discSelectEl) {
+                discSelectEl.value = prevDiscVal;
+            }
 
             // Initialize calendar if not already initialized
-            if (facilities.length > 0 && !currentCalendar && !selectEl.value) {
-                selectEl.value = facilities[0].id; // auto select first
-                if (!document.getElementById('tab-calendar').classList.contains('hidden')) {
-                    initCalendar(facilities[0].id);
+            if (facilities.length > 0) {
+                if(!selectEl.value && !currentCalendar) {
+                    selectEl.value = facilities[0].id; // auto select first
+                    if (!document.getElementById('tab-calendar').classList.contains('hidden')) {
+                        initCalendar(facilities[0].id);
+                    }
+                }
+                
+                // Also default select first facility for discounts
+                if(discSelectEl && !discSelectEl.value) {
+                    discSelectEl.value = facilities[0].id;
+                    if (!document.getElementById('tab-discounts').classList.contains('hidden')) {
+                        loadFacilityDiscounts();
+                    }
                 }
             }
         }
@@ -694,6 +817,10 @@
                 rulesContainer.innerHTML = '';
                 if (typeof createRuleRow === 'function') createRuleRow();
             }
+
+            // Hide listing status container on "Add New"
+            document.getElementById('listing-status-container').classList.add('hidden');
+            document.getElementById('fac-listing-status').value = 'pending';
 
             // Return to facilities view mode
             switchTab('facilities');
@@ -743,6 +870,17 @@
             document.getElementById('fac-location').value = facility.location || '';
             document.getElementById('fac-image-url').value = facility.image_url || '';
             document.getElementById('fac-instant').checked = facility.is_instant_book == 1;
+
+            const statusContainer = document.getElementById('listing-status-container');
+            if (statusContainer) {
+                statusContainer.classList.remove('hidden');
+                statusContainer.classList.add('flex');
+            }
+            if (facility.listing_status) {
+                document.getElementById('fac-listing-status').value = facility.listing_status;
+            } else {
+                document.getElementById('fac-listing-status').value = 'pending';
+            }
 
             if (facility.operating_hours) {
                 let parsedHours = facility.operating_hours;
@@ -1083,7 +1221,7 @@
 
                 if (response.status === 401) {
                     localStorage.removeItem('gg_user');
-                    window.location.href = 'login.html';
+                    window.location.href = 'index.html';
                     return;
                 }
 
@@ -1437,7 +1575,8 @@
                 pricing_rules: pricingRules,
                 image_url: document.getElementById('fac-image-url').value,
                 is_instant_book: document.getElementById('fac-instant').checked ? 1 : 0,
-                operating_hours: operating_hours
+                operating_hours: operating_hours,
+                listing_status: document.getElementById('fac-listing-status').value
             };
 
             try {
@@ -1456,7 +1595,7 @@
                 
                 if (res.status === 401) {
                     localStorage.removeItem('gg_user');
-                    window.location.href = 'login.html';
+                    window.location.href = 'index.html';
                     return;
                 }
 
@@ -1492,6 +1631,133 @@
                 btn.classList.remove('opacity-80', 'cursor-not-allowed');
             }
         });
+
+        // --- DISCOUNTS LOGIC ---
+        function loadFacilityDiscounts() {
+            const facId = document.getElementById('discount-facility-select').value;
+            if (!facId) return;
+
+            const btn = document.getElementById('btn-create-discount');
+            if(btn) btn.disabled = false;
+
+            const container = document.getElementById('host-discounts-list');
+            container.innerHTML = `<div class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><p>Loading discounts...</p></div>`;
+
+            const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+            fetch(`${API_BASE_URL}/api/host/discounts/${facId}`, { credentials: 'include' })
+                .then(res => {
+                    if (res.status === 401) window.location.href = 'index.html';
+                    return res.json();
+                })
+                .then(discounts => {
+                    if (discounts.length === 0) {
+                        container.innerHTML = `<div class="text-center py-8 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
+                            <i class="fa-solid fa-tag text-4xl mb-4 text-slate-300"></i>
+                            <p class="text-lg font-medium">No active discounts.</p>
+                            <p class="text-sm">Create one to boost your bookings!</p>
+                        </div>`;
+                        return;
+                    }
+                    container.innerHTML = '';
+                    discounts.forEach(d => {
+                        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                        let desc = '';
+                        if (d.is_last_minute) desc += '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-bold mr-2"><i class="fa-solid fa-clock-rotate-left mr-1"></i>Last-Minute</span> ';
+                        if (d.recurring_day !== null && d.recurring_day !== '') desc += `Every ${days[d.recurring_day]}`;
+                        else if (d.start_date && d.end_date) desc += `From ${d.start_date} to ${d.end_date}`;
+                        else desc += 'Always active';
+
+                        container.innerHTML += `
+                            <div class="flex items-center justify-between border border-slate-200 bg-white rounded-2xl p-4 transition-custom shadow-sm hover:shadow-md">
+                                <div>
+                                    <h4 class="font-bold text-dark text-lg">${d.discount_type === 'percentage' ? d.value + '%' : '$' + d.value} OFF</h4>
+                                    <div class="text-sm text-slate-500 mt-1">${desc}</div>
+                                </div>
+                                <button onclick="deleteDiscount(${d.id})" class="text-red-500 hover:text-red-700 w-10 h-10 rounded-full hover:bg-red-50 flex items-center justify-center transition-custom" title="Delete Discount">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        `;
+                    });
+                })
+                .catch(err => {
+                    container.innerHTML = `<p class="text-red-500 p-4 font-semibold">Error loading discounts: ${err.message}</p>`;
+                });
+        }
+
+        function openDiscountModal() {
+            document.getElementById('create-discount-form').reset();
+            document.getElementById('disc-error').classList.add('hidden');
+            document.getElementById('discount-modal-backdrop').classList.remove('hidden');
+        }
+
+        function closeDiscountModal() {
+            document.getElementById('discount-modal-backdrop').classList.add('hidden');
+        }
+
+        const discForm = document.getElementById('create-discount-form');
+        if (discForm) {
+            discForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('disc-submit-btn');
+                const errorDiv = document.getElementById('disc-error');
+                const facId = document.getElementById('discount-facility-select').value;
+                
+                errorDiv.classList.add('hidden');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving...';
+                btn.disabled = true;
+
+                const payload = {
+                    facility_id: parseInt(facId, 10),
+                    discount_type: document.getElementById('disc-type').value,
+                    value: parseFloat(document.getElementById('disc-value').value),
+                    start_date: document.getElementById('disc-start').value || null,
+                    end_date: document.getElementById('disc-end').value || null,
+                    recurring_day: document.getElementById('disc-recurring').value ? parseInt(document.getElementById('disc-recurring').value, 10) : null,
+                    is_last_minute: document.getElementById('disc-last-minute').checked ? 1 : 0
+                };
+
+                try {
+                    const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                    const res = await fetch(`${API_BASE_URL}/api/host/discounts`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        credentials: 'include'
+                    });
+                    
+                    if (res.status === 401) {
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Failed to create discount');
+                    
+                    closeDiscountModal();
+                    loadFacilityDiscounts();
+                    
+                } catch (err) {
+                    errorDiv.textContent = err.message;
+                    errorDiv.classList.remove('hidden');
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        async function deleteDiscount(id) {
+            if(!confirm("Are you sure you want to delete this discount?")) return;
+            const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/host/discounts/${id}`, { method: 'DELETE', credentials: 'include' });
+                if (res.ok) loadFacilityDiscounts();
+                else alert("Failed to delete discount.");
+            } catch(e) {
+                alert(e.message);
+            }
+        }
     </script>
 </body>
 </html>
