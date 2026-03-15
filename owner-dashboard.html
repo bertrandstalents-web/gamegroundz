@@ -29,6 +29,38 @@
     </script>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- FullCalendar JS and CSS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+    <style>
+        /* Custom FullCalendar Overrides to match GameGroundz styling */
+        .fc { font-family: 'Outfit', sans-serif; }
+        .fc-theme-standard .fc-scrollgrid { border-color: #e2e8f0; border-radius: 12px; overflow: hidden; }
+        .fc-theme-standard th { border-color: #e2e8f0; background-color: #f8fafc; padding: 12px 0; border-bottom-width: 2px !important;}
+        .fc-theme-standard td { border-color: #e2e8f0; }
+        .fc-col-header-cell-cushion { color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em; }
+        .fc-timegrid-slot-label-cushion { color: #64748b; font-size: 0.8rem; font-weight: 500; }
+        .fc-day-today { background-color: #f0fdf4 !important; } /* Light primary background for today */
+        
+        /* Event Styling */
+        .fc-event { border: none !important; border-radius: 6px !important; padding: 2px 4px !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .fc-event:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .fc-event-main { font-weight: 600; font-size: 0.85rem; line-height: 1.2; }
+        
+        /* Booking Types */
+        .g-event-online { background-color: #10b981 !important; color: white !important; } /* Primary Green */
+        .g-event-manual { background-color: #3b82f6 !important; color: white !important; } /* Blue (like the screenshot) */
+        
+        /* Toolbar */
+        .fc-toolbar-title { font-weight: 800 !important; color: #0f172a !important; font-size: 1.5rem !important;}
+        .fc-button-primary { background-color: #10b981 !important; border-color: #10b981 !important; font-weight: 600 !important; text-transform: capitalize !important; border-radius: 8px !important; padding: 8px 16px !important;}
+        .fc-button-primary:hover { background-color: #059669 !important; border-color: #059669 !important; }
+        .fc-button-active { background-color: #047857 !important; border-color: #047857 !important; }
+        .fc .fc-button-group > .fc-button { border-radius: 8px !important; margin: 0 2px; }
+        
+        /* Interaction */
+        .fc-highlight { background: rgba(16, 185, 129, 0.2) !important; } /* Primary light highlight */
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
 
@@ -52,12 +84,190 @@
     <!-- Main Content -->
     <main class="flex-1 max-w-[800px] mx-auto w-full px-4 py-12">
         <div class="mb-8 text-center">
-            <h1 class="text-3xl font-extrabold text-dark tracking-tight mb-2">List your sports facility</h1>
-            <p class="text-slate-500 text-lg">Earn money by renting your unused hours to local athletes.</p>
+            <h1 class="text-3xl font-extrabold text-dark tracking-tight mb-2">Host Dashboard</h1>
+            <p class="text-slate-500 text-lg">Manage your facilities and upcoming reservations.</p>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
-            <form id="add-facility-form" class="space-y-8">
+        <!-- Auth Guard Message (Hidden by default) -->
+        <div id="auth-guard-message" class="hidden bg-white rounded-3xl shadow-sm border border-slate-200 p-12 text-center max-w-2xl mx-auto">
+            <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary text-4xl mx-auto mb-6">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-dark mb-4">You must be logged in</h2>
+            <p class="text-slate-500 mb-8 text-lg">To ensure the safety and quality of our platform, we require all facility owners to have a registered account before listing a space.</p>
+            <a href="index.html" class="inline-flex items-center bg-primary hover:bg-primaryHover text-white px-8 py-3.5 rounded-xl font-bold transition-custom shadow-glow text-lg">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Go back to Login / Sign up
+            </a>
+        </div>
+
+        <div id="dashboard-content" class="hidden">
+            <!-- Live Revenue Dashboard -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-dark mb-4">Live Revenue Dashboard</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Today's Revenue -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                        <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Today's Revenue</span>
+                        <span class="text-3xl font-extrabold text-dark">$0</span>
+                    </div>
+                    <!-- This Week's Revenue -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                        <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Week's Revenue</span>
+                        <span class="text-3xl font-extrabold text-dark">$0</span>
+                    </div>
+                    <!-- This Month's Revenue -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                        <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Month's Revenue</span>
+                        <span class="text-3xl font-extrabold text-dark">$0</span>
+                    </div>
+                    <!-- Bookings Today -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                        <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Bookings Today</span>
+                        <span class="text-3xl font-extrabold text-dark">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="flex border-b border-slate-200 mb-8 space-x-8">
+                <button onclick="switchTab('facilities')" id="tab-btn-facilities" class="pb-4 font-bold text-lg border-b-2 border-primary text-primary transition-custom">My Facilities</button>
+                <button onclick="switchTab('reservations')" id="tab-btn-reservations" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Reservations</button>
+                <button onclick="switchTab('calendar')" id="tab-btn-calendar" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Calendar</button>
+                <button onclick="switchTab('add-new')" id="tab-btn-add-new" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Add New Facility</button>
+            </div>
+
+            <!-- Tab: My Facilities -->
+            <div id="tab-facilities" class="block">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-dark">My Facilities</h2>
+                        <button onclick="switchTab('add-new')" class="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg font-bold transition-custom text-sm">
+                            <i class="fa-solid fa-plus mr-1"></i> Add Facility
+                        </button>
+                    </div>
+                    <div id="host-facilities-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="text-center py-8 text-slate-500 col-span-full">
+                            <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p>Loading facilities...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Reservations -->
+            <div id="tab-reservations" class="hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+                    <h2 class="text-2xl font-bold text-dark mb-6">Upcoming Reservations</h2>
+                    <div id="host-reservations-list" class="space-y-4">
+                        <div class="text-center py-8 text-slate-500">
+                            <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p>Loading reservations...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Calendar -->
+            <div id="tab-calendar" class="hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 relative">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-100 pb-6 gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-dark mb-2">Calendar Manager</h2>
+                            <p class="text-slate-500">Click and drag on the calendar to block out offline rentals (e.g., City Leagues).</p>
+                        </div>
+                        <div class="w-full md:w-64">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Select Facility to Manage</label>
+                            <select id="calendar-facility-select" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white appearance-none cursor-pointer font-medium text-slate-800 shadow-sm" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;">
+                                <!-- Populated dynamically -->
+                                <option value="" disabled selected>Loading facilities...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- The Interactive Calendar -->
+                    <div id="calendar" class="min-h-[600px] mt-4"></div>
+
+                    <!-- Add Event Modal Overlay (AllBooked Style) -->
+                    <div id="event-modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+                        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-100">
+                            
+                            <!-- Green Header like Allbooked -->
+                            <div class="bg-primary p-6 flex justify-between items-center text-white">
+                                <h3 class="font-bold text-lg flex items-center tracking-wide uppercase">
+                                    <i class="fa-regular fa-calendar-plus mr-3 text-xl"></i>
+                                    New Booking
+                                </h3>
+                                <button type="button" onclick="closeEventModal()" class="text-white/80 hover:text-white transition-custom w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center">
+                                    <i class="fa-solid fa-xmark text-lg"></i>
+                                </button>
+                            </div>
+                            
+                            <form id="block-time-interactive-form" class="p-8 space-y-6">
+                                
+                                <input type="hidden" id="modal-facility-id">
+                                <input type="hidden" id="modal-date-val">
+
+                                <!-- Date & Time Display -->
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Date<span class="text-red-500">*</span></label>
+                                        <div id="modal-date-display" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-700 font-medium cursor-not-allowed"></div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Time<span class="text-red-500">*</span></label>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm font-bold text-slate-500">From</span>
+                                            <select id="modal-start-time" class="flex-1 px-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;">
+                                                <!-- Populated by JS -->
+                                            </select>
+                                            <span class="text-sm font-bold text-slate-500 mx-1">to</span>
+                                            <select id="modal-end-time" class="flex-1 px-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;">
+                                                <!-- Populated by JS -->
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Spaces / Facility -->
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Spaces<span class="text-red-500">*</span></label>
+                                    <div class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-700 font-medium flex items-center cursor-not-allowed">
+                                        <i class="fa-solid fa-grip mr-3 text-slate-400"></i>
+                                        <span id="modal-facility-display" class="flex-1"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Booking Title -->
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Booking Title<span class="text-red-500">*</span></label>
+                                    <input type="text" id="modal-block-notes" required placeholder="e.g. Private Lesson" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
+                                </div>
+
+                                <div class="pt-4 border-t border-slate-100 flex justify-end gap-3 items-center">
+                                    <!-- Price Display Mimicking Screenshot -->
+                                    <div class="flex-1">
+                                         <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Booking Price</div>
+                                         <div class="text-xl font-bold text-slate-800">Offline</div>
+                                    </div>
+                                    
+                                    <button type="button" onclick="closeEventModal()" class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-custom font-medium shadow-sm bg-white">Cancel booking</button>
+                                    <button type="submit" id="modal-submit-btn" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-bold transition-custom shadow-md flex items-center justify-center">
+                                        Confirm booking
+                                    </button>
+                                </div>
+                                <div id="modal-block-error" class="hidden text-red-500 text-sm font-medium bg-red-50 p-3 rounded-xl border border-red-100 mt-2"></div>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- /Modal -->
+                </div>
+            </div>
+
+            <!-- Tab: Add New Facility (Original Form) -->
+            <div id="tab-add-new" class="hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+                    <form id="add-facility-form" class="space-y-8">
                 
                 <!-- Facility Basics -->
                 <div>
@@ -238,9 +448,40 @@
                     </div>
                 </div>
 
+                <!-- Operating Hours -->
+                <div>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">5. Operating Hours</h2>
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Standard Daily Hours</label>
+                        <p class="text-xs text-slate-500 mb-4">Set the earliest time players can book and the latest time your facility closes.</p>
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Open Time</label>
+                                <select id="fac-open-time" class="w-full px-3 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;">
+                                    <option value="05:00">5:00 AM</option>
+                                    <option value="06:00" selected>6:00 AM</option>
+                                    <option value="07:00">7:00 AM</option>
+                                    <option value="08:00">8:00 AM</option>
+                                    <option value="09:00">9:00 AM</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Close Time</label>
+                                <select id="fac-close-time" class="w-full px-3 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;">
+                                    <option value="20:00">8:00 PM</option>
+                                    <option value="21:00">9:00 PM</option>
+                                    <option value="22:00">10:00 PM</option>
+                                    <option value="23:00" selected>11:00 PM</option>
+                                    <option value="24:00">Midnight</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Pricing & Booking -->
                 <div>
-                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">5. Pricing & Booking</h2>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">6. Pricing & Booking</h2>
                     
                     <div class="mb-4">
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Rules</label>
@@ -293,16 +534,614 @@
                 </div>
 
                 <div class="pt-4 border-t border-slate-100 flex justify-end">
-                    <button type="button" class="text-slate-500 hover:text-dark font-medium px-6 py-3 mr-2 transition-custom" onclick="window.history.back()">Cancel</button>
+                    <button type="button" id="cancel-btn" class="text-slate-500 hover:text-dark font-medium px-6 py-3 mr-2 transition-custom" onclick="window.history.back()">Cancel</button>
                     <button type="submit" id="submit-btn" class="bg-primary hover:bg-primaryHover text-white px-8 py-3 rounded-xl font-bold transition-custom shadow-glow flex items-center">
                         <i class="fa-solid fa-plus mr-2"></i> Create Listing
                     </button>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </main>
 
     <script>
+        // Tab Navigation Logic
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.getElementById('tab-facilities').classList.add('hidden');
+            document.getElementById('tab-reservations').classList.add('hidden');
+            document.getElementById('tab-calendar').classList.add('hidden');
+            document.getElementById('tab-add-new').classList.add('hidden');
+            
+            // Show selected tab
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            // Reset tab button styles
+            const btns = ['facilities', 'reservations', 'calendar', 'add-new'];
+            btns.forEach(btn => {
+                const el = document.getElementById(`tab-btn-${btn}`);
+                el.className = 'pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom';
+            });
+
+            // Active button styles
+            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+            activeBtn.className = 'pb-4 font-bold text-lg border-b-2 border-primary text-primary transition-custom';
+        }
+
+        // Fetch Host Data Overview
+        async function loadHostData() {
+            const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+            
+            try {
+                // Fetch Facilities
+                const facRes = await fetch(`${API_BASE_URL}/api/host/facilities`, { credentials: 'include' });
+                if (facRes.status === 401) {
+                    localStorage.removeItem('gg_user');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                if (!facRes.ok) throw new Error("Failed to fetch facilities");
+                const facilities = await facRes.json();
+                ownerFacilities = facilities; // Save globally for the edit button handler
+                renderFacilities(facilities);
+
+                // Fetch Bookings
+                const bookRes = await fetch(`${API_BASE_URL}/api/host/bookings`, { credentials: 'include' });
+                if (bookRes.status === 401) {
+                    localStorage.removeItem('gg_user');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                if (!bookRes.ok) throw new Error("Failed to fetch bookings");
+                const bookings = await bookRes.json();
+                renderBookings(bookings);
+
+            } catch (error) {
+                console.error("Error loading host data:", error);
+                document.getElementById('host-facilities-list').innerHTML = `<p class="text-red-500 font-medium">Error loading facilities. Please refresh the page.</p>`;
+                document.getElementById('host-reservations-list').innerHTML = `<p class="text-red-500 font-medium">Error loading reservations.</p>`;
+            }
+        }
+
+        function renderFacilities(facilities) {
+            const container = document.getElementById('host-facilities-list');
+            container.innerHTML = '';
+
+            if (facilities.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-500 col-span-full bg-slate-50 rounded-2xl border border-slate-200">
+                        <i class="fa-solid fa-house-chimney text-4xl mb-4 text-slate-300"></i>
+                        <p class="text-lg font-medium">You haven't listed any facilities yet.</p>
+                        <button onclick="switchTab('add-new')" class="mt-4 text-primary font-bold hover:underline">Create your first listing</button>
+                    </div>`;
+                return;
+            }
+
+            facilities.forEach(fac => {
+                container.innerHTML += `
+                    <div class="flex flex-col border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-custom bg-white">
+                        <div class="h-40 w-full overflow-hidden relative">
+                            <img src="${fac.image_url}" alt="${fac.name}" class="w-full h-full object-cover">
+                            ${fac.is_instant_book ? '<span class="absolute top-3 left-3 bg-white text-primary text-xs font-bold px-2 py-1 rounded-md shadow-sm"><i class="fa-solid fa-bolt text-yellow-500 mr-1"></i> Instant Book</span>' : ''}
+                        </div>
+                        <div class="p-4 flex flex-col flex-1">
+                            <h3 class="font-bold text-lg text-dark mb-1 truncate">${fac.name}</h3>
+                            <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${fac.location.split(',')[0]}</p>
+                            <div class="mt-auto flex justify-between items-center pt-3 border-t border-slate-100">
+                                <span class="font-semibold text-dark">$${fac.base_price}<span class="text-xs text-slate-500 font-normal">/hr</span></span>
+                                <div>
+                                    <button data-fac-id="${fac.id}" onclick="handleEditClick(this)" class="text-slate-500 text-sm font-bold hover:text-dark mr-3 transition-custom">Edit</button>
+                                    <a href="facility.html?id=${fac.id}" class="text-primary text-sm font-bold hover:underline">View Listing</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Populate Calendar form select
+            const selectEl = document.getElementById('calendar-facility-select');
+            const prevVal = selectEl.value;
+            
+            selectEl.innerHTML = '<option value="" disabled selected>Choose a facility</option>';
+            facilities.forEach(fac => {
+                selectEl.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
+            });
+
+            if (prevVal) {
+                selectEl.value = prevVal;
+            }
+
+            // Initialize calendar if not already initialized
+            if (facilities.length > 0 && !currentCalendar && !selectEl.value) {
+                selectEl.value = facilities[0].id; // auto select first
+                if (!document.getElementById('tab-calendar').classList.contains('hidden')) {
+                    initCalendar(facilities[0].id);
+                }
+            }
+        }
+
+        function cancelEditModal() {
+            // Reset tab and headers
+            document.querySelector('#tab-btn-add-new').textContent = 'Add New Facility';
+            document.querySelector('#tab-add-new h2').textContent = '1. The Basics';
+            document.getElementById('submit-btn').innerHTML = '<i class="fa-solid fa-plus mr-2"></i> Create Listing';
+            
+            // Reset cancel button
+            const cancelBtn = document.getElementById('cancel-btn');
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.onclick = () => window.history.back();
+
+            // Clear edit ID and form
+            const idField = document.getElementById('edit-facility-id');
+            if (idField) idField.value = '';
+            document.getElementById('add-facility-form').reset();
+
+            // Reset amenities and counters
+            document.querySelectorAll('.amenity-card').forEach(card => {
+                card.classList.remove('border-slate-800', 'bg-slate-50');
+                card.classList.add('border-slate-200');
+            });
+            document.getElementById('fac-locker-rooms').textContent = '0';
+            document.getElementById('fac-capacity').textContent = '0';
+
+            // Clear dynamic containers
+            const featuresContainer = document.getElementById('features-container');
+            if (featuresContainer) featuresContainer.innerHTML = '';
+            
+            const rulesContainer = document.getElementById('pricing-rules-container');
+            if (rulesContainer) {
+                rulesContainer.innerHTML = '';
+                if (typeof createRuleRow === 'function') createRuleRow();
+            }
+
+            // Return to facilities view mode
+            switchTab('facilities');
+        }
+
+        // Helper to safely pass facility data to the edit modal without HTML string escaping issues
+        function handleEditClick(btn) {
+            const facId = btn.getAttribute('data-fac-id');
+            const facility = ownerFacilities.find(f => f.id == facId);
+            if (facility) {
+                openEditModal(facility);
+            }
+        }
+
+        function openEditModal(facility) {
+            // Switch to the form tab
+            switchTab('add-new');
+            
+            // Change title and button text for editing
+            document.querySelector('#tab-btn-add-new').innerHTML = '<i class="fa-solid fa-pen mr-2"></i>Edit Facility';
+            document.querySelector('#tab-add-new h2').textContent = 'Edit Facility';
+            document.getElementById('submit-btn').innerHTML = '<i class="fa-solid fa-save mr-2"></i> Save Changes';
+            
+            const cancelBtn = document.getElementById('cancel-btn');
+            cancelBtn.textContent = 'Cancel Editing';
+            cancelBtn.onclick = cancelEditModal;
+
+            // Ensure the hidden ID field exists and set it
+            let idField = document.getElementById('edit-facility-id');
+            if (!idField) {
+                idField = document.createElement('input');
+                idField.type = 'hidden';
+                idField.id = 'edit-facility-id';
+                document.getElementById('add-facility-form').appendChild(idField);
+            }
+            idField.value = facility.id;
+
+            // Populate text/select fields
+            document.getElementById('fac-name').value = facility.name || '';
+            document.getElementById('fac-subtitle').value = facility.subtitle || '';
+            document.getElementById('fac-description').value = facility.description || '';
+            document.getElementById('fac-locker-rooms').textContent = facility.locker_rooms || 0;
+            document.getElementById('fac-capacity').textContent = facility.capacity || 0;
+            document.getElementById('fac-size').value = facility.size_info || '';
+            document.getElementById('fac-type').value = facility.type || 'ice';
+            document.getElementById('fac-env').value = facility.environment || 'indoor';
+            document.getElementById('fac-location').value = facility.location || '';
+            document.getElementById('fac-image-url').value = facility.image_url || '';
+            document.getElementById('fac-instant').checked = facility.is_instant_book == 1;
+
+            if (facility.operating_hours) {
+                let parsedHours = facility.operating_hours;
+                if (typeof parsedHours === 'string') {
+                     try { parsedHours = JSON.parse(parsedHours); } catch(e){}
+                }
+                if (parsedHours && parsedHours.open) document.getElementById('fac-open-time').value = parsedHours.open;
+                if (parsedHours && parsedHours.close) document.getElementById('fac-close-time').value = parsedHours.close;
+            }
+
+            // Populate amenities
+            document.querySelectorAll('.amenity-card').forEach(card => {
+                card.classList.remove('border-slate-800', 'bg-slate-50');
+                card.classList.add('border-slate-200');
+            });
+            if (facility.amenities) {
+                let parsedAmens = facility.amenities;
+                if (typeof parsedAmens === 'string') {
+                    try { parsedAmens = JSON.parse(parsedAmens); } catch(e){}
+                }
+                if (Array.isArray(parsedAmens)) {
+                    parsedAmens.forEach(am => {
+                        const card = document.querySelector(`.amenity-card[data-amenity="${am}"]`);
+                        if (card) {
+                            card.classList.add('border-slate-800', 'bg-slate-50');
+                            card.classList.remove('border-slate-200');
+                        }
+                    });
+                }
+            }
+
+            // Populate features
+            const featuresContainer = document.getElementById('features-container');
+            featuresContainer.innerHTML = ''; // clear existing
+            if (facility.features) {
+                let parsedFeatures = facility.features;
+                if (typeof parsedFeatures === 'string') {
+                     try { parsedFeatures = JSON.parse(parsedFeatures); } catch(e){}
+                }
+                if (Array.isArray(parsedFeatures)) {
+                    parsedFeatures.forEach(f => {
+                         createFeatureRow(f.title, f.description);
+                    });
+                }
+            }
+
+            // Populate pricing rules
+            const rulesContainer = document.getElementById('pricing-rules-container');
+            rulesContainer.innerHTML = ''; // clear existing
+            if (facility.pricing_rules) {
+                let parsedRules = facility.pricing_rules;
+                if (typeof parsedRules === 'string') {
+                     try { parsedRules = JSON.parse(parsedRules); } catch(e){}
+                }
+                if (Array.isArray(parsedRules) && parsedRules.length > 0) {
+                    parsedRules.forEach(r => {
+                         createRuleRow(r.start, r.end, r.price);
+                    });
+                } else {
+                    createRuleRow(); // default empty if none
+                }
+            } else {
+                createRuleRow(); // default empty
+            }
+        }
+
+
+        function renderBookings(bookings) {
+            allBookingsCache = bookings; // Save to global cache for calendar filtering
+
+            const container = document.getElementById('host-reservations-list');
+            container.innerHTML = '';
+
+            if (bookings.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
+                        <i class="fa-regular fa-calendar-xmark text-4xl mb-4 text-slate-300"></i>
+                        <p class="text-lg font-medium">No upcoming reservations.</p>
+                        <p class="text-sm">When players book your facilities, they will appear here.</p>
+                    </div>`;
+                return;
+            }
+
+            bookings.forEach(booking => {
+                const isManual = booking.booking_type === 'manual';
+                
+                let iconBlock = isManual ? 
+                    `<div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 text-xl flex-shrink-0"><i class="fa-solid fa-calendar-xmark"></i></div>` :
+                    `<div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary text-xl flex-shrink-0"><i class="fa-solid fa-calendar-check"></i></div>`;
+                
+                let detailBlock = isManual ? 
+                    `<h4 class="font-bold text-slate-700">${booking.facility_name}</h4><p class="text-sm text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Blocked: ${booking.manual_notes}</p>` :
+                    `<h4 class="font-bold text-dark">${booking.facility_name}</h4><p class="text-sm text-slate-500"><i class="fa-regular fa-user mr-1"></i> ${booking.player_name || 'Guest'} (${booking.player_email || ''})</p>`;
+                    
+                let priceBlock = isManual ? 
+                    `<div class="text-sm font-bold text-slate-400">Offline</div>` :
+                    `<div class="text-lg font-bold text-primary">$${booking.total_price}</div>`;
+
+                container.innerHTML += `
+                    <div class="flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white'} rounded-2xl p-4 transition-custom flex-wrap gap-4">
+                        <div class="flex items-center gap-4">
+                            ${iconBlock}
+                            <div>
+                                ${detailBlock}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-dark">${booking.booking_date}</div>
+                            <div class="text-sm font-medium text-slate-600">${JSON.parse(booking.time_slots).join(', ')}</div>
+                        </div>
+                        <div class="text-right flex-shrink-0 min-w-[80px]">
+                            ${priceBlock}
+                            <span class="${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'} text-xs px-2 py-0.5 rounded-full font-bold capitalize">
+                                ${booking.status}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Re-render calendar to reflect new bookings if it's currently active
+            if (currentCalendar) {
+                const activeFacilityId = document.getElementById('calendar-facility-select').value;
+                if (activeFacilityId) {
+                    initCalendar(activeFacilityId);
+                }
+            }
+        }
+
+        
+
+        // --- FULLCALENDAR LOGIC ---
+        let currentCalendar = null;
+        let allBookingsCache = [];
+
+        function initCalendar(facilityId) {
+            const calendarEl = document.getElementById('calendar');
+            if (currentCalendar) {
+                currentCalendar.destroy();
+            }
+
+            // Filter bookings for this facility
+            const facilityBookings = allBookingsCache.filter(b => b.facility_id === parseInt(facilityId, 10));
+            
+            // Transform GameGroundz bookings to FullCalendar Events
+            const calendarEvents = [];
+            facilityBookings.forEach(b => {
+                const slots = JSON.parse(b.time_slots);
+                
+                // Group contiguous slots (e.g. 18:00, 18:30, 19:00 -> start 18:00, end 19:30)
+                if(slots.length === 0) return;
+                slots.sort(); // ensure chronological
+                
+                const startTime = slots[0];
+                // End time is 30 mins after the last slot
+                const lastSlotParts = slots[slots.length - 1].split(':');
+                let endH = parseInt(lastSlotParts[0]);
+                let endM = parseInt(lastSlotParts[1]) + 30;
+                if(endM >= 60) {
+                    endH += 1;
+                    endM -= 60;
+                }
+                const endTimeStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+
+                calendarEvents.push({
+                    title: b.booking_type === 'manual' ? b.manual_notes : `Booked: ${b.player_name || 'Guest'}`,
+                    start: `${b.booking_date}T${startTime}:00`,
+                    end: `${b.booking_date}T${endTimeStr}:00`,
+                    className: b.booking_type === 'manual' ? 'g-event-manual' : 'g-event-online',
+                    extendedProps: {
+                        isManual: b.booking_type === 'manual',
+                        status: b.status
+                    }
+                });
+            });
+
+            currentCalendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                slotMinTime: '06:00:00', // start day at 6 AM
+                slotMaxTime: '24:00:00', // end day at midnight
+                allDaySlot: false,
+                height: 'auto',
+                events: calendarEvents,
+                selectable: true,
+                selectMirror: true,
+                select: function(info) {
+                    // Open the modal when time is highlighted
+                    openEventModal(info);
+                },
+                eventClick: function(info) {
+                    // Could add logic to cancel/delete events here in the future
+                    if(info.event.extendedProps.isManual) {
+                        alert(`Manual Block: ${info.event.title}`);
+                    } else {
+                        alert(`Online Booking: ${info.event.title}\nStatus: ${info.event.extendedProps.status}`);
+                    }
+                }
+            });
+
+            currentCalendar.render();
+        }
+
+        function populateTimeSelects(startSelect, endSelect, selectedStart24, selectedEnd24) {
+            let optionsHTML = '';
+            for (let i = 0; i < 24; i++) {
+                for (let j = 0; j < 60; j += 30) {
+                    const h = i.toString().padStart(2, '0');
+                    const m = j.toString().padStart(2, '0');
+                    const time24 = `${h}:${m}`;
+                    
+                    let period = 'AM';
+                    let h12 = i;
+                    if (h12 >= 12) {
+                        period = 'PM';
+                        if (h12 > 12) h12 -= 12;
+                    }
+                    if (h12 === 0) h12 = 12;
+                    
+                    const time12 = `${h12}:${m.toString().padStart(2, '0')} ${period}`;
+                    optionsHTML += `<option value="${time24}">${time12}</option>`;
+                }
+            }
+            startSelect.innerHTML = optionsHTML;
+            endSelect.innerHTML = optionsHTML;
+            
+            if (selectedStart24) startSelect.value = selectedStart24;
+            if (selectedEnd24) endSelect.value = selectedEnd24;
+        }
+
+        // --- CALENDAR MODAL LOGIC ---
+        function openEventModal(info) {
+            const facId = document.getElementById('calendar-facility-select').value;
+            if(!facId) {
+                alert("Please select a facility first.");
+                if(currentCalendar) currentCalendar.unselect();
+                return;
+            }
+
+            const facSelect = document.getElementById('calendar-facility-select');
+            const facName = facSelect.options[facSelect.selectedIndex].text;
+
+            document.getElementById('modal-facility-id').value = facId;
+            document.getElementById('modal-facility-display').textContent = facName;
+
+            // Format Dates for UI
+            const startObj = info.start;
+            const endObj = info.end;
+
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('modal-date-display').innerHTML = startObj.toLocaleDateString('en-US', dateOptions);
+
+            const startH = startObj.getHours().toString().padStart(2, '0');
+            const startM = startObj.getMinutes().toString().padStart(2, '0');
+            const start24 = `${startH}:${startM}`;
+            
+            const endH = endObj.getHours().toString().padStart(2, '0');
+            const endM = endObj.getMinutes().toString().padStart(2, '0');
+            const end24 = `${endH}:${endM}`;
+
+            populateTimeSelects(
+                document.getElementById('modal-start-time'),
+                document.getElementById('modal-end-time'),
+                start24,
+                end24
+            );
+
+            // Format for Backend Payload
+            const mYear = startObj.getFullYear();
+            const mMonth = String(startObj.getMonth() + 1).padStart(2, '0');
+            const mDay = String(startObj.getDate()).padStart(2, '0');
+            document.getElementById('modal-date-val').value = `${mYear}-${mMonth}-${mDay}`;
+
+            document.getElementById('event-modal-backdrop').classList.remove('hidden');
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-modal-backdrop').classList.add('hidden');
+            document.getElementById('block-time-interactive-form').reset();
+            document.getElementById('modal-block-error').classList.add('hidden');
+            if(currentCalendar) currentCalendar.unselect();
+        }
+
+        // Handle the Modal Submit
+        document.getElementById('block-time-interactive-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorBlock = document.getElementById('modal-block-error');
+            const submitBtn = document.getElementById('modal-submit-btn');
+            errorBlock.classList.add('hidden');
+            
+            const start24 = document.getElementById('modal-start-time').value;
+            const end24 = document.getElementById('modal-end-time').value;
+            
+            if (start24 >= end24) {
+                errorBlock.textContent = "End time must be after start time.";
+                errorBlock.classList.remove('hidden');
+                return;
+            }
+
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving...';
+            submitBtn.disabled = true;
+
+            // Generate slots array based on dropdowns
+            const slots = [];
+            const [sh, sm] = start24.split(':').map(Number);
+            const [eh, em] = end24.split(':').map(Number);
+            
+            let currentMins = sh * 60 + sm;
+            const endMins = eh * 60 + em;
+            
+            while(currentMins < endMins) {
+                const h = Math.floor(currentMins / 60).toString().padStart(2, '0');
+                const m = (currentMins % 60).toString().padStart(2, '0');
+                slots.push(`${h}:${m}`);
+                currentMins += 30;
+            }
+
+            const payload = {
+                facility_id: parseInt(document.getElementById('modal-facility-id').value, 10),
+                booking_date: document.getElementById('modal-date-val').value,
+                time_slots: slots,
+                manual_notes: document.getElementById('modal-block-notes').value
+            };
+
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                const response = await fetch(`${API_BASE_URL}/api/host/block-time`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('gg_user');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Failed to block time');
+
+                closeEventModal();
+                // Refresh data to show new block on calendar
+                loadHostData();
+                
+            } catch (error) {
+                errorBlock.textContent = error.message;
+                errorBlock.classList.remove('hidden');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Handle Calendar Facility Dropdown Change
+        document.getElementById('calendar-facility-select').addEventListener('change', (e) => {
+            initCalendar(e.target.value);
+        });
+
+        // Ensure Calendar Renders properly when tab is shown
+        const calendarTabBtn = document.getElementById('tab-btn-calendar');
+        calendarTabBtn.addEventListener('click', () => {
+            setTimeout(() => {
+                if (currentCalendar) {
+                    currentCalendar.render();
+                } else if (document.getElementById('calendar-facility-select').value) {
+                    initCalendar(document.getElementById('calendar-facility-select').value);
+                }
+            }, 100);
+        });
+
+        // Check Authentication Status
+        function checkAuth() {
+            const storedUser = localStorage.getItem('gg_user');
+            const dashboardContent = document.getElementById('dashboard-content');
+            const authMessage = document.getElementById('auth-guard-message');
+            
+            if (!storedUser) {
+                // Not logged in -> Show message, hide dashboard
+                dashboardContent.classList.add('hidden');
+                authMessage.classList.remove('hidden');
+            } else {
+                // Logged in -> Show dashboard, hide message
+                dashboardContent.classList.remove('hidden');
+                authMessage.classList.add('hidden');
+                
+                // Fetch data for the host
+                loadHostData();
+            }
+        }
+        
+        // Run auth check immediately
+        checkAuth();
         // Features Logic
         const featuresContainer = document.getElementById('features-container');
         const addFeatureBtn = document.getElementById('add-feature-btn');
@@ -577,6 +1416,11 @@
                 return null;
             }).filter(f => f !== null);
 
+            const operating_hours = {
+                open: document.getElementById('fac-open-time').value,
+                close: document.getElementById('fac-close-time').value
+            };
+
             const payload = {
                 name: document.getElementById('fac-name').value,
                 subtitle: document.getElementById('fac-subtitle').value,
@@ -592,29 +1436,53 @@
                 base_price: basePrice,
                 pricing_rules: pricingRules,
                 image_url: document.getElementById('fac-image-url').value,
-                is_instant_book: document.getElementById('fac-instant').checked ? 1 : 0
+                is_instant_book: document.getElementById('fac-instant').checked ? 1 : 0,
+                operating_hours: operating_hours
             };
 
             try {
                 const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
                 
-                const res = await fetch(`${API_BASE_URL}/api/facilities`, {
-                    method: 'POST',
+                const editId = document.getElementById('edit-facility-id').value;
+                const endpointUrl = editId ? `${API_BASE_URL}/api/host/facilities/${editId}` : `${API_BASE_URL}/api/facilities`;
+                const requestMethod = editId ? 'PUT' : 'POST';
+
+                const res = await fetch(endpointUrl, {
+                    method: requestMethod,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
-                    credentials: 'omit'
+                    credentials: 'include'
                 });
                 
+                if (res.status === 401) {
+                    localStorage.removeItem('gg_user');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
                 const data = await res.json();
                 
-                if(!res.ok) throw new Error(data.error || 'Failed to create listing');
+                if(!res.ok) throw new Error(data.error || 'Failed to save listing');
                 
                 successDiv.classList.remove('hidden');
                 
-                // Redirect after 3 seconds to the new facility page
-                setTimeout(() => {
-                    window.location.href = `facility.html?id=${data.facility_id || data.id}`;
-                }, 3000);
+                if (editId) {
+                    // Updating logic: just refresh the facilities list and switch tab back
+                    successDiv.innerHTML = `<i class="fa-solid fa-check mr-2"></i> ${data.message}`;
+                    setTimeout(() => {
+                        successDiv.classList.add('hidden');
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                        fetchHostFacilities(); // Reload list
+                        switchTab('facilities');
+                    }, 2000);
+                } else {
+                    // Creating logic: redirect to the new page
+                    setTimeout(() => {
+                        window.location.href = `facility.html?id=${data.facility_id || data.id}`;
+                    }, 3000);
+                }
                 
             } catch (err) {
                 errorDiv.textContent = err.message;

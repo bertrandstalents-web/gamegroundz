@@ -189,7 +189,12 @@ app.get('/api/facilities/:id', (req, res) => {
 
 // POST a new facility
 app.post('/api/facilities', (req, res) => {
-    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book } = req.body;
+    // Check if user is authenticated (backend guard)
+    if (!req.session.userId) {
+        return res.status(401).json({ error: "Unauthorized: You must be logged in to list a facility." });
+    }
+
+    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book, operating_hours } = req.body;
     
     if (!name || !type || !environment || !base_price || !location || !image_url) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -198,6 +203,7 @@ app.post('/api/facilities', (req, res) => {
     let rulesStr = '[]';
     let featuresStr = '[]';
     let amenitiesStr = '[]';
+    let hoursStr = '{"open": "06:00", "close": "23:00"}';
     
     if (pricing_rules && Array.isArray(pricing_rules)) {
         rulesStr = JSON.stringify(pricing_rules);
@@ -208,12 +214,15 @@ app.post('/api/facilities', (req, res) => {
     if (amenities && Array.isArray(amenities)) {
         amenitiesStr = JSON.stringify(amenities);
     }
+    if (operating_hours && typeof operating_hours === 'object') {
+        hoursStr = JSON.stringify(operating_hours);
+    }
 
     db.run(
         `INSERT INTO facilities 
-         (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, image_url, is_instant_book ? 1 : 0],
+         (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book, host_id, operating_hours) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, image_url, is_instant_book ? 1 : 0, req.session.userId, hoursStr],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
@@ -224,6 +233,114 @@ app.post('/api/facilities', (req, res) => {
             });
         }
     );
+});
+
+// PUT (Edit) an existing facility
+app.put('/api/host/facilities/:id', (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ error: "Unauthorized: You must be logged in to edit a facility." });
+    }
+
+    const facilityId = req.params.id;
+    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book, operating_hours } = req.body;
+    
+    if (!name || !type || !environment || !base_price || !location || !image_url) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+    
+    let rulesStr = '[]';
+    let featuresStr = '[]';
+    let amenitiesStr = '[]';
+    let hoursStr = '{"open": "06:00", "close": "23:00"}';
+    
+    if (pricing_rules && Array.isArray(pricing_rules)) {
+        rulesStr = JSON.stringify(pricing_rules);
+    }
+    if (features && Array.isArray(features)) {
+        featuresStr = JSON.stringify(features);
+    }
+    if (amenities && Array.isArray(amenities)) {
+        amenitiesStr = JSON.stringify(amenities);
+    }
+    if (operating_hours && typeof operating_hours === 'object') {
+        hoursStr = JSON.stringify(operating_hours);
+    }
+
+    // Include host_id in the WHERE clause so users can only edit their own facilities
+    db.run(
+        `UPDATE facilities SET 
+            name = ?, subtitle = ?, description = ?, features = ?, locker_rooms = ?, 
+            capacity = ?, size_info = ?, amenities = ?, type = ?, environment = ?, 
+            base_price = ?, pricing_rules = ?, location = ?, image_url = ?, 
+            is_instant_book = ?, operating_hours = ? 
+         WHERE id = ? AND host_id = ?`,
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, image_url, is_instant_book ? 1 : 0, hoursStr, facilityId, req.session.userId],
+        function(err) {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            if (this.changes === 0) {
+                return res.status(404).json({ error: "Facility not found or you do not have permission to edit it." });
+            }
+            res.status(200).json({ message: "Facility updated successfully" });
+        }
+    );
+});
+
+// GET all facilities for the logged-in host
+app.get('/api/host/facilities', (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    db.all("SELECT * FROM facilities WHERE host_id = ? ORDER BY id DESC", [req.session.userId], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// GET all bookings for the logged-in host's facilities
+app.get('/api/host/bookings', (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    const query = `
+        SELECT b.*, f.name as facility_name, u.name as player_name, u.email as player_email
+        FROM bookings b
+        JOIN facilities f ON b.facility_id = f.id
+        LEFT JOIN users u ON b.user_id = u.id
+        WHERE f.host_id = ?
+        ORDER BY b.booking_date ASC, b.time_slots ASC
+    `;
+    
+    db.all(query, [req.session.userId], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// POST a manual time block (offline reservation)
+app.post('/api/host/block-time', (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    const { facility_id, booking_date, time_slots, manual_notes } = req.body;
+    
+    if (!facility_id || !booking_date || !time_slots || !manual_notes) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+    
+    const sql = `
+        INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes)
+        VALUES (?, ?, ?, 0, 'confirmed', 'manual', ?)
+    `;
+    
+    db.run(sql, [facility_id, booking_date, JSON.stringify(time_slots), manual_notes], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.status(201).json({ message: "Time blocked successfully", id: this.lastID });
+    });
 });
 
 // GET all bookings for current user
@@ -270,17 +387,68 @@ app.post('/api/bookings', (req, res) => {
     // In a real app we would get the user_id from an auth token or session
     const user_id = req.session.userId || 1; 
 
-    db.run(
-        "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price) VALUES (?, ?, ?, ?, ?)",
-        [user_id, facility_id, booking_date, time_slots, total_price],
-        function(err) {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            res.status(201).json({ 
-                message: "Booking created successfully", 
-                booking_id: this.lastID 
+    // Validate inputs
+    if (!facility_id || !booking_date || !time_slots) {
+        return res.status(400).json({ error: "Missing required booking information." });
+    }
+
+    let parsedNewSlots = [];
+    try {
+        parsedNewSlots = typeof time_slots === 'string' ? JSON.parse(time_slots) : time_slots;
+        if (!Array.isArray(parsedNewSlots)) throw new Error("time_slots must be an array");
+    } catch (e) {
+        return res.status(400).json({ error: "Invalid time_slots format." });
+    }
+
+    // 1. Check for existing overlapping bookings
+    db.all(
+        "SELECT time_slots FROM bookings WHERE facility_id = ? AND booking_date = ?",
+        [facility_id, booking_date],
+        (err, existingBookings) => {
+            if (err) return res.status(500).json({ error: "Database error during availability check." });
+
+            let allBookedSlots = [];
+            
+            // Extract all currently booked time slots for this day
+            existingBookings.forEach(booking => {
+                try {
+                    const slots = typeof booking.time_slots === 'string' 
+                        ? JSON.parse(booking.time_slots) 
+                        : booking.time_slots;
+                    if (Array.isArray(slots)) {
+                        allBookedSlots = allBookedSlots.concat(slots);
+                    }
+                } catch (e) {
+                    console.error("Error parsing existing booking slots:", e);
+                }
             });
+
+            // 2. Determine if there is an overlap
+            const hasConflict = parsedNewSlots.some(newSlot => allBookedSlots.includes(newSlot));
+
+            if (hasConflict) {
+                // 3. Reject if conflict exists
+                return res.status(409).json({ 
+                    error: "Conflict: One or more selected time slots have already been booked." 
+                });
+            }
+
+            // 4. Proceed with booking if no conflicts
+            const slotsString = JSON.stringify(parsedNewSlots);
+            
+            db.run(
+                "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price) VALUES (?, ?, ?, ?, ?)",
+                [user_id, facility_id, booking_date, slotsString, total_price],
+                function(insertErr) {
+                    if (insertErr) {
+                        return res.status(500).json({ error: insertErr.message });
+                    }
+                    res.status(201).json({ 
+                        message: "Booking created successfully", 
+                        booking_id: this.lastID 
+                    });
+                }
+            );
         }
     );
 });

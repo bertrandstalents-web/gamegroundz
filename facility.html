@@ -197,11 +197,11 @@
                         <div class="flex border-b border-slate-300 relative">
                             <div class="flex-1 p-3 border-r border-slate-300 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tl-xl">
                                 <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="booking-date">Date</label>
-                                <input type="date" id="booking-date" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none" style="color-scheme: light;" value="2026-11-06">
+                                <input type="date" id="booking-date" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none" style="color-scheme: light;">
                             </div>
                             <div class="flex-1 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tr-xl" id="time-slot-trigger">
                                 <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer">Time Slots</label>
-                                <div class="text-sm font-medium text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap" id="slots-summary">2 Slots Selected</div>
+                                <div class="text-sm font-medium text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap" id="slots-summary">Select Times</div>
                                 <div class="absolute right-3 top-4 text-slate-400"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                             </div>
                             
@@ -226,7 +226,7 @@
 
                     <!-- Time slot chips -->
                     <div class="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-100">
-                        <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Selected Slots (Nov 6)</h4>
+                        <h4 id="selected-slots-header" class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Selected Slots</h4>
                         <div class="flex flex-wrap gap-2" id="selected-slots-container">
                             <!-- Populated via JS -->
                         </div>
@@ -410,13 +410,49 @@
                 return parseFloat(basePrice);
             }
             
-            // Available mock slots
-            const availableSlots = [
-                { id: 1, time: "4:00 PM - 5:00 PM" },
-                { id: 2, time: "5:00 PM - 6:00 PM" },
-                { id: 3, time: "6:00 PM - 7:00 PM" },
-                { id: 4, time: "9:00 PM - 10:00 PM" }
-            ];
+            // Dynamically generated slots based on operating hours
+            let availableSlots = [];
+            let facilityOperatingHours = { open: "06:00", close: "23:00" };
+
+            function formatTime12(h, m) {
+                let period = 'AM';
+                let h12 = h;
+                if (h12 >= 12) {
+                    period = 'PM';
+                    if (h12 > 12) h12 -= 12;
+                }
+                if (h12 === 0) h12 = 12;
+                return `${h12}:${m.toString().padStart(2, '0')} ${period}`;
+            }
+
+            function generateDailySlots(opHours) {
+                const slots = [];
+                let [openH, openM] = opHours.open.split(':').map(Number);
+                let [closeH, closeM] = opHours.close.split(':').map(Number);
+                
+                // Allow rolling over to midnight (24:00)
+                if (closeH === 0 && closeM === 0) closeH = 24;
+
+                let currentMins = openH * 60 + openM;
+                const endMins = closeH * 60 + closeM;
+
+                while (currentMins + 30 <= endMins) {
+                    const h1 = Math.floor(currentMins / 60);
+                    const m1 = currentMins % 60;
+                    const h2 = Math.floor((currentMins + 30) / 60);
+                    const m2 = (currentMins + 30) % 60;
+
+                    const time12Str1 = formatTime12(h1, m1);
+                    const time12Str2 = h2 >= 24 ? "12:00 AM" : formatTime12(h2, m2);
+                    
+                    const time24Str = `${h1.toString().padStart(2, '0')}:${m1.toString().padStart(2, '0')}`;
+
+                    // ID is now the canonical HH:MM start time string
+                    slots.push({ id: time24Str, time: `${time12Str1} - ${time12Str2}` });
+                    currentMins += 30; // 30-min slots
+                }
+                return slots;
+            }
             
             let selectedSlotIds = new Set(); // Start with no slots selected
 
@@ -439,7 +475,18 @@
                         let bookedIds = new Set();
                         bookings.forEach(b => {
                             if (b.time_slots) {
-                                b.time_slots.split(',').forEach(id => bookedIds.add(parseInt(id)));
+                                try {
+                                    // Manual blocks are saved as JSON array of strings
+                                    const slotsArr = JSON.parse(b.time_slots);
+                                    if(Array.isArray(slotsArr)) {
+                                        slotsArr.forEach(id => bookedIds.add(String(id)));
+                                    } else {
+                                        // Legacy player bookings separated by comma
+                                        b.time_slots.split(',').forEach(id => bookedIds.add(String(id).trim()));
+                                    }
+                                } catch(e) {
+                                    b.time_slots.split(',').forEach(id => bookedIds.add(String(id).trim()));
+                                }
                             }
                         });
                         return bookedIds;
@@ -500,6 +547,14 @@
                     } catch (e) {
                         pricingRules = [];
                     }
+                    try {
+                        facilityOperatingHours = JSON.parse(facility.operating_hours || '{"open": "06:00", "close": "23:00"}');
+                    } catch (e) {
+                        facilityOperatingHours = { open: "06:00", close: "23:00" };
+                    }
+                    // Generate slots for the booking widget
+                    availableSlots = generateDailySlots(facilityOperatingHours);
+
                     currentFacilityName = facility.name;
                     currentFacilityId = facility.id;
 
@@ -734,11 +789,11 @@
             });
 
             function openModal() {
-                if (selectedSlotIds.size === 0) {
-                    alert("Please select at least one time slot.");
+                if (selectedSlotIds.size < 2) {
+                    alert("Please select at least two time slots (1 hour minimum).");
                     return;
                 }
-                modalSummaryText.innerHTML = `${currentFacilityName} <br><span class="text-slate-500 text-sm font-normal">${selectedSlotIds.size} hour(s)</span>`;
+                modalSummaryText.innerHTML = `${currentFacilityName} <br><span class="text-slate-500 text-sm font-normal">${selectedSlotIds.size / 2} hour(s)</span>`;
                 modalTotalPrice.textContent = `$${currentTotal.toFixed(2)}`;
                 btnTotalPrice.textContent = `$${currentTotal.toFixed(2)}`;
                 
@@ -778,7 +833,7 @@
                         body: JSON.stringify({
                             facility_id: currentFacilityId || 1,
                             booking_date: selectedDateStr, 
-                            time_slots: Array.from(selectedSlotIds).join(','),
+                            time_slots: Array.from(selectedSlotIds),
                             total_price: Math.round(currentTotal)
                         })
                      });
@@ -801,6 +856,16 @@
             });
 
             function render() {
+                // Update selected slots header date
+                const headerEl = document.getElementById('selected-slots-header');
+                if (headerEl) {
+                    const d = new Date(selectedDateStr + 'T00:00:00'); 
+                    if (!isNaN(d.getTime())) {
+                        const month = d.toLocaleString('en-US', { month: 'short' });
+                        headerEl.textContent = `Selected Slots (${month} ${d.getDate()})`;
+                    }
+                }
+
                 // Update dropdown list
                 slotsList.innerHTML = '';
                 availableSlots.forEach(slot => {
@@ -809,8 +874,9 @@
                     const div = document.createElement('div');
                     
                     if (isBooked) {
-                         div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg flex justify-between items-center mb-1 text-slate-400 bg-slate-50 cursor-not-allowed opacity-60 border border-transparent`;
-                         div.innerHTML = `<span>${slot.time} <span class="text-[10px] ml-1 uppercase bg-slate-200 text-slate-500 px-1 py-0.5 rounded">Booked</span></span>`;
+                         div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg flex justify-between items-center mb-1 text-slate-400 bg-slate-100 cursor-not-allowed opacity-50 border border-transparent`;
+                         div.innerHTML = `<span>${slot.time} <span class="text-[10px] ml-1 uppercase bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full">Unavailable</span></span>`;
+                         // Remove onclick for booked slots automatically by not assigning one
                     } else {
                          div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg cursor-pointer flex justify-between items-center mb-1 transition-custom ${isSelected ? 'bg-primary/10 text-primary border border-primary/20' : 'hover:bg-slate-100 text-slate-700 border border-transparent'}`;
                          div.innerHTML = `
@@ -823,6 +889,16 @@
                                 selectedSlotIds.delete(slot.id);
                             } else {
                                 selectedSlotIds.add(slot.id);
+                                // Auto-select next slot if this is the only one selected (to help meet 1hr minimum)
+                                if (selectedSlotIds.size === 1) {
+                                    const currentIndex = availableSlots.findIndex(s => s.id === slot.id);
+                                    if (currentIndex !== -1 && currentIndex + 1 < availableSlots.length) {
+                                        const nextSlot = availableSlots[currentIndex + 1];
+                                        if (!bookedSlotIds.has(nextSlot.id)) {
+                                            selectedSlotIds.add(nextSlot.id);
+                                        }
+                                    }
+                                }
                             }
                             render();
                         };
@@ -855,13 +931,13 @@
                 }
 
                 // Calculate pricing
-                const hours = count; // 1 slot = 1 hour
+                const hours = count / 2; // 1 slot = 0.5 hour
                 if (hours > 0) {
                     let subtotal = 0;
                     selectedSlotIds.forEach(slotId => {
                         const slot = availableSlots.find(s => s.id === slotId);
                         if (slot) {
-                            subtotal += getPriceForTimeSlot(slot.time, hourlyRate, pricingRules);
+                            subtotal += getPriceForTimeSlot(slot.time, hourlyRate, pricingRules) / 2;
                         }
                     });
                     
@@ -886,17 +962,20 @@
             }
 
             // --- CALENDAR LOGIC ---
-            let currentDate = new Date(2026, 10, 1); // Nov 2026 default for mockup
-            let selectedDateStr = "2026-11-06"; // Default selection matches booking widget
+            const today = new Date();
+            let currentDate = new Date(today.getFullYear(), today.getMonth(), 1); 
+            
+            const mmYear = today.getFullYear();
+            const mmMonth = String(today.getMonth() + 1).padStart(2, '0');
+            const mmDay = String(today.getDate()).padStart(2, '0');
+            
+            let selectedDateStr = `${mmYear}-${mmMonth}-${mmDay}`; 
             const bookingDateInput = document.getElementById('booking-date');
             
             // Sync initial state if bookingDateInput exists
-            if (bookingDateInput && bookingDateInput.value) {
-                const parseDate = new Date(bookingDateInput.value);
-                if (!isNaN(parseDate.getTime())) {
-                    currentDate = new Date(parseDate.getFullYear(), parseDate.getMonth(), 1);
-                    selectedDateStr = bookingDateInput.value;
-                }
+            if (bookingDateInput) {
+                // Remove hardcoded HTML value and set to today
+                bookingDateInput.value = selectedDateStr;
             }
             
             const calendarGrid = document.getElementById('calendar-grid');
@@ -999,13 +1078,21 @@
             }
             
             if (bookingDateInput) {
-                bookingDateInput.addEventListener('change', (e) => {
+                bookingDateInput.addEventListener('change', async (e) => {
                     selectedDateStr = e.target.value;
-                    const newDate = new Date(selectedDateStr);
+                    const newDate = new Date(selectedDateStr + 'T00:00:00');
                     if (!isNaN(newDate.getTime())) {
                         currentDate = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
                     }
+                    selectedSlotIds.clear();
                     renderCalendar();
+
+                    const slotsSummary = document.getElementById('slots-summary');
+                    if (slotsSummary) slotsSummary.textContent = "Loading slots...";
+                    
+                    bookedSlotIds = await fetchBookedSlots(selectedDateStr);
+                    if (slotsSummary) slotsSummary.textContent = "Select Times";
+                    render();
                 });
             }
 
