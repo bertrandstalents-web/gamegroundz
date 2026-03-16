@@ -51,22 +51,29 @@ app.post('/api/users/signup', async (req, res) => {
                 // Hash password
                 const salt = await bcrypt.genSalt(10);
                 const hashedPassword = await bcrypt.hash(password, salt);
+                
+                // Auto-assign roles based on email
+                let userRole = 'player';
+                const lowerEmail = email.toLowerCase();
+                if (lowerEmail === 'bertrandstalents@gmail.com') {
+                    userRole = 'admin';
+                }
 
                 // Insert new user
                 db.run(
-                    "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-                    [name, email, hashedPassword],
+                    "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+                    [name, email, hashedPassword, userRole],
                     function(err) {
                         if (err) return res.status(500).json({ error: "Error creating user" });
                         
                         // Automatically log in the user after registration
                         req.session.userId = this.lastID;
-                        req.session.userRole = 'player';
+                        req.session.userRole = userRole;
                         req.session.userName = name;
                         
                         res.status(201).json({ 
                             message: "User registered successfully", 
-                            user: { id: this.lastID, name: name, email: email, role: 'player' } 
+                            user: { id: this.lastID, name: name, email: email, role: userRole } 
                         });
                     }
                 );
