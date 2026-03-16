@@ -829,7 +829,7 @@
             // Then optionally verify with backend if we wanted to
             try {
                 const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
-                const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'same-origin' });
+                const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
                     updateUserUI(data.user);
@@ -881,7 +881,7 @@
             if (e) e.preventDefault();
             try {
                 const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
-                await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'same-origin' });
+                await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
             } catch(e) {}
             localStorage.removeItem('gg_user');
             updateUserUI(null);

@@ -36,11 +36,13 @@ app.use(express.static(path.join(__dirname)));
 // User Registration
 app.post('/api/users/signup', async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        let { name, email, password } = req.body;
         
         if (!name || !email || !password) {
             return res.status(400).json({ error: "All fields are required" });
         }
+        
+        email = email.trim().toLowerCase();
 
         // Check if user already exists
         db.get("SELECT * FROM users WHERE email = ?", [email], async (err, row) => {
@@ -88,11 +90,13 @@ app.post('/api/users/signup', async (req, res) => {
 
 // User Login
 app.post('/api/auth/login', (req, res) => {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
     
     if (!email || !password) {
         return res.status(400).json({ error: "Email and password are required" });
     }
+    
+    email = email.trim().toLowerCase();
 
     db.get("SELECT * FROM users WHERE email = ?", [email], async (err, user) => {
         if (err) return res.status(500).json({ error: "Database error" });
