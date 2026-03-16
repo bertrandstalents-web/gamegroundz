@@ -481,7 +481,7 @@
                             <i class="fa-solid fa-eye" id="toggle-password-icon"></i>
                         </button>
                     </div>
-                    <button type="submit" id="auth-submit-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-lg transition-custom shadow-glow mt-2">
+                    <button type="button" id="auth-submit-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-lg transition-custom shadow-glow mt-2">
                         Continue
                     </button>
                     <div id="auth-error" class="hidden text-red-500 text-sm font-medium mt-2 text-center"></div>
@@ -582,7 +582,7 @@
 
             try {
                 // Fetch all and take first 3 for featured. In a real app we might have a specific endpoint or flag.
-                const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
                 const response = await fetch(`${API_BASE_URL}/api/facilities?limit=3`);
                 if (!response.ok) throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                 
@@ -614,11 +614,21 @@
                     const typeDisplay = facility.type.charAt(0).toUpperCase() + facility.type.slice(1);
                     const envDisplay = facility.environment.charAt(0).toUpperCase() + facility.environment.slice(1);
 
+                    function getPrimaryImageUrl(urlStr) {
+                        try {
+                            const parsed = JSON.parse(urlStr);
+                            if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+                        } catch (e) {
+                            // not json, return string directly
+                        }
+                        return urlStr || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+                    }
+
                     const card = `
                         <!-- Facility Card -->
                         <div class="bg-white rounded-3xl overflow-hidden shadow-soft border border-slate-100 group cursor-pointer" onclick="window.location.href='facility.html?id=${facility.id}'">
                             <div class="relative h-64 hover-zoom-img-container">
-                                <img src="${facility.image_url}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
+                                <img src="${getPrimaryImageUrl(facility.image_url)}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
                                 <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-slate-800 shadow-sm">
                                     <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating} (${facility.reviews_count})
                                 </div>
@@ -772,10 +782,10 @@
             authSubmitBtn.disabled = true;
 
             try {
-                const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
+                const endpoint = isLoginMode ? '/api/auth/login' : '/api/users/signup';
                 const body = isLoginMode ? { email, password } : { name, email, password };
 
-                const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
                 
                 const res = await fetch(`${API_BASE_URL}${endpoint}`, {
                     method: 'POST',
@@ -805,7 +815,7 @@
             }
         }
 
-        if (authForm) authForm.addEventListener('submit', handleAuth);
+        if (authSubmitBtn) authSubmitBtn.addEventListener('click', handleAuth);
 
         async function checkAuthState() {
             // First check local storage for quick render
@@ -818,7 +828,7 @@
             
             // Then optionally verify with backend if we wanted to
             try {
-                const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
                 const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'same-origin' });
                 if (res.ok) {
                     const data = await res.json();
@@ -870,7 +880,7 @@
         async function handleLogout(e) {
             if (e) e.preventDefault();
             try {
-                const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
                 await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'same-origin' });
             } catch(e) {}
             localStorage.removeItem('gg_user');
