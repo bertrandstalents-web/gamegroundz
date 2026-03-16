@@ -57,8 +57,10 @@ app.post('/api/users/signup', async (req, res) => {
                 // Auto-assign roles based on email
                 let userRole = 'player';
                 const lowerEmail = email.toLowerCase();
-                if (lowerEmail === 'bertrandstalents@gmail.com') {
+                if (lowerEmail === 'faucons76.tbertrand@gmail.com') {
                     userRole = 'admin';
+                } else if (lowerEmail === 'bertrandstalents@gmail.com') {
+                    userRole = 'host';
                 }
 
                 // Insert new user
