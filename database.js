@@ -1,150 +1,192 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const { Pool } = require('pg');
 
-// Use a persistent path if defined (e.g., Render Persistent Disk), otherwise default to current directory
-const dbPath = process.env.DB_PATH 
-    ? path.resolve(process.env.DB_PATH, 'gamegroundz.db') 
-    : path.resolve(__dirname, 'gamegroundz.db');
-
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Error opening database:', err.message);
-    } else {
-        console.log('Connected to the SQLite database.');
-
-        // Define Database Schema
-        db.serialize(() => {
-
-            // Users Table
-            db.run(`CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                email TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL,
-                role TEXT DEFAULT 'player', -- 'player', 'host', or 'admin'
-                status TEXT DEFAULT 'active', -- 'active' or 'suspended'
-                company_name TEXT
-            )`);
-
-            // Add status column to existing users table if it doesn't exist
-            db.run(`ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'active'`, (err) => { });
-            db.run(`ALTER TABLE users ADD COLUMN company_name TEXT`, (err) => { });
-
-            // Facilities Table
-            db.run(`CREATE TABLE IF NOT EXISTS facilities (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                subtitle TEXT,
-                description TEXT,
-                features TEXT DEFAULT '[]',
-                locker_rooms INTEGER DEFAULT 0,
-                capacity INTEGER DEFAULT 0,
-                size_info TEXT DEFAULT '',
-                amenities TEXT DEFAULT '[]',
-                type TEXT NOT NULL,
-                environment TEXT NOT NULL,
-                base_price INTEGER NOT NULL,
-                pricing_rules TEXT DEFAULT '[]',
-                location TEXT NOT NULL,
-                rating REAL DEFAULT 0,
-                reviews_count INTEGER DEFAULT 0,
-                image_url TEXT NOT NULL,
-                is_instant_book BOOLEAN DEFAULT 0,
-                host_id INTEGER DEFAULT 1,
-                operating_hours TEXT DEFAULT '{"open": "06:00", "close": "23:00"}',
-                listing_status TEXT DEFAULT 'pending', -- 'pending', 'approved', 'rejected', 'paused', 'hidden', 'suspended'
-                FOREIGN KEY(host_id) REFERENCES users(id)
-            )`);
-
-            // Add columns to existing table if they don't exist (migrations)
-            db.run(`ALTER TABLE facilities ADD COLUMN subtitle TEXT`, (err) => { });
-            db.run(`ALTER TABLE facilities ADD COLUMN description TEXT`, (err) => { });
-            db.run(`ALTER TABLE facilities ADD COLUMN features TEXT DEFAULT '[]'`, (err) => { });
-            db.run(`ALTER TABLE facilities ADD COLUMN locker_rooms INTEGER DEFAULT 0`, (err) => { });
-            db.run(`ALTER TABLE facilities ADD COLUMN capacity INTEGER DEFAULT 0`, (err) => { });
-            db.run(`ALTER TABLE facilities ADD COLUMN size_info TEXT DEFAULT ''`, (err) => { });
-            db.run(`ALTER TABLE facilities ADD COLUMN amenities TEXT DEFAULT '[]'`, (err) => { });
-            db.run(`ALTER TABLE facilities ADD COLUMN host_id INTEGER DEFAULT 1`, (err) => { });
-            db.run(`ALTER TABLE facilities ADD COLUMN operating_hours TEXT DEFAULT '{"open": "06:00", "close": "23:00"}'`, (err) => { });
-            db.run(`ALTER TABLE facilities ADD COLUMN listing_status TEXT DEFAULT 'pending'`, (err) => { });
-
-            // Facility Images Table
-            db.run(`CREATE TABLE IF NOT EXISTS facility_images (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                facility_id INTEGER,
-                image_url TEXT NOT NULL,
-                is_primary BOOLEAN DEFAULT 0,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY(facility_id) REFERENCES facilities(id)
-            )`);
-
-            // Discounts Table
-            db.run(`CREATE TABLE IF NOT EXISTS discounts (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                facility_id INTEGER, -- NULL for platform-wide discounts
-                discount_type TEXT NOT NULL, -- 'percentage', 'fixed_amount'
-                value REAL NOT NULL,
-                start_date DATETIME,
-                end_date DATETIME,
-                recurring_day INTEGER, -- 0-6 for Sunday-Saturday
-                is_last_minute BOOLEAN DEFAULT 0,
-                is_active BOOLEAN DEFAULT 1,
-                created_by_admin BOOLEAN DEFAULT 0,
-                FOREIGN KEY(facility_id) REFERENCES facilities(id)
-            )`);
-
-            // Bookings Table
-            db.run(`CREATE TABLE IF NOT EXISTS bookings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                facility_id INTEGER,
-                booking_date TEXT NOT NULL,
-                time_slots TEXT,
-                total_price REAL,
-                status TEXT DEFAULT 'pending',
-                booking_type TEXT DEFAULT 'online',
-                manual_notes TEXT,
-                FOREIGN KEY(user_id) REFERENCES users(id),
-                FOREIGN KEY(facility_id) REFERENCES facilities(id)
-            )`);
-
-            // Add columns to existing bookings table if they don't exist
-            db.run(`ALTER TABLE bookings ADD COLUMN booking_type TEXT DEFAULT 'online'`, (err) => { });
-            db.run(`ALTER TABLE bookings ADD COLUMN manual_notes TEXT`, (err) => { });
-
-            // Seed initial Facility data if the table is empty
-            db.get("SELECT COUNT(*) as count FROM facilities", (err, row) => {
-                if (err) {
-                    console.error("Error checking facilities count:", err.message);
-                    return;
-                }
-                if (row.count === 0) {
-                    console.log("Seeding initial facility data...");
-                    const stmt = db.prepare(`INSERT INTO facilities 
-                        (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, rating, reviews_count, image_url, is_instant_book, host_id, operating_hours, listing_status) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-
-                    const facilitiesData = [
-                        ['Aréna Rosemère', 'Professional NHL-sized Ice Rink', 'Arena Rosemère is a premier ice hockey facility located in the heart of Rosemère...', '[{"title":"Premium Ice Quality","description":"Resurfaced before every rental block with our state-of-the-art Olympia resurfacer."}]', 4, 300, '200ft x 85ft', '["wifi", "parking", "locker_rooms", "accessibility"]', 'ice', 'indoor', 150, '[{"start":"08:00","end":"12:00","price":150},{"start":"13:00","end":"20:00","price":197}]', 'Rosemère, QC', 4.9, 128, 'images/arena_rosemere_real.jpg', 1, 1, '{"open": "06:00", "close": "23:00"}', 'approved'],
-                        ['Aréna Municipale Boisbriand', 'Professional NHL-sized Ice Rink', 'Arena Municipale Boisbriand is a premier ice hockey facility.', '[]', 2, 150, 'NHL Size', '["parking", "locker_rooms"]', 'ice', 'indoor', 160, '[{"start":"08:00","end":"14:00","price":160},{"start":"14:00","end":"22:00","price":198}]', 'Boisbriand, QC', 4.8, 94, 'images/arena_boisbriand_real.jpg', 0, 1, '{"open": "07:00", "close": "22:00"}', 'approved'],
-                        ['Colisée de Laval', 'Professional NHL-sized Ice Rink', 'Colisée de Laval is a premier ice hockey facility.', '[]', 8, 2000, 'Olympic Size', '["wifi", "parking", "locker_rooms", "concessions", "accessibility"]', 'ice', 'indoor', 180, '[{"start":"06:00","end":"16:00","price":180},{"start":"16:00","end":"23:00","price":210}]', 'Laval, QC', 5.0, 42, 'images/colisee_laval_real.jpg', 1, 1, '{"open": "05:00", "close": "00:00"}', 'approved'],
-                        ['Complexe Sportif AP', 'Professional NHL-sized Ice Rink', 'Complexe Sportif AP is a premier ice hockey facility.', '[]', 4, 500, 'NHL Size', '["parking", "locker_rooms"]', 'ice', 'indoor', 140, '[{"start":"07:00","end":"15:00","price":140},{"start":"15:00","end":"22:00","price":160}]', 'Deux-Montagnes, QC', 4.7, 103, 'images/complexe_sportif_ap_real.jpg', 1, 1, '{"open": "06:00", "close": "23:00"}', 'approved'],
-                        ['Peak Performance Gym', 'Fully Equipped Fitness Center', 'Peak Performance Gym is a premier training facility.', '[]', 2, 50, '10,000 sq ft', '["wifi", "parking", "locker_rooms", "showers"]', 'gym', 'indoor', 40, '[{"start":"05:00","end":"09:00","price":50},{"start":"09:00","end":"16:00","price":40},{"start":"16:00","end":"21:00","price":60}]', 'Montreal, QC', 4.9, 56, 'https://images.unsplash.com/photo-1540324155974-7523202daa3f?auto=format&fit=crop&w=800&q=80', 1, 1, '{"open": "05:00", "close": "22:00"}', 'approved'],
-                        ['Capital High Field', 'Premium Synthetic Turf Field', 'Capital High Field is a premier outdoor football facility.', '[]', 2, 1000, '120 yards', '["parking", "concessions"]', 'football', 'outdoor', 120, '[{"start":"08:00","end":"14:00","price":120},{"start":"14:00","end":"20:00","price":150}]', 'Montreal, QC', 4.5, 210, 'https://images.unsplash.com/photo-1587329310686-91414b8e3cb7?auto=format&fit=crop&w=800&q=80', 0, 1, '{"open": "06:00", "close": "22:00"}', 'approved']
-                    ];
-
-                    facilitiesData.forEach(f => {
-                        stmt.run(f, (err) => {
-                            if (err) console.error("Error inserting data:", err.message);
-                        });
-                    });
-
-                    stmt.finalize();
-                    console.log("Seeding complete.");
-                }
-            });
-        });
-    }
+// Parse DATABASE_URL if available, otherwise it will fail to connect (which is expected until user sets it)
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : { rejectUnauthorized: false } // Neon requires SSL
 });
+
+// Helper to convert SQLite ? to Postgres $1, $2, etc.
+function adaptQuery(sql, params = []) {
+    let i = 1;
+    let newSql = sql.replace(/\?/g, () => '$' + i++);
+    return newSql;
+}
+
+const db = {
+    get: function(sql, params, callback) {
+        if (typeof params === 'function') { callback = params; params = []; }
+        
+        pool.query(adaptQuery(sql, params), params, (err, res) => {
+            if (err) return callback ? callback(err) : null;
+            callback && callback(null, res.rows[0]);
+        });
+        return this;
+    },
+    all: function(sql, params, callback) {
+        if (typeof params === 'function') { callback = params; params = []; }
+        
+        pool.query(adaptQuery(sql, params), params, (err, res) => {
+            if (err) return callback ? callback(err) : null;
+            callback && callback(null, res.rows);
+        });
+        return this;
+    },
+    run: function(sql, params, callback) {
+        if (typeof params === 'function') { callback = params; params = []; }
+        
+        let querySql = adaptQuery(sql, params);
+        
+        // Postgres needs RETURNING id for inserts if we want this.lastID
+        if (querySql.trim().toUpperCase().startsWith('INSERT') && !querySql.toLowerCase().includes('returning id')) {
+            querySql += ' RETURNING id';
+        }
+
+        pool.query(querySql, params, (err, res) => {
+            if (err) return callback ? callback(err) : null;
+            
+            const context = {
+                changes: res ? res.rowCount : 0,
+                lastID: res && res.rows && res.rows.length > 0 ? res.rows[0].id : null
+            };
+            
+            callback && callback.call(context, null);
+        });
+        return this;
+    },
+    serialize: function(callback) {
+        // We do not strict-serialize dynamically anymore. 
+        // Real serialization is handled by async/await in the init function below.
+        callback();
+    }
+};
+
+// Check connection and run migrations synchronously
+async function initDatabase() {
+    let client;
+    try {
+        client = await pool.connect();
+        console.log('Connected to PostgreSQL database.');
+
+        // Users Table
+        await client.query(`CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT DEFAULT 'player',
+            status TEXT DEFAULT 'active',
+            company_name TEXT,
+            stripe_account_id TEXT,
+            stripe_onboarding_complete INTEGER DEFAULT 0,
+            first_name TEXT,
+            last_name TEXT,
+            phone_number TEXT,
+            profile_picture TEXT
+        )`);
+
+        // Facilities Table
+        await client.query(`CREATE TABLE IF NOT EXISTS facilities (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            subtitle TEXT,
+            description TEXT,
+            features TEXT DEFAULT '[]',
+            locker_rooms INTEGER DEFAULT 0,
+            capacity INTEGER DEFAULT 0,
+            size_info TEXT DEFAULT '',
+            amenities TEXT DEFAULT '[]',
+            type TEXT NOT NULL,
+            environment TEXT NOT NULL,
+            base_price INTEGER NOT NULL,
+            pricing_rules TEXT DEFAULT '[]',
+            location TEXT NOT NULL,
+            rating REAL DEFAULT 0,
+            reviews_count INTEGER DEFAULT 0,
+            image_url TEXT NOT NULL,
+            is_instant_book INTEGER DEFAULT 0,
+            host_id INTEGER DEFAULT 1 REFERENCES users(id),
+            operating_hours TEXT DEFAULT '{"open": "06:00", "close": "23:00"}',
+            listing_status TEXT DEFAULT 'pending'
+        )`);
+
+        // Facility Images Table
+        await client.query(`CREATE TABLE IF NOT EXISTS facility_images (
+            id SERIAL PRIMARY KEY,
+            facility_id INTEGER REFERENCES facilities(id),
+            image_url TEXT NOT NULL,
+            is_primary INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+
+        // Discounts Table
+        await client.query(`CREATE TABLE IF NOT EXISTS discounts (
+            id SERIAL PRIMARY KEY,
+            facility_id INTEGER REFERENCES facilities(id),
+            discount_type TEXT NOT NULL,
+            value REAL NOT NULL,
+            start_date TIMESTAMP,
+            end_date TIMESTAMP,
+            start_time TEXT,
+            end_time TEXT,
+            recurring_day INTEGER,
+            is_last_minute INTEGER DEFAULT 0,
+            is_active INTEGER DEFAULT 1,
+            created_by_admin INTEGER DEFAULT 0
+        )`);
+
+        // Bookings Table
+        await client.query(`CREATE TABLE IF NOT EXISTS bookings (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id),
+            facility_id INTEGER REFERENCES facilities(id),
+            booking_date TEXT NOT NULL,
+            time_slots TEXT,
+            total_price REAL,
+            status TEXT DEFAULT 'pending',
+            booking_type TEXT DEFAULT 'online',
+            manual_notes TEXT,
+            payment_status TEXT DEFAULT 'pending',
+            stripe_session_id TEXT
+        )`);
+
+        // Seed initial Facility data if the table is empty
+        const res = await client.query("SELECT COUNT(*) as count FROM facilities");
+        if (parseInt(res.rows[0].count) === 0) {
+            console.log("Seeding initial facility data...");
+            
+            // Ensure at least one user exists to act as host (to satisfy PG foreign key wrapper)
+            const userRes = await client.query("SELECT COUNT(*) as count FROM users");
+            if (parseInt(userRes.rows[0].count) === 0) {
+                await client.query(`INSERT INTO users (name, email, password, role, company_name) VALUES ('System Admin', 'admin@gamegroundz.com', 'dummy_password', 'admin', 'Metro Sports')`);
+            }
+            
+            const facilitiesData = [
+                ['Aréna Rosemère', 'Professional NHL-sized Ice Rink', 'Arena Rosemère is a premier ice hockey facility located in the heart of Rosemère...', '[{"title":"Premium Ice Quality","description":"Resurfaced before every rental block with our state-of-the-art Olympia resurfacer."}]', 4, 300, '200ft x 85ft', '["wifi", "parking", "locker_rooms", "accessibility"]', 'ice', 'indoor', 150, '[{"start":"08:00","end":"12:00","price":150},{"start":"13:00","end":"20:00","price":197}]', 'Rosemère, QC', 4.9, 128, 'images/arena_rosemere_real.jpg', 1, 1, '{"open": "06:00", "close": "23:00"}', 'approved'],
+                ['Aréna Municipale Boisbriand', 'Professional NHL-sized Ice Rink', 'Arena Municipale Boisbriand is a premier ice hockey facility.', '[]', 2, 150, 'NHL Size', '["parking", "locker_rooms"]', 'ice', 'indoor', 160, '[{"start":"08:00","end":"14:00","price":160},{"start":"14:00","end":"22:00","price":198}]', 'Boisbriand, QC', 4.8, 94, 'images/arena_boisbriand_real.jpg', 0, 1, '{"open": "07:00", "close": "22:00"}', 'approved'],
+                ['Colisée de Laval', 'Professional NHL-sized Ice Rink', 'Colisée de Laval is a premier ice hockey facility.', '[]', 8, 2000, 'Olympic Size', '["wifi", "parking", "locker_rooms", "concessions", "accessibility"]', 'ice', 'indoor', 180, '[{"start":"06:00","end":"16:00","price":180},{"start":"16:00","end":"23:00","price":210}]', 'Laval, QC', 5.0, 42, 'images/colisee_laval_real.jpg', 1, 1, '{"open": "05:00", "close": "00:00"}', 'approved'],
+                ['Complexe Sportif AP', 'Professional NHL-sized Ice Rink', 'Complexe Sportif AP is a premier ice hockey facility.', '[]', 4, 500, 'NHL Size', '["parking", "locker_rooms"]', 'ice', 'indoor', 140, '[{"start":"07:00","end":"15:00","price":140},{"start":"15:00","end":"22:00","price":160}]', 'Deux-Montagnes, QC', 4.7, 103, 'images/complexe_sportif_ap_real.jpg', 1, 1, '{"open": "06:00", "close": "23:00"}', 'approved'],
+                ['Peak Performance Gym', 'Fully Equipped Fitness Center', 'Peak Performance Gym is a premier training facility.', '[]', 2, 50, '10,000 sq ft', '["wifi", "parking", "locker_rooms", "showers"]', 'gym', 'indoor', 40, '[{"start":"05:00","end":"09:00","price":50},{"start":"09:00","end":"16:00","price":40},{"start":"16:00","end":"21:00","price":60}]', 'Montreal, QC', 4.9, 56, 'https://images.unsplash.com/photo-1540324155974-7523202daa3f?auto=format&fit=crop&w=800&q=80', 1, 1, '{"open": "05:00", "close": "22:00"}', 'approved'],
+                ['Capital High Field', 'Premium Synthetic Turf Field', 'Capital High Field is a premier outdoor football facility.', '[]', 2, 1000, '120 yards', '["parking", "concessions"]', 'football', 'outdoor', 120, '[{"start":"08:00","end":"14:00","price":120},{"start":"14:00","end":"20:00","price":150}]', 'Montreal, QC', 4.5, 210, 'https://images.unsplash.com/photo-1587329310686-91414b8e3cb7?auto=format&fit=crop&w=800&q=80', 0, 1, '{"open": "06:00", "close": "22:00"}', 'approved']
+            ];
+
+            const insertQuery = `INSERT INTO facilities 
+                (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, rating, reviews_count, image_url, is_instant_book, host_id, operating_hours, listing_status) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`;
+
+            for (let f of facilitiesData) {
+                await client.query(insertQuery, f);
+            }
+            
+            console.log("Seeding complete.");
+        }
+    } catch (err) {
+        console.error('Error connecting to PostgreSQL or running migrations:', err);
+    } finally {
+        if (client) client.release();
+    }
+}
+
+initDatabase();
 
 module.exports = db;
