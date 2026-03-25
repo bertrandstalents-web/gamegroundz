@@ -1381,8 +1381,10 @@
                 };
                 
                 if (d.start_date || d.end_date) {
-                    const sDate = d.start_date || d.end_date;
-                    const eDate = d.end_date || d.start_date;
+                    const sRaw = d.start_date || d.end_date;
+                    const eRaw = d.end_date || d.start_date;
+                    const sDate = sRaw.split('T')[0];
+                    const eDate = eRaw.split('T')[0];
                     
                     if (d.start_time && d.end_time) {
                         calendarEvents.push({
@@ -2735,7 +2737,14 @@
                         let desc = '';
                         if (d.is_last_minute) desc += '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-bold mr-2"><i class="fa-solid fa-clock-rotate-left mr-1"></i>Last-Minute</span> ';
                         if (d.recurring_day !== null && d.recurring_day !== '') desc += `Every ${days[d.recurring_day]}`;
-                        else if (d.start_date && d.end_date) desc += `From ${d.start_date} to ${d.end_date}`;
+                        else if (d.start_date && d.end_date) {
+                            const sd = d.start_date.split('T')[0];
+                            const ed = d.end_date.split('T')[0];
+                            desc += `From ${sd} to ${ed}`;
+                            if (d.start_time && d.end_time) {
+                                desc += ` between ${d.start_time} and ${d.end_time}`;
+                            }
+                        }
                         else desc += 'Always active';
 
                         container.innerHTML += `
