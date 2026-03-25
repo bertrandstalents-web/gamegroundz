@@ -331,33 +331,95 @@ app.get('/api/facilities', (req, res) => {
             return;
         }
 
+        const serverNow = new Date();
+        const tzStr = serverNow.toLocaleString('en-US', { timeZone: 'America/New_York' }); 
+        const tzDate = new Date(tzStr);
+
+        const y = tzDate.getFullYear();
+        const m = String(tzDate.getMonth() + 1).padStart(2, '0');
+        const d = String(tzDate.getDate()).padStart(2, '0');
+        const todayDateStr = `${y}-${m}-${d}`;
+
+        const h = String(tzDate.getHours()).padStart(2, '0');
+        const min = String(tzDate.getMinutes()).padStart(2, '0');
+        const todayTimeStr = `${h}:${min}`;
+
+        const dayOfWeek = tzDate.toLocaleDateString('en-US', { weekday: 'long' });
+
         // Fetch active discounts to attach to facilities
         db.all("SELECT * FROM discounts WHERE is_active = 1", [], (err, discounts) => {
-            if (err) return res.json(rows); // fallback
+            const allDiscounts = discounts || [];
             
-            const now = new Date();
-            // Start of day for comparison
-            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' }); 
-            
-            rows.forEach(facility => {
-                // Attach applicable discounts
-                facility.discounts = discounts.filter(d => d.facility_id === facility.id || d.facility_id === null);
-                
-                // Determine if there is currently an active promotion for this facility today
-                facility.active_promotions = facility.discounts.filter(d => {
-                    if (d.start_date && new Date(d.start_date) > todayStart) return false;
-                    if (d.end_date && new Date(d.end_date) < todayStart) return false;
-                    if (d.recurring_day && d.recurring_day !== dayOfWeek) return false;
-                    if (d.start_time && d.end_time) {
-                        const current24 = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2,'0');
-                        if (current24 >= d.end_time) return false; // Promotion ended for today
+            // Fetch today's bookings
+            db.all("SELECT facility_id, time_slots FROM bookings WHERE booking_date = ? AND status = 'confirmed'", [todayDateStr], (err, bookings) => {
+                const bookedMap = {}; 
+                (bookings || []).forEach(b => {
+                    const fid = b.facility_id;
+                    if (!bookedMap[fid]) bookedMap[fid] = new Set();
+                    try {
+                        const slots = JSON.parse(b.time_slots);
+                        slots.forEach(s => bookedMap[fid].add(s));
+                    } catch(e){}
+                });
+
+                rows.forEach(facility => {
+                    // Attach applicable discounts
+                    facility.discounts = allDiscounts.filter(dist => dist.facility_id === facility.id || dist.facility_id === null);
+                    
+                    // Determine if there is currently an active promotion for this facility today
+                    const activeDiscounts = facility.discounts.filter(dist => {
+                        if (dist.start_date && dist.start_date > todayDateStr) return false;
+                        if (dist.end_date && dist.end_date < todayDateStr) return false;
+                        if (dist.recurring_day && dist.recurring_day !== dayOfWeek) return false;
+                        if (dist.start_time && dist.end_time) {
+                            if (todayTimeStr >= dist.end_time) return false; // Promotion ended for today
+                        }
+                        return true;
+                    });
+                    
+                    facility.active_promotions = activeDiscounts.length > 0;
+
+                    // Compute available slots today
+                    const availableSlots = [];
+                    let opHours = { open: "06:00", close: "23:00" };
+                    try {
+                        if (facility.operating_hours) {
+                            opHours = JSON.parse(facility.operating_hours);
+                        }
+                    } catch(e){}
+
+                    const startHour = parseInt(opHours.open.split(':')[0], 10);
+                    const endHour = parseInt(opHours.close.split(':')[0], 10);
+                    const fid = facility.id;
+                    const bSet = bookedMap[fid] || new Set();
+
+                    // Generate all 30 min slots
+                    for (let hour = startHour; hour < endHour; hour++) {
+                        const strH = hour.toString().padStart(2, '0');
+                        const slot1 = `${strH}:00`;
+                        const slot2 = `${strH}:30`;
+                        
+                        [slot1, slot2].forEach(slot => {
+                            if (slot > todayTimeStr && !bSet.has(slot)) {
+                                let hasDiscount = false;
+                                activeDiscounts.forEach(dist => {
+                                    if (dist.start_time && dist.end_time) {
+                                        if (slot >= dist.start_time && slot < dist.end_time) hasDiscount = true;
+                                    } else {
+                                        hasDiscount = true; // Full day discount
+                                    }
+                                });
+                                availableSlots.push({ time: slot, discount: hasDiscount });
+                            }
+                        });
                     }
-                    return true;
-                }).length > 0;
+
+                    // Select up to 3 upcoming slots
+                    facility.display_slots_today = availableSlots.slice(0, 3);
+                });
+                
+                res.json(rows);
             });
-            
-            res.json(rows);
         });
     });
 });
