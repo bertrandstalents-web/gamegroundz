@@ -59,7 +59,7 @@
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-6" id="nav-actions">
                     <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
-                    <a href="index.html" id="login-btn" class="text-slate-600 hover:text-dark font-medium transition-custom">Log in</a>
+                    <a href="#" onclick="window.location.href='index.html?login=true&redirect='+encodeURIComponent(window.location.pathname+window.location.search); return false;" id="login-btn" class="text-slate-600 hover:text-dark font-medium transition-custom">Log in</a>
                     <a href="owner-dashboard.html" id="list-facility-btn" class="bg-dark hover:bg-slate-800 text-white px-5 py-2 rounded-full font-medium transition-custom shadow-sm text-sm">List Your Facility</a>
                 </div>
 

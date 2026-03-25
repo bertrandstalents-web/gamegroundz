@@ -973,6 +973,13 @@
                 // Success - Since we might be on file://, we also save user in localStorage
                 localStorage.setItem('gg_user', JSON.stringify(data.user));
                 
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectUrl = urlParams.get('redirect');
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                    return;
+                }
+                
                 closeAuthModal();
                 updateUserUI(data.user);
                 
@@ -1075,6 +1082,11 @@
         }
 
         checkAuthState();
+
+        const globalUrlParams = new URLSearchParams(window.location.search);
+        if (globalUrlParams.get('login') === 'true') {
+            openAuthModal({ preventDefault: () => {} });
+        }
 
     </script>
     </body>

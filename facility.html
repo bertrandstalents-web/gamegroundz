@@ -50,7 +50,7 @@
 
                 <div class="hidden md:flex items-center space-x-6" id="nav-actions">
                     <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
-                    <a href="index.html" id="login-btn" class="text-slate-600 hover:text-dark font-medium transition-custom">Log in</a>
+                    <a href="#" onclick="window.location.href='index.html?login=true&redirect='+encodeURIComponent(window.location.pathname+window.location.search); return false;" id="login-btn" class="text-slate-600 hover:text-dark font-medium transition-custom">Log in</a>
                 </div>
             </div>
         </div>
@@ -848,6 +848,18 @@
             });
 
             async function initiateCheckout() {
+                // Check if user is logged in
+                const storedUser = localStorage.getItem('gg_user');
+                if (!storedUser) {
+                    // Save state and redirect to login
+                    sessionStorage.setItem('pending_booking_slots', JSON.stringify(Array.from(selectedSlotIds)));
+                    sessionStorage.setItem('pending_booking_date', selectedDateStr);
+                    sessionStorage.setItem('auto_reserve', 'true');
+                    
+                    window.location.href = `index.html?login=true&redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                    return;
+                }
+
                 if (selectedSlotIds.size < 2) {
                     alert("Please select at least two time slots (1 hour minimum).");
                     return;
@@ -1152,6 +1164,29 @@
             
             let selectedDateStr = `${mmYear}-${mmMonth}-${mmDay}`; 
             const bookingDateInput = document.getElementById('booking-date');
+
+            // Restore pending state if any (e.g. after login redirect)
+            const pendingDate = sessionStorage.getItem('pending_booking_date');
+            if (pendingDate) {
+                selectedDateStr = pendingDate;
+                const pd = new Date(selectedDateStr + 'T00:00:00');
+                if (!isNaN(pd.getTime())) {
+                    currentDate = new Date(pd.getFullYear(), pd.getMonth(), 1);
+                }
+                sessionStorage.removeItem('pending_booking_date');
+            }
+
+            const pendingSlots = sessionStorage.getItem('pending_booking_slots');
+            if (pendingSlots) {
+                try {
+                    const parsedSlots = JSON.parse(pendingSlots);
+                    if (Array.isArray(parsedSlots)) {
+                        parsedSlots.forEach(id => selectedSlotIds.add(String(id)));
+                    }
+                } catch(e) {}
+                sessionStorage.removeItem('pending_booking_slots');
+            }
+
             
             // Sync initial state if bookingDateInput exists
             if (bookingDateInput) {
@@ -1285,6 +1320,11 @@
                 fetchBookedSlots(selectedDateStr).then(booked => {
                     bookedSlotIds = booked;
                     render();
+                    
+                    if (sessionStorage.getItem('auto_reserve')) {
+                        sessionStorage.removeItem('auto_reserve');
+                        setTimeout(initiateCheckout, 300); // slight delay to let UI settle
+                    }
                 });
             } else {
                 render();
