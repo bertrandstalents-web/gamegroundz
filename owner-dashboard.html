@@ -2393,12 +2393,27 @@
                         if (data && data.length > 0) {
                             autocompleteList.classList.remove('hidden');
                             data.forEach(item => {
+                                let mainName = item.name || (item.address ? (item.address.city || item.address.town || item.address.village || item.address.municipality) : '') || item.display_name.split(',')[0];
+                                mainName = mainName.replace(/\s*\(région administrative\)/i, '');
+                                let parts = [mainName];
+                                if (item.address) {
+                                    let state = item.address.state || '';
+                                    const stateMap = {'Québec':'QC', 'Quebec':'QC', 'Ontario':'ON', 'British Columbia':'BC', 'Colombie-Britannique':'BC', 'Alberta':'AB', 'Manitoba':'MB', 'Saskatchewan':'SK', 'Nova Scotia':'NS', 'Nouvelle-Écosse':'NS', 'New Brunswick':'NB', 'Nouveau-Brunswick':'NB', 'Newfoundland and Labrador':'NL', 'Terre-Neuve-et-Labrador':'NL', 'Prince Edward Island':'PE', 'Île-du-Prince-Édouard':'PE', 'New York':'NY', 'California':'CA'};
+                                    state = stateMap[state] || state;
+                                    if (state && state !== mainName && state !== stateMap[mainName]) parts.push(state);
+                                    let country = item.address.country || '';
+                                    if (country.toLowerCase() === 'canada') country = 'Canada';
+                                    if (country.toLowerCase() === 'united states' || country.toLowerCase() === 'united states of america') country = 'USA';
+                                    if (country && !parts.includes(country)) parts.push(country);
+                                }
+                                const displayName = parts.join(', ');
+
                                 const b = document.createElement("li");
                                 b.className = "px-4 py-3 cursor-pointer hover:bg-slate-50 border-b border-slate-50 last:border-0 font-medium transition-custom flex items-center";
                                 b.innerHTML = "<i class='fa-solid fa-location-dot text-slate-400 mr-3 mt-1 self-start'></i>";
-                                b.innerHTML += `<div><span class="text-slate-600">${item.display_name}</span></div>`;
+                                b.innerHTML += `<div><span class="text-slate-600">${displayName}</span></div>`;
                                 // Escape single quotes in value
-                                b.innerHTML += `<input type='hidden' value='${item.display_name.replace(/'/g, "&#39;")}'>`;
+                                b.innerHTML += `<input type='hidden' value='${displayName.replace(/'/g, "&#39;")}'>`;
                                 
                                 b.addEventListener("click", function(e) {
                                     searchInput.value = this.getElementsByTagName("input")[0].value;
