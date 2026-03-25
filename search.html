@@ -57,10 +57,10 @@
                 </div>
 
                 <!-- Desktop Menu -->
-                <div class="hidden md:flex items-center space-x-6">
-                    <a href="search.html" class="text-primary font-bold transition-custom">Find a Surface</a>
-                    <a href="#" class="text-slate-600 hover:text-dark font-medium transition-custom">Log in</a>
-                    <a href="owner-dashboard.html" class="bg-dark hover:bg-slate-800 text-white px-5 py-2 rounded-full font-medium transition-custom shadow-sm text-sm">List Your Facility</a>
+                <div class="hidden md:flex items-center space-x-6" id="nav-actions">
+                    <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
+                    <a href="index.html" id="login-btn" class="text-slate-600 hover:text-dark font-medium transition-custom">Log in</a>
+                    <a href="owner-dashboard.html" id="list-facility-btn" class="bg-dark hover:bg-slate-800 text-white px-5 py-2 rounded-full font-medium transition-custom shadow-sm text-sm">List Your Facility</a>
                 </div>
 
                 <div class="md:hidden flex items-center">
@@ -354,6 +354,16 @@
         const applyBtn = document.getElementById('apply-filters-btn');
         const pagination = document.getElementById('pagination');
 
+        function getPrimaryImageUrl(urlStr) {
+            try {
+                const parsed = JSON.parse(urlStr);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+            } catch (e) {
+                // not json, return string directly
+            }
+            return urlStr || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+        }
+
         // Function to build standard facility card HTML
         function createFacilityCard(facility) {
             const isInstantBook = facility.is_instant_book === 1;
@@ -364,14 +374,21 @@
             const typeDisplay = facility.type.charAt(0).toUpperCase() + facility.type.slice(1);
             const envDisplay = facility.environment.charAt(0).toUpperCase() + facility.environment.slice(1);
 
+            let topBadges = '<div class="absolute top-3 right-3 flex gap-2 z-20">';
+            if (facility.active_promotions) {
+                topBadges += `<div class="bg-red-500/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-white shadow-sm flex items-center"><i class="fa-solid fa-tag mr-1"></i> Promo</div>`;
+            }
+            topBadges += '</div>';
+
             return `
                 <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick="window.location.href='facility.html?id=${facility.id}'">
                     <div class="relative h-48 hover-zoom-img-container">
-                        <img src="${facility.image_url}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
-                        <div class="absolute top-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-slate-800 border border-slate-200">
+                        <img src="${getPrimaryImageUrl(facility.image_url)}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
+                        <div class="absolute top-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-slate-800 border border-slate-200 z-20">
                             <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating} (${facility.reviews_count})
                         </div>
-                        <button class="absolute top-3 right-3 w-8 h-8 bg-white/80 hover:bg-white backdrop-blur rounded-full flex items-center justify-center text-slate-500 hover:text-red-500 transition-custom z-10 shadow-sm">
+                        ${topBadges}
+                        <button class="absolute bottom-3 right-3 w-8 h-8 bg-white/80 hover:bg-white backdrop-blur rounded-full flex items-center justify-center text-slate-500 hover:text-red-500 transition-custom z-10 shadow-sm">
                             <i class="fa-regular fa-heart text-sm"></i>
                         </button>
                     </div>
@@ -467,7 +484,7 @@
                 
                 const popupContent = `
                     <div class="w-48 cursor-pointer" onclick="window.location.href='facility.html?id=${f.id}'">
-                        <img src="${f.image_url}" class="w-full h-24 object-cover rounded-lg mb-2">
+                        <img src="${getPrimaryImageUrl(f.image_url)}" class="w-full h-24 object-cover rounded-lg mb-2">
                         <div class="font-bold text-sm truncate hover:text-primary transition-custom">${f.name}</div>
                         <div class="font-bold text-primary">From $${f.base_price}<span class="text-xs text-slate-500 font-normal">/hr</span></div>
                     </div>
@@ -554,7 +571,7 @@
                 params.append('limit', limitPerPage);
                 params.append('offset', (currentPage - 1) * limitPerPage);
                 
-                const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
                 const response = await fetch(`${API_BASE_URL}/api/facilities?` + params.toString());
                 
                 if (!response.ok) throw new Error(`Server returned ${response.status}`);
@@ -724,6 +741,54 @@
             } else {
                 fetchFacilities({}, false);
             }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            function updateNavUI(user) {
+                const loginBtn = document.getElementById('login-btn');
+                const listBtn = document.getElementById('list-facility-btn');
+                if (loginBtn) {
+                    loginBtn.innerHTML = `Hi, ${user.name} <span class="text-xs text-slate-400 ml-1 cursor-pointer hover:text-red-500" id="logout-btn">(Log out)</span>`;
+                    loginBtn.href = "#";
+                    
+                    if (listBtn) {
+                        if (user.role === 'admin') {
+                            listBtn.textContent = "Admin Dashboard";
+                            listBtn.href = "admin-dashboard.html";
+                        } else if (user.role === 'host') {
+                            listBtn.textContent = "Host Dashboard";
+                            listBtn.href = "owner-dashboard.html";
+                        } else {
+                            listBtn.textContent = "My Bookings";
+                            listBtn.href = "player-dashboard.html";
+                        }
+                    }
+
+                    document.getElementById('logout-btn').addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                        await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+                        localStorage.removeItem('gg_user');
+                        window.location.reload();
+                    });
+                }
+            }
+
+            const storedUser = localStorage.getItem('gg_user');
+            if (storedUser) {
+                try { updateNavUI(JSON.parse(storedUser)); } catch(e){}
+            }
+
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    updateNavUI(data.user);
+                    localStorage.setItem('gg_user', JSON.stringify(data.user));
+                }
+            } catch (e) { }
         });
     </script>
 </body>

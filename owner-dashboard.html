@@ -50,6 +50,7 @@
         /* Booking Types */
         .g-event-online { background-color: #10b981 !important; color: white !important; } /* Primary Green */
         .g-event-manual { background-color: #3b82f6 !important; color: white !important; } /* Blue (like the screenshot) */
+        .g-event-discount { background-color: #fee2e2 !important; color: #dc2626 !important; } /* Pale Red to match player surface */
         
         /* Toolbar */
         .fc-toolbar-title { font-weight: 800 !important; color: #0f172a !important; font-size: 1.5rem !important;}
@@ -84,7 +85,7 @@
     <!-- Main Content -->
     <main class="flex-1 max-w-[800px] mx-auto w-full px-4 py-12">
         <div class="mb-8 text-center">
-            <h1 class="text-3xl font-extrabold text-dark tracking-tight mb-2">Host Dashboard</h1>
+            <h1 class="text-3xl font-extrabold text-dark tracking-tight mb-2" id="dashboard-title">Host Dashboard</h1>
             <p class="text-slate-500 text-lg">Manage your facilities and upcoming reservations.</p>
         </div>
 
@@ -108,22 +109,22 @@
                     <!-- Today's Revenue -->
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
                         <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Today's Revenue</span>
-                        <span class="text-3xl font-extrabold text-dark">$0</span>
+                        <span id="stat-today-rev" class="text-3xl font-extrabold text-dark">$0</span>
                     </div>
                     <!-- This Week's Revenue -->
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
                         <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Week's Revenue</span>
-                        <span class="text-3xl font-extrabold text-dark">$0</span>
+                        <span id="stat-week-rev" class="text-3xl font-extrabold text-dark">$0</span>
                     </div>
                     <!-- This Month's Revenue -->
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
                         <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Month's Revenue</span>
-                        <span class="text-3xl font-extrabold text-dark">$0</span>
+                        <span id="stat-month-rev" class="text-3xl font-extrabold text-dark">$0</span>
                     </div>
                     <!-- Bookings Today -->
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
                         <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Bookings Today</span>
-                        <span class="text-3xl font-extrabold text-dark">0</span>
+                        <span id="stat-today-count" class="text-3xl font-extrabold text-dark">0</span>
                     </div>
                 </div>
             </div>
@@ -134,6 +135,8 @@
                 <button onclick="switchTab('reservations')" id="tab-btn-reservations" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Reservations</button>
                 <button onclick="switchTab('calendar')" id="tab-btn-calendar" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Calendar</button>
                 <button onclick="switchTab('discounts')" id="tab-btn-discounts" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Discounts</button>
+                <button onclick="switchTab('wallet')" id="tab-btn-wallet" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Wallet & Payouts</button>
+                <button onclick="switchTab('profile')" id="tab-btn-profile" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Profile</button>
                 <button onclick="switchTab('add-new')" id="tab-btn-add-new" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Add New Facility</button>
             </div>
 
@@ -207,6 +210,7 @@
                                 
                                 <input type="hidden" id="modal-facility-id">
                                 <input type="hidden" id="modal-date-val">
+                                <input type="hidden" id="modal-edit-discount-id">
 
                                 <!-- Date & Time Display -->
                                 <div class="space-y-4">
@@ -239,17 +243,47 @@
                                     </div>
                                 </div>
 
-                                <!-- Booking Title -->
+                                <!-- Block Type -->
                                 <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Action Type<span class="text-red-500">*</span></label>
+                                    <div class="flex items-center gap-4 mt-2">
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="modal-block-type" value="offline" class="w-4 h-4 text-primary focus:ring-primary border-slate-300" checked onchange="toggleModalBlockType()">
+                                            <span class="ml-2 text-sm font-semibold text-slate-700">Offline Booking</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="modal-block-type" value="discount" class="w-4 h-4 text-primary focus:ring-primary border-slate-300" onchange="toggleModalBlockType()">
+                                            <span class="ml-2 text-sm font-semibold text-slate-700">Add Discount</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Offline Booking Fields -->
+                                <div id="modal-offline-fields">
                                     <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Booking Title<span class="text-red-500">*</span></label>
                                     <input type="text" id="modal-block-notes" required placeholder="e.g. Private Lesson" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
+                                </div>
+
+                                <!-- Discount Fields -->
+                                <div id="modal-discount-fields" class="hidden space-y-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Discount Type<span class="text-red-500">*</span></label>
+                                        <select id="modal-disc-type" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white">
+                                            <option value="percentage">Percentage (%)</option>
+                                            <option value="fixed_amount">Fixed Amount ($)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Discount Value<span class="text-red-500">*</span></label>
+                                        <input type="number" id="modal-disc-value" min="1" step="0.01" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none shadow-sm" placeholder="e.g. 20">
+                                    </div>
                                 </div>
 
                                 <div class="pt-4 border-t border-slate-100 flex justify-end gap-3 items-center">
                                     <!-- Price Display Mimicking Screenshot -->
                                     <div class="flex-1">
                                          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Booking Price</div>
-                                         <div class="text-xl font-bold text-slate-800">Offline</div>
+                                         <div class="text-xl font-bold text-slate-800 flex items-center" id="modal-price-display">Offline</div>
                                     </div>
                                     
                                     <button type="button" onclick="closeEventModal()" class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-custom font-medium shadow-sm bg-white">Cancel booking</button>
@@ -355,6 +389,92 @@
                             </form>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Tab: Wallet -->
+            <div id="tab-wallet" class="hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+                    <h2 class="text-2xl font-bold text-dark mb-6">Wallet & Payouts</h2>
+                    
+                    <div id="wallet-alert" class="hidden"></div>
+                    
+                    <div id="wallet-status-loading" class="text-center py-12 text-slate-500">
+                        <i class="fa-solid fa-spinner fa-spin text-3xl mb-3"></i>
+                        <p class="font-medium">Connecting to Stripe...</p>
+                    </div>
+
+                    <div id="wallet-onboard-prompt" class="hidden bg-slate-50 border border-slate-200 rounded-2xl p-10 text-center max-w-2xl mx-auto my-8">
+                        <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary text-4xl mx-auto mb-6">
+                            <i class="fa-solid fa-building-columns"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-dark mb-3">Set Up Your Payouts</h3>
+                        <p class="text-slate-600 mb-8 text-lg">To receive earnings directly to your bank account, you need to set up a Stripe Connected account. It only takes a few minutes.</p>
+                        <button id="btn-onboard" onclick="startStripeOnboarding()" class="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-xl font-bold transition-custom shadow-glow flex items-center justify-center mx-auto text-lg">
+                            <i class="fa-brands fa-stripe mr-2 text-2xl"></i> Set up Payouts
+                        </button>
+                    </div>
+
+                    <div id="wallet-dashboard-prompt" class="hidden bg-green-50 border border-green-200 rounded-2xl p-10 text-center max-w-2xl mx-auto my-8">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-4xl mx-auto mb-6">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-dark mb-3">Payouts are Active</h3>
+                        <p class="text-slate-600 mb-8 text-lg">Your Stripe Connected account is fully set up. You will receive automatic transfers for your facility bookings.</p>
+                        <button id="btn-dashboard" onclick="openStripeDashboard()" class="bg-dark hover:bg-darker text-white px-8 py-4 rounded-xl font-bold transition-custom shadow-md flex items-center justify-center mx-auto text-lg">
+                            <i class="fa-solid fa-chart-line mr-2"></i> View your Stripe Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Profile -->
+            <div id="tab-profile" class="hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+                    <h2 class="text-2xl font-bold text-dark mb-6">My Profile</h2>
+                    <form id="profile-form" class="space-y-6 max-w-2xl">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">First Name</label>
+                                <input type="text" id="prof-first-name" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Last Name</label>
+                                <input type="text" id="prof-last-name" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Email Address</label>
+                            <input type="email" id="prof-email" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Phone Number</label>
+                            <input type="tel" id="prof-phone" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Company / Facility Owner Name</label>
+                            <input type="text" id="prof-company" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                        </div>
+                        <div class="pt-4 border-t border-slate-100">
+                            <h3 class="text-lg font-bold text-dark mb-4">Change Password (Optional)</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1">Current Password</label>
+                                    <input type="password" id="prof-old-pass" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1">New Password</label>
+                                    <input type="password" id="prof-new-pass" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                                </div>
+                            </div>
+                        </div>
+                        <div id="prof-msg" class="hidden p-4 rounded-xl text-sm font-medium border"></div>
+                        <div class="pt-4 border-t border-slate-100 flex justify-end">
+                            <button type="submit" id="prof-submit-btn" class="bg-primary hover:bg-primaryHover text-white px-8 py-3 rounded-xl font-bold transition-custom shadow-glow flex items-center">
+                                Save Profile
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -654,6 +774,52 @@
     </main>
 
     <script>
+        function formatTimeSlots(slotsArray) {
+            if (!slotsArray || slotsArray.length === 0) return '';
+            
+            const sorted = [...slotsArray].sort();
+            let groups = [];
+            let currentGroup = [sorted[0]];
+            
+            for (let i = 1; i < sorted.length; i++) {
+                const prev = sorted[i - 1];
+                const curr = sorted[i];
+                
+                const prevParts = prev.split(':');
+                let expectedH = parseInt(prevParts[0]);
+                let expectedM = parseInt(prevParts[1]) + 30;
+                if (expectedM >= 60) {
+                    expectedH += 1;
+                    expectedM -= 60;
+                }
+                const expectedStr = `${expectedH.toString().padStart(2, '0')}:${expectedM.toString().padStart(2, '0')}`;
+                
+                if (curr === expectedStr) {
+                    currentGroup.push(curr);
+                } else {
+                    groups.push(currentGroup);
+                    currentGroup = [curr];
+                }
+            }
+            groups.push(currentGroup);
+            
+            return groups.map(group => {
+                const start = group[0];
+                const last = group[group.length - 1];
+                
+                const lastParts = last.split(':');
+                let endH = parseInt(lastParts[0]);
+                let endM = parseInt(lastParts[1]) + 30;
+                if (endM >= 60) {
+                    endH += 1;
+                    endM -= 60;
+                }
+                const endStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+                
+                return `${start} - ${endStr}`;
+            }).join(', ');
+        }
+
         function switchTab(tabId) {
             // Hide all tabs
             document.getElementById('tab-facilities').classList.add('hidden');
@@ -662,12 +828,16 @@
             document.getElementById('tab-add-new').classList.add('hidden');
             const discTab = document.getElementById('tab-discounts');
             if(discTab) discTab.classList.add('hidden');
+            const walletTab = document.getElementById('tab-wallet');
+            if(walletTab) walletTab.classList.add('hidden');
+            const profTab = document.getElementById('tab-profile');
+            if(profTab) profTab.classList.add('hidden');
             
             // Show selected tab
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
 
             // Reset tab button styles
-            const btns = ['facilities', 'reservations', 'calendar', 'add-new', 'discounts'];
+            const btns = ['facilities', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile'];
             btns.forEach(btn => {
                 const el = document.getElementById(`tab-btn-${btn}`);
                 if(el) el.className = 'pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom';
@@ -676,6 +846,13 @@
             // Active button styles
             const activeBtn = document.getElementById(`tab-btn-${tabId}`);
             if(activeBtn) activeBtn.className = 'pb-4 font-bold text-lg border-b-2 border-primary text-primary transition-custom';
+
+            if (tabId === 'discounts') {
+                const discSelectEl = document.getElementById('discount-facility-select');
+                if (discSelectEl && discSelectEl.value && window.loadFacilityDiscounts) {
+                    loadFacilityDiscounts();
+                }
+            }
         }
 
         // Fetch Host Data Overview
@@ -990,6 +1167,68 @@
 
         function renderBookings(bookings) {
             allBookingsCache = bookings; // Save to global cache for calendar filtering
+            
+            // Calculate Dashboard Stats
+            let todayRev = 0;
+            let weekRev = 0;
+            let monthRev = 0;
+            let bookingsTodayCount = 0;
+            
+            const now = new Date();
+            const todayStr = String(now.getFullYear()) + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+            
+            // Current week (Sunday to Saturday)
+            const dDay = now.getDay();
+            const firstDayOfWeek = new Date(now);
+            firstDayOfWeek.setDate(now.getDate() - dDay);
+            firstDayOfWeek.setHours(0,0,0,0);
+            
+            const lastDayOfWeek = new Date(firstDayOfWeek);
+            lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+            lastDayOfWeek.setHours(23,59,59,999);
+            
+            // Current month
+            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+            
+            bookings.forEach(b => {
+                if (b.booking_date) b.booking_date = b.booking_date.split('T')[0];
+                const bDateStr = b.booking_date; // "YYYY-MM-DD"
+                if (!bDateStr) return;
+                const bParts = bDateStr.split('-');
+                const bDate = new Date(bParts[0], bParts[1]-1, bParts[2]);
+                
+                const isManual = b.booking_type === 'manual';
+                const isConfirmedOrPending = b.status !== 'cancelled' && b.status !== 'rejected';
+                
+                if (bDateStr === todayStr && isConfirmedOrPending) {
+                    bookingsTodayCount++;
+                }
+                
+                if (!isManual && isConfirmedOrPending) {
+                    const price = parseFloat(b.total_price) || 0;
+                    
+                    if (bDateStr === todayStr) {
+                        todayRev += price;
+                    }
+                    
+                    if (bDate >= firstDayOfWeek && bDate <= lastDayOfWeek) {
+                        weekRev += price;
+                    }
+                    
+                    if (bDate >= firstDayOfMonth && bDate <= lastDayOfMonth) {
+                        monthRev += price;
+                    }
+                }
+            });
+            
+            // Format naturally (no cents if whole number, else 2 decimals)
+            const formatRev = (val) => val % 1 === 0 ? val.toString() : val.toFixed(2);
+            
+            document.getElementById('stat-today-rev').innerText = '$' + formatRev(todayRev);
+            document.getElementById('stat-week-rev').innerText = '$' + formatRev(weekRev);
+            document.getElementById('stat-month-rev').innerText = '$' + formatRev(monthRev);
+            document.getElementById('stat-today-count').innerText = bookingsTodayCount;
 
             const container = document.getElementById('host-reservations-list');
             container.innerHTML = '';
@@ -1029,7 +1268,7 @@
                         </div>
                         <div class="text-right">
                             <div class="font-bold text-dark">${booking.booking_date}</div>
-                            <div class="text-sm font-medium text-slate-600">${JSON.parse(booking.time_slots).join(', ')}</div>
+                            <div class="text-sm font-medium text-slate-600">${formatTimeSlots(JSON.parse(booking.time_slots))}</div>
                         </div>
                         <div class="text-right flex-shrink-0 min-w-[80px]">
                             ${priceBlock}
@@ -1056,15 +1295,36 @@
         let currentCalendar = null;
         let allBookingsCache = [];
 
-        function initCalendar(facilityId) {
+        async function initCalendar(facilityId) {
             const calendarEl = document.getElementById('calendar');
-            if (currentCalendar) {
-                currentCalendar.destroy();
+
+            // Show a temporary loading state
+            if (!currentCalendar) {
+                calendarEl.innerHTML = '<div class="flex justify-center py-20"><i class="fa-solid fa-spinner fa-spin text-3xl text-slate-300"></i></div>';
             }
 
             // Filter bookings for this facility
             const facilityBookings = allBookingsCache.filter(b => b.facility_id === parseInt(facilityId, 10));
             
+            // Fetch discounts for this facility
+            let facilityDiscounts = [];
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const discRes = await fetch(`${API_BASE_URL}/api/host/discounts/${facilityId}`, { credentials: 'include' });
+                if (discRes.ok) {
+                    facilityDiscounts = await discRes.json();
+                }
+            } catch (error) {
+                console.error("Failed to fetch discounts for calendar:", error);
+            }
+
+            // Destroy the old calendar AFTER our await safely resolves
+            if (currentCalendar) {
+                currentCalendar.destroy();
+                currentCalendar = null;
+            }
+            calendarEl.innerHTML = '';
+
             // Transform GameGroundz bookings to FullCalendar Events
             const calendarEvents = [];
             facilityBookings.forEach(b => {
@@ -1086,15 +1346,96 @@
                 const endTimeStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
 
                 calendarEvents.push({
+                    id: b.id,
                     title: b.booking_type === 'manual' ? b.manual_notes : `Booked: ${b.player_name || 'Guest'}`,
                     start: `${b.booking_date}T${startTime}:00`,
                     end: `${b.booking_date}T${endTimeStr}:00`,
                     className: b.booking_type === 'manual' ? 'g-event-manual' : 'g-event-online',
+                    editable: b.booking_type === 'manual', // only allow drag/drop for manual blocks
                     extendedProps: {
                         isManual: b.booking_type === 'manual',
-                        status: b.status
+                        status: b.status,
+                        originalNotes: b.manual_notes
                     }
                 });
+            });
+
+            // Transform Discounts to FullCalendar Events
+            facilityDiscounts.forEach(d => {
+                if (!d.is_active) return;
+                
+                const amountText = d.discount_type === 'percentage' ? `${d.value}%` : `$${d.value}`;
+                const evTitle = `🔥 ${amountText} OFF`;
+                
+                const extProps = {
+                    isDiscount: true,
+                    discountId: d.id,
+                    discountType: d.discount_type,
+                    discountValue: d.value,
+                    startDate: d.start_date,
+                    endDate: d.end_date,
+                    startTime: d.start_time,
+                    endTime: d.end_time,
+                    recurringDay: d.recurring_day,
+                    isLastMinute: d.is_last_minute
+                };
+                
+                if (d.start_date || d.end_date) {
+                    const sDate = d.start_date || d.end_date;
+                    const eDate = d.end_date || d.start_date;
+                    
+                    if (d.start_time && d.end_time) {
+                        calendarEvents.push({
+                            id: `disc-${d.id}`,
+                            title: evTitle,
+                            start: `${sDate}T${d.start_time}:00`,
+                            end: `${eDate}T${d.end_time}:00`,
+                            className: 'g-event-discount',
+                            editable: false,
+                            extendedProps: extProps
+                        });
+                    } else {
+                        // All day discount for specific dates
+                        calendarEvents.push({
+                            id: `disc-${d.id}`,
+                            title: evTitle,
+                            start: sDate,
+                            end: eDate,
+                            allDay: true,
+                            className: 'g-event-discount',
+                            editable: false,
+                            extendedProps: extProps
+                        });
+                    }
+                } else {
+                    // Ongoing / recurring discount (no specific start_date/end_date)
+                    if (d.recurring_day !== null && d.recurring_day !== undefined && d.recurring_day !== '') {
+                         // Specific day of the week
+                         calendarEvents.push({
+                            id: `disc-${d.id}`,
+                            title: evTitle,
+                            daysOfWeek: [d.recurring_day], // 0=Sunday
+                            startTime: d.start_time ? `${d.start_time}:00` : null,
+                            endTime: d.end_time ? `${d.end_time}:00` : null,
+                            className: 'g-event-discount',
+                            editable: false,
+                            allDay: (!d.start_time && !d.end_time),
+                            extendedProps: extProps
+                         });
+                    } else {
+                         // Applies every day indefinitely
+                         calendarEvents.push({
+                            id: `disc-${d.id}`,
+                            title: evTitle,
+                            startTime: d.start_time ? `${d.start_time}:00` : null,
+                            endTime: d.end_time ? `${d.end_time}:00` : null,
+                            allDay: (!d.start_time && !d.end_time),
+                            className: 'g-event-discount',
+                            editable: false,
+                            extendedProps: extProps
+                         });
+                    }
+                }
             });
 
             currentCalendar = new FullCalendar.Calendar(calendarEl, {
@@ -1115,12 +1456,19 @@
                     // Open the modal when time is highlighted
                     openEventModal(info);
                 },
+                eventDrop: async function(info) {
+                    await handleEventChange(info.event, info.revert);
+                },
+                eventResize: async function(info) {
+                    await handleEventChange(info.event, info.revert);
+                },
                 eventClick: function(info) {
-                    // Could add logic to cancel/delete events here in the future
-                    if(info.event.extendedProps.isManual) {
-                        alert(`Manual Block: ${info.event.title}`);
+                    if (info.event.extendedProps && info.event.extendedProps.isManual) {
+                        openEditEventModal(info.event);
+                    } else if (info.event.extendedProps && info.event.extendedProps.isDiscount) {
+                        openDiscountEditModal(info.event);
                     } else {
-                        alert(`Online Booking: ${info.event.title}\nStatus: ${info.event.extendedProps.status}`);
+                        alert(`Online Booking: ${info.event.title}\nStatus: ${info.event.extendedProps ? info.event.extendedProps.status : 'undefined'}`);
                     }
                 }
             });
@@ -1154,6 +1502,144 @@
             if (selectedStart24) startSelect.value = selectedStart24;
             if (selectedEnd24) endSelect.value = selectedEnd24;
         }
+
+        async function handleEventChange(eventObj, revertFunc) {
+            const startObj = eventObj.start;
+            const endObj = eventObj.end || new Date(startObj.getTime() + 30 * 60000); // fallback to +30m
+            
+            const start24 = `${startObj.getHours().toString().padStart(2, '0')}:${startObj.getMinutes().toString().padStart(2, '0')}`;
+            const end24 = `${endObj.getHours().toString().padStart(2, '0')}:${endObj.getMinutes().toString().padStart(2, '0')}`;
+            
+            const slots = [];
+            const [sh, sm] = start24.split(':').map(Number);
+            const [eh, em] = end24.split(':').map(Number);
+            let currentMins = sh * 60 + sm;
+            const endMins = eh * 60 + em;
+            
+            while(currentMins < endMins) {
+                const h = Math.floor(currentMins / 60).toString().padStart(2, '0');
+                const m = (currentMins % 60).toString().padStart(2, '0');
+                slots.push(`${h}:${m}`);
+                currentMins += 30;
+            }
+
+            const mYear = startObj.getFullYear();
+            const mMonth = String(startObj.getMonth() + 1).padStart(2, '0');
+            const mDay = String(startObj.getDate()).padStart(2, '0');
+            const payloadDate = `${mYear}-${mMonth}-${mDay}`;
+
+            const payload = {
+                booking_date: payloadDate,
+                time_slots: slots,
+                manual_notes: eventObj.extendedProps.originalNotes
+            };
+
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const response = await fetch(`${API_BASE_URL}/api/host/bookings/${eventObj.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('gg_user');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Failed to update booking');
+                }
+                loadHostData(); // reload purely to keep data sync
+            } catch (error) {
+                alert(error.message);
+                revertFunc();
+            }
+        }
+
+        function toggleModalBlockType() {
+            const blockType = document.querySelector('input[name="modal-block-type"]:checked')?.value || 'offline';
+            const offlineFields = document.getElementById('modal-offline-fields');
+            const discountFields = document.getElementById('modal-discount-fields');
+            const notesInput = document.getElementById('modal-block-notes');
+            const submitBtn = document.getElementById('modal-submit-btn');
+            const isEditMode = document.getElementById('modal-edit-booking-id') && document.getElementById('modal-edit-booking-id').value !== '';
+            const isDiscountEditMode = document.getElementById('modal-edit-discount-id') && document.getElementById('modal-edit-discount-id').value !== '';
+
+            if (blockType === 'discount') {
+                if(offlineFields) offlineFields.classList.add('hidden');
+                if(notesInput) notesInput.required = false;
+                if(discountFields) discountFields.classList.remove('hidden');
+                const discValue = document.getElementById('modal-disc-value');
+                if(discValue) discValue.required = true;
+                if(submitBtn) submitBtn.innerHTML = isDiscountEditMode ? 'Save Changes' : 'Add Discount';
+            } else {
+                if(offlineFields) offlineFields.classList.remove('hidden');
+                if(notesInput) notesInput.required = true;
+                if(discountFields) discountFields.classList.add('hidden');
+                const discValue = document.getElementById('modal-disc-value');
+                if(discValue) discValue.required = false;
+                if(submitBtn) submitBtn.innerHTML = isEditMode ? 'Save Changes' : 'Confirm booking';
+            }
+            calculateModalPrice();
+        }
+
+        function calculateModalPrice() {
+            const facId = document.getElementById('modal-facility-id').value;
+            const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == facId) : null;
+            const priceDisplay = document.getElementById('modal-price-display');
+            
+            if (!facility || !priceDisplay) return;
+
+            const blockTypeEl = document.querySelector('input[name="modal-block-type"]:checked');
+            const blockType = blockTypeEl ? blockTypeEl.value : 'offline';
+
+            if (blockType === 'offline') {
+                priceDisplay.innerHTML = 'Offline';
+                return;
+            }
+
+            // Calculate hours
+            const start24 = document.getElementById('modal-start-time').value;
+            const end24 = document.getElementById('modal-end-time').value;
+
+            if (start24 >= end24) {
+                priceDisplay.innerHTML = '<span class="text-slate-400 text-sm">Invalid time</span>';
+                return;
+            }
+
+            const [sh, sm] = start24.split(':').map(Number);
+            const [eh, em] = end24.split(':').map(Number);
+            let currentMins = sh * 60 + sm;
+            const endMins = eh * 60 + em;
+            let totalHours = (endMins - currentMins) / 60;
+
+            let basePrice = totalHours * facility.base_price;
+            
+            // Note: Pricing rules parsing skipped here for simplicity in modal estimation.
+            // Will fallback to base_price.
+
+            const discType = document.getElementById('modal-disc-type').value;
+            const discValueStr = document.getElementById('modal-disc-value').value;
+            const discValue = parseFloat(discValueStr) || 0;
+
+            let newPrice = basePrice;
+            if (discType === 'percentage') {
+                newPrice = basePrice * (1 - (discValue / 100));
+            } else {
+                newPrice = Math.max(0, basePrice - discValue); // fixed amount off the total for these slots
+            }
+
+            if (discValue > 0) {
+                priceDisplay.innerHTML = `<span class="line-through text-slate-400 text-sm mr-2">$${basePrice.toFixed(2)}</span><span class="text-primary">$${newPrice.toFixed(2)}</span>`;
+            } else {
+                priceDisplay.innerHTML = `$${basePrice.toFixed(2)}`;
+            }
+        }
+
 
         // --- CALENDAR MODAL LOGIC ---
         function openEventModal(info) {
@@ -1198,15 +1684,127 @@
             const mDay = String(startObj.getDate()).padStart(2, '0');
             document.getElementById('modal-date-val').value = `${mYear}-${mMonth}-${mDay}`;
 
+            // Reset modal mode to 'create' string (we'll implement an edit id field)
+            let editField = document.getElementById('modal-edit-booking-id');
+            if(!editField) {
+                editField = document.createElement('input');
+                editField.type = 'hidden';
+                editField.id = 'modal-edit-booking-id';
+                document.getElementById('block-time-interactive-form').appendChild(editField);
+            }
+            editField.value = '';
+
+            let editDiscountField = document.getElementById('modal-edit-discount-id');
+            if(!editDiscountField) {
+                editDiscountField = document.createElement('input');
+                editDiscountField.type = 'hidden';
+                editDiscountField.id = 'modal-edit-discount-id';
+                document.getElementById('block-time-interactive-form').appendChild(editDiscountField);
+            }
+            editDiscountField.value = '';
+
+            document.getElementById('modal-block-notes').value = '';
+            document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-regular fa-calendar-plus mr-3 text-xl"></i>New Booking';
+            
+            // Show block type selector for new bookings
+            const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
+            typeRadios.forEach(r => { r.disabled = false; if(r.value === 'offline') r.checked = true; });
+            toggleModalBlockType();
+
+            document.getElementById('event-modal-backdrop').classList.remove('hidden');
+        }
+
+        function openEditEventModal(eventObj) {
+            const facId = document.getElementById('calendar-facility-select').value;
+            const facSelect = document.getElementById('calendar-facility-select');
+            const facName = facSelect.options[facSelect.selectedIndex].text;
+
+            document.getElementById('modal-facility-id').value = facId;
+            document.getElementById('modal-facility-display').textContent = facName;
+
+            const startObj = eventObj.start;
+            const endObj = eventObj.end || new Date(startObj.getTime() + 30 * 60000);
+
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('modal-date-display').innerHTML = startObj.toLocaleDateString('en-US', dateOptions);
+
+            const startH = startObj.getHours().toString().padStart(2, '0');
+            const startM = startObj.getMinutes().toString().padStart(2, '0');
+            const start24 = `${startH}:${startM}`;
+            
+            const endH = endObj.getHours().toString().padStart(2, '0');
+            const endM = endObj.getMinutes().toString().padStart(2, '0');
+            const end24 = `${endH}:${endM}`;
+
+            populateTimeSelects(
+                document.getElementById('modal-start-time'),
+                document.getElementById('modal-end-time'),
+                start24,
+                end24
+            );
+
+            const mYear = startObj.getFullYear();
+            const mMonth = String(startObj.getMonth() + 1).padStart(2, '0');
+            const mDay = String(startObj.getDate()).padStart(2, '0');
+            document.getElementById('modal-date-val').value = `${mYear}-${mMonth}-${mDay}`;
+
+            let editField = document.getElementById('modal-edit-booking-id');
+            if(!editField) {
+                editField = document.createElement('input');
+                editField.type = 'hidden';
+                editField.id = 'modal-edit-booking-id';
+                document.getElementById('block-time-interactive-form').appendChild(editField);
+            }
+            editField.value = eventObj.id;
+
+            let editDiscountField = document.getElementById('modal-edit-discount-id');
+            if(!editDiscountField) {
+                editDiscountField = document.createElement('input');
+                editDiscountField.type = 'hidden';
+                editDiscountField.id = 'modal-edit-discount-id';
+                document.getElementById('block-time-interactive-form').appendChild(editDiscountField);
+            }
+            editDiscountField.value = ''; // Clear discount edit ID when editing a booking
+
+            document.getElementById('modal-block-notes').value = eventObj.extendedProps.originalNotes || '';
+            document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-solid fa-pen mr-3 text-xl"></i>Edit Booking';
+            
+            // Hide/disable discount mode for existing offline edits
+            const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
+            typeRadios.forEach(r => { 
+                r.disabled = true; 
+                if(r.value === 'offline') r.checked = true; 
+            });
+            toggleModalBlockType();
+
             document.getElementById('event-modal-backdrop').classList.remove('hidden');
         }
 
         function closeEventModal() {
             document.getElementById('event-modal-backdrop').classList.add('hidden');
             document.getElementById('block-time-interactive-form').reset();
+            
+            // clear discount value specifically to let placeholder show
+            const discValInput = document.getElementById('modal-disc-value');
+            if(discValInput) discValInput.value = '';
+
+            const editId = document.getElementById('modal-edit-discount-id');
+            if(editId) editId.value = '';
+
+            const delBtn = document.getElementById('modal-delete-discount-btn');
+            if(delBtn) delBtn.classList.add('hidden');
+
             document.getElementById('modal-block-error').classList.add('hidden');
             if(currentCalendar) currentCalendar.unselect();
         }
+
+        // Add Live Calculator Listeners when DOM is ready or statically 
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('modal-start-time')?.addEventListener('change', calculateModalPrice);
+            document.getElementById('modal-end-time')?.addEventListener('change', calculateModalPrice);
+            document.getElementById('modal-disc-type')?.addEventListener('change', calculateModalPrice);
+            document.getElementById('modal-disc-value')?.addEventListener('input', calculateModalPrice);
+        });
 
         // Handle the Modal Submit
         document.getElementById('block-time-interactive-form').addEventListener('submit', async (e) => {
@@ -1243,6 +1841,67 @@
                 currentMins += 30;
             }
 
+            const blockTypeEl = document.querySelector('input[name="modal-block-type"]:checked');
+            const blockType = blockTypeEl ? blockTypeEl.value : 'offline';
+
+            // Handle Discount Submission
+            if (blockType === 'discount') {
+                const facId = parseInt(document.getElementById('modal-facility-id').value, 10);
+                const payload = {
+                    facility_id: facId,
+                    discount_type: document.getElementById('modal-disc-type').value,
+                    value: parseFloat(document.getElementById('modal-disc-value').value),
+                    start_date: document.getElementById('modal-date-val').value, 
+                    end_date: document.getElementById('modal-date-val').value, 
+                    start_time: start24,
+                    end_time: end24,
+                    recurring_day: null, // This modal only handles single-day discounts
+                    is_last_minute: 0 // This modal only handles single-day discounts
+                };
+
+                const editId = document.getElementById('modal-edit-discount-id')?.value;
+                const method = editId ? 'PUT' : 'POST';
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const endpoint = editId ? `${API_BASE_URL}/api/host/discounts/${editId}` : `${API_BASE_URL}/api/host/discounts`;
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        credentials: 'include'
+                    });
+                    
+                    if (response.status === 401) {
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    if (!response.ok) {
+                        const data = await response.json();
+                        throw new Error(data.error || 'Failed to save discount');
+                    }
+                    closeEventModal();
+                    alert(editId ? "Discount updated successfully!" : "Discount added successfully for the selected time slots!");
+                    
+                    // Refresh Discount Tab securely
+                    if(typeof loadFacilityDiscounts === 'function') loadFacilityDiscounts();
+                    
+                    // Force refresh Calendar if it resolves to current facility
+                    const activeFacilityId = document.getElementById('calendar-facility-select').value;
+                    if (activeFacilityId == payload.facility_id) {
+                        initCalendar(activeFacilityId);
+                    }
+                    
+                } catch(error) {
+                    errorBlock.textContent = error.message;
+                    errorBlock.classList.remove('hidden');
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+                return; // Early return for discount
+            }
+
             const payload = {
                 facility_id: parseInt(document.getElementById('modal-facility-id').value, 10),
                 booking_date: document.getElementById('modal-date-val').value,
@@ -1250,10 +1909,21 @@
                 manual_notes: document.getElementById('modal-block-notes').value
             };
 
+            const editId = document.getElementById('modal-edit-booking-id') ? document.getElementById('modal-edit-booking-id').value : '';
+
             try {
                 const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
-                const response = await fetch(`${API_BASE_URL}/api/host/block-time`, {
-                    method: 'POST',
+                
+                let resUrl = `${API_BASE_URL}/api/host/block-time`;
+                let resMethod = 'POST';
+
+                if (editId) {
+                    resUrl = `${API_BASE_URL}/api/host/bookings/${editId}`;
+                    resMethod = 'PUT';
+                }
+
+                const response = await fetch(resUrl, {
+                    method: resMethod,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
                     credentials: 'include'
@@ -1266,7 +1936,7 @@
                 }
 
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.error || 'Failed to block time');
+                if (!response.ok) throw new Error(data.error || 'Failed to save block');
 
                 closeEventModal();
                 // Refresh data to show new block on calendar
@@ -1313,8 +1983,215 @@
                 dashboardContent.classList.remove('hidden');
                 authMessage.classList.add('hidden');
                 
+                try {
+                    const userObj = JSON.parse(storedUser);
+                    document.getElementById('dashboard-title').textContent = `Welcome, ${userObj.name}`;
+                } catch (e) {}
+
                 // Fetch data for the host
                 loadHostData();
+                loadProfile();
+                checkStripeParams();
+                loadWalletStatus();
+            }
+        }
+
+        async function loadProfile() {
+            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
+                if (!res.ok) return;
+                const data = await res.json();
+                const u = data.user;
+                if (!u) return;
+
+                document.getElementById('prof-first-name').value = u.first_name || '';
+                document.getElementById('prof-last-name').value = u.last_name || '';
+                document.getElementById('prof-email').value = u.email || '';
+                document.getElementById('prof-phone').value = u.phone_number || '';
+                document.getElementById('prof-company').value = u.company_name || '';
+            } catch (error) {
+                console.error("Error loading profile:", error);
+            }
+        }
+
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('prof-submit-btn');
+            const msgDiv = document.getElementById('prof-msg');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving...';
+            btn.disabled = true;
+            msgDiv.classList.add('hidden');
+            msgDiv.className = 'hidden p-4 rounded-xl text-sm font-medium border'; // reset classes
+            
+            const payload = {
+                first_name: document.getElementById('prof-first-name').value,
+                last_name: document.getElementById('prof-last-name').value,
+                email: document.getElementById('prof-email').value,
+                phone_number: document.getElementById('prof-phone').value,
+                company_name: document.getElementById('prof-company').value,
+                old_password: document.getElementById('prof-old-pass').value,
+                new_password: document.getElementById('prof-new-pass').value
+            };
+
+            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+                
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to update profile');
+                
+                msgDiv.textContent = 'Profile updated successfully!';
+                msgDiv.classList.add('bg-green-50', 'text-green-700', 'border-green-200');
+                msgDiv.classList.remove('hidden');
+                
+                // Clear password fields
+                document.getElementById('prof-old-pass').value = '';
+                document.getElementById('prof-new-pass').value = '';
+
+                // Update greeting
+                const updatedName = payload.first_name.trim() + ' ' + payload.last_name.trim();
+                document.getElementById('dashboard-title').textContent = `Welcome, ${updatedName}`;
+                
+                // Update localStorage
+                const storedUser = localStorage.getItem('gg_user');
+                if (storedUser) {
+                    try {
+                        const userObj = JSON.parse(storedUser);
+                        userObj.name = updatedName;
+                        userObj.email = payload.email;
+                        localStorage.setItem('gg_user', JSON.stringify(userObj));
+                    } catch(e) {}
+                }
+
+            } catch (err) {
+                msgDiv.textContent = err.message;
+                msgDiv.classList.add('bg-red-50', 'text-red-700', 'border-red-200');
+                msgDiv.classList.remove('hidden');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // Stripe Connect Wallet Logic
+        function checkStripeParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            const stripeStatus = urlParams.get('stripe');
+
+            if (tab === 'wallet') {
+                switchTab('wallet');
+            }
+
+            const alertBox = document.getElementById('wallet-alert');
+            if (stripeStatus && alertBox) {
+                alertBox.classList.remove('hidden');
+                if (stripeStatus === 'success') {
+                    alertBox.className = 'mb-6 p-4 rounded-xl text-sm font-medium bg-green-50 text-green-700 border border-green-200';
+                    alertBox.innerHTML = '<i class="fa-solid fa-circle-check mr-2"></i> Stripe account successfully connected! You are now ready to receive payouts.';
+                } else if (stripeStatus === 'incomplete') {
+                    alertBox.className = 'mb-6 p-4 rounded-xl text-sm font-medium bg-yellow-50 text-yellow-700 border border-yellow-200';
+                    alertBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-2"></i> Your Stripe onboarding is incomplete. Please finish the setup to receive payouts.';
+                } else if (stripeStatus === 'error') {
+                    alertBox.className = 'mb-6 p-4 rounded-xl text-sm font-medium bg-red-50 text-red-700 border border-red-200';
+                    alertBox.innerHTML = '<i class="fa-solid fa-circle-xmark mr-2"></i> Something went wrong with Stripe onboarding. Please try again.';
+                } else if (stripeStatus === 'refresh') {
+                    alertBox.className = 'mb-6 p-4 rounded-xl text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200';
+                    alertBox.innerHTML = '<i class="fa-solid fa-rotate-right mr-2"></i> The onboarding link expired. Please click "Set up Payouts" to try again.';
+                }
+                
+                // Keep 'tab=wallet' but remove 'stripe=...'
+                const newUrl = window.location.pathname + (tab ? '?tab=wallet' : '');
+                window.history.replaceState({}, document.title, newUrl);
+            }
+        }
+
+        async function loadWalletStatus() {
+            document.getElementById('wallet-status-loading').classList.remove('hidden');
+            document.getElementById('wallet-onboard-prompt').classList.add('hidden');
+            document.getElementById('wallet-dashboard-prompt').classList.add('hidden');
+            
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
+                if (!res.ok) throw new Error("Failed to load user status");
+                const data = await res.json();
+                
+                document.getElementById('wallet-status-loading').classList.add('hidden');
+                if (data.user && data.user.stripe_onboarding_complete) {
+                    document.getElementById('wallet-dashboard-prompt').classList.remove('hidden');
+                } else {
+                    document.getElementById('wallet-onboard-prompt').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error("Error loading wallet status:", error);
+                document.getElementById('wallet-status-loading').innerHTML = '<p class="text-red-500 font-bold">Error loading Stripe status. Please check your connection.</p>';
+            }
+        }
+
+        async function startStripeOnboarding() {
+            const btn = document.getElementById('btn-onboard');
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Redirecting to Stripe...';
+            
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const res = await fetch(`${API_BASE_URL}/api/stripe/onboard`, { 
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                
+                if (res.status === 401) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                if (res.ok && data.url) {
+                    window.location.href = data.url;
+                } else {
+                    throw new Error(data.error || 'Failed to create onboarding link');
+                }
+            } catch (error) {
+                alert("Stripe error: " + error.message);
+                if (btn) btn.innerHTML = '<i class="fa-brands fa-stripe mr-2 text-2xl"></i> Set up Payouts';
+            }
+        }
+
+        async function openStripeDashboard() {
+            const btn = document.getElementById('btn-dashboard');
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Opening Dashboard...';
+            
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const res = await fetch(`${API_BASE_URL}/api/stripe/dashboard`, { 
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                
+                if (res.status === 401) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                if (res.ok && data.url) {
+                    window.location.href = data.url;
+                } else {
+                    throw new Error(data.error || 'Failed to create dashboard link');
+                }
+            } catch (error) {
+                alert("Stripe error: " + error.message);
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-chart-line mr-2"></i> View your Stripe Dashboard';
             }
         }
         
@@ -1771,6 +2648,62 @@
         });
 
         // --- DISCOUNTS LOGIC ---
+        function openDiscountEditModal(event) {
+            const props = event.extendedProps;
+            const facId = document.getElementById('calendar-facility-select').value;
+            
+            document.getElementById('modal-facility-id').value = facId;
+            document.getElementById('modal-edit-discount-id').value = props.discountId;
+            
+            // Set Date
+            const dStr = event.start ? event.start.toLocaleString('default', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Recurring';
+            document.getElementById('modal-date-display').textContent = event.allDay && !event.start ? 'Recurring / All Day' : dStr;
+            const isoDate = event.start ? event.start.toISOString().split('T')[0] : (props.startDate || '');
+            document.getElementById('modal-date-val').value = isoDate;
+            
+            const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == facId) : null;
+            document.getElementById('modal-facility-display').textContent = facility ? facility.name : 'Selected Facility';
+            
+            populateTimeSelects(
+                document.getElementById('modal-start-time'),
+                document.getElementById('modal-end-time'),
+                props.startTime,
+                props.endTime
+            );
+            
+            const discRadio = document.querySelector('input[name="modal-block-type"][value="discount"]');
+            if(discRadio) { discRadio.checked = true; toggleModalBlockType(); }
+            
+            document.getElementById('modal-disc-type').value = props.discountType;
+            document.getElementById('modal-disc-value').value = props.discountValue;
+            
+            calculateModalPrice();
+            
+            document.getElementById('modal-submit-btn').innerHTML = 'Save Changes';
+            
+            let delBtn = document.getElementById('modal-delete-discount-btn');
+            if (!delBtn) {
+                delBtn = document.createElement('button');
+                delBtn.id = 'modal-delete-discount-btn';
+                delBtn.type = 'button';
+                delBtn.className = 'px-5 py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-custom font-medium ml-2 shadow-sm mr-auto';
+                delBtn.innerHTML = '<i class="fa-solid fa-trash mr-2"></i> Delete';
+                const btnContainer = document.getElementById('modal-submit-btn').parentElement;
+                btnContainer.insertBefore(delBtn, btnContainer.firstChild); // Insert as first item so it's on the left
+            }
+            
+            delBtn.onclick = async function() {
+                // deleteDiscount already requests confirmation and hits endpoint
+                await deleteDiscount(props.discountId);
+                const activeFac = document.getElementById('calendar-facility-select').value;
+                if (activeFac) initCalendar(activeFac);
+                closeEventModal();
+            };
+            delBtn.classList.remove('hidden');
+            
+            document.getElementById('event-modal-backdrop').classList.remove('hidden');
+        }
+
         function loadFacilityDiscounts() {
             const facId = document.getElementById('discount-facility-select').value;
             if (!facId) return;

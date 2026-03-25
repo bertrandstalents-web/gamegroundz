@@ -469,8 +469,50 @@
                 <h4 class="text-2xl font-extrabold text-dark mb-6">Welcome to GameGroundz</h4>
                 
                 <form id="auth-form" class="space-y-4">
-                    <div id="name-field-container" class="hidden">
-                        <input type="text" id="auth-name" placeholder="Full Name" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
+                    <div id="name-field-container" class="hidden space-y-4">
+                        <div class="mb-2">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Account Type</label>
+                            <div class="flex gap-4">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="auth-role" value="player" checked class="peer sr-only">
+                                    <div class="px-4 py-3 border border-slate-200 rounded-xl text-center text-sm font-semibold text-slate-500 peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:border-primary transition-custom">
+                                        Customer
+                                    </div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="auth-role" value="host" class="peer sr-only">
+                                    <div class="px-4 py-3 border border-slate-200 rounded-xl text-center text-sm font-semibold text-slate-500 peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:border-primary transition-custom">
+                                        Facility Owner
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="company-name-container" class="hidden">
+                            <input type="text" id="auth-company-name" placeholder="Company / Private Arena / City" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
+                        </div>
+
+                        <div class="flex gap-4">
+                            <input type="text" id="auth-first-name" placeholder="First Name" class="w-1/2 px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
+                            <input type="text" id="auth-last-name" placeholder="Last Name" class="w-1/2 px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
+                        </div>
+                        <input type="tel" id="auth-phone-number" placeholder="Phone Number" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
+
+                        <div>
+                            <label class="block text-[0.8rem] font-bold text-slate-500 mb-2">Profile Picture (Optional)</label>
+                            <div class="flex items-center gap-4">
+                                <div class="relative w-16 h-16 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 overflow-hidden cursor-pointer hover:bg-slate-100 transition-custom" id="profile-pic-preview-container" onclick="document.getElementById('auth-profile-pic').click()">
+                                    <i class="fa-solid fa-camera text-slate-400 text-xl" id="profile-pic-icon"></i>
+                                    <img id="profile-pic-preview" src="" class="absolute inset-0 w-full h-full object-cover hidden">
+                                </div>
+                                <div class="flex-1">
+                                    <button type="button" onclick="document.getElementById('auth-profile-pic').click()" class="text-sm font-semibold text-primary hover:text-primaryHover bg-primary/10 px-4 py-2 rounded-full transition-custom">
+                                        Choose Image
+                                    </button>
+                                </div>
+                            </div>
+                            <input type="file" id="auth-profile-pic" accept="image/*" class="hidden" onchange="previewProfilePic(event)">
+                        </div>
                     </div>
                     <div>
                         <input type="email" id="auth-email" placeholder="Email Address" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
@@ -479,6 +521,13 @@
                         <input type="password" id="auth-password" placeholder="Password" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700 pr-12">
                         <button type="button" id="toggle-password-btn" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-custom focus:outline-none">
                             <i class="fa-solid fa-eye" id="toggle-password-icon"></i>
+                        </button>
+                        <div id="password-requirements" class="hidden text-xs text-slate-500 mt-2 px-1">At least 8 characters, 1 number, 1 uppercase letter</div>
+                    </div>
+                    <div id="confirm-password-container" class="hidden relative mt-1">
+                        <input type="password" id="auth-confirm-password" placeholder="Confirm Password" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700 pr-12">
+                        <button type="button" id="toggle-confirm-password-btn" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-custom focus:outline-none">
+                            <i class="fa-solid fa-eye" id="toggle-confirm-password-icon"></i>
                         </button>
                     </div>
                     <button type="button" id="auth-submit-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-lg transition-custom shadow-glow mt-2">
@@ -602,14 +651,15 @@
                 
                 featured.forEach(facility => {
                     const isInstantBook = facility.is_instant_book === 1;
-                    let instantBookHtml = '';
-                    if (isInstantBook) {
-                        instantBookHtml = `
-                            <div class="absolute top-4 right-4 bg-primary/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-white shadow-sm">
-                                Instant Book
-                            </div>
-                        `;
+                    
+                    let topBadges = '<div class="absolute top-4 right-4 flex gap-2 z-20">';
+                    if (facility.active_promotions) {
+                        topBadges += `<div class="bg-red-500/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-white shadow-sm flex items-center"><i class="fa-solid fa-tag mr-1"></i> Promo</div>`;
                     }
+                    if (isInstantBook) {
+                        topBadges += `<div class="bg-primary/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-white shadow-sm">Instant Book</div>`;
+                    }
+                    topBadges += '</div>';
 
                     const typeDisplay = facility.type.charAt(0).toUpperCase() + facility.type.slice(1);
                     const envDisplay = facility.environment.charAt(0).toUpperCase() + facility.environment.slice(1);
@@ -629,10 +679,10 @@
                         <div class="bg-white rounded-3xl overflow-hidden shadow-soft border border-slate-100 group cursor-pointer" onclick="window.location.href='facility.html?id=${facility.id}'">
                             <div class="relative h-64 hover-zoom-img-container">
                                 <img src="${getPrimaryImageUrl(facility.image_url)}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
-                                <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-slate-800 shadow-sm">
+                                <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-slate-800 shadow-sm z-20">
                                     <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating} (${facility.reviews_count})
                                 </div>
-                                ${instantBookHtml}
+                                ${topBadges}
                                 <button class="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md text-slate-400 hover:text-red-500 hover:scale-110 transition-custom z-10">
                                     <i class="fa-regular fa-heart"></i>
                                 </button>
@@ -700,7 +750,13 @@
         const authTitle = document.getElementById('auth-title');
         const authToggleText = document.getElementById('auth-toggle-text');
         const nameFieldContainer = document.getElementById('name-field-container');
-        const nameInput = document.getElementById('auth-name');
+        const reqs = document.getElementById('password-requirements');
+        const confContainer = document.getElementById('confirm-password-container');
+        
+        const firstNameInput = document.getElementById('auth-first-name');
+        const lastNameInput = document.getElementById('auth-last-name');
+        const phoneInput = document.getElementById('auth-phone-number');
+        const confInput = document.getElementById('auth-confirm-password');
         
         let isLoginMode = true;
 
@@ -712,13 +768,23 @@
                 authToggleText.textContent = "Don't have an account?";
                 authToggleBtn.textContent = "Sign up";
                 nameFieldContainer.classList.add('hidden');
-                nameInput.required = false;
+                reqs.classList.add('hidden');
+                confContainer.classList.add('hidden');
+                firstNameInput.required = false;
+                lastNameInput.required = false;
+                phoneInput.required = false;
+                confInput.required = false;
             } else {
                 authTitle.textContent = "Sign up";
                 authToggleText.textContent = "Already have an account?";
                 authToggleBtn.textContent = "Log in";
                 nameFieldContainer.classList.remove('hidden');
-                nameInput.required = true;
+                reqs.classList.remove('hidden');
+                confContainer.classList.remove('hidden');
+                firstNameInput.required = true;
+                lastNameInput.required = true;
+                phoneInput.required = true;
+                confInput.required = true;
             }
         }
 
@@ -745,6 +811,22 @@
         if (authBackdrop) authBackdrop.addEventListener('click', closeAuthModal);
         if (authToggleBtn) authToggleBtn.addEventListener('click', toggleAuthMode);
 
+        const roleRadios = document.querySelectorAll('input[name="auth-role"]');
+        const companyContainer = document.getElementById('company-name-container');
+        const companyInput = document.getElementById('auth-company-name');
+        
+        roleRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'host') {
+                    companyContainer.classList.remove('hidden');
+                    companyInput.required = true;
+                } else {
+                    companyContainer.classList.add('hidden');
+                    companyInput.required = false;
+                }
+            });
+        });
+
         const passwordInput = document.getElementById('auth-password');
         const togglePasswordBtn = document.getElementById('toggle-password-btn');
         const togglePasswordIcon = document.getElementById('toggle-password-icon');
@@ -766,6 +848,45 @@
             });
         }
 
+        const confirmPasswordInput = document.getElementById('auth-confirm-password');
+        const toggleConfirmPasswordBtn = document.getElementById('toggle-confirm-password-btn');
+        const toggleConfirmPasswordIcon = document.getElementById('toggle-confirm-password-icon');
+
+        function previewProfilePic(event) {
+            const input = event.target;
+            const preview = document.getElementById('profile-pic-preview');
+            const icon = document.getElementById('profile-pic-icon');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    icon.classList.add('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.src = "";
+                preview.classList.add('hidden');
+                icon.classList.remove('hidden');
+            }
+        }
+
+        if (toggleConfirmPasswordBtn) {
+            toggleConfirmPasswordBtn.addEventListener('click', function() {
+                const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                confirmPasswordInput.setAttribute('type', type);
+                
+                if (type === 'password') {
+                    toggleConfirmPasswordIcon.classList.remove('fa-eye-slash');
+                    toggleConfirmPasswordIcon.classList.add('fa-eye');
+                } else {
+                    toggleConfirmPasswordIcon.classList.remove('fa-eye');
+                    toggleConfirmPasswordIcon.classList.add('fa-eye-slash');
+                }
+            });
+        }
+
         const authForm = document.getElementById('auth-form');
         const authError = document.getElementById('auth-error');
         const authSubmitBtn = document.getElementById('auth-submit-btn');
@@ -774,16 +895,65 @@
             e.preventDefault();
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            const name = document.getElementById('auth-name').value;
+            
+            const first_name = document.getElementById('auth-first-name') ? document.getElementById('auth-first-name').value : '';
+            const last_name = document.getElementById('auth-last-name') ? document.getElementById('auth-last-name').value : '';
+            const phone_number = document.getElementById('auth-phone-number') ? document.getElementById('auth-phone-number').value : '';
+            const confirm_password = document.getElementById('auth-confirm-password') ? document.getElementById('auth-confirm-password').value : '';
 
             authError.classList.add('hidden');
+
+            let role_choice = 'player';
+            let company_name = '';
+            let profile_picture = null;
+
+            if (!isLoginMode) {
+                const selectedRole = document.querySelector('input[name="auth-role"]:checked');
+                if (selectedRole) role_choice = selectedRole.value;
+                company_name = document.getElementById('auth-company-name') ? document.getElementById('auth-company-name').value : '';
+
+                if (role_choice === 'host' && !company_name.trim()) {
+                    authError.textContent = "Company / City name is required for facility owners.";
+                    authError.classList.remove('hidden');
+                    return;
+                }
+
+                if (password !== confirm_password) {
+                    authError.textContent = "Passwords do not match.";
+                    authError.classList.remove('hidden');
+                    return;
+                }
+                const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+                if (!passwordRegex.test(password)) {
+                    authError.textContent = "Password must be at least 8 characters long, and contain at least 1 number and 1 uppercase letter.";
+                    authError.classList.remove('hidden');
+                    return;
+                }
+
+                const profilePicInput = document.getElementById('auth-profile-pic');
+                if (profilePicInput && profilePicInput.files.length > 0) {
+                    try {
+                        profile_picture = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(profilePicInput.files[0]);
+                        });
+                    } catch (e) {
+                         authError.textContent = "Error reading profile picture.";
+                         authError.classList.remove('hidden');
+                         return;
+                    }
+                }
+            }
+
             const originalText = authSubmitBtn.textContent;
             authSubmitBtn.textContent = 'Processing...';
             authSubmitBtn.disabled = true;
 
             try {
                 const endpoint = isLoginMode ? '/api/auth/login' : '/api/users/signup';
-                const body = isLoginMode ? { email, password } : { name, email, password };
+                const body = isLoginMode ? { email, password } : { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture };
 
                 const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
                 
@@ -856,12 +1026,28 @@
                     mobileLoginBtn.removeEventListener('click', openAuthModal);
                 }
                 if (listBtn) {
-                    listBtn.textContent = user.role === 'admin' ? "Admin Dashboard" : "Host Dashboard";
-                    listBtn.href = user.role === 'admin' ? "admin-dashboard.html" : "owner-dashboard.html";
+                    if (user.role === 'admin') {
+                        listBtn.textContent = "Admin Dashboard";
+                        listBtn.href = "admin-dashboard.html";
+                    } else if (user.role === 'host') {
+                        listBtn.textContent = "Host Dashboard";
+                        listBtn.href = "owner-dashboard.html";
+                    } else {
+                        listBtn.textContent = "My Bookings";
+                        listBtn.href = "player-dashboard.html";
+                    }
                 }
                 if (mobileListBtn) {
-                    mobileListBtn.textContent = user.role === 'admin' ? "Admin Dashboard" : "Host Dashboard";
-                    mobileListBtn.href = user.role === 'admin' ? "admin-dashboard.html" : "owner-dashboard.html";
+                    if (user.role === 'admin') {
+                        mobileListBtn.textContent = "Admin Dashboard";
+                        mobileListBtn.href = "admin-dashboard.html";
+                    } else if (user.role === 'host') {
+                        mobileListBtn.textContent = "Host Dashboard";
+                        mobileListBtn.href = "owner-dashboard.html";
+                    } else {
+                        mobileListBtn.textContent = "My Bookings";
+                        mobileListBtn.href = "player-dashboard.html";
+                    }
                 }
             } else {
                 if (loginBtn) {

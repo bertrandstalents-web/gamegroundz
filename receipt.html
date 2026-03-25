@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt | GameGroundz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981',
+                        primaryHover: '#059669',
+                        dark: '#0f172a',
+                        darker: '#020617',
+                        light: '#f8fafc',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Print Styles */
+        @media print {
+            body { background: white !important; }
+            .no-print { display: none !important; }
+            .print-border { border: 1px solid #e2e8f0 !important; }
+            /* Hide URL printing and default header/footer in modern browsers */
+            @page { margin: 10mm; size: auto; }
+            /* Adjust layout for print */
+            .main-content { padding: 0 !important; margin: 0 auto !important; max-width: 100% !important; box-shadow: none !important; border: none !important;}
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen py-10 px-4 flex justify-center">
+
+    <div class="max-w-2xl w-full">
+        <!-- Action Buttons -->
+        <div class="flex justify-between items-center mb-6 no-print">
+            <button onclick="window.close()" class="text-slate-500 hover:text-dark font-medium transition-custom">
+                <i class="fa-solid fa-arrow-left mr-2"></i>Close
+            </button>
+            <button onclick="window.print()" class="bg-primary hover:bg-primaryHover text-white px-6 py-2.5 rounded-xl font-bold transition-custom shadow-sm flex items-center">
+                <i class="fa-solid fa-download mr-2"></i>Download PDF
+            </button>
+        </div>
+
+        <!-- Receipt Card -->
+        <div class="main-content bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative print-border">
+            
+            <!-- Top Green Bar -->
+            <div class="h-2 w-full bg-primary absolute top-0 left-0"></div>
+
+            <div class="p-8 sm:p-10">
+                <!-- Header -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 pb-8 border-b border-slate-100">
+                    <div class="flex items-center mb-4 sm:mb-0">
+                        <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
+                        <span class="font-bold text-2xl tracking-tight text-dark">Game<span class="text-primary">Groundz</span></span>
+                    </div>
+                    <div class="text-left sm:text-right">
+                        <h1 class="text-2xl font-black tracking-wider text-slate-300 uppercase mb-1">Receipt</h1>
+                        <p class="text-sm text-slate-500 font-medium" id="receipt-id">Receipt #</p>
+                    </div>
+                </div>
+
+                <!-- Parties Info -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-10 pb-8 border-b border-slate-100">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Billed To</p>
+                        <h3 class="text-lg font-bold text-dark mb-1" id="cust-name">-</h3>
+                        <p class="text-slate-600 text-sm" id="cust-email">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Provided By</p>
+                        <h3 class="text-lg font-bold text-dark mb-1" id="host-name">-</h3>
+                        <p class="text-slate-600 text-sm mb-1" id="facility-name">-</p>
+                        <p class="text-slate-500 text-sm" id="facility-location">-</p>
+                    </div>
+                </div>
+
+                <!-- Booking Details -->
+                <div class="mb-10">
+                    <h3 class="text-lg font-bold text-dark mb-4">Reservation Details</h3>
+                    <div class="bg-slate-50 rounded-xl p-5 border border-slate-100">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Date</p>
+                                <p class="font-medium text-dark" id="booking-date">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Time</p>
+                                <p class="font-medium text-dark" id="booking-time">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Status</p>
+                                <p class="font-medium text-primary capitalize" id="booking-status">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Totals -->
+                <div class="flex justify-end">
+                    <div class="w-full sm:w-1/2">
+                        <div class="flex justify-between items-center py-3 border-b border-slate-100">
+                            <span class="text-slate-600 font-medium">Subtotal</span>
+                            <span class="text-dark font-medium" id="subtotal-amt">-</span>
+                        </div>
+                        <div class="flex justify-between items-center py-3 border-b border-slate-100">
+                            <span class="text-slate-600 font-medium">Platform Fee</span>
+                            <span class="text-dark font-medium">Included</span>
+                        </div>
+                        <div class="flex justify-between items-center py-4 mt-2">
+                            <span class="text-lg font-bold text-dark">Total Paid</span>
+                            <span class="text-2xl font-black text-primary" id="total-amt">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="mt-16 pt-6 border-t border-slate-100 text-center">
+                    <p class="text-sm text-slate-500 font-medium mb-1">Thank you for booking with GameGroundz!</p>
+                    <p class="text-xs text-slate-400">If you have any questions concerning this receipt, please contact support.</p>
+                </div>
+            </div>
+            
+            <!-- Loading Overlay -->
+            <div id="loading" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+                <i class="fa-solid fa-spinner fa-spin text-primary text-4xl mb-4"></i>
+                <p class="text-slate-600 font-medium font-sans">Generating receipt...</p>
+            </div>
+
+            <!-- Error Overlay -->
+            <div id="error-overlay" class="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center p-8 text-center hidden">
+                <i class="fa-solid fa-circle-exclamation text-red-500 text-5xl mb-4"></i>
+                <h2 class="text-2xl font-bold text-dark mb-2">Receipt Unavailable</h2>
+                <p class="text-slate-600 mb-6" id="error-msg">We couldn't load the receipt details.</p>
+                <button onclick="window.close()" class="bg-dark hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-bold transition-custom no-print">
+                    Go Back
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function formatTimeSlots(slotsArray) {
+            if (!slotsArray || slotsArray.length === 0) return '';
+            
+            const sorted = [...slotsArray].sort();
+            let groups = [];
+            let currentGroup = [sorted[0]];
+            
+            for (let i = 1; i < sorted.length; i++) {
+                const prev = sorted[i - 1];
+                const curr = sorted[i];
+                
+                const prevParts = prev.split(':');
+                let expectedH = parseInt(prevParts[0]);
+                let expectedM = parseInt(prevParts[1]) + 30;
+                if (expectedM >= 60) {
+                    expectedH += 1;
+                    expectedM -= 60;
+                }
+                const expectedStr = `${expectedH.toString().padStart(2, '0')}:${expectedM.toString().padStart(2, '0')}`;
+                
+                if (curr === expectedStr) {
+                    currentGroup.push(curr);
+                } else {
+                    groups.push(currentGroup);
+                    currentGroup = [curr];
+                }
+            }
+            groups.push(currentGroup);
+            
+            return groups.map(group => {
+                const start = group[0];
+                const last = group[group.length - 1];
+                
+                const lastParts = last.split(':');
+                let endH = parseInt(lastParts[0]);
+                let endM = parseInt(lastParts[1]) + 30;
+                if (endM >= 60) {
+                    endH += 1;
+                    endM -= 60;
+                }
+                const endStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+                
+                return `${start} - ${endStr}`;
+            }).join(', ');
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookingId = urlParams.get('id');
+            const loadingUI = document.getElementById('loading');
+            const errorOverlay = document.getElementById('error-overlay');
+            const errorMsg = document.getElementById('error-msg');
+
+            const showError = (message) => {
+                errorMsg.textContent = message;
+                errorOverlay.classList.remove('hidden');
+                loadingUI.classList.add('hidden');
+            };
+
+            if (!bookingId) {
+                showError('No booking ID was provided in the URL.');
+                return;
+            }
+
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const response = await fetch(`${API_BASE_URL}/api/bookings/receipt/${bookingId}`, {
+                    credentials: 'include'
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    showError('You do not have permission to view this receipt. Please make sure you are logged in.');
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch receipt data.');
+                }
+
+                const booking = await response.json();
+
+                // Populate data
+                const receiptNum = booking.id.toString().padStart(6, '0');
+                document.getElementById('receipt-id').textContent = `Receipt #${receiptNum}`;
+                
+                document.getElementById('cust-name').textContent = booking.player_name || 'Guest User';
+                document.getElementById('cust-email').textContent = booking.player_email || '';
+
+                document.getElementById('host-name').textContent = booking.host_company_name || booking.host_name || 'GameGroundz Host';
+                document.getElementById('facility-name').textContent = booking.facility_name;
+                document.getElementById('facility-location').textContent = booking.location;
+
+                let dateObj;
+                try {
+                    const parts = booking.booking_date.split('T')[0].split('-');
+                    dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+                } catch(e) {
+                    dateObj = new Date(booking.booking_date);
+                }
+                document.getElementById('booking-date').textContent = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                
+                let parsedSlots = [];
+                try {
+                    parsedSlots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
+                } catch(e) {}
+                document.getElementById('booking-time').textContent = formatTimeSlots(parsedSlots) || 'Time TBD';
+                
+                document.getElementById('booking-status').textContent = booking.status;
+
+                const total = booking.total_price || 0;
+                document.getElementById('subtotal-amt').textContent = `$${total.toFixed(2)}`;
+                document.getElementById('total-amt').textContent = `$${total.toFixed(2)}`;
+
+                loadingUI.classList.add('hidden');
+
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+    </script>
+</body>
+</html>

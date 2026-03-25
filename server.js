@@ -3,13 +3,67 @@ const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
+require('dotenv').config();
 const db = require('./database');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const emailService = require('./utils/emailService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.set('trust proxy', 1);
 app.use(cors({ origin: true, credentials: true }));
+
+// Stripe webhook needs raw body
+app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), (req, res) => {
+    const rawBody = req.body;
+    let event;
+    try {
+        event = stripe.webhooks.constructEvent(
+            rawBody, 
+            req.headers['stripe-signature'], 
+            process.env.STRIPE_WEBHOOK_SECRET || ''
+        );
+    } catch (err) {
+        console.warn("Webhook signature verification failed (maybe missing secret?). Parsing body manually for dev mode.");
+        try {
+            event = JSON.parse(rawBody.toString());
+        } catch(e) {
+            return res.status(400).send(`Webhook Error: ${err.message}`);
+        }
+    }
+
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        const metadata = session.metadata;
+        
+        if (metadata && metadata.facility_id) {
+            // Confirm booking
+            const facilityId = metadata.facility_id;
+            const bookingDate = metadata.booking_date;
+            const timeSlotsStr = metadata.time_slots;
+            const userId = metadata.user_id;
+            
+            const price = session.amount_total / 100;
+            
+            db.run(
+                "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type) VALUES (?, ?, ?, ?, ?, 'confirmed', 'online')",
+                [userId, facilityId, bookingDate, timeSlotsStr, price],
+                function(err) {
+                    if (err) console.error("Error creating booking from webhook:", err);
+                    else {
+                        console.log("Booking confirmed via Stripe! ID:", this.lastID);
+                        sendBookingEmails(this.lastID);
+                    }
+                }
+            );
+        }
+    }
+    
+    res.status(200).send("Accepted");
+});
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -19,7 +73,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: false, // Set to true if using HTTPS
+        secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24 // 24 hours
     }
@@ -30,57 +84,105 @@ app.use(express.static(path.join(__dirname)));
 
 // API Routes
 
+// Helper to send emails
+function sendBookingEmails(bookingId) {
+    const query = `
+        SELECT b.id as booking_id, b.booking_date, b.time_slots, b.total_price, 
+               f.name as facility_name, f.location as facility_location, f.host_id,
+               u.name as player_name, u.email as player_email,
+               h.name as host_name, h.email as host_email, h.company_name as host_company_name
+        FROM bookings b
+        JOIN facilities f ON b.facility_id = f.id
+        JOIN users u ON b.user_id = u.id
+        LEFT JOIN users h ON f.host_id = h.id
+        WHERE b.id = ? 
+    `;
+    db.get(query, [bookingId], (err, row) => {
+        if (err || !row) {
+            console.error("Error fetching booking details for email:", err);
+            return;
+        }
+        emailService.sendPlayerConfirmation(row);
+        emailService.sendHostConfirmation(row);
+    });
+}
+
 // --- AUTHENTICATION ---
 
 // User Registration
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/users/signup', async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        let { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture } = req.body;
         
-        if (!name || !email || !password) {
+        if (!first_name || !last_name || !phone_number || !email || !password) {
             return res.status(400).json({ error: "All fields are required" });
         }
 
+        if (role_choice === 'host' && !company_name) {
+            return res.status(400).json({ error: "Company or city name is required for facility owner accounts" });
+        }
+        
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ error: "Password must be at least 8 characters long, and contain at least 1 number and 1 uppercase letter." });
+        }
+        
+        email = email.trim().toLowerCase();
+        let name = first_name.trim() + ' ' + last_name.trim();
+
         // Check if user already exists
         db.get("SELECT * FROM users WHERE email = ?", [email], async (err, row) => {
-            if (err) return res.status(500).json({ error: "Database error" });
-            if (row) return res.status(400).json({ error: "User with this email already exists" });
+            try {
+                if (err) return res.status(500).json({ error: "Database error" });
+                if (row) return res.status(400).json({ error: "User with this email already exists" });
 
-            // Hash password
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, salt);
-
-            // Insert new user
-            db.run(
-                "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-                [name, email, hashedPassword],
-                function(err) {
-                    if (err) return res.status(500).json({ error: "Error creating user" });
-                    
-                    // Automatically log in the user after registration
-                    req.session.userId = this.lastID;
-                    req.session.userRole = 'player';
-                    req.session.userName = name;
-                    
-                    res.status(201).json({ 
-                        message: "User registered successfully", 
-                        user: { id: this.lastID, name: name, email: email, role: 'player' } 
-                    });
+                // Hash password
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(password, salt);
+                
+                // Assign role based on choice, but preserve admin override based on email
+                let userRole = role_choice === 'host' ? 'host' : 'player';
+                const lowerEmail = email.toLowerCase();
+                if (lowerEmail === 'faucons76.tbertrand@gmail.com' || lowerEmail === 'support@gamegroundz.com') {
+                    userRole = 'admin';
                 }
-            );
+
+                // Insert new user
+                db.run(
+                    "INSERT INTO users (name, email, password, role, first_name, last_name, phone_number, company_name, profile_picture) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    [name, email, hashedPassword, userRole, first_name.trim(), last_name.trim(), phone_number.trim(), company_name ? company_name.trim() : null, profile_picture || null],
+                    function(err) {
+                        if (err) return res.status(500).json({ error: "Error creating user" });
+                        
+                        // Automatically log in the user after registration
+                        req.session.userId = this.lastID;
+                        req.session.userRole = userRole;
+                        req.session.userName = name;
+                        
+                        res.status(201).json({ 
+                            message: "User registered successfully", 
+                            user: { id: this.lastID, name: name, email: email, role: userRole } 
+                        });
+                    }
+                );
+            } catch (err2) {
+                res.status(500).json({ error: "Registration failed" });
+            }
         });
     } catch (error) {
-         res.status(500).json({ error: "Server error" });
+         res.status(500).json({ error: "Registration failed" });
     }
 });
 
 // User Login
 app.post('/api/auth/login', (req, res) => {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
     
     if (!email || !password) {
         return res.status(400).json({ error: "Email and password are required" });
     }
+    
+    email = email.trim().toLowerCase();
 
     db.get("SELECT * FROM users WHERE email = ?", [email], async (err, user) => {
         if (err) return res.status(500).json({ error: "Database error" });
@@ -117,18 +219,79 @@ app.get('/api/auth/me', (req, res) => {
         return res.status(401).json({ error: "Not authenticated" });
     }
     
-    db.get("SELECT id, name, email, role FROM users WHERE id = ?", [req.session.userId], (err, user) => {
+    db.get("SELECT id, name, first_name, last_name, email, phone_number, company_name, profile_picture, role, stripe_account_id, stripe_onboarding_complete FROM users WHERE id = ?", [req.session.userId], (err, user) => {
         if (err) return res.status(500).json({ error: "Database error" });
         if (!user) return res.status(404).json({ error: "User not found" });
         res.json({ user });
     });
 });
 
+// Update User Profile
+app.put('/api/users/profile', async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    let { first_name, last_name, email, phone_number, company_name, profile_picture, old_password, new_password } = req.body;
+    
+    if (!first_name || !last_name || !email || !phone_number) {
+        return res.status(400).json({ error: "Missing required basic fields." });
+    }
+
+    email = email.trim().toLowerCase();
+    let name = first_name.trim() + ' ' + last_name.trim();
+
+    try {
+        db.get("SELECT * FROM users WHERE id = ?", [req.session.userId], async (err, currentUser) => {
+            if (err) return res.status(500).json({ error: "Database error" });
+            if (!currentUser) return res.status(404).json({ error: "User not found" });
+
+            // Ensure email isn't taken by someone else
+            db.get("SELECT id FROM users WHERE email = ? AND id != ?", [email, req.session.userId], async (err, conflictUser) => {
+                if (err) return res.status(500).json({ error: "Database error" });
+                if (conflictUser) return res.status(400).json({ error: "Email is already in use by another account." });
+
+                let finalPassword = currentUser.password;
+                
+                // If trying to change password
+                if (old_password && new_password) {
+                    const isMatch = await bcrypt.compare(old_password, currentUser.password);
+                    if (!isMatch) {
+                        return res.status(400).json({ error: "Incorrect current password." });
+                    }
+                    
+                    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+                    if (!passwordRegex.test(new_password)) {
+                        return res.status(400).json({ error: "New password must be at least 8 characters long, and contain at least 1 number and 1 uppercase letter." });
+                    }
+                    
+                    const salt = await bcrypt.genSalt(10);
+                    finalPassword = await bcrypt.hash(new_password, salt);
+                }
+
+                // Update the user
+                db.run(
+                    "UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, phone_number = ?, company_name = ?, profile_picture = ?, password = ? WHERE id = ?",
+                    [name, first_name.trim(), last_name.trim(), email, phone_number.trim(), company_name ? company_name.trim() : null, profile_picture || null, finalPassword, req.session.userId],
+                    function(err) {
+                        if (err) return res.status(500).json({ error: "Failed to update profile" });
+                        
+                        req.session.userName = name;
+                        res.status(200).json({ message: "Profile updated successfully" });
+                    }
+                );
+            });
+        });
+    } catch (err) {
+        res.status(500).json({ error: "Server error during profile update" });
+    }
+});
+
 
 // GET all facilities (with optional filtering)
 app.get('/api/facilities', (req, res) => {
     const { type, types, environment, maxPrice, limit, offset } = req.query;
-    let query = "SELECT * FROM facilities WHERE 1=1";
+    let query = "SELECT * FROM facilities WHERE listing_status = 'approved'";
     const params = [];
 
     if (types) {
@@ -167,23 +330,54 @@ app.get('/api/facilities', (req, res) => {
             res.status(500).json({ error: err.message });
             return;
         }
-        res.json(rows);
+
+        // Fetch active discounts to attach to facilities
+        db.all("SELECT * FROM discounts WHERE is_active = 1", [], (err, discounts) => {
+            if (err) return res.json(rows); // fallback
+            
+            const now = new Date();
+            // Start of day for comparison
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' }); 
+            
+            rows.forEach(facility => {
+                // Attach applicable discounts
+                facility.discounts = discounts.filter(d => d.facility_id === facility.id || d.facility_id === null);
+                
+                // Determine if there is currently an active promotion for this facility today
+                facility.active_promotions = facility.discounts.filter(d => {
+                    if (d.start_date && new Date(d.start_date) > todayStart) return false;
+                    if (d.end_date && new Date(d.end_date) < todayStart) return false;
+                    if (d.recurring_day && d.recurring_day !== dayOfWeek) return false;
+                    if (d.start_time && d.end_time) {
+                        const current24 = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2,'0');
+                        if (current24 >= d.end_time) return false; // Promotion ended for today
+                    }
+                    return true;
+                }).length > 0;
+            });
+            
+            res.json(rows);
+        });
     });
 });
 
 // GET single facility by ID
 app.get('/api/facilities/:id', (req, res) => {
     const { id } = req.params;
-    db.get("SELECT * FROM facilities WHERE id = ?", [id], (err, row) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
+    db.get(`
+        SELECT f.*, u.name as host_name, u.company_name 
+        FROM facilities f 
+        LEFT JOIN users u ON f.host_id = u.id 
+        WHERE f.id = ?
+    `, [id], (err, row) => {
+        if (err || !row) {
+            return res.status(err ? 500 : 404).json({ error: err ? err.message : "Not found" });
         }
-        if (!row) {
-            res.status(404).json({ error: "Facility not found" });
-            return;
-        }
-        res.json(row);
+        db.all("SELECT * FROM discounts WHERE facility_id = ? OR facility_id IS NULL", [id], (err, discounts) => {
+            if (!err) row.discounts = discounts;
+            res.json(row);
+        });
     });
 });
 
@@ -194,7 +388,7 @@ app.post('/api/facilities', (req, res) => {
         return res.status(401).json({ error: "Unauthorized: You must be logged in to list a facility." });
     }
 
-    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book, operating_hours } = req.body;
+    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book, operating_hours, listing_status } = req.body;
     
     if (!name || !type || !environment || !base_price || !location || !image_url) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -218,11 +412,13 @@ app.post('/api/facilities', (req, res) => {
         hoursStr = JSON.stringify(operating_hours);
     }
 
+    const statusToSave = listing_status || 'pending';
+
     db.run(
         `INSERT INTO facilities 
-         (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book, host_id, operating_hours) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, image_url, is_instant_book ? 1 : 0, req.session.userId, hoursStr],
+         (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book, host_id, operating_hours, listing_status) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, image_url, is_instant_book ? 1 : 0, req.session.userId, hoursStr, statusToSave],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
@@ -242,7 +438,7 @@ app.put('/api/host/facilities/:id', (req, res) => {
     }
 
     const facilityId = req.params.id;
-    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book, operating_hours } = req.body;
+    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book, operating_hours, listing_status } = req.body;
     
     if (!name || !type || !environment || !base_price || !location || !image_url) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -266,15 +462,17 @@ app.put('/api/host/facilities/:id', (req, res) => {
         hoursStr = JSON.stringify(operating_hours);
     }
 
+    const statusToSave = listing_status || 'pending';
+
     // Include host_id in the WHERE clause so users can only edit their own facilities
     db.run(
         `UPDATE facilities SET 
             name = ?, subtitle = ?, description = ?, features = ?, locker_rooms = ?, 
             capacity = ?, size_info = ?, amenities = ?, type = ?, environment = ?, 
             base_price = ?, pricing_rules = ?, location = ?, image_url = ?, 
-            is_instant_book = ?, operating_hours = ? 
+            is_instant_book = ?, operating_hours = ?, listing_status = ? 
          WHERE id = ? AND host_id = ?`,
-        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, image_url, is_instant_book ? 1 : 0, hoursStr, facilityId, req.session.userId],
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, image_url, is_instant_book ? 1 : 0, hoursStr, statusToSave, facilityId, req.session.userId],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
@@ -343,6 +541,42 @@ app.post('/api/host/block-time', (req, res) => {
     });
 });
 
+// PUT (Edit) a booking
+app.put('/api/host/bookings/:id', (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const bookingId = req.params.id;
+    const { booking_date, time_slots, manual_notes } = req.body;
+
+    if (!booking_date || !time_slots) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Verify ownership via facilities table
+    db.get(
+        `SELECT b.id FROM bookings b 
+         JOIN facilities f ON b.facility_id = f.id 
+         WHERE b.id = ? AND f.host_id = ?`,
+        [bookingId, req.session.userId],
+        (err, row) => {
+            if (err || !row) return res.status(403).json({ error: "Access denied or booking not found" });
+
+            const sql = `
+                UPDATE bookings 
+                SET booking_date = ?, time_slots = ?, manual_notes = COALESCE(?, manual_notes)
+                WHERE id = ?
+            `;
+
+            db.run(sql, [booking_date, JSON.stringify(time_slots), manual_notes, bookingId], function(err) {
+                if (err) return res.status(500).json({ error: err.message });
+                res.status(200).json({ message: "Booking updated successfully" });
+            });
+        }
+    );
+});
+
 // GET all bookings for current user
 app.get('/api/bookings/my', (req, res) => {
     const user_id = req.session.userId || 1; 
@@ -381,8 +615,429 @@ app.get('/api/bookings/:facility_id', (req, res) => {
     });
 });
 
-app.post('/api/bookings', (req, res) => {
-    const { facility_id, booking_date, time_slots, total_price } = req.body;
+// GET receipt details for a specific booking
+app.get('/api/bookings/receipt/:id', (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { id } = req.params;
+    const query = `
+        SELECT b.*, 
+               f.name as facility_name, f.location, f.host_id,
+               u.name as player_name, u.email as player_email,
+               h.name as host_name, h.email as host_email, h.company_name as host_company_name
+        FROM bookings b
+        JOIN facilities f ON b.facility_id = f.id
+        JOIN users u ON b.user_id = u.id
+        LEFT JOIN users h ON f.host_id = h.id
+        WHERE b.id = ? 
+    `;
+
+    db.get(query, [id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: "Booking not found" });
+
+        // Ensure the requester is either the player, the host, or an admin
+        if (row.user_id !== req.session.userId && row.host_id !== req.session.userId && req.session.userRole !== 'admin') {
+            return res.status(403).json({ error: "Forbidden: You don't have access to this receipt" });
+        }
+
+        res.json(row);
+    });
+});
+
+// --- DISCOUNTS Endpoints ---
+
+// GET discounts for a host's facility
+app.get('/api/host/discounts/:facility_id', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const facilityId = req.params.facility_id;
+    
+    // Verify host owns this facility
+    db.get("SELECT id FROM facilities WHERE id = ? AND host_id = ?", [facilityId, req.session.userId], (err, row) => {
+        if (err || !row) return res.status(403).json({ error: "Access denied" });
+
+        db.all("SELECT * FROM discounts WHERE facility_id = ? ORDER BY id DESC", [facilityId], (err, rows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(rows);
+        });
+    });
+});
+
+// POST new discount
+app.post('/api/host/discounts', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const { facility_id, discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute } = req.body;
+    
+    if (!facility_id || !discount_type || !value) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    db.get("SELECT id FROM facilities WHERE id = ? AND host_id = ?", [facility_id, req.session.userId], (err, row) => {
+        if (err || !row) return res.status(403).json({ error: "Access denied" });
+
+        db.run(
+            `INSERT INTO discounts (facility_id, discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute, is_active) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+            [facility_id, discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute],
+            function(err) {
+                if (err) return res.status(500).json({ error: err.message });
+                res.status(201).json({ message: "Discount created", id: this.lastID });
+            }
+        );
+    });
+});
+
+// UPDATE an existing discount
+app.put('/api/host/discounts/:id', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const discountId = req.params.id;
+    const { discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute } = req.body;
+
+    if (!discount_type || !value) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Verify ownership via JOIN
+    const stmt = `
+        SELECT d.id FROM discounts d 
+        JOIN facilities f ON d.facility_id = f.id 
+        WHERE d.id = ? AND f.host_id = ?
+    `;
+
+    db.get(stmt, [discountId, req.session.userId], (err, row) => {
+        if (err || !row) return res.status(403).json({ error: "Access denied or discount not found" });
+
+        db.run(
+            `UPDATE discounts 
+             SET discount_type = ?, value = ?, start_date = ?, end_date = ?, start_time = ?, end_time = ?, recurring_day = ?, is_last_minute = ? 
+             WHERE id = ?`,
+            [discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute, discountId],
+            function(err) {
+                if (err) return res.status(500).json({ error: err.message });
+                res.json({ message: "Discount updated successfully" });
+            }
+        );
+    });
+});
+
+// DELETE a discount
+app.delete('/api/host/discounts/:id', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const discountId = req.params.id;
+
+    // Verify ownership by joining facilities
+    db.get(`SELECT d.id FROM discounts d 
+            JOIN facilities f ON d.facility_id = f.id 
+            WHERE d.id = ? AND f.host_id = ?`, 
+            [discountId, req.session.userId], (err, row) => {
+        
+        if (err || !row) return res.status(403).json({ error: "Access denied" });
+
+        db.run("DELETE FROM discounts WHERE id = ?", [discountId], (err) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.status(200).json({ message: "Discount deleted" });
+        });
+    });
+});
+
+// --- STRIPE CONNECT Endpoints ---
+
+// Create Stripe Account and Onboarding Link
+app.post('/api/stripe/onboard', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    try {
+        db.get("SELECT * FROM users WHERE id = ?", [req.session.userId], async (err, user) => {
+            if (err || !user) return res.status(500).json({ error: "User not found" });
+
+            let accountId = user.stripe_account_id;
+
+            if (!accountId) {
+                const account = await stripe.accounts.create({
+                    type: 'express',
+                    email: user.email,
+                    capabilities: {
+                        card_payments: { requested: true },
+                        transfers: { requested: true },
+                    },
+                });
+                accountId = account.id;
+                db.run("UPDATE users SET stripe_account_id = ? WHERE id = ?", [accountId, user.id]);
+            }
+
+            const origin = `${req.protocol}://${req.get('host')}`;
+            const accountLink = await stripe.accountLinks.create({
+                account: accountId,
+                refresh_url: `${origin}/api/stripe/refresh`,
+                return_url: `${origin}/api/stripe/return?account_id=${accountId}`,
+                type: 'account_onboarding',
+            });
+
+            res.json({ url: accountLink.url });
+        });
+    } catch (error) {
+        console.error("Stripe Onboard Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/stripe/return', async (req, res) => {
+    if (!req.session.userId) return res.redirect('/index.html');
+    const { account_id } = req.query;
+
+    try {
+        const account = await stripe.accounts.retrieve(account_id);
+        if (account.details_submitted) {
+            db.run("UPDATE users SET stripe_onboarding_complete = 1 WHERE stripe_account_id = ?", [account_id]);
+            res.redirect('/owner-dashboard.html?tab=wallet&stripe=success');
+        } else {
+            res.redirect('/owner-dashboard.html?tab=wallet&stripe=incomplete');
+        }
+    } catch (error) {
+        console.error("Stripe Return Error:", error);
+        res.redirect('/owner-dashboard.html?tab=wallet&stripe=error');
+    }
+});
+
+app.get('/api/stripe/refresh', (req, res) => {
+    res.redirect('/owner-dashboard.html?tab=wallet&stripe=refresh');
+});
+
+app.post('/api/stripe/dashboard', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    db.get("SELECT stripe_account_id FROM users WHERE id = ?", [req.session.userId], async (err, user) => {
+        if (err || !user || !user.stripe_account_id) return res.status(400).json({ error: "No Stripe account linked" });
+        try {
+            const loginLink = await stripe.accounts.createLoginLink(user.stripe_account_id);
+            res.json({ url: loginLink.url });
+        } catch (error) {
+            console.error("Stripe Login Link Error:", error);
+            res.status(500).json({ error: error.message });
+        }
+    });
+});
+
+// --- ADMIN Endpoints ---
+
+// Middleware to check admin role
+const requireAdmin = (req, res, next) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+    db.get("SELECT role FROM users WHERE id = ?", [req.session.userId], (err, user) => {
+        if (err || !user || user.role !== 'admin') {
+            return res.status(403).json({ error: "Forbidden: Admin access required" });
+        }
+        next();
+    });
+};
+
+// GET all facilities (for admin, no filters applied, includes pending/rejected)
+app.get('/api/admin/facilities', requireAdmin, (req, res) => {
+    const query = `
+        SELECT f.*, u.email as host_email, u.first_name as host_first_name, u.last_name as host_last_name, u.phone_number as host_phone_number, u.name as host_name
+        FROM facilities f
+        LEFT JOIN users u ON f.host_id = u.id
+        ORDER BY f.id DESC
+    `;
+    db.all(query, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// Update facility listing_status (approve/reject/suspend)
+app.put('/api/admin/facilities/:id/status', requireAdmin, (req, res) => {
+    const { listing_status } = req.body;
+    if (!listing_status) return res.status(400).json({ error: "Missing listing_status" });
+
+    db.run("UPDATE facilities SET listing_status = ? WHERE id = ?", [listing_status, req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) return res.status(404).json({ error: "Facility not found" });
+        res.json({ message: "Status updated successfully" });
+    });
+});
+
+// GET all users
+app.get('/api/admin/users', requireAdmin, (req, res) => {
+    db.all("SELECT id, name, first_name, last_name, phone_number, email, role, status FROM users ORDER BY id DESC", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// Update user status (active/suspended)
+app.put('/api/admin/users/:id/status', requireAdmin, (req, res) => {
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ error: "Missing status" });
+
+    if (parseInt(req.params.id) === req.session.userId && status === 'suspended') {
+        return res.status(400).json({ error: "Cannot suspend yourself" });
+    }
+
+    db.run("UPDATE users SET status = ? WHERE id = ?", [status, req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) return res.status(404).json({ error: "User not found" });
+        res.json({ message: "User status updated successfully" });
+    });
+});
+
+// GET platform-wide discounts
+app.get('/api/admin/discounts', requireAdmin, (req, res) => {
+    db.all("SELECT * FROM discounts WHERE facility_id IS NULL ORDER BY id DESC", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// POST platform-wide discount
+app.post('/api/admin/discounts', requireAdmin, (req, res) => {
+    const { discount_type, value, start_date, end_date } = req.body;
+    if (!discount_type || !value) return res.status(400).json({ error: "Missing type or value" });
+
+    db.run(
+        `INSERT INTO discounts (facility_id, discount_type, value, start_date, end_date, is_active) 
+         VALUES (NULL, ?, ?, ?, ?, 1)`,
+        [discount_type, value, start_date, end_date],
+        function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.status(201).json({ message: "Global discount created", id: this.lastID });
+        }
+    );
+});
+
+// DELETE platform-wide discount
+app.delete('/api/admin/discounts/:id', requireAdmin, (req, res) => {
+    db.run("DELETE FROM discounts WHERE id = ? AND facility_id IS NULL", [req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) return res.status(404).json({ error: "Discount not found" });
+        res.json({ message: "Global discount deleted" });
+    });
+});
+
+// GET all bookings (Admin view)
+app.get('/api/admin/bookings', requireAdmin, (req, res) => {
+    const query = `
+        SELECT b.*, 
+               f.name as facility_name, f.host_id,
+               u_player.name as player_name, u_player.email as player_email,
+               u_host.name as host_name
+        FROM bookings b
+        LEFT JOIN facilities f ON b.facility_id = f.id
+        LEFT JOIN users u_player ON b.user_id = u_player.id
+        LEFT JOIN users u_host ON f.host_id = u_host.id
+        ORDER BY b.booking_date DESC, b.id DESC
+    `;
+    db.all(query, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// --- BOOKINGS Endpoints ---
+
+// Helper for price calculation
+function calculatePrice(facility, timeSlots, discounts, bookingDateStr) {
+    const bookingDate = new Date(bookingDateStr);
+    const dayOfWeek = bookingDate.toLocaleDateString('en-US', { weekday: 'long' }); 
+    const now = new Date();
+    const isLastMinute = bookingDate.getTime() - now.getTime() < 86400000 && bookingDate.getTime() >= now.getTime() - 86400000; 
+
+    let rules = [];
+    if (facility.pricing_rules) {
+        try { rules = JSON.parse(facility.pricing_rules); } catch(e) {}
+    }
+
+    function getHourlyRate(time24, rules, basePrice) {
+        if (!rules || rules.length === 0) return basePrice;
+        for (let i = 0; i < rules.length; i++) {
+            const rule = rules[i];
+            if (time24 >= rule.start && time24 < rule.end) {
+                return parseFloat(rule.price);
+            }
+        }
+        return basePrice;
+    }
+
+    let basePriceTotal = 0;
+    timeSlots.forEach(slotId => {
+        const rate = getHourlyRate(slotId, rules, facility.base_price);
+        basePriceTotal += rate / 2; // Each slot is 30 mins (half an hour)
+    });
+
+    const validDiscounts = discounts.filter(d => {
+        if (!d.is_active) return false;
+        if (d.start_date && new Date(d.start_date) > bookingDate) return false;
+        if (d.end_date && new Date(d.end_date) < bookingDate) return false;
+        if (d.recurring_day && d.recurring_day !== dayOfWeek) return false;
+        if (d.is_last_minute && !isLastMinute) return false;
+        return true;
+    });
+
+    let bestDiscountValue = 0;
+    validDiscounts.forEach(d => {
+        let applicableSubtotal = 0;
+        let applicableCount = 0;
+        
+        timeSlots.forEach(slotId => {
+            let applies = true;
+            if (d.start_time && d.end_time) {
+                applies = (slotId >= d.start_time && slotId < d.end_time);
+            }
+            if (applies) {
+                applicableCount++;
+                const rate = getHourlyRate(slotId, rules, facility.base_price);
+                applicableSubtotal += rate / 2;
+            }
+        });
+
+        if (applicableCount === 0) return;
+
+        let discountVal = 0;
+        if (d.discount_type === 'percentage') {
+            discountVal = applicableSubtotal * (d.value / 100);
+        } else if (d.discount_type === 'fixed_amount') {
+            discountVal = d.value;
+        }
+        if (discountVal > bestDiscountValue) bestDiscountValue = discountVal;
+    });
+
+    const finalPrice = Math.max(0, basePriceTotal - bestDiscountValue);
+    return {
+        base_price: basePriceTotal,
+        discount_amount: bestDiscountValue,
+        total_price: finalPrice
+    };
+}
+
+// Calculate price before booking
+app.post('/api/bookings/calculate', (req, res) => {
+    const { facility_id, booking_date, time_slots } = req.body;
+    if (!facility_id || !booking_date || !time_slots) return res.status(400).json({ error: "Missing fields" });
+
+    let slots = [];
+    try {
+        slots = typeof time_slots === 'string' ? JSON.parse(time_slots) : time_slots;
+    } catch(e) { return res.status(400).json({ error: "Invalid format" }); }
+
+    db.get("SELECT base_price, pricing_rules FROM facilities WHERE id = ?", [facility_id], (err, facility) => {
+        if (err || !facility) return res.status(404).json({ error: "Facility not found" });
+
+        db.all("SELECT * FROM discounts WHERE facility_id = ? OR facility_id IS NULL", [facility_id], (err, discounts) => {
+            if (err) return res.status(500).json({ error: "DB Error" });
+            const pricing = calculatePrice(facility, slots, discounts, booking_date);
+            res.json(pricing);
+        });
+    });
+});
+
+app.post('/api/create-checkout-session', (req, res) => {
+    const { facility_id, booking_date, time_slots } = req.body;
     
     // In a real app we would get the user_id from an auth token or session
     const user_id = req.session.userId || 1; 
@@ -400,57 +1055,149 @@ app.post('/api/bookings', (req, res) => {
         return res.status(400).json({ error: "Invalid time_slots format." });
     }
 
-    // 1. Check for existing overlapping bookings
-    db.all(
-        "SELECT time_slots FROM bookings WHERE facility_id = ? AND booking_date = ?",
-        [facility_id, booking_date],
-        (err, existingBookings) => {
-            if (err) return res.status(500).json({ error: "Database error during availability check." });
+    // Secure Pricing Calculation
+    db.get(`
+        SELECT f.name, f.base_price, f.pricing_rules, u.stripe_account_id, u.stripe_onboarding_complete 
+        FROM facilities f 
+        JOIN users u ON f.host_id = u.id 
+        WHERE f.id = ?
+    `, [facility_id], (err, facility) => {
+        if (err || !facility) return res.status(404).json({ error: "Facility not found" });
 
-            let allBookedSlots = [];
+        db.all("SELECT * FROM discounts WHERE facility_id = ? OR facility_id IS NULL", [facility_id], (err, discounts) => {
+            if (err) return res.status(500).json({ error: "DB Error" });
             
-            // Extract all currently booked time slots for this day
-            existingBookings.forEach(booking => {
-                try {
-                    const slots = typeof booking.time_slots === 'string' 
-                        ? JSON.parse(booking.time_slots) 
-                        : booking.time_slots;
-                    if (Array.isArray(slots)) {
-                        allBookedSlots = allBookedSlots.concat(slots);
-                    }
-                } catch (e) {
-                    console.error("Error parsing existing booking slots:", e);
-                }
-            });
-
-            // 2. Determine if there is an overlap
-            const hasConflict = parsedNewSlots.some(newSlot => allBookedSlots.includes(newSlot));
-
-            if (hasConflict) {
-                // 3. Reject if conflict exists
-                return res.status(409).json({ 
-                    error: "Conflict: One or more selected time slots have already been booked." 
-                });
-            }
-
-            // 4. Proceed with booking if no conflicts
-            const slotsString = JSON.stringify(parsedNewSlots);
+            const pricing = calculatePrice(facility, parsedNewSlots, discounts, booking_date);
+            const secureTotalPrice = pricing.total_price;
             
-            db.run(
-                "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price) VALUES (?, ?, ?, ?, ?)",
-                [user_id, facility_id, booking_date, slotsString, total_price],
-                function(insertErr) {
-                    if (insertErr) {
-                        return res.status(500).json({ error: insertErr.message });
-                    }
-                    res.status(201).json({ 
-                        message: "Booking created successfully", 
-                        booking_id: this.lastID 
+            // Add processing fee and tax to match frontend
+            const taxRate = 0.14975;
+            const processingFee = 15;
+            const finalAmount = secureTotalPrice + processingFee + (secureTotalPrice * taxRate);
+            const finalAmountCents = Math.round(finalAmount * 100);
+
+            // 1. Check for existing overlapping bookings
+            db.all(
+                "SELECT time_slots FROM bookings WHERE facility_id = ? AND booking_date = ?",
+                [facility_id, booking_date],
+                async (err, existingBookings) => {
+                    if (err) return res.status(500).json({ error: "Database error during availability check." });
+
+                    let allBookedSlots = [];
+                    existingBookings.forEach(booking => {
+                        try {
+                            const slots = typeof booking.time_slots === 'string' 
+                                ? JSON.parse(booking.time_slots) 
+                                : booking.time_slots;
+                            if (Array.isArray(slots)) {
+                                allBookedSlots = allBookedSlots.concat(slots);
+                            }
+                        } catch (e) {}
                     });
+
+                    // 2. Determine if there is an overlap
+                    const hasConflict = parsedNewSlots.some(newSlot => allBookedSlots.includes(newSlot));
+
+                    if (hasConflict) {
+                        return res.status(409).json({ 
+                            error: "Conflict: One or more selected time slots have already been booked." 
+                        });
+                    }
+
+                    // 4. Proceed with Stripe Session
+                    const slotsString = JSON.stringify(parsedNewSlots);
+                    
+                    try {
+                        const sessionUrl = `${req.protocol}://${req.get('host')}`;
+                        const sessionConfig = {
+                            payment_method_types: ['card'],
+                            line_items: [
+                                {
+                                    price_data: {
+                                        currency: 'cad',
+                                        product_data: {
+                                            name: `${facility.name} Booking`,
+                                            description: `Date: ${booking_date} | ${parsedNewSlots.length} slots`,
+                                        },
+                                        unit_amount: finalAmountCents,
+                                    },
+                                    quantity: 1,
+                                },
+                            ],
+                            mode: 'payment',
+                            success_url: `${sessionUrl}/player-dashboard.html?success=true&session_id={CHECKOUT_SESSION_ID}`,
+                            cancel_url: `${sessionUrl}/facility.html?id=${facility_id}&canceled=true`,
+                            metadata: {
+                                facility_id: facility_id.toString(),
+                                booking_date: booking_date,
+                                time_slots: slotsString,
+                                user_id: user_id.toString()
+                            }
+                        };
+
+                        // Split Payment if Host is onboarded via Stripe Connect
+                        if (facility.stripe_account_id && facility.stripe_onboarding_complete) {
+                            const platformFeeCents = Math.round(finalAmountCents * 0.10); // 10% platform fee
+                            sessionConfig.payment_intent_data = {
+                                application_fee_amount: platformFeeCents,
+                                transfer_data: {
+                                    destination: facility.stripe_account_id,
+                                },
+                            };
+                        }
+
+                        const session = await stripe.checkout.sessions.create(sessionConfig);
+                        
+                        res.status(200).json({ url: session.url });
+                    } catch (stripeErr) {
+                        console.error("Stripe Checkout Error:", stripeErr);
+                        res.status(500).json({ error: "Could not create payment session" });
+                    }
                 }
             );
+        });
+    });
+});
+
+// Sync Fallback for Localhost where Webhooks cannot reach
+app.post('/api/bookings/confirm', async (req, res) => {
+    const { session_id } = req.body;
+    if (!session_id) return res.status(400).json({ error: "Missing session_id" });
+
+    try {
+        const session = await stripe.checkout.sessions.retrieve(session_id);
+        
+        if (session.payment_status === 'paid') {
+            const { facility_id, booking_date, time_slots, user_id } = session.metadata;
+            
+            // Check if it already exists (in case webhook actually fired in prod)
+            db.get("SELECT id FROM bookings WHERE stripe_session_id = ?", [session.id], (err, existing) => {
+                if (err) return res.status(500).json({ error: "DB Error" });
+                if (existing) {
+                    return res.json({ success: true, message: "Booking already confirmed." });
+                }
+
+                // Insert booking
+                db.run(
+                    "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id) VALUES (?, ?, ?, ?, ?, 'confirmed', 'online', 'paid', ?)",
+                    [user_id, facility_id, booking_date, time_slots, session.amount_total / 100, session.id],
+                    function(err) {
+                        if (err) {
+                            console.error("Booking Insertion Error Sync:", err);
+                            return res.status(500).json({ error: "Failed to save booking" });
+                        }
+                        sendBookingEmails(this.lastID);
+                        res.json({ success: true, booking_id: this.lastID });
+                    }
+                );
+            });
+        } else {
+            res.status(400).json({ error: "Payment not completed" });
         }
-    );
+    } catch (err) {
+        console.error("Sync Confirm Error:", err);
+        res.status(500).json({ error: "Failed to confirm session" });
+    }
 });
 
 // Fallback for 404 Not Found
@@ -462,6 +1209,10 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;

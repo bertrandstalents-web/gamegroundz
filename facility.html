@@ -48,9 +48,9 @@
                     <input type="text" class="block w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-full text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-custom bg-slate-50 hover:bg-white" placeholder="Search by location or facility name...">
                 </div>
 
-                <div class="hidden md:flex items-center space-x-6">
+                <div class="hidden md:flex items-center space-x-6" id="nav-actions">
                     <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
-                    <a href="#" class="text-slate-600 hover:text-dark font-medium transition-custom">Log in</a>
+                    <a href="index.html" id="login-btn" class="text-slate-600 hover:text-dark font-medium transition-custom">Log in</a>
                 </div>
             </div>
         </div>
@@ -82,26 +82,10 @@
         </div>
 
         <!-- Image Gallery (Bento Grid) -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-2 h-auto md:h-[450px] mb-12 rounded-2xl overflow-hidden cursor-pointer group">
-            <div class="md:col-span-2 md:row-span-2 relative h-64 md:h-full overflow-hidden">
-                <img src="images/arena_rosemere_real.jpg" alt="Main Rink View" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 bg-slate-100">
-            </div>
-            <div class="hidden md:block relative overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1582239454476-cda1b52a4505?auto=format&fit=crop&w=800&q=80" alt="Ice Resurfacer" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-            </div>
-            <div class="hidden md:block relative overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=800&q=80" alt="Locker Room" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-            </div>
-            <div class="hidden md:block relative overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=800&q=80" alt="Scoreboard" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-            </div>
-            <div class="hidden md:block relative overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1481824429379-07aa5e5b6191?auto=format&fit=crop&w=800&q=80" alt="Lobby" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
-                    <button class="bg-white/90 backdrop-blur text-dark px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-white transition-custom text-sm flex items-center">
-                        <i class="fa-solid fa-images mr-2"></i> Show all photos
-                    </button>
-                </div>
+        <div id="facility-gallery" class="grid grid-cols-1 md:grid-cols-4 gap-2 h-auto md:h-[450px] mb-12 rounded-2xl overflow-hidden cursor-pointer group">
+            <!-- Dynamically injected by JavaScript based on image payload -->
+            <div class="md:col-span-2 md:row-span-2 relative h-64 md:h-full overflow-hidden bg-slate-100 flex items-center justify-center">
+                <i class="fa-solid fa-spinner fa-spin text-slate-300 text-3xl"></i>
             </div>
         </div>
 
@@ -120,7 +104,7 @@
                     </div>
                     <div class="flex flex-col items-center">
                         <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Host" class="w-14 h-14 rounded-full object-cover border border-slate-200 mb-1">
-                        <span class="text-xs text-slate-500 font-medium">Operated by <br><strong>Metro Sports</strong></span>
+                        <span class="text-xs text-slate-500 font-medium text-center">Operated by <br><strong id="operator-name">Loading...</strong></span>
                     </div>
                 </div>
 
@@ -468,7 +452,7 @@
             async function fetchBookedSlots(dateStr) {
                 if (!currentFacilityId) return new Set();
                 try {
-                    const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                    const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
                     const response = await fetch(`${API_BASE_URL}/api/bookings/${currentFacilityId}?date=${dateStr}`);
                     if (response.ok) {
                         const bookings = await response.json();
@@ -502,18 +486,7 @@
             const taxEl = document.getElementById('tax-amount');
             const totalEl = document.getElementById('total-amount');
 
-            // DOM Elements for Modal
-            const modal = document.getElementById('checkout-modal');
-            const backdrop = document.getElementById('checkout-backdrop');
-            const closeModalBtn = document.getElementById('close-checkout');
-            const chekoutForm = document.getElementById('checkout-form');
-            const paymentSubmitBtn = document.getElementById('submit-payment-btn');
-            const successState = document.getElementById('checkout-success');
-            
-            // Modal display values
-            const modalSummaryText = document.getElementById('modal-summary-text');
-            const modalTotalPrice = document.getElementById('modal-total-price');
-            const btnTotalPrice = document.getElementById('btn-total-price');
+
             const mobileReserveBtn = document.getElementById('mobile-reserve-btn');
             
             let currentTotal = 0;
@@ -526,7 +499,7 @@
 
             if (facilityIdParam) {
                 try {
-                    const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
+                    const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
                     const response = await fetch(`${API_BASE_URL}/api/facilities/${facilityIdParam}`);
                     if (!response.ok) throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                     
@@ -557,35 +530,116 @@
 
                     currentFacilityName = facility.name;
                     currentFacilityId = facility.id;
+                    const facilityDiscounts = facility.discounts || [];
+
+                    // Expose it globally for render
+                    window.facilityDiscounts = facilityDiscounts;
 
                     // Update UI elements
                     document.title = `${facility.name} - GameGroundz`;
                     
                     // Image Gallery Logic
-                    const mainImg = document.querySelector('.md\\:col-span-2.md\\:row-span-2 img');
-                    const mainImgContainer = document.querySelector('.md\\:col-span-2.md\\:row-span-2');
-                    const secondaryImgs = document.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-4 > div:not(.md\\:col-span-2)');
-                    const gridContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-4');
+                    const galleryContainer = document.getElementById('facility-gallery');
+                    let images = [];
 
-                    if(mainImg) mainImg.src = facility.image_url;
-
-                    // Hide placeholder extra images if no gallery provided
-                    let hasGallery = false;
                     try {
-                        let parsedPhotos = JSON.parse(facility.photos || '[]');
-                        if (parsedPhotos.length > 0) hasGallery = true;
-                    } catch(e) {}
-
-                    if (!hasGallery) {
-                        // Hide the other 4 divs
-                        secondaryImgs.forEach(div => div.classList.add('hidden', 'md:hidden'));
-                        // Make main image span the whole grid
-                        if (gridContainer && mainImgContainer) {
-                            gridContainer.classList.remove('md:grid-cols-4');
-                            gridContainer.classList.add('md:grid-cols-1');
-                            mainImgContainer.classList.remove('md:col-span-2', 'md:row-span-2');
-                            mainImgContainer.classList.add('col-span-1', 'row-span-1', 'h-[450px]');
+                        const parsed = JSON.parse(facility.image_url);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            images = parsed;
+                        } else if (facility.image_url) {
+                            images = [facility.image_url];
                         }
+                    } catch (e) {
+                        if (facility.image_url) images = [facility.image_url];
+                    }
+
+                    // Fallback neutral image if none exist
+                    if (images.length === 0) {
+                        images = ['https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80'];
+                    }
+
+                    // Dynamically build the gallery
+                    galleryContainer.innerHTML = '';
+                    
+                    if (images.length === 1) {
+                        galleryContainer.className = "grid grid-cols-1 h-auto md:h-[450px] mb-12 rounded-2xl overflow-hidden cursor-pointer group";
+                        galleryContainer.innerHTML = `
+                            <div class="relative h-64 md:h-full overflow-hidden bg-slate-100">
+                                <img src="${images[0]}" class="w-full h-full object-cover transition duration-500">
+                            </div>
+                        `;
+                    } else if (images.length === 2) {
+                        galleryContainer.className = "grid grid-cols-1 md:grid-cols-2 gap-2 h-auto md:h-[450px] mb-12 rounded-2xl overflow-hidden cursor-pointer group";
+                        galleryContainer.innerHTML = `
+                            <div class="relative h-64 md:h-full overflow-hidden bg-slate-100">
+                                <img src="${images[0]}" class="w-full h-full object-cover transition duration-500">
+                            </div>
+                            <div class="relative h-64 md:h-full overflow-hidden bg-slate-100 hidden md:block">
+                                <img src="${images[1]}" class="w-full h-full object-cover transition duration-500">
+                            </div>
+                        `;
+                    } else if (images.length === 3) {
+                        galleryContainer.className = "grid grid-cols-1 md:grid-cols-3 gap-2 h-auto md:h-[450px] mb-12 rounded-2xl overflow-hidden cursor-pointer group";
+                        galleryContainer.innerHTML = `
+                            <div class="md:col-span-2 relative h-64 md:h-full overflow-hidden bg-slate-100">
+                                <img src="${images[0]}" class="w-full h-full object-cover transition duration-500">
+                            </div>
+                            <div class="hidden md:flex flex-col gap-2 h-full">
+                                <div class="relative flex-1 overflow-hidden bg-slate-100">
+                                    <img src="${images[1]}" class="w-full h-full object-cover transition duration-500">
+                                </div>
+                                <div class="relative flex-1 overflow-hidden bg-slate-100">
+                                    <img src="${images[2]}" class="w-full h-full object-cover transition duration-500">
+                                </div>
+                            </div>
+                        `;
+                    } else if (images.length >= 4) {
+                        // Standard 4-grid bento layout for 4 or 5+ images
+                        galleryContainer.className = "grid grid-cols-1 md:grid-cols-4 gap-2 h-auto md:h-[450px] mb-12 rounded-2xl overflow-hidden cursor-pointer group";
+                        
+                        let html = `
+                            <div class="md:col-span-2 md:row-span-2 relative h-64 md:h-full overflow-hidden bg-slate-100">
+                                <img src="${images[0]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                            </div>
+                            <div class="hidden md:block relative overflow-hidden bg-slate-100">
+                                <img src="${images[1]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                            </div>
+                            <div class="hidden md:block relative overflow-hidden bg-slate-100">
+                                <img src="${images[2]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                            </div>
+                            <div class="hidden md:block relative overflow-hidden bg-slate-100">
+                                <img src="${images[3]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                            </div>
+                        `;
+                        
+                        let lastBoxHtml = '';
+                        if (images.length === 4) {
+                            // If exactly 4, the 4th box just has image 3
+                            lastBoxHtml = `
+                                <div class="hidden md:block relative overflow-hidden bg-slate-100">
+                                    <img src="${images[3]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                                </div>
+                            `;
+                            // Remove last empty from the base HTML string
+                            html = html.replace(/<div class="hidden md:block relative overflow-hidden bg-slate-100">\s*<img src="\${images\[3\]}".*?<\/div>/, '');
+                            html += lastBoxHtml;
+                        } else if (images.length >= 5) {
+                            // If 5 or more, the 4th outer box (index 4 of array but the 5th image) becomes the "show more" button
+                            html += `
+                                <div class="hidden md:block relative overflow-hidden bg-slate-100">
+                                    <img src="${images[4]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                                    ${images.length > 5 ? `
+                                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center transition-custom hover:bg-black/50">
+                                        <button class="bg-white/90 backdrop-blur text-dark px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-white transition-custom text-sm flex items-center transform hover:scale-105">
+                                            <i class="fa-solid fa-images mr-2"></i> Showcase All
+                                        </button>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }
+
+                        galleryContainer.innerHTML = html;
                     }
 
                     // Dynamic Description
@@ -617,6 +671,11 @@
                     // Header Section
                     const titleEl = document.querySelector('h1.text-3xl.font-extrabold');
                     if(titleEl) titleEl.textContent = facility.name;
+                    
+                    const operatorEl = document.getElementById('operator-name');
+                    if (operatorEl) {
+                        operatorEl.textContent = facility.company_name || facility.host_name || 'GameGroundz Host';
+                    }
                     
                     const subtitleEl = document.getElementById('header-subtitle');
                     if(subtitleEl) {
@@ -788,44 +847,25 @@
                 }
             });
 
-            function openModal() {
+            async function initiateCheckout() {
                 if (selectedSlotIds.size < 2) {
                     alert("Please select at least two time slots (1 hour minimum).");
                     return;
                 }
-                modalSummaryText.innerHTML = `${currentFacilityName} <br><span class="text-slate-500 text-sm font-normal">${selectedSlotIds.size / 2} hour(s)</span>`;
-                modalTotalPrice.textContent = `$${currentTotal.toFixed(2)}`;
-                btnTotalPrice.textContent = `$${currentTotal.toFixed(2)}`;
                 
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; // Prevent scrolling
-            }
+                const originalText = reserveBtn.innerHTML;
+                reserveBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin mr-2'></i> Redirecting to Stripe...";
+                reserveBtn.disabled = true;
+                reserveBtn.classList.add('opacity-80', 'cursor-not-allowed');
 
-            function closeModal() {
-                modal.classList.add('hidden');
-                document.body.style.overflow = '';
-            }
-
-            // Handle reserve button clicks
-            reserveBtn.addEventListener('click', openModal);
-            if(mobileReserveBtn) mobileReserveBtn.addEventListener('click', openModal);
-            
-            closeModalBtn.addEventListener('click', closeModal);
-            backdrop.addEventListener('click', closeModal);
-
-            // Handle Payment Submission
-            chekoutForm.addEventListener('submit', async (e) => {
-                e.preventDefault(); // Prevent page reload
-                
-                const originalText = paymentSubmitBtn.innerHTML;
-                paymentSubmitBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin mr-2'></i> Processing Payment...";
-                paymentSubmitBtn.disabled = true;
-                paymentSubmitBtn.classList.add('opacity-80', 'cursor-not-allowed');
+                if (mobileReserveBtn) {
+                    mobileReserveBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i>";
+                    mobileReserveBtn.disabled = true;
+                }
 
                 try {
-                     const API_BASE_URL = window.location.protocol === 'file:' || window.location.port !== '3000' ? 'http://localhost:3000' : '';
-                     // Create practical mock booking
-                     const bookingResponse = await fetch(`${API_BASE_URL}/api/bookings`, {
+                     const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                     const bookingResponse = await fetch(`${API_BASE_URL}/api/create-checkout-session`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -833,25 +873,55 @@
                         body: JSON.stringify({
                             facility_id: currentFacilityId || 1,
                             booking_date: selectedDateStr, 
-                            time_slots: Array.from(selectedSlotIds),
-                            total_price: Math.round(currentTotal)
+                            time_slots: Array.from(selectedSlotIds)
                         })
                      });
 
-                     if(!bookingResponse.ok) throw new Error("Booking failed");
-
-                    setTimeout(() => {
-                        chekoutForm.classList.add('hidden');
-                        document.querySelector('.bg-slate-50.px-6.py-4').classList.add('hidden'); // hide modal header
-                        successState.classList.remove('hidden');
-                    }, 1000);
+                     if(!bookingResponse.ok) {
+                         let errMsg = "Failed to initialize checkout";
+                         try {
+                             const errData = await bookingResponse.json();
+                             if(errData.error) errMsg = errData.error;
+                         } catch(e) {}
+                         throw new Error(errMsg);
+                     }
+                     
+                     const data = await bookingResponse.json();
+                     if (data.url) {
+                         window.location.href = data.url; // Redirect to Stripe
+                     } else {
+                         throw new Error("No Stripe checkout URL returned");
+                     }
 
                 } catch (error) {
                     console.error("Booking Error", error);
-                    alert("There was an error processing your booking.");
-                    paymentSubmitBtn.innerHTML = originalText;
-                    paymentSubmitBtn.disabled = false;
-                    paymentSubmitBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                    alert("There was an error processing your booking: " + error.message);
+                    reserveBtn.innerHTML = originalText;
+                    reserveBtn.disabled = false;
+                    reserveBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                    if (mobileReserveBtn) {
+                        mobileReserveBtn.innerHTML = "Reserve";
+                        mobileReserveBtn.disabled = false;
+                    }
+                }
+            }
+
+            // Handle reserve button clicks
+            reserveBtn.addEventListener('click', initiateCheckout);
+            if(mobileReserveBtn) mobileReserveBtn.addEventListener('click', initiateCheckout);
+
+            // Handle browser back button (bfcache) restoring the disabled button state
+            window.addEventListener('pageshow', (event) => {
+                if (event.persisted) {
+                    if (reserveBtn) {
+                        reserveBtn.innerHTML = "Reserve Now";
+                        reserveBtn.disabled = false;
+                        reserveBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                    }
+                    if (mobileReserveBtn) {
+                        mobileReserveBtn.innerHTML = "Reserve";
+                        mobileReserveBtn.disabled = false;
+                    }
                 }
             });
 
@@ -866,21 +936,82 @@
                     }
                 }
 
+                const discounts = window.facilityDiscounts || [];
+                const bookingDate = new Date(selectedDateStr + 'T00:00:00');
+                const dayOfWeek = bookingDate.toLocaleDateString('en-US', { weekday: 'long' }); 
+                const now = new Date();
+                const isLastMinute = bookingDate.getTime() - now.getTime() < 86400000 && bookingDate.getTime() >= now.getTime() - 86400000; 
+
+                const validDiscounts = discounts.filter(d => {
+                    if (!d.is_active) return false;
+                    
+                    // Fix timezone mismatch: parse both as local dates using T00:00:00 and T23:59:59
+                    if (d.start_date && new Date(d.start_date + 'T00:00:00') > bookingDate) return false;
+                    if (d.end_date && new Date(d.end_date + 'T23:59:59') < bookingDate) return false;
+                    
+                    if (d.recurring_day && d.recurring_day !== dayOfWeek) return false;
+                    if (d.is_last_minute && !isLastMinute) return false;
+                    return true;
+                });
+
+                function getBestDiscountForSlot(slotId, validDiscounts) {
+                    let bestD = null;
+                    let maxVal = 0;
+                    validDiscounts.forEach(d => {
+                        if (d.start_time && d.end_time) {
+                            if (slotId < d.start_time || slotId >= d.end_time) return;
+                        }
+                        let valEquivalent = d.discount_type === 'percentage' ? d.value : (d.value / hourlyRate * 100); 
+                        if (valEquivalent > maxVal) {
+                            maxVal = valEquivalent;
+                            bestD = d;
+                        }
+                    });
+                    return bestD;
+                }
+
                 // Update dropdown list
                 slotsList.innerHTML = '';
+                
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+                const currentTime24 = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+                
+                const mmYear = now.getFullYear();
+                const mmMonth = String(now.getMonth() + 1).padStart(2, '0');
+                const mmDay = String(now.getDate()).padStart(2, '0');
+                const todayStr = `${mmYear}-${mmMonth}-${mmDay}`;
+                const isToday = selectedDateStr === todayStr;
+
                 availableSlots.forEach(slot => {
+                    const isPast = isToday && slot.id < currentTime24;
                     const isBooked = bookedSlotIds.has(slot.id);
+                    const isUnavailable = isBooked || isPast;
+                    
+                    // Always unselect past slots if they were previously somehow selected
+                    if (isPast && selectedSlotIds.has(slot.id)) {
+                        selectedSlotIds.delete(slot.id);
+                    }
+                    
                     const isSelected = selectedSlotIds.has(slot.id);
                     const div = document.createElement('div');
                     
-                    if (isBooked) {
+                    const slotDiscount = getBestDiscountForSlot(slot.id, validDiscounts);
+                    let discountBadge = '';
+                    if (slotDiscount) {
+                        const amountText = slotDiscount.discount_type === 'percentage' ? `${slotDiscount.value}%` : `$${slotDiscount.value}`;
+                        discountBadge = `<span class="ml-2 text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded-md flex items-center shadow-sm whitespace-nowrap"><i class="fa-solid fa-fire text-red-500 mr-1 text-[10px]"></i> ${amountText} OFF</span>`;
+                    }
+                    
+                    if (isUnavailable) {
                          div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg flex justify-between items-center mb-1 text-slate-400 bg-slate-100 cursor-not-allowed opacity-50 border border-transparent`;
-                         div.innerHTML = `<span>${slot.time} <span class="text-[10px] ml-1 uppercase bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full">Unavailable</span></span>`;
+                         const reason = isPast ? "Passed" : "Unavailable";
+                         div.innerHTML = `<span class="flex items-center">${slot.time} ${discountBadge} <span class="text-[10px] ml-2 uppercase bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">${reason}</span></span>`;
                          // Remove onclick for booked slots automatically by not assigning one
                     } else {
                          div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg cursor-pointer flex justify-between items-center mb-1 transition-custom ${isSelected ? 'bg-primary/10 text-primary border border-primary/20' : 'hover:bg-slate-100 text-slate-700 border border-transparent'}`;
                          div.innerHTML = `
-                            <span>${slot.time}</span>
+                            <span class="flex items-center">${slot.time} ${discountBadge}</span>
                             ${isSelected ? '<i class="fa-solid fa-check text-sm"></i>' : ''}
                         `;
                         div.onclick = (e) => {
@@ -940,14 +1071,64 @@
                             subtotal += getPriceForTimeSlot(slot.time, hourlyRate, pricingRules) / 2;
                         }
                     });
+
+                    // --- Discount logic ---
+                    let bestDiscountValue = 0;
                     
-                    const tax = subtotal * taxRate;
-                    currentTotal = subtotal + processingFee + tax; // update global total
+                    validDiscounts.forEach(d => {
+                        let applicableSlotsCount = 0;
+                        let applicableSubtotal = 0;
+                        
+                        selectedSlotIds.forEach(slotId => {
+                            let applies = true;
+                            if (d.start_time && d.end_time) {
+                                applies = (slotId >= d.start_time && slotId < d.end_time);
+                            }
+                            if (applies) {
+                                applicableSlotsCount++;
+                                const slot = availableSlots.find(s => s.id === slotId);
+                                if (slot) applicableSubtotal += getPriceForTimeSlot(slot.time, hourlyRate, pricingRules) / 2;
+                            }
+                        });
+
+                        if (applicableSlotsCount === 0) return;
+
+                        let discountVal = 0;
+                        if (d.discount_type === 'percentage') {
+                            discountVal = applicableSubtotal * (d.value / 100);
+                        } else if (d.discount_type === 'fixed_amount') {
+                            discountVal = d.value;
+                        }
+                        if (discountVal > bestDiscountValue) bestDiscountValue = discountVal;
+                    });
+
+                    const discountedSubtotal = Math.max(0, subtotal - bestDiscountValue);
+
+                    const tax = discountedSubtotal * taxRate;
+                    currentTotal = discountedSubtotal + processingFee + tax; // update global total
 
                     if (hours === 1) {
-                        priceCalcEl.textContent = `$${subtotal.toFixed(0)} x 1 hour`;
+                        priceCalcEl.innerHTML = `$${subtotal.toFixed(0)} x 1 hour`;
                     } else {
-                        priceCalcEl.textContent = `Multiple slots (avg $${(subtotal/hours).toFixed(0)}/hr)`;
+                        priceCalcEl.innerHTML = `Multiple slots (avg $${(subtotal/hours).toFixed(0)}/hr)`;
+                    }
+
+                    // Insert Discount UI element into the list if it exists
+                    const discountElId = 'discount-amount';
+                    let discountDiv = document.getElementById(discountElId);
+                    if (bestDiscountValue > 0) {
+                        if(!discountDiv) {
+                            discountDiv = document.createElement('div');
+                            discountDiv.id = discountElId;
+                            discountDiv.className = 'flex justify-between text-base text-green-600 font-bold mb-3';
+                            // insert before processing fee
+                            priceCalcEl.parentElement.parentElement.insertBefore(discountDiv, priceCalcEl.parentElement.nextSibling);
+                        }
+                        discountDiv.innerHTML = `<span>Discount applied</span><span>-$${bestDiscountValue.toFixed(2)}</span>`;
+                        subtotalEl.classList.add('line-through', 'text-slate-400');
+                    } else {
+                        if(discountDiv) discountDiv.remove();
+                        subtotalEl.classList.remove('line-through', 'text-slate-400');
                     }
                     subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
                     taxEl.textContent = `$${tax.toFixed(2)}`;
@@ -1108,6 +1289,50 @@
             } else {
                 render();
             }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            function updateNavUI(user) {
+                const loginBtn = document.getElementById('login-btn');
+                if (loginBtn) {
+                    loginBtn.innerHTML = `Hi, ${user.name} <span class="text-xs text-slate-400 ml-1 cursor-pointer hover:text-red-500" id="logout-btn">(Log out)</span>`;
+                    loginBtn.href = "#";
+                    
+                    if (!document.getElementById('dash-btn')) {
+                        const dashBtn = document.createElement('a');
+                        dashBtn.id = 'dash-btn';
+                        dashBtn.className = "bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-full font-medium transition-custom shadow-md hover:shadow-lg ml-6";
+                        dashBtn.href = user.role === 'admin' ? "admin-dashboard.html" : (user.role === 'host' ? "owner-dashboard.html" : "player-dashboard.html");
+                        dashBtn.textContent = user.role === 'admin' ? "Admin Dashboard" : (user.role === 'host' ? "Host Dashboard" : "My Bookings");
+                        
+                        document.getElementById('nav-actions').appendChild(dashBtn);
+                    }
+
+                    document.getElementById('logout-btn').addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                        await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+                        localStorage.removeItem('gg_user');
+                        window.location.reload();
+                    });
+                }
+            }
+
+            const storedUser = localStorage.getItem('gg_user');
+            if (storedUser) {
+                try { updateNavUI(JSON.parse(storedUser)); } catch(e){}
+            }
+
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    updateNavUI(data.user);
+                    localStorage.setItem('gg_user', JSON.stringify(data.user));
+                }
+            } catch (e) { }
         });
     </script>
 </body>

@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameGroundz - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981',
+                        primaryHover: '#059669',
+                        dark: '#0f172a',
+                        light: '#f8fafc',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .transition-custom { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+    </style>
+</head>
+<body class="text-slate-800 antialiased h-screen flex overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-dark text-slate-300 flex flex-col h-full flex-shrink-0">
+        <div class="p-6">
+            <a href="index.html" class="flex items-start mb-8">
+                <i class="fa-solid fa-shield-halved text-primary text-2xl mr-3 mt-1"></i>
+                <div class="flex flex-col gap-1">
+                    <span class="text-2xl font-extrabold text-white leading-none">GameGroundz</span>
+                    <span class="text-sm font-medium text-slate-400">Admin Console</span>
+                </div>
+            </a>
+            
+            <nav class="space-y-2">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center px-4 py-3 rounded-xl bg-white/10 text-white font-medium transition-custom">
+                    <i class="fa-solid fa-chart-pie w-6"></i> Overview
+                </button>
+                <button onclick="switchTab('facilities')" id="nav-facilities" class="w-full flex items-center px-4 py-3 rounded-xl hover:bg-white/5 hover:text-white font-medium transition-custom">
+                    <i class="fa-solid fa-building w-6"></i> Facilities
+                </button>
+                <button onclick="switchTab('reservations')" id="nav-reservations" class="w-full flex items-center px-4 py-3 rounded-xl hover:bg-white/5 hover:text-white font-medium transition-custom text-slate-300">
+                    <i class="fa-solid fa-calendar-check w-6"></i> Reservations
+                </button>
+                <button onclick="switchTab('users')" id="nav-users" class="w-full flex items-center px-4 py-3 rounded-xl hover:bg-white/5 hover:text-white font-medium transition-custom">
+                    <i class="fa-solid fa-users w-6"></i> Users & Hosts
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="w-full flex items-center px-4 py-3 rounded-xl hover:bg-white/5 hover:text-white font-medium transition-custom text-slate-300">
+                    <i class="fa-solid fa-gear w-6"></i> Platform Controls
+                </button>
+            </nav>
+        </div>
+        <div class="mt-auto p-6 border-t border-white/10">
+            <div class="flex items-center mb-4">
+                <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold mr-3" id="admin-avatar">A</div>
+                <div>
+                    <div class="text-sm font-bold text-white" id="admin-name">Admin User</div>
+                    <div class="text-xs text-slate-500">System Administrator</div>
+                </div>
+            </div>
+            <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-2 border border-white/20 rounded-lg hover:bg-white/5 transition-custom text-sm font-medium">
+                <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Sign Out
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <!-- Top Header -->
+        <header class="bg-white px-8 py-5 flex justify-between items-center shadow-sm z-10">
+            <h1 class="text-2xl font-bold text-dark" id="page-title">Admin Dashboard</h1>
+            <div class="flex items-center space-x-4">
+                <a href="index.html" class="text-sm font-medium text-slate-500 hover:text-primary transition-custom">Return to Site</a>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-8 relative">
+            
+            <!-- Tab: Dashboard / Overview -->
+            <div id="tab-dashboard" class="block space-y-8 absolute inset-x-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Stats Card 1 -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center">
+                        <div class="w-14 h-14 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-2xl mr-4 shadow-sm border border-blue-100">
+                            <i class="fa-solid fa-clipboard-check"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Pending Approvals</div>
+                            <div class="text-3xl font-extrabold text-dark" id="stat-pending">0</div>
+                        </div>
+                    </div>
+                    <!-- Stats Card 2 -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center">
+                        <div class="w-14 h-14 rounded-full bg-green-50 text-green-500 flex items-center justify-center text-2xl mr-4 shadow-sm border border-green-100">
+                            <i class="fa-solid fa-building-circle-check"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Active Facilities</div>
+                            <div class="text-3xl font-extrabold text-dark" id="stat-active-fac">0</div>
+                        </div>
+                    </div>
+                    <!-- Stats Card 3 -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center">
+                        <div class="w-14 h-14 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center text-2xl mr-4 shadow-sm border border-purple-100">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Users</div>
+                            <div class="text-3xl font-extrabold text-dark" id="stat-users">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity / Action Needed -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                        <h2 class="text-lg font-bold text-dark">Action Needed: Pending Listings</h2>
+                        <button onclick="switchTab('facilities')" class="text-sm font-semibold text-primary hover:text-primaryHover transition-custom">View All</button>
+                    </div>
+                    <div class="p-0">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                                    <th class="py-4 px-6">Facility</th>
+                                    <th class="py-4 px-6">Host</th>
+                                    <th class="py-4 px-6">Type / Env</th>
+                                    <th class="py-4 px-6 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pending-list-preview" class="divide-y divide-slate-100 bg-white">
+                                <!-- Pending dynamically loaded -->
+                                <tr>
+                                    <td colspan="4" class="py-8 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading pending approvals...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Facilities Moderation -->
+            <div id="tab-facilities" class="hidden absolute inset-x-8">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-8 py-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center bg-white sticky top-0 z-10">
+                        <h2 class="text-xl font-bold text-dark">Facility Content Management</h2>
+                        <div class="flex space-x-3">
+                            <select id="fac-filter-status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20 outline-none" onchange="loadAdminFacilities()">
+                                <option value="all">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="paused">Paused</option>
+                                <option value="hidden">Hidden</option>
+                                <option value="rejected">Rejected / Suspended</option>
+                            </select>
+                            <div class="relative">
+                                <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="fac-search" placeholder="Search by name, host email, phone..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20 outline-none w-64" oninput="debounceSearch()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-y border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                                    <th class="py-4 px-8">ID / Name</th>
+                                    <th class="py-4 px-4">Host Details</th>
+                                    <th class="py-4 px-4">Type</th>
+                                    <th class="py-4 px-4">Status</th>
+                                    <th class="py-4 px-8 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-facilities-list" class="divide-y divide-slate-100 bg-white">
+                                <!-- Facilities loaded -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Users Management -->
+            <div id="tab-users" class="hidden absolute inset-x-8">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-8 py-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center bg-white sticky top-0 z-10">
+                        <h2 class="text-xl font-bold text-dark">User & Host Management</h2>
+                        <div class="flex space-x-3">
+                            <select id="usr-filter-role" class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20 outline-none" onchange="loadAdminUsers()">
+                                <option value="all">All Roles</option>
+                                <option value="host">Hosts Only</option>
+                                <option value="player">Players Only</option>
+                                <option value="admin">Admins</option>
+                            </select>
+                            <div class="relative">
+                                <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="usr-search" placeholder="Search by name, email, phone..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20 outline-none w-64" oninput="debounceUserSearch()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-y border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                                    <th class="py-4 px-8">User ID/Name</th>
+                                    <th class="py-4 px-4">Email</th>
+                                    <th class="py-4 px-4">Role</th>
+                                    <th class="py-4 px-4">Status</th>
+                                    <th class="py-4 px-8 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-list" class="divide-y divide-slate-100 bg-white">
+                                <!-- Users loaded -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Platform Controls -->
+            <div id="tab-reservations" class="hidden absolute inset-x-8">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+                    <div class="px-8 py-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center bg-white sticky top-0 z-10">
+                        <h2 class="text-xl font-bold text-dark">Global Reservations</h2>
+                        <div class="flex space-x-3">
+                            <select id="res-filter-status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20 outline-none" onchange="loadAdminBookings()">
+                                <option value="all">All Statuses</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="pending">Pending</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <div class="relative">
+                                <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="res-search" placeholder="Search by name, ID, facility..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20 outline-none w-64" oninput="debounceResSearch()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-y border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                                    <th class="py-4 px-8">ID / DB Date</th>
+                                    <th class="py-4 px-4">Player</th>
+                                    <th class="py-4 px-4">Facility / Host</th>
+                                    <th class="py-4 px-4">Time / Price</th>
+                                    <th class="py-4 px-4">Status / Type</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-reservations-list" class="divide-y divide-slate-100 bg-white">
+                                <!-- Bookings loaded -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Platform Controls -->
+            <div id="tab-settings" class="hidden absolute inset-x-8">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+                    <div class="px-8 py-6 border-b border-slate-100 bg-slate-50">
+                        <h2 class="text-xl font-bold text-dark">Global Discounts</h2>
+                        <p class="text-slate-500 text-sm mt-1">Apply a platform-wide discount to all facilities.</p>
+                    </div>
+                    <div class="p-8">
+                        <form id="global-discount-form" class="max-w-xl space-y-4 mb-8">
+                            <div class="flex gap-4">
+                                <div class="flex-1">
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Discount Type</label>
+                                    <select id="global-discount-type" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
+                                        <option value="percentage">Percentage (%)</option>
+                                        <option value="fixed_amount">Fixed Amount ($)</option>
+                                    </select>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Value</label>
+                                    <input type="number" id="global-discount-value" step="0.01" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="e.g. 10" required>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="flex-1">
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Start Date <span class="text-xs font-normal text-slate-400">(Optional)</span></label>
+                                    <input type="date" id="global-discount-start" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-600">
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">End Date <span class="text-xs font-normal text-slate-400">(Optional)</span></label>
+                                    <input type="date" id="global-discount-end" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-600">
+                                </div>
+                            </div>
+                            <button type="submit" class="bg-primary hover:bg-primaryHover text-white px-6 py-3 rounded-xl font-bold transition-custom shadow-md" id="global-discount-btn">
+                                Create Global Discount
+                            </button>
+                        </form>
+
+                        <h3 class="text-lg font-bold text-dark mb-4">Active Global Discounts</h3>
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-y border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                                    <th class="py-3 px-4">Discount Details</th>
+                                    <th class="py-3 px-4">Duration</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="global-discounts-list" class="divide-y divide-slate-100 bg-white">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <script>
+        function formatTimeSlots(slotsArray) {
+            if (!slotsArray || slotsArray.length === 0) return '';
+            
+            const sorted = [...slotsArray].sort();
+            let groups = [];
+            let currentGroup = [sorted[0]];
+            
+            for (let i = 1; i < sorted.length; i++) {
+                const prev = sorted[i - 1];
+                const curr = sorted[i];
+                
+                const prevParts = prev.split(':');
+                let expectedH = parseInt(prevParts[0]);
+                let expectedM = parseInt(prevParts[1]) + 30;
+                if (expectedM >= 60) {
+                    expectedH += 1;
+                    expectedM -= 60;
+                }
+                const expectedStr = `${expectedH.toString().padStart(2, '0')}:${expectedM.toString().padStart(2, '0')}`;
+                
+                if (curr === expectedStr) {
+                    currentGroup.push(curr);
+                } else {
+                    groups.push(currentGroup);
+                    currentGroup = [curr];
+                }
+            }
+            groups.push(currentGroup);
+            
+            return groups.map(group => {
+                const start = group[0];
+                const last = group[group.length - 1];
+                
+                const lastParts = last.split(':');
+                let endH = parseInt(lastParts[0]);
+                let endM = parseInt(lastParts[1]) + 30;
+                if (endM >= 60) {
+                    endH += 1;
+                    endM -= 60;
+                }
+                const endStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+                
+                return `${start} - ${endStr}`;
+            }).join(', ');
+        }
+
+        const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+        let searchTimeout;
+
+        // Navigation Init
+        function initAdmin() {
+            // Check auth and role
+            fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.user || data.user.role !== 'admin') {
+                        alert("Unauthorized: You must be an admin to access this dashboard.");
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    document.getElementById('admin-name').textContent = data.user.name;
+                    document.getElementById('admin-avatar').textContent = data.user.name.charAt(0).toUpperCase();
+                    loadAdminData();
+                })
+                .catch(() => {
+                    window.location.href = 'login.html';
+                });
+        }
+
+        async function logout() {
+            await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+            window.location.href = 'index.html';
+        }
+
+        function switchTab(tabId) {
+            // Hide all tabs
+            ['dashboard', 'facilities', 'users', 'settings', 'reservations'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('block');
+                
+                // Reset nav styles
+                const nav = document.getElementById(`nav-${t}`);
+                nav.className = 'w-full flex items-center px-4 py-3 rounded-xl hover:bg-white/5 hover:text-white font-medium transition-custom text-slate-300';
+            });
+
+            // Show current tab
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).classList.add('block');
+            
+            // Set active nav
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            activeNav.className = 'w-full flex items-center px-4 py-3 rounded-xl bg-white/10 text-white font-medium transition-custom';
+
+            const titles = {
+                'dashboard': 'Admin Dashboard',
+                'facilities': 'Facility Content Management',
+                'users': 'User Management',
+                'reservations': 'Global Reservations',
+                'settings': 'Platform Controls'
+            };
+            document.getElementById('page-title').textContent = titles[tabId];
+            
+            if(tabId === 'facilities') loadAdminFacilities();
+            if(tabId === 'reservations') loadAdminBookings();
+            if(tabId === 'users') loadAdminUsers();
+            if(tabId === 'settings') loadGlobalDiscounts();
+        }
+
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(loadAdminFacilities, 500);
+        }
+
+        let userSearchTimeout;
+        function debounceUserSearch() {
+            clearTimeout(userSearchTimeout);
+            userSearchTimeout = setTimeout(loadAdminUsers, 500);
+        }
+
+        async function loadAdminData() {
+            loadDashboardStats();
+            // loadAdminFacilities() and users will be called when switching tabs
+        }
+
+        async function loadDashboardStats() {
+            try {
+                // Fetch overview data (facilities and users)
+                const [facRes, usrRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/api/admin/facilities`, { credentials: 'include' }),
+                    fetch(`${API_BASE_URL}/api/admin/users`, { credentials: 'include' })
+                ]);
+                
+                const facilities = await facRes.json();
+                const users = await usrRes.json();
+
+                if(!Array.isArray(facilities) || !Array.isArray(users)) return;
+
+                const pendingFacs = facilities.filter(f => f.listing_status === 'pending');
+                const activeFacs = facilities.filter(f => f.listing_status === 'approved');
+
+                document.getElementById('stat-pending').textContent = pendingFacs.length;
+                document.getElementById('stat-active-fac').textContent = activeFacs.length;
+                document.getElementById('stat-users').textContent = users.length;
+
+                renderPendingPreview(pendingFacs);
+
+            } catch(e) { console.error(e); }
+        }
+
+        function renderPendingPreview(pendingFacs) {
+            const tbody = document.getElementById('pending-list-preview');
+            tbody.innerHTML = '';
+            
+            if(pendingFacs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-500">No pending approvals! You\'re all caught up.</td></tr>`;
+                return;
+            }
+
+            pendingFacs.slice(0, 5).forEach(f => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-custom">
+                        <td class="py-4 px-6">
+                            <div class="font-bold text-dark">${f.name}</div>
+                            <div class="text-xs text-slate-400">ID: ${f.id}</div>
+                        </td>
+                        <td class="py-4 px-6 text-sm text-slate-600 font-medium">Host ID: ${f.host_id}</td>
+                        <td class="py-4 px-6">
+                            <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs font-bold uppercase">${f.type}</span>
+                        </td>
+                        <td class="py-4 px-6 text-right w-full flex justify-end gap-2">
+                            <a href="/facility.html?id=${f.id}" target="_blank" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-custom flex items-center"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Preview</a>
+                            <button onclick="updateFacilityStatus(${f.id}, 'approved')" class="text-xs font-bold bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primaryHover transition-custom mr-2">Approve</button>
+                            <button onclick="updateFacilityStatus(${f.id}, 'rejected')" class="text-xs font-bold border border-red-200 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-custom">Reject</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function loadAdminFacilities() {
+            const tbody = document.getElementById('admin-facilities-list');
+            tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading facilities...</td></tr>`;
+            
+            const filter = document.getElementById('fac-filter-status').value;
+            const search = document.getElementById('fac-search').value.toLowerCase();
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/admin/facilities`, { credentials: 'include' });
+                let facilities = await res.json();
+                
+                if (filter !== 'all') {
+                    if (filter === 'rejected') facilities = facilities.filter(f => ['rejected', 'suspended'].includes(f.listing_status));
+                    else facilities = facilities.filter(f => f.listing_status === filter);
+                }
+                
+                if (search) {
+                    facilities = facilities.filter(f => 
+                        (f.name && f.name.toLowerCase().includes(search)) || 
+                        (f.id && f.id.toString().includes(search)) || 
+                        (f.host_id && f.host_id.toString().includes(search)) ||
+                        (f.host_email && f.host_email.toLowerCase().includes(search)) ||
+                        (f.host_first_name && f.host_first_name.toLowerCase().includes(search)) ||
+                        (f.host_last_name && f.host_last_name.toLowerCase().includes(search)) ||
+                        (f.host_phone_number && f.host_phone_number.toLowerCase().includes(search)) ||
+                        (f.host_name && f.host_name.toLowerCase().includes(search))
+                    );
+                }
+
+                tbody.innerHTML = '';
+                if(facilities.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-500">No facilities found.</td></tr>`;
+                    return;
+                }
+
+                facilities.forEach(f => {
+                    let statusBadge = '';
+                    switch(f.listing_status) {
+                        case 'pending': statusBadge = '<span class="px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-md text-xs font-bold uppercase whitespace-nowrap"><i class="fa-solid fa-clock mr-1"></i>Pending</span>'; break;
+                        case 'approved': statusBadge = '<span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold uppercase whitespace-nowrap"><i class="fa-solid fa-check mr-1"></i>Approved</span>'; break;
+                        case 'paused': 
+                        case 'hidden': statusBadge = `<span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-xs font-bold uppercase whitespace-nowrap"><i class="fa-solid fa-eye-slash mr-1"></i>${f.listing_status}</span>`; break;
+                        default: statusBadge = `<span class="px-2.5 py-1 bg-red-100 text-red-700 rounded-md text-xs font-bold uppercase whitespace-nowrap"><i class="fa-solid fa-ban mr-1"></i>${f.listing_status}</span>`; break;
+                    }
+
+                    // Build actions based on status
+                    let actionsHtml = `
+                        <a href="/facility.html?id=${f.id}" target="_blank" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-slate-200 transition-custom inline-flex items-center mr-1"><i class="fa-solid fa-arrow-up-right-from-square mr-1 pt-0.5 text-[0.65rem]"></i> Preview</a>
+                    `;
+                    if (f.listing_status === 'pending') {
+                        actionsHtml += `
+                            <button onclick="updateFacilityStatus(${f.id}, 'approved')" class="text-xs font-bold bg-primary text-white px-3 py-1.5 rounded hover:bg-primaryHover transition-custom mr-1">Approve</button>
+                            <button onclick="updateFacilityStatus(${f.id}, 'rejected')" class="text-xs font-bold bg-red-100 text-red-600 px-3 py-1.5 rounded hover:bg-red-200 transition-custom">Reject</button>
+                        `;
+                    } else if (f.listing_status === 'approved' || f.listing_status === 'paused') {
+                        actionsHtml += `
+                            <button onclick="updateFacilityStatus(${f.id}, 'suspended')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-red-50 hover:text-red-600 transition-custom">Suspend Listing</button>
+                        `;
+                    } else {
+                        actionsHtml += `
+                            <button onclick="updateFacilityStatus(${f.id}, 'approved')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-primary/10 hover:text-primary transition-custom">Re-Approve</button>
+                        `;
+                    }
+
+                    function getPrimaryImageUrl(urlStr) {
+                        try {
+                            const parsed = JSON.parse(urlStr);
+                            if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+                        } catch (e) {
+                            // not json, return string directly
+                        }
+                        return urlStr || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+                    }
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition-custom group">
+                            <td class="py-4 px-8 border-b border-slate-100">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-lg bg-slate-200 mr-3 overflow-hidden flex-shrink-0">
+                                        ${f.image_url ? `<img src="${getPrimaryImageUrl(f.image_url)}" class="w-full h-full object-cover">` : ''}
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-dark">${f.name}</div>
+                                        <div class="text-xs text-slate-400">ID: ${f.id}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4 px-4 border-b border-slate-100 text-sm font-medium text-slate-600">
+                                Host ID: ${f.host_id}
+                            </td>
+                            <td class="py-4 px-4 border-b border-slate-100">
+                                <span class="px-2 py-1 border border-slate-200 text-slate-600 rounded text-xs font-bold uppercase bg-white shadow-sm">${f.type}</span>
+                            </td>
+                            <td class="py-4 px-4 border-b border-slate-100">
+                                ${statusBadge}
+                            </td>
+                            <td class="py-4 px-8 border-b border-slate-100 text-right opacity-80 group-hover:opacity-100 transition-opacity">
+                                ${actionsHtml}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500">Error loading facilities.</td></tr>`;
+            }
+        }
+
+        async function loadAdminUsers() {
+            const tbody = document.getElementById('admin-users-list');
+            tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading users...</td></tr>`;
+            
+            const filter = document.getElementById('usr-filter-role').value;
+            const searchInput = document.getElementById('usr-search');
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/admin/users`, { credentials: 'include' });
+                let users = await res.json();
+                
+                if (filter !== 'all') {
+                    users = users.filter(u => u.role === filter);
+                }
+
+                if (search) {
+                    users = users.filter(u => 
+                        (u.email && u.email.toLowerCase().includes(search)) ||
+                        (u.first_name && u.first_name.toLowerCase().includes(search)) ||
+                        (u.last_name && u.last_name.toLowerCase().includes(search)) ||
+                        (u.phone_number && u.phone_number.toLowerCase().includes(search)) ||
+                        (u.name && u.name.toLowerCase().includes(search))
+                    );
+                }
+
+                tbody.innerHTML = '';
+                if(users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-500">No users found.</td></tr>`;
+                    return;
+                }
+
+                users.forEach(u => {
+                    let statusBadge = u.status === 'suspended' 
+                        ? '<span class="px-2.5 py-1 bg-red-100 text-red-700 rounded-md text-xs font-bold uppercase">Suspended</span>'
+                        : '<span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold uppercase">Active</span>';
+                    
+                    let roleBadge = '';
+                    switch(u.role) {
+                        case 'admin': roleBadge = '<span class="text-primary font-bold"><i class="fa-solid fa-shield mr-1"></i>Admin</span>'; break;
+                        case 'host': roleBadge = '<span class="text-purple-600 font-bold"><i class="fa-solid fa-key mr-1"></i>Host</span>'; break;
+                        default: roleBadge = '<span class="text-slate-600 font-bold">Player</span>'; break;
+                    }
+
+                    let actionBtn = u.status === 'suspended'
+                        ? `<button onclick="updateUserStatus(${u.id}, 'active')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-green-50 hover:text-green-600 transition-custom">Reactivate</button>`
+                        : `<button onclick="updateUserStatus(${u.id}, 'suspended')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-red-50 hover:text-red-600 transition-custom">Suspend Account</button>`;
+
+                    if (u.role === 'admin') actionBtn = `<span class="text-xs text-slate-400 italic">No actions</span>`; // Cannot suspend other admins
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition-custom group">
+                            <td class="py-4 px-8 border-b border-slate-100">
+                                <div class="font-bold text-dark">${u.name}</div>
+                                <div class="text-xs text-slate-400">ID: ${u.id}</div>
+                            </td>
+                            <td class="py-4 px-4 border-b border-slate-100 text-sm font-medium text-slate-600">
+                                ${u.email}
+                            </td>
+                            <td class="py-4 px-4 border-b border-slate-100">
+                                ${roleBadge}
+                            </td>
+                            <td class="py-4 px-4 border-b border-slate-100">
+                                ${statusBadge}
+                            </td>
+                            <td class="py-4 px-8 border-b border-slate-100 text-right opacity-80 group-hover:opacity-100 transition-opacity">
+                                ${actionBtn}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500">Error loading users.</td></tr>`;
+            }
+        }
+
+        let resSearchTimeout;
+        function debounceResSearch() {
+            clearTimeout(resSearchTimeout);
+            resSearchTimeout = setTimeout(loadAdminBookings, 500);
+        }
+
+        async function loadAdminBookings() {
+            const tbody = document.getElementById('admin-reservations-list');
+            if(!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading reservations...</td></tr>`;
+            
+            const filter = document.getElementById('res-filter-status').value;
+            const searchInput = document.getElementById('res-search');
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/admin/bookings`, { credentials: 'include' });
+                let bookings = await res.json();
+                
+                if (filter !== 'all') {
+                    bookings = bookings.filter(b => b.status === filter);
+                }
+
+                if (search) {
+                    bookings = bookings.filter(b => 
+                        (b.id && b.id.toString().includes(search)) ||
+                        (b.facility_name && b.facility_name.toLowerCase().includes(search)) ||
+                        (b.player_name && b.player_name.toLowerCase().includes(search)) ||
+                        (b.player_email && b.player_email.toLowerCase().includes(search)) ||
+                        (b.host_name && b.host_name.toLowerCase().includes(search))
+                    );
+                }
+
+                tbody.innerHTML = '';
+                if(bookings.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-500">No reservations found.</td></tr>`;
+                    return;
+                }
+
+                bookings.forEach(b => {
+                    let statusBadge = '';
+                    switch(b.status) {
+                        case 'pending': statusBadge = '<span class="px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-md text-xs font-bold uppercase whitespace-nowrap"><i class="fa-solid fa-clock mr-1"></i>Pending</span>'; break;
+                        case 'confirmed': statusBadge = '<span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold uppercase whitespace-nowrap"><i class="fa-solid fa-check mr-1"></i>Confirmed</span>'; break;
+                        case 'cancelled': statusBadge = '<span class="px-2.5 py-1 bg-red-100 text-red-700 rounded-md text-xs font-bold uppercase whitespace-nowrap"><i class="fa-solid fa-ban mr-1"></i>Cancelled</span>'; break;
+                        default: statusBadge = `<span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-bold uppercase whitespace-nowrap">${b.status}</span>`; break;
+                    }
+
+                    const typeBadge = b.booking_type === 'manual' 
+                        ? '<span class="mt-1 inline-block px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-[0.65rem] font-bold uppercase whitespace-nowrap"><i class="fa-solid fa-user-pen mr-1"></i>Manual</span>'
+                        : '<span class="mt-1 inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[0.65rem] font-bold uppercase whitespace-nowrap"><i class="fa-solid fa-globe mr-1"></i>Online</span>';
+
+                    let timeSlotsHtml = '';
+                    try {
+                        const slots = JSON.parse(b.time_slots);
+                        if(Array.isArray(slots) && slots.length > 0) {
+                           timeSlotsHtml = `<div class="text-xs bg-slate-100 rounded px-1.5 py-0.5 mb-1 inline-block font-mono border border-slate-200 shadow-sm">${formatTimeSlots(slots)}</div>`;
+                        }
+                    } catch(e) {
+                        timeSlotsHtml = b.time_slots || '';
+                    }
+
+                    // Format database date
+                    let displayDate = b.booking_date;
+                    try {
+                        const parts = b.booking_date.split('T')[0].split('-');
+                        displayDate = new Date(parts[0], parts[1] - 1, parts[2]).toLocaleDateString();
+                    } catch(e) {}
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition-custom group">
+                            <td class="py-4 px-8 border-b border-slate-100">
+                                <div class="font-bold text-dark">ID: ${b.id}</div>
+                                <div class="text-xs text-slate-500 font-medium whitespace-nowrap"><i class="fa-regular fa-calendar mr-1"></i>${displayDate}</div>
+                            </td>
+                            <td class="py-4 px-4 border-b border-slate-100">
+                                <div class="text-sm font-bold text-slate-800">${b.player_name || 'Guest User'}</div>
+                                <div class="text-xs text-slate-500">${b.player_email || b.user_id || 'N/A'}</div>
+                            </td>
+                            <td class="py-4 px-4 border-b border-slate-100">
+                                <div class="text-sm font-bold text-slate-800 flex items-center gap-1"><i class="fa-solid fa-building text-slate-400 text-xs"></i> ${b.facility_name || 'Unknown'}</div>
+                                <div class="text-xs text-slate-500">Host: ${b.host_name || 'ID ' + b.host_id}</div>
+                            </td>
+                            <td class="py-4 px-4 border-b border-slate-100">
+                                <div>${timeSlotsHtml}</div>
+                                <div class="text-sm font-bold text-green-600 mt-1">$${b.total_price ? b.total_price.toFixed(2) : '0.00'}</div>
+                            </td>
+                            <td class="py-4 px-4 border-b border-slate-100">
+                                <div>${statusBadge}</div>
+                                <div>${typeBadge}</div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500">Error loading reservations.</td></tr>`;
+            }
+        }
+
+        async function updateFacilityStatus(id, newStatus) {
+            if(!confirm(`Are you sure you want to change this facility's status to '${newStatus}'?`)) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/admin/facilities/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ listing_status: newStatus }),
+                    credentials: 'include'
+                });
+                if(res.ok) {
+                    loadAdminFacilities();
+                    loadDashboardStats(); // refresh dashboard preview
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to update status');
+                }
+            } catch(e) {
+                alert('Network error');
+            }
+        }
+
+        async function updateUserStatus(id, newStatus) {
+            if(!confirm(`Are you sure you want to change this user's status to '${newStatus}'?`)) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/admin/users/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus }),
+                    credentials: 'include'
+                });
+                if(res.ok) {
+                    loadAdminUsers();
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to update status');
+                }
+            } catch(e) {
+                alert('Network error');
+            }
+        }
+
+        // --- Global Discounts Logic ---
+        async function loadGlobalDiscounts() {
+            const tbody = document.getElementById('global-discounts-list');
+            tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading discounts...</td></tr>`;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/admin/discounts`, { credentials: 'include' });
+                const discounts = await res.json();
+
+                if(!discounts.length) {
+                    tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-slate-500 italic">No global discounts active.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                discounts.forEach(d => {
+                    const valueStr = d.discount_type === 'percentage' ? `${d.value}% Off` : `$${d.value} Off`;
+                    const dateStr = (d.start_date || d.end_date) 
+                        ? `${d.start_date ? new Date(d.start_date).toLocaleDateString() : 'Now'} - ${d.end_date ? new Date(d.end_date).toLocaleDateString() : 'Forever'}`
+                        : 'Forever';
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="py-3 px-4">
+                                <span class="font-bold text-dark">${valueStr}</span>
+                                <div class="text-xs text-primary font-bold">GLOBAL (All Facilities)</div>
+                            </td>
+                            <td class="py-3 px-4 text-sm text-slate-600">${dateStr}</td>
+                            <td class="py-3 px-4 text-right">
+                                <button onclick="deleteGlobalDiscount(${d.id})" class="text-red-500 hover:text-red-700 w-8 h-8 rounded-full hover:bg-red-50 transition-custom">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-red-500">Failed to load discounts</td></tr>`;
+            }
+        }
+
+        document.getElementById('global-discount-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                discount_type: document.getElementById('global-discount-type').value,
+                value: parseFloat(document.getElementById('global-discount-value').value),
+                start_date: document.getElementById('global-discount-start').value || null,
+                end_date: document.getElementById('global-discount-end').value || null
+            };
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/admin/discounts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+                if(res.ok) {
+                    e.target.reset();
+                    loadGlobalDiscounts();
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Setup failed');
+                }
+            } catch (e) {
+                alert('Network error');
+            }
+        });
+
+        async function deleteGlobalDiscount(id) {
+            if(!confirm('Delete this global discount?')) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/admin/discounts/${id}`, { method: 'DELETE', credentials: 'include' });
+                if(res.ok) loadGlobalDiscounts();
+                else alert('Failed to delete discount');
+            } catch(e) {
+                alert('Network error');
+            }
+        }
+
+        // Init on load
+        window.addEventListener('DOMContentLoaded', initAdmin);
+    </script>
+</body>
+</html>
