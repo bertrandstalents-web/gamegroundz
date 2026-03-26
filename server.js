@@ -368,8 +368,11 @@ app.get('/api/facilities', (req, res) => {
                     
                     // Determine if there is currently an active promotion for this facility today
                     const activeDiscounts = facility.discounts.filter(dist => {
-                        if (dist.start_date && dist.start_date > todayDateStr) return false;
-                        if (dist.end_date && dist.end_date < todayDateStr) return false;
+                        const sdStr = dist.start_date ? (typeof dist.start_date === 'string' ? dist.start_date.split('T')[0] : dist.start_date.toISOString().split('T')[0]) : null;
+                        const edStr = dist.end_date ? (typeof dist.end_date === 'string' ? dist.end_date.split('T')[0] : dist.end_date.toISOString().split('T')[0]) : null;
+
+                        if (sdStr && sdStr > todayDateStr) return false;
+                        if (edStr && edStr < todayDateStr) return false;
                         if (dist.recurring_day && dist.recurring_day !== dayOfWeek) return false;
                         if (dist.start_time && dist.end_time) {
                             if (todayTimeStr >= dist.end_time) return false; // Promotion ended for today
