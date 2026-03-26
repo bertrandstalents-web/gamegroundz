@@ -40,13 +40,20 @@
                 <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='index.html'">
                     <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
-                    <span class="font-bold text-2xl tracking-tight text-dark">Game<span class="text-primary">Groundz</span></span>
+                    <span class="font-bold text-2xl tracking-tight text-dark notranslate">Game<span class="text-primary">Groundz</span></span>
                 </div>
                 
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
                     <a href="how-it-works.html" class="text-slate-600 hover:text-primary font-medium transition-custom">How it Works</a>
+                    
+                    <!-- Language Toggle -->
+                    <div class="flex items-center space-x-1 bg-slate-100 rounded-full p-1 border border-slate-200 shadow-inner ml-4 lang-switcher-container">
+                        <button onclick="window.switchLanguage('en')" id="lang-btn-en" class="px-3 py-1 rounded-full text-sm font-bold bg-white text-dark shadow-sm transition-all duration-200">EN</button>
+                        <button onclick="window.switchLanguage('fr')" id="lang-btn-fr" class="px-3 py-1 rounded-full text-sm font-bold text-slate-500 hover:text-dark transition-all duration-200">FR</button>
+                    </div>
+
                     <div class="h-6 w-px bg-slate-300"></div>
                     <a href="#" id="login-btn" class="text-slate-600 hover:text-dark font-medium transition-custom">Log in</a>
                     <a href="owner-dashboard.html" id="list-facility-btn" class="bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-full font-medium transition-custom shadow-md hover:shadow-lg">List Your Facility</a>
@@ -68,6 +75,13 @@
                 <a href="how-it-works.html" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary">How it Works</a>
                 <a href="#" id="mobile-login-btn" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary">Log in</a>
                 <a href="owner-dashboard.html" id="mobile-list-facility-btn" class="block px-3 py-3 mt-4 text-center rounded-full text-base font-medium bg-dark text-white hover:bg-slate-800">List Your Facility</a>
+                <!-- Mobile Language Toggle -->
+                <div class="flex items-center space-x-2 px-3 py-3 border-t border-slate-100 mt-2 pt-4">
+                    <span class="text-sm font-medium text-slate-500 mr-2">Language:</span>
+                    <button onclick="window.switchLanguage('en')" id="mobile-lang-btn-en" class="px-3 py-1 rounded-full text-sm font-bold bg-slate-200 text-dark shadow-sm transition-all duration-200">EN</button>
+                    <button onclick="window.switchLanguage('fr')" id="mobile-lang-btn-fr" class="px-3 py-1 rounded-full text-sm font-bold text-slate-500 bg-slate-50 transition-all duration-200">FR</button>
+                </div>
+
             </div>
         </div>
     </nav>
@@ -221,7 +235,7 @@
     <section class="py-24 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-4xl font-extrabold text-dark mb-4">How GameGroundz Works</h2>
+                <h2 class="text-4xl font-extrabold text-dark mb-4">How <span class="notranslate"><span class="notranslate">GameGroundz</span></span> Works</h2>
                 <p class="text-lg text-slate-500">We've removed the phone calls, the emails, and the waiting. Booking a sports surface is now as simple as 1, 2, 3.</p>
             </div>
 
@@ -339,7 +353,7 @@
                     <div class="flex text-yellow-400 mb-6 text-xl">
                         <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
                     </div>
-                    <p class="text-2xl font-light text-slate-700 mb-8 leading-relaxed">"GameGroundz completely changed how we organize our adult hockey league. What used to take days of calling rinks now takes 5 minutes on my phone."</p>
+                    <p class="text-2xl font-light text-slate-700 mb-8 leading-relaxed">"<span class="notranslate"><span class="notranslate">GameGroundz</span></span> completely changed how we organize our adult hockey league. What used to take days of calling rinks now takes 5 minutes on my phone."</p>
                     <div class="flex items-center">
                         <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Avatar" class="w-14 h-14 rounded-full object-cover mr-4 border-2 border-slate-100">
                         <div>
@@ -376,7 +390,7 @@
         
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
             <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-6">Ready to hit the ground running?</h2>
-            <p class="text-xl text-primary-100 mb-10 text-primary-50">Join thousands of athletes and facilities currently using GameGroundz.</p>
+            <p class="text-xl text-primary-100 mb-10 text-primary-50">Join thousands of athletes and facilities currently using <span class="notranslate"><span class="notranslate">GameGroundz</span></span>.</p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <a href="search.html" class="bg-white text-primary px-8 py-4 rounded-full font-bold text-lg hover:bg-slate-50 transition-custom shadow-lg hover:shadow-xl">Book a Surface</a>
                 <a href="owner-dashboard.html" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-custom">List Your Facility</a>
@@ -392,7 +406,7 @@
                 <div class="lg:col-span-2">
                     <div class="flex items-center mb-6">
                         <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
-                        <span class="font-bold text-2xl tracking-tight text-white">Game<span class="text-primary">Groundz</span></span>
+                        <span class="font-bold text-2xl tracking-tight text-white notranslate">Game<span class="text-primary">Groundz</span></span>
                     </div>
                     <p class="text-slate-400 mb-6 leading-relaxed max-w-sm">The single destination to discover, compare, and reserve sports surfaces. Modernizing how the world books ice, field, and court times.</p>
                     <div class="flex space-x-4">
@@ -466,7 +480,7 @@
             </div>
             
             <div class="p-6 overflow-y-auto">
-                <h4 class="text-2xl font-extrabold text-dark mb-6">Welcome to GameGroundz</h4>
+                <h4 class="text-2xl font-extrabold text-dark mb-6">Welcome to <span class="notranslate"><span class="notranslate">GameGroundz</span></span></h4>
                 
                 <form id="auth-form" class="space-y-4">
                     <div id="name-field-container" class="hidden space-y-4">
@@ -723,7 +737,7 @@
                             </div>
                             <div class="p-6">
                                 <div class="flex justify-between items-start mb-2">
-                                    <h3 class="text-xl font-bold text-dark group-hover:text-primary transition-custom">${facility.name}</h3>
+                                    <h3 class="text-xl font-bold text-dark group-hover:text-primary transition-custom notranslate">${facility.name}</h3>
                                     <span class="font-bold text-lg text-dark">From $${facility.base_price}<span class="text-sm font-normal text-slate-500">/hr</span></span>
                                 </div>
                                 <p class="text-slate-500 mb-4 flex items-center text-sm">
@@ -1131,5 +1145,6 @@
         }
 
     </script>
-    </body>
+        <script src="js/i18n.js"></script>
+</body>
 </html>
