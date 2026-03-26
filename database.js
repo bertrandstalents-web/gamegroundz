@@ -147,7 +147,25 @@ async function initDatabase() {
             booking_type TEXT DEFAULT 'online',
             manual_notes TEXT,
             payment_status TEXT DEFAULT 'pending',
-            stripe_session_id TEXT
+            stripe_session_id TEXT,
+            review_email_sent INTEGER DEFAULT 0
+        )`);
+
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN review_email_sent INTEGER DEFAULT 0`);
+        } catch(e) {
+            // column already exists, this is fine
+        }
+
+        // Reviews Table
+        await client.query(`CREATE TABLE IF NOT EXISTS reviews (
+            id SERIAL PRIMARY KEY,
+            facility_id INTEGER REFERENCES facilities(id),
+            user_id INTEGER REFERENCES users(id),
+            booking_id INTEGER REFERENCES bookings(id),
+            rating REAL NOT NULL,
+            comment TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
 
         // Seed initial Facility data if the table is empty

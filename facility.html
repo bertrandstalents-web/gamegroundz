@@ -136,6 +136,17 @@
                     </div>
                 </div>
 
+                <!-- Reviews Section -->
+                <div class="py-8 border-b border-slate-200" id="reviews-section">
+                    <div class="flex items-center mb-6">
+                        <i class="fa-solid fa-star text-yellow-400 text-2xl mr-2"></i>
+                        <h2 class="text-2xl font-bold text-dark" id="reviews-header-title">4.9 · <span class="text-lg font-normal text-slate-500 underline ml-1">128 reviews</span></h2>
+                    </div>
+                    <div id="reviews-container" class="space-y-6">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
                 <!-- Availability Calendar Mockup -->
                 <div class="py-8 border-b border-slate-200">
                     <h2 class="text-2xl font-bold text-dark mb-2">Availability</h2>
@@ -357,6 +368,60 @@
                     <p class="text-slate-600 mb-8 max-w-sm mx-auto">Your facility has been successfully booked. A confirmation email with details and receipt has been sent.</p>
                     <button onclick="window.location.reload()" class="bg-slate-100 hover:bg-slate-200 text-dark px-8 py-3 rounded-xl font-bold transition-custom">
                         Back to Facility
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Modal Layout -->
+    <div id="review-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" id="review-backdrop"></div>
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-lg w-full border border-slate-200">
+                
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="text-xl leading-6 font-extrabold text-dark flex items-center">
+                        <i class="fa-solid fa-star text-yellow-400 mr-2 text-base"></i> Leave a Review
+                    </h3>
+                    <button id="close-review" class="text-slate-400 hover:text-slate-600 focus:outline-none transition-custom w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                
+                <form id="review-form" class="px-6 py-6 border-b border-slate-200" onsubmit="event.preventDefault();">
+                    <div class="mb-4 text-center">
+                        <p class="text-sm text-slate-600 mb-2">How would you rate your experience at <strong id="review-facility-name">this facility</strong>?</p>
+                        <div class="flex justify-center space-x-2 text-3xl" id="star-rating-container">
+                            <i class="fa-regular fa-star text-slate-300 cursor-pointer hover:text-yellow-400 transition-custom" data-val="1"></i>
+                            <i class="fa-regular fa-star text-slate-300 cursor-pointer hover:text-yellow-400 transition-custom" data-val="2"></i>
+                            <i class="fa-regular fa-star text-slate-300 cursor-pointer hover:text-yellow-400 transition-custom" data-val="3"></i>
+                            <i class="fa-regular fa-star text-slate-300 cursor-pointer hover:text-yellow-400 transition-custom" data-val="4"></i>
+                            <i class="fa-regular fa-star text-slate-300 cursor-pointer hover:text-yellow-400 transition-custom" data-val="5"></i>
+                        </div>
+                        <input type="hidden" id="review-rating-val" value="0">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Add a written review (optional)</label>
+                        <textarea id="review-comment" rows="4" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom resize-none" placeholder="Share details of your own experience at this place"></textarea>
+                    </div>
+
+                    <button type="submit" id="submit-review-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-bold text-lg transition-custom shadow-glow flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                        Submit Review
+                    </button>
+                    <p id="review-error-msg" class="text-red-500 text-sm text-center mt-2 hidden"></p>
+                </form>
+                
+                <div id="review-success" class="px-6 py-12 text-center hidden">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-check text-3xl text-green-500"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-dark mb-2">Thank You!</h3>
+                    <p class="text-slate-600 mb-6">Your review has been published.</p>
+                    <button id="close-review-success" class="bg-slate-100 hover:bg-slate-200 text-dark px-6 py-2 rounded-xl font-bold transition-custom">
+                        Close
                     </button>
                 </div>
 
@@ -1379,6 +1444,166 @@
                     localStorage.setItem('gg_user', JSON.stringify(data.user));
                 }
             } catch (e) { }
+        });
+    </script>
+        });
+    </script>
+    
+    <!-- Review Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const facilityIdParam = urlParams.get('id');
+            const reviewBookingId = urlParams.get('review_booking');
+
+            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+
+            // 1. Fetch and Display Reviews
+            if (facilityIdParam) {
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/facilities/${facilityIdParam}/reviews`);
+                    if (res.ok) {
+                        const reviews = await res.json();
+                        const container = document.getElementById('reviews-container');
+                        const headerTitle = document.getElementById('reviews-header-title');
+                        
+                        if (reviews.length === 0) {
+                            if(container) container.innerHTML = '<p class="text-slate-500 italic">No reviews yet. Be the first to leave one!</p>';
+                            if(headerTitle) headerTitle.innerHTML = '0 <span class="text-lg font-normal text-slate-500 underline ml-1">reviews</span>';
+                        } else {
+                            let totalScore = 0;
+                            reviews.forEach(r => totalScore += r.rating);
+                            const avg = (totalScore / reviews.length).toFixed(1);
+                            if(headerTitle) headerTitle.innerHTML = `${avg} <span class="text-lg font-normal text-slate-500 underline ml-1 cursor-pointer">(${reviews.length} reviews)</span>`;
+                            
+                            let html = '';
+                            reviews.forEach(r => {
+                                const initial = r.first_name ? r.first_name.charAt(0) : r.name.charAt(0);
+                                const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+                                const dateStr = new Date(r.created_at).toLocaleDateString('en-US', dateOptions);
+                                
+                                let starsHtml = '';
+                                for(let i=1; i<=5; i++) {
+                                    if(i <= r.rating) starsHtml += '<i class="fa-solid fa-star text-yellow-400 text-xs mr-0.5"></i>';
+                                    else starsHtml += '<i class="fa-regular fa-star text-slate-300 text-xs mr-0.5"></i>';
+                                }
+
+                                html += `
+                                    <div class="w-full flex pb-6 border-b border-slate-100 last:border-0 last:pb-0">
+                                        <div class="mr-4 mt-1">
+                                            <div class="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold text-lg">${initial}</div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-dark">${r.first_name || r.name.split(' ')[0]}</h4>
+                                            <div class="text-sm text-slate-500 mb-2 flex items-center">${starsHtml} <span class="ml-2">${dateStr}</span></div>
+                                            <!-- Handle empty comments visually padding -->
+                                            <p class="text-slate-700 leading-relaxed">${r.comment ? r.comment.replace(/\\n/g, '<br>') : '<span class="italic text-slate-400 border border-slate-100 px-3 py-1 rounded-full text-sm">Rating only</span>'}</p>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            if(container) container.innerHTML = html;
+                        }
+                    }
+                } catch(e) { console.error('Error fetching reviews:', e); }
+            }
+
+            // 2. Review Modal Logic
+            const modal = document.getElementById('review-modal');
+            if (reviewBookingId && modal) {
+                // Check if user is logged in
+                const storedUser = localStorage.getItem('gg_user');
+                if (!storedUser) {
+                    sessionStorage.setItem('pending_review_booking', reviewBookingId);
+                    window.location.href = `index.html?login=true&redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                    return;
+                }
+
+                // Show modal
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    const titleEl = document.querySelector('h1.text-3xl.font-extrabold');
+                    if (titleEl) document.getElementById('review-facility-name').textContent = titleEl.textContent;
+                }, 500); 
+
+                // Star Rating interactiveness
+                const stars = document.querySelectorAll('#star-rating-container i');
+                const ratingInput = document.getElementById('review-rating-val');
+                const btn = document.getElementById('submit-review-btn');
+                btn.disabled = true; // wait until rating chosen
+
+                stars.forEach(star => {
+                    star.addEventListener('mouseenter', (e) => {
+                        const val = parseInt(e.target.dataset.val);
+                        stars.forEach(s => {
+                            if(parseInt(s.dataset.val) <= val) { s.classList.replace('fa-regular', 'fa-solid'); s.classList.replace('text-slate-300', 'text-yellow-400'); }
+                            else { s.classList.replace('fa-solid', 'fa-regular'); s.classList.replace('text-yellow-400', 'text-slate-300'); }
+                        });
+                    });
+                    
+                    star.addEventListener('mouseleave', () => {
+                        const val = parseInt(ratingInput.value);
+                        stars.forEach(s => {
+                            if(parseInt(s.dataset.val) <= val) { s.classList.replace('fa-regular', 'fa-solid'); s.classList.replace('text-slate-300', 'text-yellow-400'); }
+                            else { s.classList.replace('fa-solid', 'fa-regular'); s.classList.replace('text-yellow-400', 'text-slate-300'); }
+                        });
+                    });
+
+                    star.addEventListener('click', (e) => {
+                        const val = parseInt(e.target.dataset.val);
+                        ratingInput.value = val;
+                        stars.forEach(s => {
+                            if(parseInt(s.dataset.val) <= val) { s.classList.replace('fa-regular', 'fa-solid'); s.classList.replace('text-slate-300', 'text-yellow-400'); }
+                            else { s.classList.replace('fa-solid', 'fa-regular'); s.classList.replace('text-yellow-400', 'text-slate-300'); }
+                        });
+                        btn.disabled = false;
+                    });
+                });
+
+                // Form Submit
+                const form = document.getElementById('review-form');
+                form.addEventListener('submit', async () => {
+                    const rating = parseInt(ratingInput.value);
+                    if (rating === 0) return;
+                    
+                    const comment = document.getElementById('review-comment').value;
+                    const errorMsg = document.getElementById('review-error-msg');
+                    
+                    btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Submitting...";
+                    btn.disabled = true;
+                    errorMsg.classList.add('hidden');
+
+                    try {
+                        const res = await fetch(`${API_BASE_URL}/api/reviews`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ booking_id: reviewBookingId, rating, comment })
+                        });
+                        if (res.ok) {
+                            form.classList.add('hidden');
+                            document.getElementById('review-success').classList.remove('hidden');
+                        } else {
+                            const errData = await res.json();
+                            errorMsg.textContent = errData.error || "Failed to submit review.";
+                            errorMsg.classList.remove('hidden');
+                            btn.innerHTML = "Submit Review";
+                            btn.disabled = false;
+                        }
+                    } catch(e) {
+                        errorMsg.textContent = "Network error occurred.";
+                        errorMsg.classList.remove('hidden');
+                        btn.innerHTML = "Submit Review";
+                        btn.disabled = false;
+                    }
+                });
+
+                document.getElementById('close-review').addEventListener('click', () => modal.classList.add('hidden'));
+                document.getElementById('review-backdrop').addEventListener('click', () => modal.classList.add('hidden'));
+                document.getElementById('close-review-success').addEventListener('click', () => {
+                    modal.classList.add('hidden');
+                    window.location.href = window.location.pathname + '?id=' + facilityIdParam;
+                });
+            }
         });
     </script>
 </body>

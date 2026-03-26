@@ -225,7 +225,43 @@ async function sendHostConfirmation(bookingDetails) {
     }
 }
 
+async function sendReviewRequest(bookingDetails) {
+    if (!transporter) return;
+
+    try {
+        const { player_email, player_name, facility_name, facility_id, id } = bookingDetails;
+        
+        const bodyContent = `
+            <h2>How was your experience?</h2>
+            <p>Hi ${player_name},</p>
+            <p>We hope you had a great time at <strong>${facility_name}</strong>!</p>
+            <p>Your feedback helps our community find the best places to play, and helps hosts improve their facilities.</p>
+            
+            <center>
+                <a href="${process.env.APP_URL || 'https://gamegroundz.com'}/facility.html?id=${facility_id}&review_booking=${id}" class="btn">Leave a Review</a>
+            </center>
+        `;
+
+        const html = getBaseEmailTemplate('Leave a Review', 'How was your recent booking at GameGroundz?', bodyContent);
+
+        let info = await transporter.sendMail({
+            from: '"GameGroundz Experience" <support@gamegroundz.com>', // Sender address
+            to: player_email, // list of receivers
+            subject: `How was your time at ${facility_name}?`, // Subject line
+            html: html, // html body
+        });
+
+        console.log("Review request email sent: %s", info.messageId);
+        if (info.messageId.includes('ethereal')) {
+            console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        }
+    } catch (error) {
+        console.error("Error sending review request email:", error);
+    }
+}
+
 module.exports = {
     sendPlayerConfirmation,
-    sendHostConfirmation
+    sendHostConfirmation,
+    sendReviewRequest
 };

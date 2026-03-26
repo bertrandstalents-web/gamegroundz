@@ -107,6 +107,58 @@ function sendBookingEmails(bookingId) {
     });
 }
 
+// Review Request Polling (runs every 15 minutes)
+setInterval(() => {
+    db.all(`
+        SELECT b.*, f.name as facility_name, u.name as player_name, u.email as player_email
+        FROM bookings b
+        JOIN facilities f ON b.facility_id = f.id
+        JOIN users u ON b.user_id = u.id
+        WHERE b.status = 'confirmed' AND b.review_email_sent = 0 AND b.booking_type = 'online'
+    `, [], (err, bookings) => {
+        if (err || !bookings) return;
+        
+        const serverNow = new Date();
+        const tzStr = serverNow.toLocaleString('en-US', { timeZone: 'America/New_York' }); 
+        const now = new Date(tzStr);
+
+        bookings.forEach(booking => {
+            try {
+                const slots = JSON.parse(booking.time_slots);
+                if (!slots || slots.length === 0) return;
+                
+                const sorted = [...slots].sort();
+                const latestSlot = sorted[sorted.length - 1];
+                let [hours, mins] = latestSlot.split(':').map(Number);
+                mins += 30;
+                if (mins >= 60) { hours += 1; mins -= 60; }
+                
+                // Date constructor with timezone assumption from standard formatting
+                const endDateStr = `${booking.booking_date}T${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:00`;
+                const endDate = new Date(endDateStr);
+                
+                if (isNaN(endDate.getTime())) return;
+                
+                const diffMs = now - endDate;
+                const oneHourMs = 60 * 60 * 1000;
+                
+                // If it's been exactly or more than 1 hour since the booking ended
+                if (diffMs >= oneHourMs) {
+                    // Send review email
+                    emailService.sendReviewRequest(booking);
+                    
+                    // Mark as sent
+                    db.run("UPDATE bookings SET review_email_sent = 1 WHERE id = ?", [booking.id], (updateErr) => {
+                        if (updateErr) console.error("Error updating review_email_sent:", updateErr);
+                    });
+                }
+            } catch(e) {
+                console.error("Error processing booking for review email:", e);
+            }
+        });
+    });
+}, 15 * 60 * 1000);
+
 // --- AUTHENTICATION ---
 
 // User Registration
@@ -1263,6 +1315,86 @@ app.post('/api/bookings/confirm', async (req, res) => {
         console.error("Sync Confirm Error:", err);
         res.status(500).json({ error: "Failed to confirm session" });
     }
+});
+
+// --- REVIEWS Endpoints ---
+
+// POST a review
+app.post('/api/reviews', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const { booking_id, rating, comment } = req.body;
+    if (!booking_id || rating === undefined) {
+        return res.status(400).json({ error: "Booking ID and rating are required" });
+    }
+
+    // Verify booking belongs to user and is confirmed
+    db.get("SELECT facility_id, booking_date, time_slots FROM bookings WHERE id = ? AND user_id = ? AND status = 'confirmed'", [booking_id, req.session.userId], (err, booking) => {
+        if (err || !booking) return res.status(403).json({ error: "Booking not found or access denied" });
+
+        // Ensure the booking time is actually past
+        try {
+            const slots = JSON.parse(booking.time_slots);
+            if (!slots || slots.length === 0) return res.status(400).json({ error: "Invalid booking time slots" });
+            
+            const sorted = [...slots].sort();
+            const latestSlot = sorted[sorted.length - 1];
+            let [hours, mins] = latestSlot.split(':').map(Number);
+            mins += 30;
+            if (mins >= 60) { hours += 1; mins -= 60; }
+            
+            const serverNow = new Date();
+            const tzStr = serverNow.toLocaleString('en-US', { timeZone: 'America/New_York' }); 
+            const now = new Date(tzStr);
+
+            const endDateStr = `${booking.booking_date}T${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:00`;
+            const endDate = new Date(endDateStr);
+            
+            if (!isNaN(endDate.getTime()) && now < endDate) {
+                return res.status(400).json({ error: "Cannot review a booking that hasn't ended yet." });
+            }
+        } catch(e) {}
+
+        db.get("SELECT id FROM reviews WHERE booking_id = ?", [booking_id], (err, existingReview) => {
+            if (existingReview) return res.status(400).json({ error: "Review already submitted for this booking" });
+
+            const facilityId = booking.facility_id;
+            
+            // Insert review
+            db.run(
+                "INSERT INTO reviews (facility_id, user_id, booking_id, rating, comment) VALUES (?, ?, ?, ?, ?)",
+                [facilityId, req.session.userId, booking_id, rating, comment || ''],
+                function(insertErr) {
+                    if (insertErr) return res.status(500).json({ error: "Failed to submit review" });
+
+                    // Update facility rating
+                    db.get("SELECT AVG(rating) as avg_rating, COUNT(id) as total_reviews FROM reviews WHERE facility_id = ?", [facilityId], (statsErr, stats) => {
+                        if (!statsErr && stats) {
+                            const newRating = stats.avg_rating ? parseFloat(stats.avg_rating).toFixed(1) : 0;
+                            db.run("UPDATE facilities SET rating = ?, reviews_count = ? WHERE id = ?", [newRating, stats.total_reviews || 0, facilityId]);
+                        }
+                    });
+
+                    res.status(201).json({ message: "Review submitted successfully" });
+                }
+            );
+        });
+    });
+});
+
+// GET reviews for a facility
+app.get('/api/facilities/:id/reviews', (req, res) => {
+    const facilityId = req.params.id;
+    db.all(`
+        SELECT r.id, r.rating, r.comment, r.created_at, u.name, u.first_name, u.last_name, u.profile_picture 
+        FROM reviews r
+        JOIN users u ON r.user_id = u.id
+        WHERE r.facility_id = ?
+        ORDER BY r.created_at DESC
+    `, [facilityId], (err, reviews) => {
+        if (err) return res.status(500).json({ error: "Failed to fetch reviews" });
+        res.json(reviews);
+    });
 });
 
 // Fallback for 404 Not Found
