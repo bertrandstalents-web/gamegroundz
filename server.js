@@ -521,7 +521,7 @@ app.post('/api/facilities', (req, res) => {
         return res.status(401).json({ error: "Unauthorized: You must be logged in to list a facility." });
     }
 
-    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days } = req.body;
+    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount } = req.body;
     
     if (!name || !type || !environment || !base_price || !location || !image_url) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -549,9 +549,9 @@ app.post('/api/facilities', (req, res) => {
 
     db.run(
         `INSERT INTO facilities 
-         (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, host_id, operating_hours, listing_status, advance_booking_days) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, req.session.userId, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180],
+         (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, host_id, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, req.session.userId, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
@@ -571,7 +571,7 @@ app.put('/api/host/facilities/:id', (req, res) => {
     }
 
     const facilityId = req.params.id;
-    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days } = req.body;
+    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount } = req.body;
     
     if (!name || !type || !environment || !base_price || !location || !image_url) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -603,9 +603,9 @@ app.put('/api/host/facilities/:id', (req, res) => {
             name = ?, subtitle = ?, description = ?, features = ?, locker_rooms = ?, 
             capacity = ?, size_info = ?, amenities = ?, type = ?, environment = ?, 
             base_price = ?, pricing_rules = ?, location = ?, lat = COALESCE(?, lat), lng = COALESCE(?, lng), image_url = ?, 
-            is_instant_book = ?, operating_hours = ?, listing_status = ?, advance_booking_days = ? 
+            is_instant_book = ?, operating_hours = ?, listing_status = ?, advance_booking_days = ?, has_processing_fee = ?, processing_fee_amount = ? 
          WHERE id = ? AND host_id = ?`,
-        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, facilityId, req.session.userId],
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00, facilityId, req.session.userId],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
@@ -1195,7 +1195,7 @@ app.post('/api/create-checkout-session', (req, res) => {
 
     // Secure Pricing Calculation
     db.get(`
-        SELECT f.name, f.base_price, f.pricing_rules, u.stripe_account_id, u.stripe_onboarding_complete 
+        SELECT f.name, f.base_price, f.pricing_rules, f.has_processing_fee, f.processing_fee_amount, u.stripe_account_id, u.stripe_onboarding_complete 
         FROM facilities f 
         JOIN users u ON f.host_id = u.id 
         WHERE f.id = ?
@@ -1210,7 +1210,7 @@ app.post('/api/create-checkout-session', (req, res) => {
             
             // Add processing fee and tax to match frontend
             const taxRate = 0.14975;
-            const processingFee = 15;
+            const processingFee = (facility.has_processing_fee === 1 || facility.has_processing_fee === true) ? Number(facility.processing_fee_amount || 0) : 0;
             const finalAmount = secureTotalPrice + processingFee + (secureTotalPrice * taxRate);
             const finalAmountCents = Math.round(finalAmount * 100);
 

@@ -238,9 +238,9 @@
                             <span class="underline cursor-pointer" id="price-calculation">$197 x 2 hours</span>
                             <span id="subtotal-amount">$394.00</span>
                         </div>
-                        <div class="flex justify-between text-base">
+                        <div class="flex justify-between text-base" id="processing-fee-row">
                             <span class="underline cursor-pointer">Processing fee</span>
-                            <span>$15.00</span>
+                            <span id="processing-fee-amount">$15.00</span>
                         </div>
                         <div class="flex justify-between text-base">
                             <span class="underline cursor-pointer">Taxes</span>
@@ -436,7 +436,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             let hourlyRate = 197;
             let pricingRules = [];
-            const processingFee = 15;
+            let processingFee = 15;
             const taxRate = 0.14975; // ~15% tax in Quebec
 
             function getPriceForTimeSlot(timeStr, basePrice, rules, isWeekend) {
@@ -584,6 +584,8 @@
                     
                     // Update global state
                     hourlyRate = facility.base_price || facility.price || 197;
+                    let hasProcessingFee = (facility.has_processing_fee == 1 || facility.has_processing_fee === true || facility.has_processing_fee === '1' || facility.has_processing_fee === undefined);
+                    processingFee = hasProcessingFee ? (facility.processing_fee_amount !== undefined ? Number(facility.processing_fee_amount) : 15.00) : 0;
                     try {
                         pricingRules = JSON.parse(facility.pricing_rules || '[]');
                     } catch (e) {
@@ -1243,12 +1245,42 @@
                         subtotalEl.classList.remove('line-through', 'text-slate-400');
                     }
                     subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+                    
+                    const processingFeeRow = document.getElementById('processing-fee-row');
+                    const processingFeeAmountEl = document.getElementById('processing-fee-amount');
+                    if (processingFee > 0) {
+                        if (processingFeeRow) {
+                            processingFeeRow.style.display = '';
+                            processingFeeRow.classList.remove('hidden');
+                        }
+                        if (processingFeeAmountEl) processingFeeAmountEl.textContent = `$${processingFee.toFixed(2)}`;
+                    } else {
+                        if (processingFeeRow) {
+                            processingFeeRow.style.display = 'none';
+                            processingFeeRow.classList.add('hidden');
+                        }
+                    }
+                    
                     taxEl.textContent = `$${tax.toFixed(2)}`;
                     totalEl.textContent = `$${currentTotal.toFixed(2)}`;
                 } else {
                     currentTotal = 0;
                     priceCalcEl.textContent = `$${hourlyRate} x 0 hours`;
                     subtotalEl.textContent = `$0.00`;
+                    
+                    const processingFeeRow = document.getElementById('processing-fee-row');
+                    if (processingFeeRow) {
+                        if (processingFee === 0) {
+                            processingFeeRow.style.display = 'none';
+                            processingFeeRow.classList.add('hidden');
+                        } else {
+                            processingFeeRow.style.display = '';
+                            processingFeeRow.classList.remove('hidden');
+                            const amtEl = document.getElementById('processing-fee-amount');
+                            if (amtEl) amtEl.textContent = `$${processingFee.toFixed(2)}`;
+                        }
+                    }
+                    
                     taxEl.textContent = `$0.00`;
                     totalEl.textContent = `$0.00`;
                 }
