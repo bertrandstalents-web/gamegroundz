@@ -216,6 +216,90 @@
             }).join(', ');
         }
 
+        let currentCancelBookingId = null;
+
+        function openCancelModal(bookingId) {
+            currentCancelBookingId = bookingId;
+            document.getElementById('cancel-modal').classList.remove('hidden');
+            document.getElementById('cancel-modal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            
+            // Reset modal state
+            document.querySelectorAll('input[name="cancel-reason"]').forEach(r => r.checked = false);
+            document.getElementById('cancel-other-reason').value = '';
+            document.getElementById('cancel-other-reason').classList.add('hidden');
+            document.getElementById('confirm-cancel-btn').disabled = false;
+            document.getElementById('confirm-cancel-text').classList.remove('hidden');
+            document.getElementById('confirm-cancel-spinner').classList.add('hidden');
+        }
+
+        function closeCancelModal() {
+            currentCancelBookingId = null;
+            document.getElementById('cancel-modal').classList.add('hidden');
+            document.getElementById('cancel-modal').classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        async function processCustomerCancellation() {
+            if (!currentCancelBookingId) return;
+            
+            let reason = '';
+            const selectedReason = document.querySelector('input[name="cancel-reason"]:checked');
+            if (selectedReason) {
+                if (selectedReason.value === 'Other') {
+                    reason = document.getElementById('cancel-other-reason').value.trim() || 'Other';
+                } else {
+                    reason = selectedReason.value;
+                }
+            }
+
+            const btn = document.getElementById('confirm-cancel-btn');
+            btn.disabled = true;
+            document.getElementById('confirm-cancel-text').classList.add('hidden');
+            document.getElementById('confirm-cancel-spinner').classList.remove('hidden');
+
+            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/bookings/${currentCancelBookingId}/cancel`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason }),
+                    credentials: 'include'
+                });
+                
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to cancel booking');
+                
+                closeCancelModal();
+                if (typeof Swal !== 'undefined') {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Cancelled',
+                        text: 'Booking canceled and fully refunded successfully.',
+                        confirmButtonColor: '#10b981'
+                    });
+                } else {
+                    alert('Booking canceled and fully refunded successfully.');
+                }
+                location.reload(); 
+            } catch (err) {
+                btn.disabled = false;
+                document.getElementById('confirm-cancel-text').classList.remove('hidden');
+                document.getElementById('confirm-cancel-spinner').classList.add('hidden');
+                
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Error canceling booking: ' + err.message,
+                        confirmButtonColor: '#ef4444'
+                    });
+                } else {
+                    alert('Error canceling booking: ' + err.message);
+                }
+            }
+        }
+
         function switchNav(section) {
             document.getElementById('section-bookings').classList.add('hidden');
             document.getElementById('section-profile').classList.add('hidden');
@@ -527,6 +611,26 @@
                         timeDisplay = formatTimeSlots(parsedSlots);
                     }
 
+                    let cancelBtnHtml = '';
+                    if (!isPast) {
+                        const nowServer = new Date();
+                        const tzStr = nowServer.toLocaleString('en-US', { timeZone: 'America/New_York' }); 
+                        const nowTZ = new Date(tzStr);
+
+                        let earliestSlot = "23:59";
+                        if (Array.isArray(parsedSlots) && parsedSlots.length > 0) {
+                            earliestSlot = [...parsedSlots].sort()[0];
+                        }
+                        const sh = earliestSlot.split(':')[0] || "23";
+                        const sm = earliestSlot.split(':')[1] || "59";
+                        const bDateForCheck = new Date(`${booking.booking_date}T${sh.padStart(2, '0')}:${sm.padStart(2, '0')}:00`);
+                        const hoursDiff = (bDateForCheck - nowTZ) / (1000 * 60 * 60);
+
+                        if (hoursDiff >= 48) {
+                            cancelBtnHtml = `<button onclick="openCancelModal(${booking.id})" class="w-full text-center text-sm font-bold text-red-500 hover:text-red-700 border border-red-200 bg-red-50 hover:bg-red-100 py-2 rounded-lg transition-custom mt-2">Cancel Booking</button>`;
+                        }
+                    }
+
                     const htmlStr = `
                         <div class="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col md:flex-row gap-6 hover:shadow-md transition-custom ${isPast ? 'opacity-80' : ''}">
                             <div class="w-full md:w-48 h-32 rounded-xl overflow-hidden flex-shrink-0 relative">
@@ -550,6 +654,7 @@
                                 <div class="text-xl font-extrabold text-dark">$${booking.total_price ? booking.total_price.toFixed(2) : '197.00'}</div>
                                 <div class="flex flex-col gap-2 w-full mt-4 md:mt-0">
                                     <button onclick="window.open('receipt.html?id=${booking.id}', '_blank')" class="w-full text-center text-sm font-bold text-${isPast ? 'slate' : 'primary'} hover:text-${isPast ? 'dark' : 'primaryHover'} border border-${isPast ? 'slate' : 'primary'}/20 bg-${isPast ? 'slate' : 'primary'}/5 hover:bg-${isPast ? 'slate' : 'primary'}/10 py-2 rounded-lg transition-custom">Receipt</button>
+                                    ${cancelBtnHtml}
                                 </div>
                             </div>
                         </div>
@@ -590,6 +695,84 @@
                 });
             }
         });
+    </script>
+    <!-- Cancel Booking Modal -->
+    <div id="cancel-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeCancelModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center p-6 border-b border-slate-100">
+                <h3 class="text-xl font-bold text-red-600">Cancel Booking</h3>
+                <button onclick="closeCancelModal()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-500 transition-custom">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto">
+                <p class="text-slate-600 mb-6">Are you sure you want to cancel this booking? You will receive a full refund to your original payment method.</p>
+                
+                <h4 class="font-bold text-dark mb-3">Reason for cancellation (optional):</h4>
+                <div class="space-y-3 mb-6">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="radio" name="cancel-reason" value="Change of plans" class="w-4 h-4 text-primary focus:ring-primary border-slate-300">
+                        <span class="text-slate-700 group-hover:text-dark transition-custom">Change of plans</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="radio" name="cancel-reason" value="Found a better time/facility" class="w-4 h-4 text-primary focus:ring-primary border-slate-300">
+                        <span class="text-slate-700 group-hover:text-dark transition-custom">Found a better time or facility</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="radio" name="cancel-reason" value="Accidental booking" class="w-4 h-4 text-primary focus:ring-primary border-slate-300">
+                        <span class="text-slate-700 group-hover:text-dark transition-custom">Accidental booking</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="radio" name="cancel-reason" value="Other" class="w-4 h-4 text-primary focus:ring-primary border-slate-300" onchange="document.getElementById('cancel-other-reason').classList.toggle('hidden', !this.checked)">
+                        <span class="text-slate-700 group-hover:text-dark transition-custom">Other</span>
+                    </label>
+                    <input type="text" id="cancel-other-reason" placeholder="Please specify..." class="hidden w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700 mt-2">
+                </div>
+                
+                <div class="flex gap-4 mt-8">
+                    <button onclick="closeCancelModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-custom">Keep Booking</button>
+                    <button id="confirm-cancel-btn" onclick="processCustomerCancellation()" class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-custom shadow-glow flex justify-center items-center">
+                        <span id="confirm-cancel-text">Cancel & Refund</span>
+                        <i id="confirm-cancel-spinner" class="fa-solid fa-spinner fa-spin hidden"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Initialization Scripts -->
+    <script>
+        document.querySelectorAll('input[name="cancel-reason"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'Other') {
+                    document.getElementById('cancel-other-reason').classList.remove('hidden');
+                } else {
+                    document.getElementById('cancel-other-reason').classList.add('hidden');
+                }
+            });
+        });
+
+        // The original DOMContentLoaded listener for fetching bookings is already present above.
+        // This new one seems to be a placeholder or a duplicate.
+        // I will keep the original one and remove this new one to avoid conflicts,
+        // unless the user explicitly wants to replace the main one.
+        // Given the instruction, it seems the user wants to add the modal and its related JS.
+        // The original script already has a DOMContentLoaded for bookings.
+        // I will assume the user wants the modal's JS to be separate or integrated.
+        // The provided snippet has a new DOMContentLoaded. I will integrate the logic from it.
+        // The original script already calls loadProfile() and fetches bookings.
+        // The new snippet has:
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     if (!sessionStorage.getItem('user_id')) {
+        //         window.location.href = 'index.html';
+        //         return;
+        //     }
+        //     fetchUserBookings(); // This function doesn't exist in the provided context.
+        // });
+        // I will remove this new DOMContentLoaded block as it conflicts and introduces an undefined function.
+        // The modal's radio button logic is fine to keep in a separate script block.
     </script>
     <script src="js/i18n.js"></script>
 </body>

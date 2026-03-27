@@ -780,6 +780,96 @@ app.get('/api/bookings/receipt/:id', (req, res) => {
     });
 });
 
+// POST cancel booking (Customer)
+app.post('/api/bookings/:id/cancel', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const bookingId = req.params.id;
+    const { reason } = req.body;
+
+    db.get("SELECT * FROM bookings WHERE id = ? AND user_id = ?", [bookingId, req.session.userId], async (err, booking) => {
+        if (err || !booking) return res.status(404).json({ error: "Booking not found" });
+
+        // Check if >= 48 hours
+        try {
+            let earliestSlot = "23:59";
+            const slots = JSON.parse(booking.time_slots);
+            if (slots && slots.length > 0) earliestSlot = [...slots].sort()[0];
+            
+            const [hours, mins] = earliestSlot.split(':');
+            const bookingDateTimeStr = `${booking.booking_date}T${hours.padStart(2, '0')}:${mins.padStart(2, '0')}:00`;
+            const bookingDate = new Date(bookingDateTimeStr);
+            
+            const serverNow = new Date();
+            const tzStr = serverNow.toLocaleString('en-US', { timeZone: 'America/New_York' }); 
+            const now = new Date(tzStr);
+
+            const hoursDiff = (bookingDate - now) / (1000 * 60 * 60);
+
+            if (hoursDiff < 48) {
+                return res.status(400).json({ error: "Cancellations are only allowed at least 48 hours prior to the event." });
+            }
+
+            // Process Refund
+            if (booking.stripe_session_id) {
+                const session = await stripe.checkout.sessions.retrieve(booking.stripe_session_id);
+                if (session && session.payment_intent) {
+                    await stripe.refunds.create({ payment_intent: session.payment_intent });
+                }
+            }
+
+            // Save cancellation to a log/notes or just delete. We delete to free up slots immediately.
+            db.run("DELETE FROM bookings WHERE id = ?", [bookingId], function(err) {
+                if (err) return res.status(500).json({ error: "Failed to delete booking" });
+                res.json({ message: "Booking canceled and refunded successfully." });
+            });
+
+        } catch (e) {
+            console.error("Cancellation Error:", e);
+            res.status(500).json({ error: "Error processing cancellation" });
+        }
+    });
+});
+
+// POST cancel booking (Host)
+app.post('/api/host/bookings/:id/cancel', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const bookingId = req.params.id;
+
+    const query = `
+        SELECT b.*, f.host_id 
+        FROM bookings b
+        JOIN facilities f ON b.facility_id = f.id
+        WHERE b.id = ? AND f.host_id = ?
+    `;
+
+    db.get(query, [bookingId, req.session.userId], async (err, booking) => {
+        if (err || !booking) return res.status(403).json({ error: "Access denied or booking not found" });
+
+        try {
+            // Process Refund
+            if (booking.stripe_session_id) {
+                const session = await stripe.checkout.sessions.retrieve(booking.stripe_session_id);
+                if (session && session.payment_intent) {
+                    // Full refund
+                    await stripe.refunds.create({ payment_intent: session.payment_intent });
+                }
+            }
+
+            // Delete booking to free slots
+            db.run("DELETE FROM bookings WHERE id = ?", [bookingId], function(err) {
+                if (err) return res.status(500).json({ error: "Failed to delete booking" });
+                res.json({ message: "Booking canceled and refunded successfully." });
+            });
+
+        } catch (e) {
+            console.error("Host Cancellation Error:", e);
+            res.status(500).json({ error: "Error processing cancellation" });
+        }
+    });
+});
+
 // --- DISCOUNTS Endpoints ---
 
 // GET discounts for a host's facility

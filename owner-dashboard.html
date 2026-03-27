@@ -1267,6 +1267,75 @@
         }
 
 
+        let currentHostCancelId = null;
+
+        function openHostCancelModal(bookingId) {
+            currentHostCancelId = bookingId;
+            document.getElementById('host-cancel-modal').classList.remove('hidden');
+            document.getElementById('host-cancel-modal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            
+            // reset state
+            document.getElementById('confirm-host-cancel-btn').disabled = false;
+            document.getElementById('confirm-host-cancel-text').classList.remove('hidden');
+            document.getElementById('confirm-host-cancel-spinner').classList.add('hidden');
+        }
+
+        function closeHostCancelModal() {
+            currentHostCancelId = null;
+            document.getElementById('host-cancel-modal').classList.add('hidden');
+            document.getElementById('host-cancel-modal').classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        async function processHostCancellation() {
+            if (!currentHostCancelId) return;
+
+            const btn = document.getElementById('confirm-host-cancel-btn');
+            btn.disabled = true;
+            document.getElementById('confirm-host-cancel-text').classList.add('hidden');
+            document.getElementById('confirm-host-cancel-spinner').classList.remove('hidden');
+
+            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/host/bookings/${currentHostCancelId}/cancel`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to cancel booking');
+                
+                closeHostCancelModal();
+                if (typeof Swal !== 'undefined') {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Cancelled',
+                        text: 'Booking canceled and fully refunded successfully.',
+                        confirmButtonColor: '#10b981'
+                    });
+                } else {
+                    alert('Booking canceled and fully refunded successfully.');
+                }
+                loadHostData(); 
+            } catch (err) {
+                btn.disabled = false;
+                document.getElementById('confirm-host-cancel-text').classList.remove('hidden');
+                document.getElementById('confirm-host-cancel-spinner').classList.add('hidden');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Error canceling booking: ' + err.message,
+                        confirmButtonColor: '#ef4444'
+                    });
+                } else {
+                    alert('Error canceling booking: ' + err.message);
+                }
+            }
+        }
+
         function renderBookings(bookings) {
             allBookingsCache = bookings; // Save to global cache for calendar filtering
             
@@ -1360,6 +1429,8 @@
                     `<div class="text-sm font-bold text-slate-400">Offline</div>` :
                     `<div class="text-lg font-bold text-primary">$${booking.total_price}</div>`;
 
+                const showCancelHost = (!isManual && (booking.status === 'confirmed' || booking.status === 'pending'));
+
                 container.innerHTML += `
                     <div class="flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white'} rounded-2xl p-4 transition-custom flex-wrap gap-4">
                         <div class="flex items-center gap-4">
@@ -1372,11 +1443,14 @@
                             <div class="font-bold text-dark">${booking.booking_date}</div>
                             <div class="text-sm font-medium text-slate-600">${formatTimeSlots(JSON.parse(booking.time_slots))}</div>
                         </div>
-                        <div class="text-right flex-shrink-0 min-w-[80px]">
+                        <div class="text-right flex-shrink-0 min-w-[80px] flex flex-col items-end gap-2">
                             ${priceBlock}
-                            <span class="${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'} text-xs px-2 py-0.5 rounded-full font-bold capitalize">
-                                ${booking.status}
-                            </span>
+                            <div class="flex items-center justify-end gap-2 w-full">
+                                <span class="${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'} text-xs px-2 py-0.5 rounded-full font-bold capitalize">
+                                    ${booking.status}
+                                </span>
+                                ${showCancelHost ? `<button onclick="openHostCancelModal(${booking.id})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Cancel & Refund"><i class="fa-solid fa-xmark mr-1"></i>Cancel</button>` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -3187,6 +3261,38 @@
             }
         }
     </script>
+    
+    <!-- Host Cancel Booking Modal -->
+    <div id="host-cancel-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeHostCancelModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center p-6 border-b border-slate-100">
+                <h3 class="text-xl font-bold text-red-600">Cancel & Refund Booking</h3>
+                <button onclick="closeHostCancelModal()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-500 transition-custom">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto">
+                <div class="bg-red-50 text-red-600 p-4 rounded-xl mb-6">
+                    <p class="font-bold flex items-center"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Warning</p>
+                    <p class="text-sm mt-1">Canceling this booking cannot be undone. The customer will be immediately issued a full refund to their original payment method.</p>
+                </div>
+                
+                <h4 class="font-bold text-dark mb-2">Are you sure you want to proceed?</h4>
+                <p class="text-slate-600 mb-6 text-sm">The time slot(s) for this booking will become immediately available on the calendar again.</p>
+                
+                <div class="flex gap-4 mt-8">
+                    <button onclick="closeHostCancelModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-custom">Keep Booking</button>
+                    <button id="confirm-host-cancel-btn" onclick="processHostCancellation()" class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-custom shadow-glow flex justify-center items-center">
+                        <span id="confirm-host-cancel-text">Yes, Cancel & Refund</span>
+                        <i id="confirm-host-cancel-spinner" class="fa-solid fa-spinner fa-spin hidden"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="js/i18n.js"></script>
 </body>
 </html>
