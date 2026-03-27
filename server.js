@@ -493,7 +493,9 @@ app.get('/api/facilities', (req, res) => {
 app.get('/api/facilities/:id', (req, res) => {
     const { id } = req.params;
     db.get(`
-        SELECT f.*, u.name as host_name, u.company_name, u.profile_picture as host_profile_picture
+        SELECT f.*, u.name as host_name, u.company_name, u.profile_picture as host_profile_picture,
+               (SELECT AVG(rating) FROM reviews WHERE facility_id = f.id) as computed_rating,
+               (SELECT COUNT(*) FROM reviews WHERE facility_id = f.id) as computed_reviews_count
         FROM facilities f 
         LEFT JOIN users u ON f.host_id = u.id 
         WHERE f.id = ?
@@ -501,6 +503,10 @@ app.get('/api/facilities/:id', (req, res) => {
         if (err || !row) {
             return res.status(err ? 500 : 404).json({ error: err ? err.message : "Not found" });
         }
+        
+        row.rating = row.computed_reviews_count > 0 ? Number(row.computed_rating).toFixed(1) : '0.0';
+        row.reviews_count = row.computed_reviews_count;
+
         db.all("SELECT * FROM discounts WHERE facility_id = ? OR facility_id IS NULL", [id], (err, discounts) => {
             if (!err) row.discounts = discounts;
             res.json(row);
@@ -1410,6 +1416,79 @@ app.get('/api/facilities/:id/reviews', (req, res) => {
         if (err) return res.status(500).json({ error: "Failed to fetch reviews" });
         res.json(reviews);
     });
+});
+
+// --- SAVED FACILITIES Endpoints ---
+
+// GET user's saved facilities
+app.get('/api/saved-facilities/my', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const query = `
+        SELECT f.*, sf.created_at as saved_at
+        FROM saved_facilities sf
+        JOIN facilities f ON sf.facility_id = f.id
+        WHERE sf.user_id = ?
+        ORDER BY sf.created_at DESC
+    `;
+    db.all(query, [req.session.userId], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// GET to check if a specific facility is saved
+app.get('/api/saved-facilities/check/:facilityId', (req, res) => {
+    if (!req.session.userId) return res.json({ saved: false });
+    
+    db.get(
+        "SELECT id FROM saved_facilities WHERE user_id = ? AND facility_id = ?",
+        [req.session.userId, req.params.facilityId],
+        (err, row) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ saved: !!row });
+        }
+    );
+});
+
+// POST to save a facility
+app.post('/api/saved-facilities', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const { facility_id } = req.body;
+    if (!facility_id) return res.status(400).json({ error: "Facility ID is required" });
+
+    db.run(
+        "INSERT INTO saved_facilities (user_id, facility_id) VALUES (?, ?) ON CONFLICT DO NOTHING",
+        [req.session.userId, facility_id],
+        function(err) {
+            // SQLite uses INSERT OR IGNORE, PostgreSQL uses ON CONFLICT DO NOTHING
+            // The adaptQuery in database.js might not handle Postgres specific syntax flawlessly if it's pure sqlite,
+            // wait, database.js has standard PostgreSQL creation queries but we use standard db.run wrappers.
+            // Let's assure we handle errors if it exists.
+            if (err) {
+                if (err.code === '23505' || err.message.includes('UNIQUE constraint')) {
+                    return res.status(200).json({ message: "Already saved" });
+                }
+                return res.status(500).json({ error: err.message });
+            }
+            res.status(201).json({ message: "Facility saved successfully" });
+        }
+    );
+});
+
+// DELETE a saved facility
+app.delete('/api/saved-facilities/:facilityId', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    db.run(
+        "DELETE FROM saved_facilities WHERE user_id = ? AND facility_id = ?",
+        [req.session.userId, req.params.facilityId],
+        function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ message: "Facility unsaved successfully" });
+        }
+    );
 });
 
 // Fallback for 404 Not Found

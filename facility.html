@@ -72,11 +72,11 @@
                 </div>
             </div>
             <div class="hidden sm:flex space-x-4">
-                <button class="flex items-center text-sm font-semibold text-slate-600 hover:text-dark bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg transition-custom">
+                <button id="share-btn" class="flex items-center text-sm font-semibold text-slate-600 hover:text-dark bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg transition-custom">
                     <i class="fa-solid fa-arrow-up-from-bracket mr-2"></i> Share
                 </button>
-                <button class="flex items-center text-sm font-semibold text-slate-600 hover:text-red-500 bg-slate-100 hover:bg-red-50 px-4 py-2 rounded-lg transition-custom group">
-                    <i class="fa-regular fa-heart mr-2 group-hover:font-solid"></i> Save
+                <button id="save-btn" class="flex items-center text-sm font-semibold text-slate-600 hover:text-red-500 bg-slate-100 hover:bg-red-50 px-4 py-2 rounded-lg transition-custom group">
+                    <i id="save-btn-icon" class="fa-regular fa-heart mr-2 group-hover:font-solid"></i> <span id="save-btn-text">Save</span>
                 </button>
             </div>
         </div>
@@ -788,10 +788,18 @@
                         `;
                     }
 
-                    // Price
+                    // Price Focus & Widget Rating
                     const priceEl = document.querySelector('.sticky.top-28 .text-2xl.font-bold.text-dark');
                     if(priceEl && priceEl.parentElement) {
                         priceEl.parentElement.innerHTML = `<span class="text-2xl font-bold text-dark">From $${hourlyRate}</span><span class="text-slate-500 font-medium"> / hour</span>`;
+                    }
+                    
+                    const widgetRatingEl = document.querySelector('.sticky.top-28 .flex.flex-col.items-end');
+                    if (widgetRatingEl) {
+                        widgetRatingEl.innerHTML = `
+                            <span class="flex items-center font-bold text-sm"><i class="fa-solid fa-star text-yellow-400 text-xs mr-1"></i> ${facility.rating || '4.9'}</span>
+                            <span class="text-xs text-slate-400 underline">${facility.reviews_count || 0} reviews</span>
+                        `;
                     }
 
                     // Tags
@@ -1637,6 +1645,101 @@
                 document.getElementById('close-review-success').addEventListener('click', () => {
                     modal.classList.add('hidden');
                     window.location.href = window.location.pathname + '?id=' + facilityIdParam;
+                });
+            }
+            // --- SAVE & SHARE LOGIC ---
+            const shareBtn = document.getElementById('share-btn');
+            const saveBtn = document.getElementById('save-btn');
+            const saveBtnIcon = document.getElementById('save-btn-icon');
+            const saveBtnText = document.getElementById('save-btn-text');
+            const BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            const urlParamsForSave = new URLSearchParams(window.location.search);
+            const facilityIdForSave = urlParamsForSave.get('id');
+
+            if (shareBtn) {
+                shareBtn.addEventListener('click', async () => {
+                    const url = window.location.href;
+                    const facilityNameForShare = document.querySelector('h1.text-3xl.font-extrabold')?.textContent || 'Facility';
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({
+                                title: facilityNameForShare,
+                                url: url
+                            });
+                        } catch (err) {
+                            console.log('Error sharing', err);
+                        }
+                    } else {
+                        try {
+                            await navigator.clipboard.writeText(url);
+                            const originalText = shareBtn.innerHTML;
+                            shareBtn.innerHTML = '<i class="fa-solid fa-check mr-2 text-green-500"></i> Copied!';
+                            setTimeout(() => shareBtn.innerHTML = originalText, 2000);
+                        } catch (err) {
+                            console.error('Failed to copy', err);
+                        }
+                    }
+                });
+            }
+
+            if (saveBtn && facilityIdForSave) {
+                const storedUserStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
+                let isSaved = false;
+
+                if (storedUserStr) {
+                    try {
+                        const res = await fetch(`${BASE_URL}/api/saved-facilities/check/${facilityIdForSave}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            isSaved = data.saved;
+                            if (isSaved) {
+                                saveBtnIcon.className = 'fa-solid fa-heart mr-2 text-red-500';
+                                saveBtnText.textContent = 'Saved';
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Failed to check saved status', e);
+                    }
+                }
+
+                saveBtn.addEventListener('click', async () => {
+                    if (!storedUserStr) {
+                        window.location.href = `index.html?login=true&redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                        return;
+                    }
+
+                    saveBtn.disabled = true;
+                    saveBtn.classList.add('opacity-50', 'cursor-wait');
+
+                    try {
+                        if (isSaved) {
+                            const res = await fetch(`${BASE_URL}/api/saved-facilities/${facilityIdForSave}`, { method: 'DELETE' });
+                            if (res.ok) {
+                                isSaved = false;
+                                saveBtnIcon.className = 'fa-regular fa-heart mr-2 group-hover:font-solid';
+                                saveBtnText.textContent = 'Save';
+                            }
+                        } else {
+                            const res = await fetch(`${BASE_URL}/api/saved-facilities`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ facility_id: facilityIdForSave })
+                            });
+                            if (res.ok) {
+                                isSaved = true;
+                                saveBtnIcon.className = 'fa-solid fa-heart mr-2 text-red-500 transition-transform duration-300 transform scale-125 block';
+                                saveBtnText.textContent = 'Saved';
+                                setTimeout(() => {
+                                    saveBtnIcon.classList.remove('scale-125');
+                                }, 300);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Failed to toggle save status', e);
+                    } finally {
+                        saveBtn.disabled = false;
+                        saveBtn.classList.remove('opacity-50', 'cursor-wait');
+                    }
                 });
             }
         });

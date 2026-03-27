@@ -67,6 +67,11 @@
                             </button>
                         </li>
                         <li>
+                            <button id="nav-btn-saved" onclick="switchNav('saved')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom">
+                                <i class="fa-regular fa-heart w-6"></i> Saved Surfaces
+                            </button>
+                        </li>
+                        <li>
                             <button id="nav-btn-profile" onclick="switchNav('profile')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom">
                                 <i class="fa-solid fa-user w-6"></i> Profile
                             </button>
@@ -83,6 +88,18 @@
             <!-- Content Area -->
             <div class="lg:col-span-3">
                 
+                <!-- Saved Section -->
+                <div id="section-saved" class="hidden">
+                    <div id="saved-loading" class="flex justify-center py-12">
+                        <i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i>
+                    </div>
+                    
+                    <div id="saved-content" class="hidden">
+                        <h2 class="text-2xl font-bold text-dark mb-4 drop-shadow-sm">Saved Surfaces</h2>
+                        <div id="saved-container" class="space-y-4 mb-8"></div>
+                    </div>
+                </div>
+
                 <!-- Bookings Section -->
                 <div id="section-bookings">
                     <div id="bookings-loading" class="flex justify-center py-12">
@@ -202,12 +219,129 @@
         function switchNav(section) {
             document.getElementById('section-bookings').classList.add('hidden');
             document.getElementById('section-profile').classList.add('hidden');
+            document.getElementById('section-saved').classList.add('hidden');
             
             document.getElementById('nav-btn-bookings').className = 'w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
             document.getElementById('nav-btn-profile').className = 'w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
+            document.getElementById('nav-btn-saved').className = 'w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
 
             document.getElementById(`section-${section}`).classList.remove('hidden');
             document.getElementById(`nav-btn-${section}`).className = 'w-full text-left flex items-center px-4 py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom';
+
+            if (section === 'saved' && !window.savedLoaded) {
+                loadSavedSurfaces();
+            }
+        }
+
+        async function loadSavedSurfaces() {
+            window.savedLoaded = true;
+            const loadingUI = document.getElementById('saved-loading');
+            const contentUI = document.getElementById('saved-content');
+            const container = document.getElementById('saved-container');
+            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            
+            loadingUI.classList.remove('hidden');
+            contentUI.classList.add('hidden');
+            
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/saved-facilities/my`, {credentials: 'include'});
+                if (res.status === 401) {
+                    loadingUI.classList.add('hidden');
+                    contentUI.classList.remove('hidden');
+                    container.innerHTML = `
+                        <div class="bg-white rounded-2xl p-8 text-center border border-slate-200">
+                            <i class="fa-solid fa-lock text-4xl text-slate-300 mb-4"></i>
+                            <h3 class="text-xl font-bold text-dark mb-2">Please log in</h3>
+                            <a href="index.html" class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primaryHover transition-custom cursor-pointer inline-block">Go to Login</a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                if (!res.ok) throw new Error("Failed to load saved surfaces");
+                
+                const facilities = await res.json();
+                loadingUI.classList.add('hidden');
+                contentUI.classList.remove('hidden');
+                
+                if (facilities.length === 0) {
+                    container.innerHTML = `
+                        <div class="bg-white rounded-2xl p-8 text-center border border-slate-200">
+                            <i class="fa-regular fa-bookmark text-4xl text-slate-300 mb-4"></i>
+                            <h3 class="text-xl font-bold text-dark mb-2">No saved surfaces</h3>
+                            <p class="text-slate-500 mb-6">You haven't saved any facilities yet.</p>
+                            <a href="search.html" class="bg-dark text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition-custom inline-block">Find a Surface</a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = '';
+                facilities.forEach(f => {
+                    let topImageUrl = 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&w=800&q=80';
+                    try {
+                        const parsed = JSON.parse(f.image_url);
+                        if (Array.isArray(parsed) && parsed.length > 0) topImageUrl = parsed[0];
+                        else topImageUrl = f.image_url;
+                    } catch(e) { topImageUrl = f.image_url || topImageUrl; }
+
+                    const ratingStars = `<i class="fa-solid fa-star text-yellow-400 text-xs mr-1"></i> ${f.rating} <span class="text-slate-400 font-normal">(${f.reviews_count || 0})</span>`;
+                    
+                    container.innerHTML += `
+                        <div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row gap-6 hover:shadow-md transition-custom relative" id="saved-card-${f.id}">
+                            <div class="w-full md:w-56 h-36 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer" onclick="window.location.href='facility.html?id=${f.id}'">
+                                <img src="${topImageUrl}" class="w-full h-full object-cover pb-1 transition-transform duration-500 hover:scale-105">
+                            </div>
+                            <div class="flex-1 flex flex-col justify-between py-1">
+                                <div>
+                                    <div class="flex justify-between items-start">
+                                        <h3 class="text-xl font-bold text-dark mb-1 cursor-pointer hover:text-primary transition-custom notranslate" onclick="window.location.href='facility.html?id=${f.id}'">${f.name}</h3>
+                                        <button onclick="unsaveFacility(${f.id})" class="text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 w-10 h-10 rounded-full flex items-center justify-center transition-custom" title="Remove from saved">
+                                            <i class="fa-solid fa-heart"></i>
+                                        </button>
+                                    </div>
+                                    <div class="text-xs font-medium text-slate-500 mb-2">${f.subtitle || 'Premium Sports Facility'}</div>
+                                    <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> <span class="notranslate">${f.location}</span></p>
+                                </div>
+                                <div class="flex justify-between items-end">
+                                    <div class="font-bold text-sm text-dark">${ratingStars}</div>
+                                    <div class="text-lg font-extrabold text-primary">$${f.base_price || 197} <span class="text-sm font-normal text-slate-500">/ hour</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+            } catch (err) {
+                loadingUI.classList.add('hidden');
+                contentUI.classList.remove('hidden');
+                container.innerHTML = `<div class="bg-red-50 text-red-600 p-4 rounded-xl text-center font-medium">${err.message}</div>`;
+            }
+        }
+        
+        async function unsaveFacility(facilityId) {
+            if (!confirm('Remove this facility from your saved surfaces?')) return;
+            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/saved-facilities/${facilityId}`, { method: 'DELETE', credentials: 'include' });
+                if (res.ok) {
+                    const card = document.getElementById(`saved-card-${facilityId}`);
+                    if (card) card.remove();
+                    const container = document.getElementById('saved-container');
+                    if (container && container.children.length === 0) {
+                        container.innerHTML = `
+                            <div class="bg-white rounded-2xl p-8 text-center border border-slate-200">
+                                <i class="fa-regular fa-bookmark text-4xl text-slate-300 mb-4"></i>
+                                <h3 class="text-xl font-bold text-dark mb-2">No saved surfaces</h3>
+                                <p class="text-slate-500 mb-6">You haven't saved any facilities yet.</p>
+                                <a href="search.html" class="bg-dark text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition-custom inline-block">Find a Surface</a>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (e) {
+                console.error('Error removing saved facility:', e);
+            }
         }
 
         async function loadProfile() {

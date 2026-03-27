@@ -175,6 +175,15 @@ async function initDatabase() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
 
+        // Saved Facilities Table
+        await client.query(`CREATE TABLE IF NOT EXISTS saved_facilities (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id),
+            facility_id INTEGER REFERENCES facilities(id),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_id, facility_id)
+        )`);
+
         // Seed initial Facility data if the table is empty
         const res = await client.query("SELECT COUNT(*) as count FROM facilities");
         if (parseInt(res.rows[0].count) === 0) {
