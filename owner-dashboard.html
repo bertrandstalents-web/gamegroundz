@@ -286,7 +286,7 @@
                                          <div class="text-xl font-bold text-slate-800 flex items-center" id="modal-price-display">Offline</div>
                                     </div>
                                     
-                                    <button type="button" onclick="closeEventModal()" class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-custom font-medium shadow-sm bg-white">Cancel booking</button>
+                                    <button type="button" id="modal-cancel-btn" onclick="handleModalCancelBtn()" class="px-5 py-2.5 border border-slate-200 text-red-600 rounded-lg hover:bg-slate-50 transition-custom font-bold shadow-sm bg-white">Cancel booking</button>
                                     <button type="submit" id="modal-submit-btn" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-bold transition-custom shadow-md flex items-center justify-center">
                                         Confirm booking
                                     </button>
@@ -1974,6 +1974,52 @@
 
             document.getElementById('modal-block-error').classList.add('hidden');
             if(currentCalendar) currentCalendar.unselect();
+        }
+
+        async function handleModalCancelBtn() {
+            const editId = document.getElementById('modal-edit-booking-id')?.value;
+            const blockType = document.querySelector('input[name="modal-block-type"]:checked')?.value || 'offline';
+            
+            if (editId && blockType === 'offline') {
+                if (!confirm("Are you sure you want to cancel this offline booking?")) return;
+                
+                const btn = document.getElementById('modal-cancel-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                btn.disabled = true;
+
+                try {
+                    const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                    const response = await fetch(`${API_BASE_URL}/api/host/bookings/${editId}/cancel`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include'
+                    });
+                    
+                    if (response.status === 401) {
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    
+                    if (!response.ok) {
+                        const data = await response.json();
+                        throw new Error(data.error || 'Failed to cancel booking');
+                    }
+                    
+                    closeEventModal();
+                    if(typeof loadHostData === 'function') loadHostData();
+                    const activeFacilityId = document.getElementById('calendar-facility-select').value;
+                    if (activeFacilityId && typeof initCalendar === 'function') initCalendar(activeFacilityId);
+                    
+                } catch (err) {
+                    alert(err.message);
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } else {
+                closeEventModal();
+            }
         }
 
         // Add Live Calculator Listeners when DOM is ready or statically 
