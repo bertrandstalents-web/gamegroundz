@@ -107,7 +107,8 @@ async function initDatabase() {
             is_instant_book INTEGER DEFAULT 0,
             host_id INTEGER DEFAULT 1 REFERENCES users(id),
             operating_hours TEXT DEFAULT '{"open": "06:00", "close": "23:00"}',
-            listing_status TEXT DEFAULT 'pending'
+            listing_status TEXT DEFAULT 'pending',
+            advance_booking_days INTEGER DEFAULT 180
         )`);
 
         // Facility Images Table
@@ -118,6 +119,12 @@ async function initDatabase() {
             is_primary INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
+
+        try {
+            await client.query(`ALTER TABLE facilities ADD COLUMN advance_booking_days INTEGER DEFAULT 180`);
+        } catch(e) {
+            // column already exists, this is fine
+        }
 
         // Discounts Table
         await client.query(`CREATE TABLE IF NOT EXISTS discounts (
@@ -189,8 +196,8 @@ async function initDatabase() {
             ];
 
             const insertQuery = `INSERT INTO facilities 
-                (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, rating, reviews_count, image_url, is_instant_book, host_id, operating_hours, listing_status) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`;
+                (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, rating, reviews_count, image_url, is_instant_book, host_id, operating_hours, listing_status, advance_booking_days) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, 180)`;
 
             for (let f of facilitiesData) {
                 await client.query(insertQuery, f);

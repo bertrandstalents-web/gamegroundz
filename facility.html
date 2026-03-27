@@ -103,7 +103,7 @@
                         </div>
                     </div>
                     <div class="flex flex-col items-center">
-                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Host" class="w-14 h-14 rounded-full object-cover border border-slate-200 mb-1">
+                        <img id="host-profile-picture" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Host" class="w-14 h-14 rounded-full object-cover border border-slate-200 mb-1">
                         <span class="text-xs text-slate-500 font-medium text-center">Operated by <br><strong id="operator-name" class="notranslate">Loading...</strong></span>
                     </div>
                 </div>
@@ -747,6 +747,11 @@
                         operatorEl.textContent = facility.company_name || facility.host_name || 'GameGroundz Host';
                     }
                     
+                    const hostPicEl = document.getElementById('host-profile-picture');
+                    if (hostPicEl && facility.host_profile_picture) {
+                        hostPicEl.src = facility.host_profile_picture;
+                    }
+                    
                     const subtitleEl = document.getElementById('header-subtitle');
                     if(subtitleEl) {
                         if (facility.subtitle && facility.subtitle.trim() !== '') {
@@ -1313,6 +1318,14 @@
                 }
 
                 // Add day tiles
+                const maxBookingDays = (typeof facility !== 'undefined' && facility.advance_booking_days) ? parseInt(facility.advance_booking_days, 10) : 180;
+                const maxDate = new Date();
+                maxDate.setHours(0,0,0,0);
+                maxDate.setDate(maxDate.getDate() + maxBookingDays);
+
+                const todayForCal = new Date();
+                todayForCal.setHours(0,0,0,0);
+
                 // We'll mock out some days as booked (e.g. 4th) or past.
                 for (let i = 1; i <= daysInMonth; i++) {
                     const dayTile = document.createElement('div');
@@ -1322,10 +1335,16 @@
                     const dateStr = `${currentDate.getFullYear()}-${m}-${d}`;
 
                     let status = "available";
+
+                    const tileDate = new Date(`${dateStr}T00:00:00`);
+                    if (tileDate < todayForCal || tileDate > maxDate) {
+                        status = "past";
+                    }
+
                     if (i < 4 && currentDate.getMonth() === 10 && currentDate.getFullYear() === 2026) status = "past";
                     if (i === 4 && currentDate.getMonth() === 10 && currentDate.getFullYear() === 2026) status = "booked";
                     
-                    if (dateStr === selectedDateStr) {
+                    if (status !== "past" && status !== "booked" && dateStr === selectedDateStr) {
                         status = "selected";
                     }
 

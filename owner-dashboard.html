@@ -433,6 +433,26 @@
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
                     <h2 class="text-2xl font-bold text-dark mb-6">My Profile</h2>
                     <form id="profile-form" class="space-y-6 max-w-2xl">
+                        <!-- Profile Picture Section -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Profile Picture</label>
+                            <div class="flex items-center gap-4">
+                                <div class="relative w-20 h-20 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 overflow-hidden cursor-pointer hover:bg-slate-100 transition-custom group" id="edit-profile-pic-container" onclick="document.getElementById('prof-image-file').click()">
+                                    <i class="fa-solid fa-camera text-slate-400 text-2xl group-hover:text-primary transition-custom" id="edit-profile-pic-icon"></i>
+                                    <img id="edit-profile-pic-preview" src="" class="absolute inset-0 w-full h-full object-cover hidden pointer-events-none z-10">
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <button type="button" onclick="document.getElementById('prof-image-file').click()" class="text-sm font-semibold text-primary hover:text-primaryHover bg-primary/10 px-4 py-2 rounded-full transition-custom w-max">
+                                        Change Picture
+                                    </button>
+                                    <button type="button" id="remove-prof-pic-btn" onclick="removeProfilePic()" class="text-sm font-semibold text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-full transition-custom w-max hidden">
+                                        Remove Picture
+                                    </button>
+                                </div>
+                            </div>
+                            <input type="file" id="prof-image-file" accept="image/*" class="hidden" onchange="previewEditProfilePic(event)">
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">First Name</label>
@@ -745,6 +765,12 @@
                             <span class="ml-3 text-slate-700 font-semibold group-hover:text-dark">Allow Instant Booking</span>
                         </label>
                         <p class="text-xs text-slate-400 mt-1 ml-8">Enable players to book without manual approval.</p>
+                    </div>
+
+                    <div class="flex flex-col pt-4 border-t border-slate-100 mt-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Advance Booking Limit (Days)</label>
+                        <input type="number" id="fac-advance-booking" min="1" max="1000" class="w-full md:w-1/3 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white" placeholder="180">
+                        <p class="text-xs text-slate-400 mt-1">Maximum number of days in advance a player can book (default 180 days).</p>
                     </div>
 
                     <div id="listing-status-container" class="hidden flex-col justify-end pt-4 border-t border-slate-100 mt-4">
@@ -1101,6 +1127,7 @@
             document.getElementById('fac-location').value = facility.location || '';
 
             document.getElementById('fac-instant').checked = facility.is_instant_book == 1;
+            document.getElementById('fac-advance-booking').value = facility.advance_booking_days || 180;
             
             window.localImagesArray = [];
             if (facility.image_url) {
@@ -2039,13 +2066,48 @@
 
                 // Fetch data for the host
                 loadHostData();
-                loadProfile();
+                fetchProfile();
                 checkStripeParams();
                 loadWalletStatus();
             }
         }
 
-        async function loadProfile() {
+        let currentProfilePicBase64 = null;
+
+        window.previewEditProfilePic = function(event) {
+            const input = event.target;
+            const preview = document.getElementById('edit-profile-pic-preview');
+            const icon = document.getElementById('edit-profile-pic-icon');
+            const removeBtn = document.getElementById('remove-prof-pic-btn');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentProfilePicBase64 = e.target.result;
+                    preview.src = currentProfilePicBase64;
+                    preview.classList.remove('hidden');
+                    icon.classList.add('hidden');
+                    removeBtn.classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
+        window.removeProfilePic = function() {
+            const preview = document.getElementById('edit-profile-pic-preview');
+            const icon = document.getElementById('edit-profile-pic-icon');
+            const removeBtn = document.getElementById('remove-prof-pic-btn');
+            const input = document.getElementById('prof-image-file');
+            
+            currentProfilePicBase64 = null;
+            preview.src = "";
+            preview.classList.add('hidden');
+            icon.classList.remove('hidden');
+            removeBtn.classList.add('hidden');
+            input.value = "";
+        };
+
+        async function fetchProfile() {
             const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
             try {
                 const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
@@ -2059,6 +2121,20 @@
                 document.getElementById('prof-email').value = u.email || '';
                 document.getElementById('prof-phone').value = u.phone_number || '';
                 document.getElementById('prof-company').value = u.company_name || '';
+
+                if (u.profile_picture) {
+                    currentProfilePicBase64 = u.profile_picture;
+                    const preview = document.getElementById('edit-profile-pic-preview');
+                    const icon = document.getElementById('edit-profile-pic-icon');
+                    const removeBtn = document.getElementById('remove-prof-pic-btn');
+                    
+                    preview.src = currentProfilePicBase64;
+                    preview.classList.remove('hidden');
+                    icon.classList.add('hidden');
+                    removeBtn.classList.remove('hidden');
+                } else {
+                    removeProfilePic();
+                }
             } catch (error) {
                 console.error("Error loading profile:", error);
             }
@@ -2082,7 +2158,8 @@
                 phone_number: document.getElementById('prof-phone').value,
                 company_name: document.getElementById('prof-company').value,
                 old_password: document.getElementById('prof-old-pass').value,
-                new_password: document.getElementById('prof-new-pass').value
+                new_password: document.getElementById('prof-new-pass').value,
+                profile_picture: currentProfilePicBase64
             };
 
             const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
@@ -2116,6 +2193,7 @@
                         const userObj = JSON.parse(storedUser);
                         userObj.name = updatedName;
                         userObj.email = payload.email;
+                        userObj.profile_picture = payload.profile_picture;
                         localStorage.setItem('gg_user', JSON.stringify(userObj));
                     } catch(e) {}
                 }
@@ -2824,6 +2902,7 @@
                 pricing_rules: pricingRules,
                 image_url: JSON.stringify(window.localImagesArray),
                 is_instant_book: document.getElementById('fac-instant').checked ? 1 : 0,
+                advance_booking_days: document.getElementById('fac-advance-booking').value ? parseInt(document.getElementById('fac-advance-booking').value, 10) : 180,
                 operating_hours: operating_hours,
                 listing_status: document.getElementById('fac-listing-status').value
             };
