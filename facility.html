@@ -439,7 +439,7 @@
             const processingFee = 15;
             const taxRate = 0.14975; // ~15% tax in Quebec
 
-            function getPriceForTimeSlot(timeStr, basePrice, rules) {
+            function getPriceForTimeSlot(timeStr, basePrice, rules, isWeekend) {
                 if (!rules || rules.length === 0) return parseFloat(basePrice);
                 const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
                 if (!match) return parseFloat(basePrice);
@@ -452,6 +452,10 @@
                 const time24 = `${h.toString().padStart(2, '0')}:${match[2]}`;
                 for (let i = 0; i < rules.length; i++) {
                     const rule = rules[i];
+                    
+                    if (rule.days === 'weekdays' && isWeekend) continue;
+                    if (rule.days === 'weekends' && !isWeekend) continue;
+
                     if (time24 >= rule.start && time24 < rule.end) {
                         return parseFloat(rule.price);
                     }
@@ -1002,8 +1006,20 @@
                     }
                 }
             });
-
             function render() {
+                // Determine weekend status based on selectedDateStr
+                const dateObj = new Date(selectedDateStr + 'T12:00:00');
+                const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+                const isWeekend = dayOfWeek === 'Saturday' || dayOfWeek === 'Sunday';
+
+                // Regenerate availableSlots based on weekend vs weekday
+                let opHours = { open: facilityOperatingHours.open, close: facilityOperatingHours.close };
+                if (isWeekend && facilityOperatingHours.weekend_open) {
+                     opHours.open = facilityOperatingHours.weekend_open;
+                     opHours.close = facilityOperatingHours.weekend_close || facilityOperatingHours.close;
+                }
+                availableSlots = generateDailySlots(opHours);
+
                 // Update selected slots header date
                 const headerEl = document.getElementById('selected-slots-header');
                 if (headerEl) {
@@ -1016,7 +1032,6 @@
 
                 const discounts = window.facilityDiscounts || [];
                 const bookingDate = new Date(selectedDateStr + 'T00:00:00');
-                const dayOfWeek = bookingDate.toLocaleDateString('en-US', { weekday: 'long' }); 
                 const now = new Date();
                 const isLastMinute = bookingDate.getTime() - now.getTime() < 86400000 && bookingDate.getTime() >= now.getTime() - 86400000; 
 
@@ -1152,7 +1167,7 @@
                     selectedSlotIds.forEach(slotId => {
                         const slot = availableSlots.find(s => s.id === slotId);
                         if (slot) {
-                            subtotal += getPriceForTimeSlot(slot.time, hourlyRate, pricingRules) / 2;
+                            subtotal += getPriceForTimeSlot(slot.time, hourlyRate, pricingRules, isWeekend) / 2;
                         }
                     });
 
@@ -1171,7 +1186,7 @@
                             if (applies) {
                                 applicableSlotsCount++;
                                 const slot = availableSlots.find(s => s.id === slotId);
-                                if (slot) applicableSubtotal += getPriceForTimeSlot(slot.time, hourlyRate, pricingRules) / 2;
+                                if (slot) applicableSubtotal += getPriceForTimeSlot(slot.time, hourlyRate, pricingRules, isWeekend) / 2;
                             }
                         });
 

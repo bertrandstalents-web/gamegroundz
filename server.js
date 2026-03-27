@@ -83,6 +83,9 @@ app.use(session({
 app.use(express.static(path.join(__dirname)));
 
 // API Routes
+app.get('/api/config/maps', (req, res) => {
+    res.json({ apiKey: process.env.GOOGLE_MAPS_API_KEY });
+});
 
 // Helper to send emails
 function sendBookingEmails(bookingId) {
@@ -439,12 +442,19 @@ app.get('/api/facilities', (req, res) => {
                     let opHours = { open: "06:00", close: "23:00" };
                     try {
                         if (facility.operating_hours) {
-                            opHours = JSON.parse(facility.operating_hours);
+                            opHours = typeof facility.operating_hours === 'string' ? JSON.parse(facility.operating_hours) : facility.operating_hours;
                         }
                     } catch(e){}
 
+                    const isWeekend = dayOfWeek === 'Saturday' || dayOfWeek === 'Sunday';
+                    if (isWeekend && opHours.weekend_open) {
+                        opHours.open = opHours.weekend_open;
+                        opHours.close = opHours.weekend_close || opHours.close;
+                    }
+
                     const startHour = parseInt(opHours.open.split(':')[0], 10);
-                    const endHour = parseInt(opHours.close.split(':')[0], 10);
+                    let endHour = parseInt(opHours.close.split(':')[0], 10);
+                    if (endHour === 0 && opHours.close === "24:00") endHour = 24;
                     const fid = facility.id;
                     const bSet = bookedMap[fid] || new Set();
 
@@ -1062,6 +1072,7 @@ app.get('/api/admin/bookings', requireAdmin, (req, res) => {
 function calculatePrice(facility, timeSlots, discounts, bookingDateStr) {
     const bookingDate = new Date(bookingDateStr);
     const dayOfWeek = bookingDate.toLocaleDateString('en-US', { weekday: 'long' }); 
+    const isWeekend = dayOfWeek === 'Saturday' || dayOfWeek === 'Sunday';
     const now = new Date();
     const isLastMinute = bookingDate.getTime() - now.getTime() < 86400000 && bookingDate.getTime() >= now.getTime() - 86400000; 
 
@@ -1070,10 +1081,14 @@ function calculatePrice(facility, timeSlots, discounts, bookingDateStr) {
         try { rules = JSON.parse(facility.pricing_rules); } catch(e) {}
     }
 
-    function getHourlyRate(time24, rules, basePrice) {
+    function getHourlyRate(time24, rules, basePrice, isWeekend) {
         if (!rules || rules.length === 0) return basePrice;
         for (let i = 0; i < rules.length; i++) {
             const rule = rules[i];
+            
+            if (rule.days === 'weekdays' && isWeekend) continue;
+            if (rule.days === 'weekends' && !isWeekend) continue;
+            
             if (time24 >= rule.start && time24 < rule.end) {
                 return parseFloat(rule.price);
             }
@@ -1083,7 +1098,7 @@ function calculatePrice(facility, timeSlots, discounts, bookingDateStr) {
 
     let basePriceTotal = 0;
     timeSlots.forEach(slotId => {
-        const rate = getHourlyRate(slotId, rules, facility.base_price);
+        const rate = getHourlyRate(slotId, rules, facility.base_price, isWeekend);
         basePriceTotal += rate / 2; // Each slot is 30 mins (half an hour)
     });
 

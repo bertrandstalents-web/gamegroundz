@@ -85,3 +85,64 @@ body {
     padding-bottom: 0.15em;
     margin-bottom: -0.15em;
 }
+
+/* Google Places Autocomplete Customization */
+.pac-container {
+    background-color: #ffffff !important;
+    border-radius: 0.75rem !important; /* rounded-xl */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; /* shadow-xl */
+    border: 1px solid #f1f5f9 !important; /* border-slate-100 */
+    margin-top: 0.5rem !important; /* mt-2 */
+    font-family: inherit !important;
+    padding-top: 0.25rem !important;
+}
+
+.pac-item {
+    padding: 0.75rem 1rem !important; /* px-4 py-3 */
+    cursor: pointer !important;
+    border-top: none !important;
+    border-bottom: 1px solid #f8fafc !important; /* border-slate-50 */
+    font-size: 0.875rem !important; /* text-sm */
+    color: #475569 !important; /* text-slate-600 */
+    transition: background-color 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    line-height: 1.25rem !important;
+}
+
+.pac-item:last-of-type {
+    border-bottom: none !important;
+}
+
+.pac-item:hover, .pac-item-selected {
+    background-color: #f8fafc !important; /* hover:bg-slate-50 */
+}
+
+.pac-item-query {
+    font-size: 0.875rem !important;
+    font-weight: 500 !important; /* font-medium */
+    color: #1e293b !important; /* text-slate-800 */
+    padding-right: 0.25rem !important;
+}
+
+/* Hide Google's default pin icon */
+.pac-icon {
+    display: none !important; 
+}
+
+/* Add custom FontAwesome location icon */
+.pac-item::before {
+    content: '\f041' !important; /* FontAwesome location-dot */
+    font-family: 'Font Awesome 6 Free' !important;
+    font-weight: 900 !important;
+    color: #94a3b8 !important; /* text-slate-400 */
+    margin-right: 0.75rem !important;
+    font-size: 1rem !important;
+    flex-shrink: 0 !important;
+}
+
+/* Adjust the Google Logo container padding */
+.pac-container::after {
+    display: block !important;
+    margin: 0.5rem 1rem 0.5rem auto !important;
+}

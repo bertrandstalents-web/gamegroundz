@@ -52,7 +52,6 @@
                     </div>
                     <div class="relative w-full">
                         <input type="text" id="navLocationSearch" autocomplete="off" class="block w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-full text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-custom bg-slate-50 hover:bg-white" placeholder="Search by location or facility name...">
-                        <ul id="nav-autocomplete-list" class="absolute z-50 w-full bg-white mt-2 rounded-xl shadow-xl border border-slate-100 hidden max-h-60 overflow-y-auto left-0 text-slate-800 text-left text-sm"></ul>
                     </div>
                 </div>
 
@@ -209,115 +208,55 @@
             }
         });
 
-        // Autocomplete for Location Search via Nominatim API
+        // Autocomplete for Location Search via Google Places API
         const searchInput = document.getElementById('navLocationSearch');
-        const autocompleteList = document.getElementById('nav-autocomplete-list');
-        let searchTimeout;
 
-        if(searchInput) {
-            searchInput.addEventListener('input', function() {
-                const val = this.value;
-                autocompleteList.innerHTML = '';
+        async function initGoogleMaps() {
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const response = await fetch(`${API_BASE_URL}/api/config/maps`);
+                if (!response.ok) return;
                 
-                clearTimeout(searchTimeout);
-                
-                if (!val) {
-                    autocompleteList.classList.add('hidden');
-                    return false;
-                }
-                
-                autocompleteList.classList.remove('hidden');
-                autocompleteList.innerHTML = '<li class="px-4 py-3 text-slate-400 text-sm italic"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Searching...</li>';
-
-                searchTimeout = setTimeout(async () => {
-                    try {
-                        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&addressdetails=1&limit=10&countrycodes=us,ca`);
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        const data = await response.json();
-                        
-                        autocompleteList.innerHTML = '';
-                        
-                        if (data.length > 0) {
-                            const seen = new Set();
-                            let addedCount = 0;
-                            
-                            data.forEach(item => {
-                                if (addedCount >= 5) return;
-                                
-                                let mainName = item.name || (item.address ? (item.address.city || item.address.town || item.address.village || item.address.municipality) : '') || item.display_name.split(',')[0];
-                                mainName = mainName.replace(/\s*\(région administrative\)/i, '').trim();
-                                let parts = [mainName];
-                                
-                                if (item.address) {
-                                    let state = item.address.state || '';
-                                    const stateMap = {'Québec':'QC', 'Quebec':'QC', 'Ontario':'ON', 'British Columbia':'BC', 'Colombie-Britannique':'BC', 'Alberta':'AB', 'Manitoba':'MB', 'Saskatchewan':'SK', 'Nova Scotia':'NS', 'Nouvelle-Écosse':'NS', 'New Brunswick':'NB', 'Nouveau-Brunswick':'NB', 'Newfoundland and Labrador':'NL', 'Terre-Neuve-et-Labrador':'NL', 'Prince Edward Island':'PE', 'Île-du-Prince-Édouard':'PE', 'New York':'NY', 'California':'CA'};
-                                    let mappedState = stateMap[state] || state;
-                                    
-                                    if (item.addresstype !== 'state' && item.addresstype !== 'country' && mappedState && mappedState !== mainName) {
-                                        parts.push(mappedState);
-                                    }
-                                    
-                                    let country = item.address.country || '';
-                                    if (country.toLowerCase() === 'canada') country = 'Canada';
-                                    if (country.toLowerCase() === 'united states' || country.toLowerCase() === 'united states of america') country = 'USA';
-                                    
-                                    if (item.addresstype !== 'country' && country && !parts.includes(country)) {
-                                        parts.push(country);
-                                    }
-                                }
-                                const displayName = parts.join(', ');
-                                
-                                if (seen.has(displayName)) return;
-                                seen.add(displayName);
-                                addedCount++;
-                                
-                                const b = document.createElement("li");
-                                b.className = "px-4 py-3 cursor-pointer hover:bg-slate-50 border-b border-slate-50 last:border-0 font-medium transition-custom flex items-center";
-                                b.innerHTML = "<i class='fa-solid fa-location-dot text-slate-400 mr-3 shrink-0'></i>";
-                                b.innerHTML += `<div class="truncate text-sm" title="${displayName}">${displayName}</div>`;
-                                b.innerHTML += `<input type='hidden' value='${displayName.replace(/'/g, "&#39;")}'>`;
-                                
-                                b.addEventListener("click", function(e) {
-                                    searchInput.value = this.getElementsByTagName("input")[0].value;
-                                    autocompleteList.innerHTML = '';
-                                    autocompleteList.classList.add('hidden');
-                                    // Pan directly using known coords
-                                    if (map) {
-                                        map.setView([item.lat, item.lon], 10);
-                                        // fetchFacilities relies on map bounds, so we trigger an update here.
-                                        // The 'moveend' event handles triggering updateListingsFromMapBounds.
-                                    }
-                                });
-                                autocompleteList.appendChild(b);
-                            });
-
-                            if (addedCount === 0) {
-                                autocompleteList.innerHTML = '<li class="px-4 py-3 text-slate-400 text-sm">No results found</li>';
+                const data = await response.json();
+                if (data.apiKey) {
+                    const script = document.createElement('script');
+                    script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&libraries=places`;
+                    script.async = true;
+                    script.defer = true;
+                    script.onload = () => {
+                        if (!searchInput) return;
+                        const options = {
+                            componentRestrictions: { country: ["us", "ca"] },
+                            fields: ["formatted_address", "geometry"]
+                        };
+                        const autocomplete = new google.maps.places.Autocomplete(searchInput, options);
+                        autocomplete.addListener('place_changed', function() {
+                            const place = autocomplete.getPlace();
+                            if (place.formatted_address) {
+                                searchInput.value = place.formatted_address;
                             }
-                        } else {
-                            autocompleteList.innerHTML = '<li class="px-4 py-3 text-slate-400 text-sm">No results found</li>';
-                        }
-                    } catch (error) {
-                        console.error("Autocomplete error:", error);
-                        autocompleteList.innerHTML = '<li class="px-4 py-3 text-red-500 text-sm">Error fetching results</li>';
-                    }
-                }, 400);
-            });
-
-            document.addEventListener("click", function (e) {
-                if (e.target !== searchInput) {
-                    autocompleteList.classList.add('hidden');
+                            // Map pan integration
+                            if (place.geometry && place.geometry.location && typeof map !== 'undefined') {
+                                map.setView([place.geometry.location.lat(), place.geometry.location.lng()], 12);
+                            }
+                        });
+                        
+                        searchInput.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                if (typeof panMapToLocation === 'function') {
+                                    panMapToLocation(this.value);
+                                }
+                            }
+                        });
+                    };
+                    document.head.appendChild(script);
                 }
-            });
-
-            searchInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    autocompleteList.innerHTML = '';
-                    autocompleteList.classList.add('hidden');
-                    panMapToLocation(this.value);
-                }
-            });
+            } catch (err) {
+                console.error("Failed to load Google Maps API", err);
+            }
         }
+        initGoogleMaps();
         
         async function panMapToLocation(locationName) {
             if (!map || !locationName) return;
