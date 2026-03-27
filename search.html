@@ -260,18 +260,6 @@
         
         async function panMapToLocation(locationName) {
             if (!map || !locationName) return;
-            const coords = locationCoordinates[locationName];
-            if (coords) {
-                map.setView([coords.lat, coords.lng], 10);
-                return;
-            } 
-            
-            // If exact match not found, try partial match in dictionary
-            const match = Object.keys(locationCoordinates).find(key => key.toLowerCase().includes(locationName.toLowerCase()));
-            if (match) {
-                map.setView([locationCoordinates[match].lat, locationCoordinates[match].lng], 10);
-                return;
-            }
 
             // Fallback: Fetch from Nominatim
             try {
@@ -405,24 +393,6 @@
             });
         }
 
-        const locationCoordinates = {
-            'Rosemère, QC': { lat: 45.6372, lng: -73.7997 },
-            'Boisbriand, QC': { lat: 45.6181, lng: -73.8378 },
-            'Blainville, QC': { lat: 45.6738, lng: -73.8763 },
-            "Saint-Roch-de-l'Achigan, QC": { lat: 45.8525, lng: -73.5786 },
-            'Laval, QC': { lat: 45.6028, lng: -73.7169 },
-            'Deux-Montagnes, QC': { lat: 45.5410, lng: -73.8893 },
-            'Montreal, QC': { lat: 45.5017, lng: -73.5673 },
-            'Toronto, ON': { lat: 43.651070, lng: -79.347015 },
-            'Ottawa, ON': { lat: 45.421530, lng: -75.697193 },
-            'Vancouver, BC': { lat: 49.282729, lng: -123.120738 },
-            'Calgary, AB': { lat: 51.0447, lng: -114.0719 },
-            'Edmonton, AB': { lat: 53.5461, lng: -113.4938 },
-            'Halifax, NS': { lat: 44.6488, lng: -63.5752 },
-            'New York, NY': { lat: 40.7128, lng: -74.0060 },
-            'Los Angeles, CA': { lat: 34.0522, lng: -118.2437 }
-        };
-
         function updateMapMarkers(facilities, preventFitBounds = false) {
             if (!map) return;
             
@@ -435,25 +405,24 @@
             const bounds = L.latLngBounds();
 
             facilities.forEach((f, i) => {
-                let mockLat, mockLng;
+                let actualLat, actualLng;
                 
-                // Find if the facility's full location string contains any of our known city keys
-                const matchingCityKey = Object.keys(locationCoordinates).find(city => f.location.includes(city));
-
-                if (matchingCityKey) {
-                    // Add tiny random offset so markers at same location don't overlap exactly
-                    mockLat = locationCoordinates[matchingCityKey].lat + (Math.random() - 0.5) * 0.005;
-                    mockLng = locationCoordinates[matchingCityKey].lng + (Math.random() - 0.5) * 0.005;
+                if (f.lat && f.lng) {
+                    actualLat = f.lat;
+                    actualLng = f.lng;
                 } else {
-                    mockLat = 45.5017 + (Math.random() - 0.5) * 0.2;
-                    mockLng = -73.5673 + (Math.random() - 0.5) * 0.2;
+                    // Fallback visually if missing coordinates
+                    actualLat = 45.5017 + (Math.random() - 0.5) * 0.2;
+                    actualLng = -73.5673 + (Math.random() - 0.5) * 0.2;
+                    f.lat = actualLat;
+                    f.lng = actualLng;
                 }
                 
-                // Save generated coordinates back to the object for filtering later
-                f.lat = mockLat;
-                f.lng = mockLng;
+                // Add tiny random offset so exact same addresses don't perfectly overlap
+                const offLat = actualLat + (Math.random() - 0.5) * 0.0005;
+                const offLng = actualLng + (Math.random() - 0.5) * 0.0005;
                 
-                const marker = L.marker([mockLat, mockLng]).addTo(map);
+                const marker = L.marker([offLat, offLng]).addTo(map);
                 
                 const popupContent = `
                     <div class="w-48 cursor-pointer" onclick="window.location.href='facility.html?id=${f.id}'">
@@ -464,7 +433,7 @@
                 `;
                 marker.bindPopup(popupContent);
                 markers.push(marker);
-                bounds.extend([mockLat, mockLng]);
+                bounds.extend([offLat, offLng]);
             });
 
             // Set a slightly tighter padding and lower maxZoom for better context display

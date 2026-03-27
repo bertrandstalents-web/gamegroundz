@@ -537,6 +537,8 @@
                         <div class="relative">
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Facility Address</label>
                             <input type="text" id="fac-location" autocomplete="off" required class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="Full Address (e.g. 123 Main St, Montreal, QC)" style="background: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z\'/><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M15 11a3 3 0 11-6 0 3 3 0 016 0z\'/></svg>') no-repeat 10px center; background-size: 20px;">
+                            <input type="hidden" id="fac-lat" value="">
+                            <input type="hidden" id="fac-lng" value="">
                         </div>
                     </div>
                 </div>
@@ -1125,6 +1127,8 @@
             document.getElementById('fac-type').value = facility.type || 'ice';
             document.getElementById('fac-env').value = facility.environment || 'indoor';
             document.getElementById('fac-location').value = facility.location || '';
+            document.getElementById('fac-lat').value = facility.lat || '';
+            document.getElementById('fac-lng').value = facility.lng || '';
 
             document.getElementById('fac-instant').checked = facility.is_instant_book == 1;
             document.getElementById('fac-advance-booking').value = facility.advance_booking_days || 180;
@@ -2688,7 +2692,7 @@
                         if (!searchInput) return;
                         const options = {
                             componentRestrictions: { country: ["us", "ca"] },
-                            fields: ["formatted_address"],
+                            fields: ["formatted_address", "geometry"],
                             types: ["address"]
                         };
                         const autocomplete = new google.maps.places.Autocomplete(searchInput, options);
@@ -2696,6 +2700,10 @@
                             const place = autocomplete.getPlace();
                             if (place.formatted_address) {
                                 searchInput.value = place.formatted_address;
+                            }
+                            if (place.geometry && place.geometry.location) {
+                                document.getElementById('fac-lat').value = place.geometry.location.lat();
+                                document.getElementById('fac-lng').value = place.geometry.location.lng();
                             }
                         });
                         
@@ -2898,6 +2906,8 @@
                 type: document.getElementById('fac-type').value,
                 environment: document.getElementById('fac-env').value,
                 location: document.getElementById('fac-location').value,
+                lat: document.getElementById('fac-lat').value ? parseFloat(document.getElementById('fac-lat').value) : null,
+                lng: document.getElementById('fac-lng').value ? parseFloat(document.getElementById('fac-lng').value) : null,
                 base_price: basePrice,
                 pricing_rules: pricingRules,
                 image_url: JSON.stringify(window.localImagesArray),

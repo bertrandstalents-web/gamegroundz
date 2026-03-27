@@ -521,7 +521,7 @@ app.post('/api/facilities', (req, res) => {
         return res.status(401).json({ error: "Unauthorized: You must be logged in to list a facility." });
     }
 
-    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days } = req.body;
+    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days } = req.body;
     
     if (!name || !type || !environment || !base_price || !location || !image_url) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -549,9 +549,9 @@ app.post('/api/facilities', (req, res) => {
 
     db.run(
         `INSERT INTO facilities 
-         (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book, host_id, operating_hours, listing_status, advance_booking_days) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, image_url, is_instant_book ? 1 : 0, req.session.userId, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180],
+         (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, host_id, operating_hours, listing_status, advance_booking_days) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, req.session.userId, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
@@ -571,7 +571,7 @@ app.put('/api/host/facilities/:id', (req, res) => {
     }
 
     const facilityId = req.params.id;
-    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days } = req.body;
+    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days } = req.body;
     
     if (!name || !type || !environment || !base_price || !location || !image_url) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -602,10 +602,10 @@ app.put('/api/host/facilities/:id', (req, res) => {
         `UPDATE facilities SET 
             name = ?, subtitle = ?, description = ?, features = ?, locker_rooms = ?, 
             capacity = ?, size_info = ?, amenities = ?, type = ?, environment = ?, 
-            base_price = ?, pricing_rules = ?, location = ?, image_url = ?, 
+            base_price = ?, pricing_rules = ?, location = ?, lat = COALESCE(?, lat), lng = COALESCE(?, lng), image_url = ?, 
             is_instant_book = ?, operating_hours = ?, listing_status = ?, advance_booking_days = ? 
          WHERE id = ? AND host_id = ?`,
-        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, image_url, is_instant_book ? 1 : 0, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, facilityId, req.session.userId],
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, facilityId, req.session.userId],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });

@@ -1,4 +1,7 @@
+require('dotenv').config();
 const { Pool } = require('pg');
+const fs = require('fs');
+const path = require('path');
 
 // Parse DATABASE_URL if available, otherwise it will fail to connect (which is expected until user sets it)
 const pool = new Pool({
@@ -108,7 +111,9 @@ async function initDatabase() {
             host_id INTEGER DEFAULT 1 REFERENCES users(id),
             operating_hours TEXT DEFAULT '{"open": "06:00", "close": "23:00"}',
             listing_status TEXT DEFAULT 'pending',
-            advance_booking_days INTEGER DEFAULT 180
+            advance_booking_days INTEGER DEFAULT 180,
+            lat REAL,
+            lng REAL
         )`);
 
         // Facility Images Table
@@ -122,9 +127,11 @@ async function initDatabase() {
 
         try {
             await client.query(`ALTER TABLE facilities ADD COLUMN advance_booking_days INTEGER DEFAULT 180`);
-        } catch(e) {
-            // column already exists, this is fine
-        }
+        } catch(e) {}
+        try {
+            await client.query(`ALTER TABLE facilities ADD COLUMN lat REAL`);
+            await client.query(`ALTER TABLE facilities ADD COLUMN lng REAL`);
+        } catch(e) {}
 
         // Discounts Table
         await client.query(`CREATE TABLE IF NOT EXISTS discounts (
@@ -196,17 +203,17 @@ async function initDatabase() {
             }
             
             const facilitiesData = [
-                ['Aréna Rosemère', 'Professional NHL-sized Ice Rink', 'Arena Rosemère is a premier ice hockey facility located in the heart of Rosemère...', '[{"title":"Premium Ice Quality","description":"Resurfaced before every rental block with our state-of-the-art Olympia resurfacer."}]', 4, 300, '200ft x 85ft', '["wifi", "parking", "locker_rooms", "accessibility"]', 'ice', 'indoor', 150, '[{"start":"08:00","end":"12:00","price":150},{"start":"13:00","end":"20:00","price":197}]', 'Rosemère, QC', 4.9, 128, 'images/arena_rosemere_real.jpg', 1, 1, '{"open": "06:00", "close": "23:00"}', 'approved'],
-                ['Aréna Municipale Boisbriand', 'Professional NHL-sized Ice Rink', 'Arena Municipale Boisbriand is a premier ice hockey facility.', '[]', 2, 150, 'NHL Size', '["parking", "locker_rooms"]', 'ice', 'indoor', 160, '[{"start":"08:00","end":"14:00","price":160},{"start":"14:00","end":"22:00","price":198}]', 'Boisbriand, QC', 4.8, 94, 'images/arena_boisbriand_real.jpg', 0, 1, '{"open": "07:00", "close": "22:00"}', 'approved'],
-                ['Colisée de Laval', 'Professional NHL-sized Ice Rink', 'Colisée de Laval is a premier ice hockey facility.', '[]', 8, 2000, 'Olympic Size', '["wifi", "parking", "locker_rooms", "concessions", "accessibility"]', 'ice', 'indoor', 180, '[{"start":"06:00","end":"16:00","price":180},{"start":"16:00","end":"23:00","price":210}]', 'Laval, QC', 5.0, 42, 'images/colisee_laval_real.jpg', 1, 1, '{"open": "05:00", "close": "00:00"}', 'approved'],
-                ['Complexe Sportif AP', 'Professional NHL-sized Ice Rink', 'Complexe Sportif AP is a premier ice hockey facility.', '[]', 4, 500, 'NHL Size', '["parking", "locker_rooms"]', 'ice', 'indoor', 140, '[{"start":"07:00","end":"15:00","price":140},{"start":"15:00","end":"22:00","price":160}]', 'Deux-Montagnes, QC', 4.7, 103, 'images/complexe_sportif_ap_real.jpg', 1, 1, '{"open": "06:00", "close": "23:00"}', 'approved'],
-                ['Peak Performance Gym', 'Fully Equipped Fitness Center', 'Peak Performance Gym is a premier training facility.', '[]', 2, 50, '10,000 sq ft', '["wifi", "parking", "locker_rooms", "showers"]', 'gym', 'indoor', 40, '[{"start":"05:00","end":"09:00","price":50},{"start":"09:00","end":"16:00","price":40},{"start":"16:00","end":"21:00","price":60}]', 'Montreal, QC', 4.9, 56, 'https://images.unsplash.com/photo-1540324155974-7523202daa3f?auto=format&fit=crop&w=800&q=80', 1, 1, '{"open": "05:00", "close": "22:00"}', 'approved'],
-                ['Capital High Field', 'Premium Synthetic Turf Field', 'Capital High Field is a premier outdoor football facility.', '[]', 2, 1000, '120 yards', '["parking", "concessions"]', 'football', 'outdoor', 120, '[{"start":"08:00","end":"14:00","price":120},{"start":"14:00","end":"20:00","price":150}]', 'Montreal, QC', 4.5, 210, 'https://images.unsplash.com/photo-1587329310686-91414b8e3cb7?auto=format&fit=crop&w=800&q=80', 0, 1, '{"open": "06:00", "close": "22:00"}', 'approved']
+                ['Aréna Rosemère', 'Professional NHL-sized Ice Rink', 'Arena Rosemère is a premier ice hockey facility located in the heart of Rosemère...', '[{"title":"Premium Ice Quality","description":"Resurfaced before every rental block with our state-of-the-art Olympia resurfacer."}]', 4, 300, '200ft x 85ft', '["wifi", "parking", "locker_rooms", "accessibility"]', 'ice', 'indoor', 150, '[{"start":"08:00","end":"12:00","price":150},{"start":"13:00","end":"20:00","price":197}]', 'Rosemère, QC', 4.9, 128, 'images/arena_rosemere_real.jpg', 1, 1, '{"open": "06:00", "close": "23:00"}', 'approved', 45.6372, -73.7997],
+                ['Aréna Municipale Boisbriand', 'Professional NHL-sized Ice Rink', 'Arena Municipale Boisbriand is a premier ice hockey facility.', '[]', 2, 150, 'NHL Size', '["parking", "locker_rooms"]', 'ice', 'indoor', 160, '[{"start":"08:00","end":"14:00","price":160},{"start":"14:00","end":"22:00","price":198}]', 'Boisbriand, QC', 4.8, 94, 'images/arena_boisbriand_real.jpg', 0, 1, '{"open": "07:00", "close": "22:00"}', 'approved', 45.6181, -73.8378],
+                ['Colisée de Laval', 'Professional NHL-sized Ice Rink', 'Colisée de Laval is a premier ice hockey facility.', '[]', 8, 2000, 'Olympic Size', '["wifi", "parking", "locker_rooms", "concessions", "accessibility"]', 'ice', 'indoor', 180, '[{"start":"06:00","end":"16:00","price":180},{"start":"16:00","end":"23:00","price":210}]', 'Laval, QC', 5.0, 42, 'images/colisee_laval_real.jpg', 1, 1, '{"open": "05:00", "close": "00:00"}', 'approved', 45.6028, -73.7169],
+                ['Complexe Sportif AP', 'Professional NHL-sized Ice Rink', 'Complexe Sportif AP is a premier ice hockey facility.', '[]', 4, 500, 'NHL Size', '["parking", "locker_rooms"]', 'ice', 'indoor', 140, '[{"start":"07:00","end":"15:00","price":140},{"start":"15:00","end":"22:00","price":160}]', 'Deux-Montagnes, QC', 4.7, 103, 'images/complexe_sportif_ap_real.jpg', 1, 1, '{"open": "06:00", "close": "23:00"}', 'approved', 45.5410, -73.8893],
+                ['Peak Performance Gym', 'Fully Equipped Fitness Center', 'Peak Performance Gym is a premier training facility.', '[]', 2, 50, '10,000 sq ft', '["wifi", "parking", "locker_rooms", "showers"]', 'gym', 'indoor', 40, '[{"start":"05:00","end":"09:00","price":50},{"start":"09:00","end":"16:00","price":40},{"start":"16:00","end":"21:00","price":60}]', 'Montreal, QC', 4.9, 56, 'https://images.unsplash.com/photo-1540324155974-7523202daa3f?auto=format&fit=crop&w=800&q=80', 1, 1, '{"open": "05:00", "close": "22:00"}', 'approved', 45.5017, -73.5673],
+                ['Capital High Field', 'Premium Synthetic Turf Field', 'Capital High Field is a premier outdoor football facility.', '[]', 2, 1000, '120 yards', '["parking", "concessions"]', 'football', 'outdoor', 120, '[{"start":"08:00","end":"14:00","price":120},{"start":"14:00","end":"20:00","price":150}]', 'Montreal, QC', 4.5, 210, 'https://images.unsplash.com/photo-1587329310686-91414b8e3cb7?auto=format&fit=crop&w=800&q=80', 0, 1, '{"open": "06:00", "close": "22:00"}', 'approved', 45.5017, -73.5673]
             ];
 
             const insertQuery = `INSERT INTO facilities 
-                (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, rating, reviews_count, image_url, is_instant_book, host_id, operating_hours, listing_status, advance_booking_days) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, 180)`;
+                (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, rating, reviews_count, image_url, is_instant_book, host_id, operating_hours, listing_status, advance_booking_days, lat, lng) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, 180, $21, $22)`;
 
             for (let f of facilitiesData) {
                 await client.query(insertQuery, f);
