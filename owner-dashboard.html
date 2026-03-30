@@ -1597,67 +1597,58 @@
                     isLastMinute: d.is_last_minute
                 };
                 
+                const evt = {
+                    id: `disc-${d.id}`,
+                    title: evTitle,
+                    className: 'g-event-discount',
+                    editable: false,
+                    extendedProps: extProps
+                };
+
+                // Time bounds
+                if (d.start_time) evt.startTime = `${d.start_time}:00`;
+                if (d.end_time) evt.endTime = `${d.end_time}:00`;
+                evt.allDay = (!evt.startTime && !evt.endTime);
+
+                // Reoccurence Rule (daysOfWeek)
+                if (d.recurring_day !== null && d.recurring_day !== undefined && d.recurring_day !== '') {
+                    // Specific recurring day
+                    evt.daysOfWeek = [parseInt(d.recurring_day, 10)];
+                } else if (!d.start_date && !d.end_date) {
+                    // No dates and no recurring day = everyday
+                    evt.daysOfWeek = [0, 1, 2, 3, 4, 5, 6];
+                }
+
+                // Date bounds
                 if (d.start_date || d.end_date) {
-                    const sRaw = d.start_date || d.end_date;
+                    const sRaw = d.start_date || d.end_date; 
                     const eRaw = d.end_date || d.start_date;
                     const sDate = sRaw.split('T')[0];
                     const eDate = eRaw.split('T')[0];
-                    
-                    if (d.start_time && d.end_time) {
-                        calendarEvents.push({
-                            id: `disc-${d.id}`,
-                            title: evTitle,
-                            start: `${sDate}T${d.start_time}:00`,
-                            end: `${eDate}T${d.end_time}:00`,
-                            className: 'g-event-discount',
-                            editable: false,
-                            extendedProps: extProps
-                        });
+
+                    if (evt.daysOfWeek) {
+                        // Bounded recurrence
+                        evt.startRecur = sDate;
+                        // FullCalendar endRecur is exclusive, so we add 1 day to end date
+                        const edObj = new Date(`${eDate}T00:00:00`);
+                        edObj.setDate(edObj.getDate() + 1);
+                        evt.endRecur = edObj.toISOString().split('T')[0];
                     } else {
-                        // All day discount for specific dates
-                        calendarEvents.push({
-                            id: `disc-${d.id}`,
-                            title: evTitle,
-                            start: sDate,
-                            end: eDate,
-                            allDay: true,
-                            className: 'g-event-discount',
-                            editable: false,
-                            extendedProps: extProps
-                        });
-                    }
-                } else {
-                    // Ongoing / recurring discount (no specific start_date/end_date)
-                    if (d.recurring_day !== null && d.recurring_day !== undefined && d.recurring_day !== '') {
-                         // Specific day of the week
-                         const evt = {
-                            id: `disc-${d.id}`,
-                            title: evTitle,
-                            daysOfWeek: [parseInt(d.recurring_day, 10)], // 0=Sunday (must be int)
-                            className: 'g-event-discount',
-                            editable: false,
-                            allDay: (!d.start_time && !d.end_time),
-                            extendedProps: extProps
-                         };
-                         if (d.start_time) evt.startTime = `${d.start_time}:00`;
-                         if (d.end_time) evt.endTime = `${d.end_time}:00`;
-                         calendarEvents.push(evt);
-                    } else {
-                         // Applies every day indefinitely
-                         const evt = {
-                            id: `disc-${d.id}`,
-                            title: evTitle,
-                            daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // Repeat every day
-                            className: 'g-event-discount',
-                            editable: false,
-                            allDay: (!d.start_time && !d.end_time),
-                            extendedProps: extProps
-                         };
-                         if (d.start_time) evt.startTime = `${d.start_time}:00`;
-                         if (d.end_time) evt.endTime = `${d.end_time}:00`;
-                         calendarEvents.push(evt);
+                        // Single continuous block (no recurrence rules)
+                        if (evt.allDay) {
+                            evt.start = sDate;
+                            // For all-day events, 'end' is exclusive. So add 1 day
+                            const edObj = new Date(`${eDate}T00:00:00`);
+                            edObj.setDate(edObj.getDate() + 1);
+                            evt.end = edObj.toISOString().split('T')[0];
+                        } else {
+                            evt.start = `${sDate}T${d.start_time}:00`;
+                            evt.end = `${eDate}T${d.end_time}:00`;
+                        }
                     }
                 }
+
+                calendarEvents.push(evt);
             });
 
             currentCalendar = new FullCalendar.Calendar(calendarEl, {
