@@ -358,12 +358,13 @@
                                 <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary text-2xl mb-4 shadow-sm">
                                     <i class="fa-solid fa-tags"></i>
                                 </div>
-                                <h3 class="text-2xl font-bold text-slate-800 tracking-tight">New Discount</h3>
+                                <h3 id="disc-modal-title" class="text-2xl font-bold text-slate-800 tracking-tight">New Discount</h3>
                                 <p class="text-sm text-slate-500 mt-1">Create promotional deals for your facility.</p>
                             </div>
                             
                             <!-- Form -->
                             <form id="create-discount-form" class="px-8 pb-8 space-y-5">
+                                <input type="hidden" id="disc-edit-id" value="">
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Type<span class="text-red-500">*</span></label>
@@ -3328,6 +3329,7 @@
                     return res.json();
                 })
                 .then(discounts => {
+                    window.facilityDiscountsData = discounts;
                     if (discounts.length === 0) {
                         container.innerHTML = `<div class="text-center py-8 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
                             <i class="fa-solid fa-tag text-4xl mb-4 text-slate-300"></i>
@@ -3365,9 +3367,14 @@
                                     <h4 class="font-bold text-dark text-lg">${d.discount_type === 'percentage' ? d.value + '%' : '$' + d.value} OFF</h4>
                                     <div class="text-sm text-slate-500 mt-1">${desc}</div>
                                 </div>
-                                <button onclick="deleteDiscount(${d.id})" class="text-red-500 hover:text-red-700 w-10 h-10 rounded-full hover:bg-red-50 flex items-center justify-center transition-custom" title="Delete Discount">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="editDiscount(${d.id})" class="text-slate-400 hover:text-primary w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center transition-custom" title="Edit Discount">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <button onclick="deleteDiscount(${d.id})" class="text-red-500 hover:text-red-700 w-10 h-10 rounded-full hover:bg-red-50 flex items-center justify-center transition-custom" title="Delete Discount">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </div>
                             </div>
                         `;
                     });
@@ -3380,6 +3387,15 @@
         function openDiscountModal() {
             document.getElementById('create-discount-form').reset();
             document.getElementById('disc-error').classList.add('hidden');
+            const editIdInput = document.getElementById('disc-edit-id');
+            if(editIdInput) editIdInput.value = '';
+            
+            const titleEl = document.getElementById('disc-modal-title');
+            if(titleEl) titleEl.textContent = 'New Discount';
+            
+            const btnEl = document.getElementById('disc-submit-btn');
+            if(btnEl) btnEl.innerHTML = 'Save Discount';
+            
             document.getElementById('discount-modal-backdrop').classList.remove('hidden');
         }
 
@@ -3413,9 +3429,13 @@
                 };
 
                 try {
+                    const editId = document.getElementById('disc-edit-id') ? document.getElementById('disc-edit-id').value : '';
+                    const dsMethod = editId ? 'PUT' : 'POST';
                     const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
-                    const res = await fetch(`${API_BASE_URL}/api/host/discounts`, {
-                        method: 'POST',
+                    const dsUrl = editId ? `${API_BASE_URL}/api/host/discounts/${editId}` : `${API_BASE_URL}/api/host/discounts`;
+
+                    const res = await fetch(dsUrl, {
+                        method: dsMethod,
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload),
                         credentials: 'include'
@@ -3460,6 +3480,34 @@
             } catch(e) {
                 await showAlertModal('Error', e.message, 'OK', true);
             }
+        };
+
+        window.editDiscount = function(id) {
+            const discounts = window.facilityDiscountsData || [];
+            const d = discounts.find(disc => disc.id === id);
+            if (!d) return;
+
+            document.getElementById('create-discount-form').reset();
+            document.getElementById('disc-error').classList.add('hidden');
+            
+            document.getElementById('disc-edit-id').value = d.id;
+            document.getElementById('disc-modal-title').textContent = 'Edit Discount';
+            document.getElementById('disc-submit-btn').innerHTML = 'Save Changes';
+
+            document.getElementById('disc-type').value = d.discount_type;
+            document.getElementById('disc-value').value = d.value;
+            if (d.start_date) document.getElementById('disc-start').value = d.start_date.split('T')[0];
+            if (d.end_date) document.getElementById('disc-end').value = d.end_date.split('T')[0];
+            if (d.start_time) document.getElementById('disc-start-time').value = d.start_time;
+            if (d.end_time) document.getElementById('disc-end-time').value = d.end_time;
+            if (d.recurring_day !== null && d.recurring_day !== undefined && d.recurring_day !== '') {
+                document.getElementById('disc-recurring').value = d.recurring_day;
+            } else {
+                document.getElementById('disc-recurring').value = '';
+            }
+            document.getElementById('disc-last-minute').checked = d.is_last_minute === 1;
+
+            document.getElementById('discount-modal-backdrop').classList.remove('hidden');
         };
     </script>
     
