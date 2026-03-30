@@ -14,6 +14,7 @@ async function setupTransporter() {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS,
             },
+            tls: { ciphers: 'SSLv3' }
         });
         console.log('Email service configured with custom SMTP.');
     } else {
