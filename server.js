@@ -315,23 +315,30 @@ app.post('/api/auth/reset-password', async (req, res) => {
         if (new Date(resetToken.expires_at) < new Date()) {
             return res.status(400).json({ error: "Token has expired" });
         }
+        db.get("SELECT password, email FROM users WHERE id = ?", [resetToken.user_id], async (err, user) => {
+            if (err || !user) return res.status(500).json({ error: "Database error" });
+            
+            // Check if the new password matches the current one
+            const isMatch = await bcrypt.compare(new_password, user.password);
+            if (isMatch) {
+                return res.status(400).json({ error: "New password cannot be the same as your current password" });
+            }
 
-        const hashedPassword = await bcrypt.hash(new_password, 10);
-        
-        db.run("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, resetToken.user_id], async (err) => {
-            if (err) return res.status(500).json({ error: "Could not update password" });
+            const hashedPassword = await bcrypt.hash(new_password, 10);
             
-            // Delete the used token
-            db.run("DELETE FROM password_reset_tokens WHERE token = ?", [token]);
-            
-            // Fetch the user email for the confirmation email
-            db.get("SELECT email FROM users WHERE id = ?", [resetToken.user_id], (err, user) => {
-                if(user && user.email) {
+            db.run("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, resetToken.user_id], (err) => {
+                if (err) return res.status(500).json({ error: "Could not update password" });
+                
+                // Delete the used token
+                db.run("DELETE FROM password_reset_tokens WHERE token = ?", [token]);
+                
+                // Send confirmation email
+                if (user.email) {
                     emailService.sendPasswordChangedConfirmation(user.email);
                 }
+                
+                res.json({ message: "Password updated successfully" });
             });
-            
-            res.json({ message: "Password updated successfully" });
         });
     });
 });
