@@ -294,10 +294,10 @@ app.post('/api/auth/forgot-password', async (req, res) => {
         const token = crypto.randomBytes(32).toString('hex');
         const expiresAt = new Date(Date.now() + 3600000).toISOString(); // 1 hour
 
-        db.run("INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (?, ?, ?)", [user.id, token, expiresAt], async (err) => {
+        db.run("INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (?, ?, ?)", [user.id, token, expiresAt], (err) => {
             if (err) return res.status(500).json({ error: "Could not generate reset token" });
             
-            await emailService.sendPasswordResetEmail(user.email, token);
+            emailService.sendPasswordResetEmail(user.email, token);
             res.json({ message: "Password reset email sent" });
         });
     });
