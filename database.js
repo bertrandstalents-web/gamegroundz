@@ -200,6 +200,15 @@ async function initDatabase() {
             UNIQUE(user_id, facility_id)
         )`);
 
+        // Password Reset Tokens Table
+        await client.query(`CREATE TABLE IF NOT EXISTS password_reset_tokens (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id),
+            token TEXT NOT NULL,
+            expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+
         // Seed initial Facility data if the table is empty
         const res = await client.query("SELECT COUNT(*) as count FROM facilities");
         if (parseInt(res.rows[0].count) === 0) {

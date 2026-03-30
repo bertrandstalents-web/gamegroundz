@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 require('dotenv').config();
 const db = require('./database');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
@@ -110,6 +111,26 @@ function sendBookingEmails(bookingId) {
     });
 }
 
+const getBookingDetailsForEmail = (bookingId) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT b.id as booking_id, b.booking_date, b.time_slots, b.total_price, 
+                   f.name as facility_name, f.location as facility_location, f.host_id,
+                   u.name as player_name, u.email as player_email,
+                   h.name as host_name, h.email as host_email, h.company_name as host_company_name
+            FROM bookings b
+            JOIN facilities f ON b.facility_id = f.id
+            JOIN users u ON b.user_id = u.id
+            LEFT JOIN users h ON f.host_id = h.id
+            WHERE b.id = ? 
+        `;
+        db.get(query, [bookingId], (err, row) => {
+            if (err) reject(err);
+            else resolve(row);
+        });
+    });
+};
+
 // Review Request Polling (runs every 15 minutes)
 setInterval(() => {
     db.all(`
@@ -203,13 +224,14 @@ app.post('/api/users/signup', async (req, res) => {
                 }
 
                 // Insert new user
-                db.run(
-                    "INSERT INTO users (name, email, password, role, first_name, last_name, phone_number, company_name, profile_picture) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    [name, email, hashedPassword, userRole, first_name.trim(), last_name.trim(), phone_number.trim(), company_name ? company_name.trim() : null, profile_picture || null],
+                db.run("INSERT INTO users (name, email, password, role, company_name, first_name, last_name, phone_number, profile_picture) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+                    [name, email, hashedPassword, userRole, company_name, first_name.trim(), last_name.trim(), phone_number, profile_picture], 
                     function(err) {
-                        if (err) return res.status(500).json({ error: "Error creating user" });
+                        if (err) return res.status(500).json({ error: "Could not create user" });
                         
-                        // Automatically log in the user after registration
+                        emailService.sendWelcomeEmail(email, name, userRole);
+                        
+                        // Set session
                         req.session.userId = this.lastID;
                         req.session.userRole = userRole;
                         req.session.userName = name;
@@ -255,6 +277,61 @@ app.post('/api/auth/login', (req, res) => {
         res.json({ 
             message: "Logged in successfully", 
             user: { id: user.id, name: user.name, email: user.email, role: user.role } 
+        });
+    });
+});
+
+// Forgot Password
+app.post('/api/auth/forgot-password', async (req, res) => {
+    let { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email is required" });
+    email = email.trim().toLowerCase();
+
+    db.get("SELECT * FROM users WHERE email = ?", [email], async (err, user) => {
+        if (err) return res.status(500).json({ error: "Database error" });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 3600000).toISOString(); // 1 hour
+
+        db.run("INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (?, ?, ?)", [user.id, token, expiresAt], async (err) => {
+            if (err) return res.status(500).json({ error: "Could not generate reset token" });
+            
+            await emailService.sendPasswordResetEmail(user.email, token);
+            res.json({ message: "Password reset email sent" });
+        });
+    });
+});
+
+// Reset Password
+app.post('/api/auth/reset-password', async (req, res) => {
+    let { token, new_password } = req.body;
+    if (!token || !new_password) return res.status(400).json({ error: "Token and new password are required" });
+
+    db.get("SELECT * FROM password_reset_tokens WHERE token = ?", [token], async (err, resetToken) => {
+        if (err) return res.status(500).json({ error: "Database error" });
+        if (!resetToken) return res.status(400).json({ error: "Invalid or expired token" });
+
+        if (new Date(resetToken.expires_at) < new Date()) {
+            return res.status(400).json({ error: "Token has expired" });
+        }
+
+        const hashedPassword = await bcrypt.hash(new_password, 10);
+        
+        db.run("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, resetToken.user_id], async (err) => {
+            if (err) return res.status(500).json({ error: "Could not update password" });
+            
+            // Delete the used token
+            db.run("DELETE FROM password_reset_tokens WHERE token = ?", [token]);
+            
+            // Fetch the user email for the confirmation email
+            db.get("SELECT email FROM users WHERE id = ?", [resetToken.user_id], (err, user) => {
+                if(user && user.email) {
+                    emailService.sendPasswordChangedConfirmation(user.email);
+                }
+            });
+            
+            res.json({ message: "Password updated successfully" });
         });
     });
 });
@@ -637,7 +714,7 @@ app.get('/api/host/bookings', (req, res) => {
     }
     
     const query = `
-        SELECT b.*, f.name as facility_name, u.name as player_name, u.email as player_email
+        SELECT b.*, f.name as facility_name, u.name as player_name, u.email as player_email, u.phone_number as player_phone_number
         FROM bookings b
         JOIN facilities f ON b.facility_id = f.id
         LEFT JOIN users u ON b.user_id = u.id
@@ -851,6 +928,12 @@ app.post('/api/bookings/:id/cancel', async (req, res) => {
                 }
             }
 
+            // Send cancellation emails
+            try {
+                const emailDetails = await getBookingDetailsForEmail(bookingId);
+                if (emailDetails) emailService.sendCancellationEmail(emailDetails, 'player');
+            } catch(e) { console.error("Could not send cancel email", e); }
+
             // Save cancellation to a log/notes or just delete. We delete to free up slots immediately.
             db.run("DELETE FROM bookings WHERE id = ?", [bookingId], function(err) {
                 if (err) return res.status(500).json({ error: "Failed to delete booking" });
@@ -912,6 +995,12 @@ app.post('/api/host/bookings/:id/cancel', async (req, res) => {
                     await stripe.refunds.create({ payment_intent: session.payment_intent });
                 }
             }
+
+            // Send cancellation emails
+            try {
+                const emailDetails = await getBookingDetailsForEmail(bookingId);
+                if (emailDetails) emailService.sendCancellationEmail(emailDetails, 'host');
+            } catch(e) { console.error("Could not send cancel email", e); }
 
             // Delete booking to free slots
             if (cancel_scope === 'all' && booking.recurring_group_id) {
@@ -1216,7 +1305,7 @@ app.get('/api/admin/bookings', requireAdmin, (req, res) => {
     const query = `
         SELECT b.*, 
                f.name as facility_name, f.host_id,
-               u_player.name as player_name, u_player.email as player_email,
+               u_player.name as player_name, u_player.email as player_email, u_player.phone_number as player_phone_number,
                u_host.name as host_name
         FROM bookings b
         LEFT JOIN facilities f ON b.facility_id = f.id

@@ -543,6 +543,10 @@
                             <i class="fa-solid fa-eye" id="toggle-confirm-password-icon"></i>
                         </button>
                     </div>
+                    
+                    <div id="forgot-password-container" class="text-right mt-1 mb-2">
+                        <a href="forgot-password.html" class="text-sm font-semibold text-primary hover:text-dark transition-custom">Forgot your password?</a>
+                    </div>
                     <button type="button" id="auth-submit-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-lg transition-custom shadow-glow mt-2">
                         Continue
                     </button>
@@ -760,6 +764,8 @@
         const phoneInput = document.getElementById('auth-phone-number');
         const confInput = document.getElementById('auth-confirm-password');
         
+        const forgotPasswordContainer = document.getElementById('forgot-password-container');
+        
         let isLoginMode = true;
 
         function toggleAuthMode(e) {
@@ -772,6 +778,7 @@
                 nameFieldContainer.classList.add('hidden');
                 reqs.classList.add('hidden');
                 confContainer.classList.add('hidden');
+                if(forgotPasswordContainer) forgotPasswordContainer.classList.remove('hidden');
                 firstNameInput.required = false;
                 lastNameInput.required = false;
                 phoneInput.required = false;
@@ -783,6 +790,7 @@
                 nameFieldContainer.classList.remove('hidden');
                 reqs.classList.remove('hidden');
                 confContainer.classList.remove('hidden');
+                if(forgotPasswordContainer) forgotPasswordContainer.classList.add('hidden');
                 firstNameInput.required = true;
                 lastNameInput.required = true;
                 phoneInput.required = true;

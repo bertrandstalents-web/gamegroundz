@@ -260,8 +260,167 @@ async function sendReviewRequest(bookingDetails) {
     }
 }
 
+async function sendPasswordResetEmail(email, token) {
+    if (!transporter) return;
+
+    try {
+        const resetLink = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password.html?token=${token}`;
+        
+        const bodyContent = `
+            <h2>Reset Your Password</h2>
+            <p>We received a request to reset your GameGroundz password.</p>
+            <p>Click the button below to choose a new password. This link is valid for 1 hour.</p>
+            
+            <center>
+                <a href="${resetLink}" class="btn">Reset Password</a>
+            </center>
+            
+            <p style="margin-top: 24px; font-size: 14px; color: #6b7280;">If you didn't request this, you can safely ignore this email.</p>
+        `;
+
+        const html = getBaseEmailTemplate('Reset Your Password', 'Reset your GameGroundz password.', bodyContent);
+
+        let info = await transporter.sendMail({
+            from: '"GameGroundz Security" <support@gamegroundz.com>', // Sender address
+            to: email, // list of receivers
+            subject: `Reset Your Password`, // Subject line
+            html: html, // html body
+        });
+
+        console.log("Password reset email sent: %s", info.messageId);
+        if (info.messageId.includes('ethereal')) {
+            console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        }
+    } catch (error) {
+        console.error("Error sending password reset email:", error);
+    }
+}
+
+async function sendWelcomeEmail(email, name, role) {
+    if (!transporter) return;
+
+    try {
+        const isHost = role === 'host';
+        const dashboardLink = `${process.env.APP_URL || 'http://localhost:3000'}/${isHost ? 'owner-dashboard.html' : 'search.html'}`;
+        const actionText = isHost ? 'Go to Host Dashboard' : 'Find Facilities';
+
+        const bodyContent = `
+            <h2>Welcome to GameGroundz!</h2>
+            <p>Hi ${name},</p>
+            <p>We're thrilled to have you on board. GameGroundz is the easiest way to manage and book sports surfaces.</p>
+            
+            <center>
+                <a href="${dashboardLink}" class="btn">${actionText}</a>
+            </center>
+        `;
+
+        const html = getBaseEmailTemplate('Welcome to GameGroundz', 'Thanks for signing up!', bodyContent);
+
+        let info = await transporter.sendMail({
+            from: '"GameGroundz Team" <welcome@gamegroundz.com>',
+            to: email,
+            subject: `Welcome to GameGroundz, ${name}!`,
+            html: html,
+        });
+
+        console.log("Welcome email sent: %s", info.messageId);
+        if (info.messageId.includes('ethereal')) console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    } catch (error) {
+        console.error("Error sending welcome email:", error);
+    }
+}
+
+async function sendPasswordChangedConfirmation(email) {
+    if (!transporter) return;
+
+    try {
+        const bodyContent = `
+            <h2>Password Changed Successfully</h2>
+            <p>Your GameGroundz password has been updated.</p>
+            <p>If you did not make this change, please contact support immediately.</p>
+        `;
+
+        const html = getBaseEmailTemplate('Password Changed', 'Your password was updated.', bodyContent);
+
+        let info = await transporter.sendMail({
+            from: '"GameGroundz Security" <support@gamegroundz.com>',
+            to: email,
+            subject: 'Security Alert: Password Changed',
+            html: html,
+        });
+
+        console.log("Password changed email sent: %s", info.messageId);
+        if (info.messageId.includes('ethereal')) console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    } catch (error) {
+        console.error("Error sending password changed email:", error);
+    }
+}
+
+async function sendCancellationEmail(bookingDetails, cancelledBy) {
+    if (!transporter) return;
+
+    try {
+        const { player_email, player_name, host_email, host_name, facility_name, booking_date, time_slots, booking_id } = bookingDetails;
+        
+        const dateStr = formatDate(booking_date);
+        const timeStr = formatTimeSlots(JSON.parse(time_slots));
+        const canceller = cancelledBy === 'host' ? host_name : player_name;
+
+        const bodyContent = `
+            <h2>Booking Cancelled</h2>
+            <p>The following booking at <strong>${facility_name}</strong> has been cancelled by ${canceller}.</p>
+            
+            <div class="booking-details">
+                <div class="detail-row">
+                    <span class="label">Booking ID</span>
+                    <span class="value">#${booking_id}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Date</span>
+                    <span class="value">${dateStr}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Time</span>
+                    <span class="value">${timeStr}</span>
+                </div>
+            </div>
+            
+            <p style="margin-top: 24px;">Refunds (if applicable) have been initiated automatically.</p>
+        `;
+
+        const html = getBaseEmailTemplate('Booking Cancelled', 'A GameGroundz booking was cancelled.', bodyContent);
+
+        // Send to Player
+        let infoP = await transporter.sendMail({
+            from: '"GameGroundz Notifications" <support@gamegroundz.com>',
+            to: player_email,
+            subject: `Cancelled: Booking at ${facility_name}`,
+            html: html,
+        });
+        
+        // Send to Host
+        if (host_email) {
+            await transporter.sendMail({
+                from: '"GameGroundz Notifications" <support@gamegroundz.com>',
+                to: host_email,
+                subject: `Canceled by ${canceller}: ${facility_name}`,
+                html: html,
+            });
+        }
+
+        console.log("Cancellation email sent: %s", infoP.messageId);
+        if (infoP.messageId.includes('ethereal')) console.log("Preview URL: %s", nodemailer.getTestMessageUrl(infoP));
+    } catch (error) {
+        console.error("Error sending cancellation email:", error);
+    }
+}
+
 module.exports = {
     sendPlayerConfirmation,
     sendHostConfirmation,
-    sendReviewRequest
+    sendReviewRequest,
+    sendPasswordResetEmail,
+    sendWelcomeEmail,
+    sendPasswordChangedConfirmation,
+    sendCancellationEmail
 };

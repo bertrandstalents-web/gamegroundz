@@ -211,7 +211,7 @@
                             <thead>
                                 <tr class="bg-slate-50 border-y border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
                                     <th class="py-4 px-8">User ID/Name</th>
-                                    <th class="py-4 px-4">Email</th>
+                                    <th class="py-4 px-4">Contact Info</th>
                                     <th class="py-4 px-4">Role</th>
                                     <th class="py-4 px-4">Status</th>
                                     <th class="py-4 px-8 text-right">Actions</th>
@@ -663,7 +663,8 @@
                                 <div class="text-xs text-slate-400">ID: ${u.id}</div>
                             </td>
                             <td class="py-4 px-4 border-b border-slate-100 text-sm font-medium text-slate-600">
-                                ${u.email}
+                                <div>${u.email}</div>
+                                ${u.phone_number ? `<div class="text-xs text-slate-400 mt-0.5"><i class="fa-solid fa-phone text-[0.65rem] mr-1"></i>${u.phone_number}</div>` : ''}
                             </td>
                             <td class="py-4 px-4 border-b border-slate-100">
                                 ${roleBadge}
@@ -759,7 +760,10 @@
                             </td>
                             <td class="py-4 px-4 border-b border-slate-100">
                                 <div class="text-sm font-bold text-slate-800">${b.player_name || 'Guest User'}</div>
-                                <div class="text-xs text-slate-500">${b.player_email || b.user_id || 'N/A'}</div>
+                                <div class="text-xs text-slate-500">
+                                    ${b.player_email || b.user_id || 'N/A'}
+                                    ${b.player_phone_number ? `<br><i class="fa-solid fa-phone text-[0.65rem] mr-1"></i>${b.player_phone_number}` : ''}
+                                </div>
                             </td>
                             <td class="py-4 px-4 border-b border-slate-100">
                                 <div class="text-sm font-bold text-slate-800 flex items-center gap-1"><i class="fa-solid fa-building text-slate-400 text-xs"></i> ${b.facility_name || 'Unknown'}</div>
