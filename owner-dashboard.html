@@ -1591,7 +1591,10 @@
                         isManual: b.booking_type === 'manual',
                         status: b.status,
                         originalNotes: b.manual_notes,
-                        recurringGroupId: b.recurring_group_id
+                        recurringGroupId: b.recurring_group_id,
+                        playerName: b.player_name || 'Guest',
+                        playerEmail: b.player_email || 'N/A',
+                        playerPhone: b.player_phone_number || 'N/A'
                     }
                 });
             });
@@ -1698,13 +1701,23 @@
                 eventResize: async function(info) {
                     await handleEventChange(info.event, info.revert);
                 },
-                eventClick: function(info) {
+                eventClick: async function(info) {
                     if (info.event.extendedProps && info.event.extendedProps.isManual) {
                         openEditEventModal(info.event);
                     } else if (info.event.extendedProps && info.event.extendedProps.isDiscount) {
                         openDiscountEditModal(info.event);
                     } else {
-                        showAlertModal('Booking Info', `Online Booking: ${info.event.title}\nStatus: ${info.event.extendedProps ? info.event.extendedProps.status : 'undefined'}`);
+                        const props = info.event.extendedProps || {};
+                        const confirmCancel = await showConfirmModal(
+                            'Booking Info', 
+                            `Name: ${props.playerName || 'Guest'}\nEmail: ${props.playerEmail || 'N/A'}\nPhone: ${props.playerPhone || 'N/A'}\nStatus: ${props.status || 'undefined'}\n\nWould you like to cancel this booking?`,
+                            'Cancel Booking',
+                            'Close',
+                            true
+                        );
+                        if (confirmCancel) {
+                            openHostCancelModal(info.event.id);
+                        }
                     }
                 }
             });
@@ -1942,6 +1955,11 @@
 
             document.getElementById('modal-block-notes').value = '';
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-regular fa-calendar-plus mr-3 text-xl"></i>New Booking';
+            document.getElementById('modal-cancel-btn').textContent = 'Cancel booking';
+            document.getElementById('modal-price-display').parentElement.classList.remove('hidden');
+            document.getElementById('modal-submit-btn').innerHTML = 'Confirm booking';
+            const delDiscBtn = document.getElementById('modal-delete-discount-btn');
+            if (delDiscBtn) delDiscBtn.classList.add('hidden');
             
             // Show block type selector for new bookings
             const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
@@ -2014,6 +2032,11 @@
 
             document.getElementById('modal-block-notes').value = eventObj.extendedProps.originalNotes || '';
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-solid fa-pen mr-3 text-xl"></i>Edit Booking';
+            document.getElementById('modal-cancel-btn').textContent = 'Cancel';
+            document.getElementById('modal-price-display').parentElement.classList.remove('hidden');
+            document.getElementById('modal-submit-btn').innerHTML = 'Save Changes';
+            const delDiscBtn = document.getElementById('modal-delete-discount-btn');
+            if (delDiscBtn) delDiscBtn.classList.add('hidden');
             
             // Hide/disable discount mode for existing offline edits
             const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
@@ -3295,6 +3318,9 @@
             
             calculateModalPrice();
             
+            document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-solid fa-tag mr-3 text-xl"></i>Edit Discount';
+            document.getElementById('modal-cancel-btn').textContent = 'Cancel';
+            document.getElementById('modal-price-display').parentElement.classList.add('hidden');
             document.getElementById('modal-submit-btn').innerHTML = 'Save Changes';
             
             let delBtn = document.getElementById('modal-delete-discount-btn');
@@ -3302,11 +3328,12 @@
                 delBtn = document.createElement('button');
                 delBtn.id = 'modal-delete-discount-btn';
                 delBtn.type = 'button';
-                delBtn.className = 'px-5 py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-custom font-medium ml-2 shadow-sm mr-auto';
-                delBtn.innerHTML = '<i class="fa-solid fa-trash mr-2"></i> Delete';
-                const btnContainer = document.getElementById('modal-submit-btn').parentElement;
-                btnContainer.insertBefore(delBtn, btnContainer.firstChild); // Insert as first item so it's on the left
+                delBtn.className = 'px-4 py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-custom font-medium shadow-sm mr-auto block max-w-[120px] ml-0 text-sm whitespace-nowrap truncate';
+                delBtn.innerHTML = '<i class="fa-solid fa-trash md:mr-2"></i><span class="hidden md:inline">Delete</span>';
+                const cancelBtn = document.getElementById('modal-cancel-btn');
+                cancelBtn.parentElement.insertBefore(delBtn, cancelBtn);
             }
+            delBtn.classList.remove('hidden');
             
             delBtn.onclick = async function() {
                 // deleteDiscount already requests confirmation and hits endpoint
