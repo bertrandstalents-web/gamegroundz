@@ -1270,7 +1270,12 @@ function calculatePrice(facility, timeSlots, discounts, bookingDateStr) {
         if (!d.is_active) return false;
         if (d.start_date && new Date(d.start_date) > bookingDate) return false;
         if (d.end_date && new Date(d.end_date) < bookingDate) return false;
-        if (d.recurring_day && d.recurring_day !== dayOfWeek) return false;
+        
+        if (d.recurring_day !== null && d.recurring_day !== undefined && d.recurring_day !== '') {
+            const daysMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            if (daysMap[parseInt(d.recurring_day, 10)] !== dayOfWeek) return false;
+        }
+
         if (d.is_last_minute && !isLastMinute) return false;
         return true;
     });
