@@ -974,6 +974,13 @@
                     loadFacilityDiscounts();
                 }
             }
+
+            if (tabId === 'reservations') {
+                // Clear unread notifications when viewing reservations
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                fetch(`${API_BASE_URL}/api/host/notifications/mark-read`, { method: 'POST', credentials: 'include' })
+                    .catch(e => console.error('Error marking notifications read:', e));
+            }
         }
 
         // Fetch Host Data Overview

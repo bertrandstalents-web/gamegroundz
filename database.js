@@ -170,7 +170,8 @@ async function initDatabase() {
             payment_status TEXT DEFAULT 'pending',
             stripe_session_id TEXT,
             review_email_sent INTEGER DEFAULT 0,
-            recurring_group_id TEXT
+            recurring_group_id TEXT,
+            is_read INTEGER DEFAULT 0
         )`);
 
         try {
@@ -178,6 +179,11 @@ async function initDatabase() {
         } catch(e) {}
         try {
             await client.query(`ALTER TABLE bookings ADD COLUMN recurring_group_id TEXT`);
+        } catch(e) {}
+        
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN is_read INTEGER DEFAULT 0`);
+            await client.query(`UPDATE bookings SET is_read = 1 WHERE is_read IS NULL OR is_read = 0`);
         } catch(e) {}
 
         // Reviews Table

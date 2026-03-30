@@ -1499,6 +1499,28 @@
         });
     </script>
     <script>
+        async function checkHostNotifications(btnElement) {
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const res = await fetch(`${API_BASE_URL}/api/host/notifications/unread-count`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.unread_count > 0) {
+                        let badge = btnElement.querySelector('.host-notification-badge');
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'host-notification-badge absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm';
+                            btnElement.appendChild(badge);
+                        }
+                        badge.textContent = data.unread_count;
+                    } else {
+                        const badge = btnElement.querySelector('.host-notification-badge');
+                        if (badge) badge.remove();
+                    }
+                }
+            } catch (e) { }
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             function updateNavUI(user) {
                 const loginBtn = document.getElementById('login-btn');
@@ -1514,6 +1536,11 @@
                         dashBtn.textContent = user.role === 'admin' ? "Admin Dashboard" : (user.role === 'host' ? "Host Dashboard" : "My Bookings");
                         
                         document.getElementById('nav-actions').appendChild(dashBtn);
+
+                        if (user.role === 'host') {
+                            dashBtn.classList.add('relative');
+                            checkHostNotifications(dashBtn);
+                        }
                     }
 
                     document.getElementById('logout-btn').addEventListener('click', async (e) => {

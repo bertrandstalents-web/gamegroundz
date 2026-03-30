@@ -714,6 +714,43 @@ app.get('/api/host/facilities', (req, res) => {
     });
 });
 
+// GET unread host notifications count
+app.get('/api/host/notifications/unread-count', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const query = `
+        SELECT COUNT(*) as count 
+        FROM bookings b
+        JOIN facilities f ON b.facility_id = f.id
+        WHERE f.host_id = ? AND b.is_read = 0
+    `;
+    
+    db.get(query, [req.session.userId], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ unread_count: row.count || 0 });
+    });
+});
+
+// POST mark host notifications as read
+app.post('/api/host/notifications/mark-read', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const query = `
+        UPDATE bookings 
+        SET is_read = 1 
+        WHERE id IN (
+            SELECT b.id FROM bookings b 
+            JOIN facilities f ON b.facility_id = f.id 
+            WHERE f.host_id = ? AND b.is_read = 0
+        )
+    `;
+    
+    db.run(query, [req.session.userId], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: "Notifications marked as read" });
+    });
+});
+
 // GET all bookings for the logged-in host's facilities
 app.get('/api/host/bookings', (req, res) => {
     if (!req.session.userId) {

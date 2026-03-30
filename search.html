@@ -686,6 +686,28 @@
         });
     </script>
     <script>
+        async function checkHostNotifications(btnElement) {
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const res = await fetch(`${API_BASE_URL}/api/host/notifications/unread-count`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.unread_count > 0) {
+                        let badge = btnElement.querySelector('.host-notification-badge');
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'host-notification-badge absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-white shadow-sm';
+                            btnElement.appendChild(badge);
+                        }
+                        badge.textContent = data.unread_count;
+                    } else {
+                        const badge = btnElement.querySelector('.host-notification-badge');
+                        if (badge) badge.remove();
+                    }
+                }
+            } catch (e) { }
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             function updateNavUI(user) {
                 const loginBtn = document.getElementById('login-btn');
@@ -701,6 +723,8 @@
                         } else if (user.role === 'host') {
                             listBtn.textContent = "Host Dashboard";
                             listBtn.href = "owner-dashboard.html";
+                            listBtn.classList.add('relative');
+                            checkHostNotifications(listBtn);
                         } else {
                             listBtn.textContent = "My Bookings";
                             listBtn.href = "player-dashboard.html";
