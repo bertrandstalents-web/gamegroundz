@@ -345,42 +345,53 @@
                     </div>
 
                     <!-- Add Discount Modal -->
-                    <div id="discount-modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-                        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-100">
-                            <div class="bg-primary p-6 flex justify-between items-center text-white">
-                                <h3 class="font-bold text-lg flex items-center tracking-wide uppercase">
-                                    <i class="fa-solid fa-tag mr-3 text-xl"></i>
-                                    New Discount
-                                </h3>
-                                <button type="button" onclick="closeDiscountModal()" class="text-white/80 hover:text-white transition-custom w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center">
-                                    <i class="fa-solid fa-xmark text-lg"></i>
-                                </button>
+                    <!-- Add Discount Modal -->
+                    <div id="discount-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-custom">
+                        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-100 animate-slide-up relative">
+                            <!-- Close Button -->
+                            <button type="button" onclick="closeDiscountModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-custom w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center z-10">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                            
+                            <!-- Header -->
+                            <div class="px-8 pt-8 pb-4">
+                                <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary text-2xl mb-4 shadow-sm">
+                                    <i class="fa-solid fa-tags"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-slate-800 tracking-tight">New Discount</h3>
+                                <p class="text-sm text-slate-500 mt-1">Create promotional deals for your facility.</p>
                             </div>
-                            <form id="create-discount-form" class="p-8 space-y-6">
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Discount Type<span class="text-red-500">*</span></label>
-                                    <select id="disc-type" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white">
-                                        <option value="percentage">Percentage (%)</option>
-                                        <option value="fixed_amount">Fixed Amount ($)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Discount Value<span class="text-red-500">*</span></label>
-                                    <input type="number" id="disc-value" required min="1" step="0.01" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none shadow-sm" placeholder="e.g. 20">
-                                </div>
+                            
+                            <!-- Form -->
+                            <form id="create-discount-form" class="px-8 pb-8 space-y-5">
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Start Date</label>
-                                        <input type="date" id="disc-start" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none shadow-sm">
+                                        <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Type<span class="text-red-500">*</span></label>
+                                        <select id="disc-type" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-slate-50 hover:bg-slate-100 transition-colors shadow-inner text-slate-700 font-medium">
+                                            <option value="percentage">Percentage (%)</option>
+                                            <option value="fixed_amount">Fixed Amount ($)</option>
+                                        </select>
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">End Date</label>
-                                        <input type="date" id="disc-end" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none shadow-sm">
+                                        <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Value<span class="text-red-500">*</span></label>
+                                        <input type="number" id="disc-value" required min="1" step="0.01" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-inner bg-slate-50 hover:bg-slate-100 transition-colors text-slate-700 font-medium placeholder-slate-400" placeholder="e.g. 20">
                                     </div>
                                 </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Start Date</label>
+                                        <input type="date" id="disc-start" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-inner bg-slate-50 hover:bg-slate-100 transition-colors text-slate-700 font-medium">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">End Date</label>
+                                        <input type="date" id="disc-end" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-inner bg-slate-50 hover:bg-slate-100 transition-colors text-slate-700 font-medium">
+                                    </div>
+                                </div>
+                                
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Recurring Day</label>
-                                    <select id="disc-recurring" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white">
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Recurring Day</label>
+                                    <select id="disc-recurring" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-slate-50 hover:bg-slate-100 transition-colors shadow-inner text-slate-700 font-medium">
                                         <option value="">None (One-time or Date Range)</option>
                                         <option value="0">Sunday</option>
                                         <option value="1">Monday</option>
@@ -391,17 +402,29 @@
                                         <option value="6">Saturday</option>
                                     </select>
                                 </div>
-                                <div class="flex items-center mt-2">
-                                    <input type="checkbox" id="disc-last-minute" class="w-5 h-5 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary">
-                                    <label class="ml-3 text-sm font-semibold text-slate-700">Last-Minute Discount (within 24h)</label>
+                                
+                                <!-- Sleek Toggle -->
+                                <div class="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-slate-700">Last-Minute Discount</span>
+                                        <span class="text-xs text-slate-500 mt-0.5">Applies within 24 hours of booking</span>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="disc-last-minute" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary shadow-inner"></div>
+                                    </label>
                                 </div>
-                                <div class="pt-4 border-t border-slate-100 flex justify-end gap-3 items-center">
-                                    <button type="button" onclick="closeDiscountModal()" class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-custom font-medium shadow-sm bg-white">Cancel</button>
-                                    <button type="submit" id="disc-submit-btn" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-bold transition-custom shadow-md">
+                                
+                                <div id="disc-error" class="hidden text-red-500 text-sm font-medium bg-red-50 py-2.5 px-4 rounded-xl border border-red-100 flex items-center">
+                                    <i class="fa-solid fa-circle-exclamation mr-2"></i><span id="disc-error-text"></span>
+                                </div>
+
+                                <div class="pt-6 mt-2 flex justify-end gap-3 items-center">
+                                    <button type="button" onclick="closeDiscountModal()" class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-custom font-bold shadow-sm bg-white">Cancel</button>
+                                    <button type="submit" id="disc-submit-btn" class="bg-gradient-to-r from-primary to-green-500 hover:from-primaryHover hover:to-green-600 text-white px-6 py-2.5 rounded-xl font-bold transition-custom shadow-glow hover:shadow-lg flex items-center justify-center">
                                         Save Discount
                                     </button>
                                 </div>
-                                <div id="disc-error" class="hidden text-red-500 text-sm font-medium bg-red-50 p-3 rounded-xl border border-red-100 mt-2"></div>
                             </form>
                         </div>
                     </div>
@@ -3392,7 +3415,10 @@
                     loadFacilityDiscounts();
                     
                 } catch (err) {
-                    errorDiv.textContent = err.message;
+                    const errText = document.getElementById('disc-error-text');
+                    if (errText) errText.textContent = err.message;
+                    else errorDiv.textContent = err.message;
+                    
                     errorDiv.classList.remove('hidden');
                 } finally {
                     btn.innerHTML = originalText;
