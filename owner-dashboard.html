@@ -1962,6 +1962,15 @@
             }
             editDiscountField.value = ''; // Clear discount edit ID when editing a booking
 
+            let editRecGroupField = document.getElementById('modal-edit-recurring-group-id');
+            if(!editRecGroupField) {
+                editRecGroupField = document.createElement('input');
+                editRecGroupField.type = 'hidden';
+                editRecGroupField.id = 'modal-edit-recurring-group-id';
+                document.getElementById('block-time-interactive-form').appendChild(editRecGroupField);
+            }
+            editRecGroupField.value = eventObj.extendedProps.recurringGroupId || '';
+
             document.getElementById('modal-block-notes').value = eventObj.extendedProps.originalNotes || '';
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-solid fa-pen mr-3 text-xl"></i>Edit Booking';
             
@@ -1994,13 +2003,66 @@
             if(currentCalendar) currentCalendar.unselect();
         }
 
+        function showRecurringCancelModal() {
+            return new Promise((resolve) => {
+                const backdrop = document.createElement('div');
+                backdrop.className = 'fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-custom';
+                backdrop.innerHTML = `
+                    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-slide-up">
+                        <div class="px-6 py-5 border-b border-slate-100">
+                            <h3 class="text-xl font-bold tracking-tight text-slate-800">Delete recurring event</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="space-y-4">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="radio" name="rec_cancel_scope" value="single" class="w-4 h-4 text-primary focus:ring-primary border-slate-300" checked>
+                                    <span class="ml-3 text-sm font-medium text-slate-700">This event</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="radio" name="rec_cancel_scope" value="following" class="w-4 h-4 text-primary focus:ring-primary border-slate-300">
+                                    <span class="ml-3 text-sm font-medium text-slate-700">This and following events</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="radio" name="rec_cancel_scope" value="all" class="w-4 h-4 text-primary focus:ring-primary border-slate-300">
+                                    <span class="ml-3 text-sm font-medium text-slate-700">All events</span>
+                                </label>
+                            </div>
+                            <div class="flex gap-3 justify-end mt-8">
+                                <button id="rc-cancel" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-100 text-slate-600 hover:bg-slate-200 transition-custom">Cancel</button>
+                                <button id="rc-confirm" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-primary text-white hover:bg-green-600 transition-custom shadow-md hover:shadow-lg">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(backdrop);
+                
+                document.getElementById('rc-cancel').addEventListener('click', () => {
+                    backdrop.remove();
+                    resolve(null);
+                });
+                document.getElementById('rc-confirm').addEventListener('click', () => {
+                    const val = document.querySelector('input[name="rec_cancel_scope"]:checked').value;
+                    backdrop.remove();
+                    resolve(val);
+                });
+            });
+        }
+
         async function handleModalCancelBtn() {
             const editId = document.getElementById('modal-edit-booking-id')?.value;
             const blockType = document.querySelector('input[name="modal-block-type"]:checked')?.value || 'offline';
             
             if (editId && blockType === 'offline') {
-                const confirmed = await showConfirmModal('Cancel Offline Booking', "Are you sure you want to cancel this offline booking?", 'Cancel Booking', 'Go Back', true);
-                if (!confirmed) return;
+                const recGroupId = document.getElementById('modal-edit-recurring-group-id')?.value;
+                let cancelScope = 'single';
+                
+                if (recGroupId) {
+                    cancelScope = await showRecurringCancelModal();
+                    if (!cancelScope) return; // user cancelled
+                } else {
+                    const confirmed = await showConfirmModal('Cancel Offline Booking', "Are you sure you want to cancel this offline booking?", 'Cancel Booking', 'Go Back', true);
+                    if (!confirmed) return;
+                }
                 
                 const btn = document.getElementById('modal-cancel-btn');
                 const originalText = btn.innerHTML;
@@ -2012,6 +2074,7 @@
                     const response = await fetch(`${API_BASE_URL}/api/host/bookings/${editId}/cancel`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cancel_scope: cancelScope }),
                         credentials: 'include'
                     });
                     

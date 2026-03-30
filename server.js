@@ -665,7 +665,9 @@ app.post('/api/host/block-time', (req, res) => {
     
     // Generate dates
     let datesToBook = [booking_date];
+    let recurringGroupId = null;
     if (repeat_option && repeat_option !== 'none' && repeat_until) {
+        recurringGroupId = 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
         const startDate = new Date(booking_date + 'T00:00:00');
         const endDate = new Date(repeat_until + 'T23:59:59');
         let currentDate = new Date(startDate);
@@ -684,12 +686,12 @@ app.post('/api/host/block-time', (req, res) => {
     }
     
     const sql = `
-        INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes)
-        VALUES (?, ?, ?, 0, 'confirmed', 'manual', ?)
+        INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id)
+        VALUES (?, ?, ?, 0, 'confirmed', 'manual', ?, ?)
     `;
     
     const insertBooking = (dateObj) => new Promise((resolve, reject) => {
-        db.run(sql, [facility_id, dateObj, JSON.stringify(time_slots), manual_notes], function(err) {
+        db.run(sql, [facility_id, dateObj, JSON.stringify(time_slots), manual_notes, recurringGroupId], function(err) {
             if (err) reject(err);
             else resolve();
         });
@@ -867,6 +869,7 @@ app.post('/api/host/bookings/:id/cancel', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
 
     const bookingId = req.params.id;
+    const { cancel_scope } = req.body;
 
     const query = `
         SELECT b.*, f.host_id 
@@ -911,10 +914,22 @@ app.post('/api/host/bookings/:id/cancel', async (req, res) => {
             }
 
             // Delete booking to free slots
-            db.run("DELETE FROM bookings WHERE id = ?", [bookingId], function(err) {
-                if (err) return res.status(500).json({ error: "Failed to delete booking" });
-                res.json({ message: "Booking canceled and refunded successfully." });
-            });
+            if (cancel_scope === 'all' && booking.recurring_group_id) {
+                db.run("DELETE FROM bookings WHERE recurring_group_id = ?", [booking.recurring_group_id], function(err) {
+                    if (err) return res.status(500).json({ error: "Failed to delete bookings" });
+                    res.json({ message: "All recurring bookings canceled successfully." });
+                });
+            } else if (cancel_scope === 'following' && booking.recurring_group_id) {
+                db.run("DELETE FROM bookings WHERE recurring_group_id = ? AND booking_date >= ?", [booking.recurring_group_id, booking.booking_date], function(err) {
+                    if (err) return res.status(500).json({ error: "Failed to delete bookings" });
+                    res.json({ message: "This and following bookings canceled successfully." });
+                });
+            } else {
+                db.run("DELETE FROM bookings WHERE id = ?", [bookingId], function(err) {
+                    if (err) return res.status(500).json({ error: "Failed to delete booking" });
+                    res.json({ message: "Booking canceled and refunded successfully." });
+                });
+            }
 
         } catch (e) {
             console.error("Host Cancellation Error:", e);

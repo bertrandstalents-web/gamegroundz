@@ -169,14 +169,16 @@ async function initDatabase() {
             manual_notes TEXT,
             payment_status TEXT DEFAULT 'pending',
             stripe_session_id TEXT,
-            review_email_sent INTEGER DEFAULT 0
+            review_email_sent INTEGER DEFAULT 0,
+            recurring_group_id TEXT
         )`);
 
         try {
             await client.query(`ALTER TABLE bookings ADD COLUMN review_email_sent INTEGER DEFAULT 0`);
-        } catch(e) {
-            // column already exists, this is fine
-        }
+        } catch(e) {}
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN recurring_group_id TEXT`);
+        } catch(e) {}
 
         // Reviews Table
         await client.query(`CREATE TABLE IF NOT EXISTS reviews (
