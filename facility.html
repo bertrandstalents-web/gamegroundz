@@ -1048,7 +1048,6 @@
                 const discounts = window.facilityDiscounts || [];
                 const bookingDate = new Date(selectedDateStr + 'T00:00:00');
                 const now = new Date();
-                const isLastMinute = bookingDate.getTime() - now.getTime() < 86400000 && bookingDate.getTime() >= now.getTime() - 86400000; 
 
                 const validDiscounts = discounts.filter(d => {
                     if (!d.is_active) return false;
@@ -1068,7 +1067,6 @@
                         if (daysMap[parseInt(d.recurring_day, 10)] !== dayOfWeek) return false;
                     }
 
-                    if (d.is_last_minute && !isLastMinute) return false;
                     return true;
                 });
 
@@ -1076,6 +1074,17 @@
                     let bestD = null;
                     let maxVal = 0;
                     validDiscounts.forEach(d => {
+                        if (d.is_last_minute) {
+                            const [slotH, slotM] = slotId.split(':');
+                            const exactSlotTime = new Date(selectedDateStr + 'T00:00:00');
+                            exactSlotTime.setHours(parseInt(slotH, 10), parseInt(slotM, 10));
+                            
+                            const msDiff = exactSlotTime.getTime() - now.getTime();
+                            if (msDiff > 86400000 || msDiff < 0) {
+                                return; // Not within precisely 24 hours, or in the past
+                            }
+                        }
+
                         if (d.start_time && d.end_time) {
                             if (slotId < d.start_time || slotId >= d.end_time) return;
                         }

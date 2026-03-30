@@ -1276,7 +1276,6 @@ function calculatePrice(facility, timeSlots, discounts, bookingDateStr) {
             if (daysMap[parseInt(d.recurring_day, 10)] !== dayOfWeek) return false;
         }
 
-        if (d.is_last_minute && !isLastMinute) return false;
         return true;
     });
 
@@ -1287,8 +1286,20 @@ function calculatePrice(facility, timeSlots, discounts, bookingDateStr) {
         
         timeSlots.forEach(slotId => {
             let applies = true;
-            if (d.start_time && d.end_time) {
-                applies = (slotId >= d.start_time && slotId < d.end_time);
+            
+            if (d.is_last_minute) {
+                const [slotH, slotM] = slotId.split(':');
+                const exactSlotTime = new Date(bookingDateStr + 'T00:00:00');
+                exactSlotTime.setHours(parseInt(slotH, 10), parseInt(slotM, 10));
+                
+                const msDiff = exactSlotTime.getTime() - now.getTime();
+                if (msDiff > 86400000 || msDiff < 0) {
+                    applies = false; // Not within 24 hours or already passed
+                }
+            }
+
+            if (applies && d.start_time && d.end_time) {
+                if (slotId < d.start_time || slotId >= d.end_time) applies = false;
             }
             if (applies) {
                 applicableCount++;
