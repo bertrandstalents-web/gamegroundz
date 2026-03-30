@@ -3344,6 +3344,11 @@
                         if (d.recurring_day !== null && d.recurring_day !== '') {
                             desc += `Every ${days[d.recurring_day]}`;
                             if (d.start_time && d.end_time) desc += ` between ${d.start_time} and ${d.end_time}`;
+                            if (d.start_date && d.end_date) {
+                                const sd = d.start_date.split('T')[0];
+                                const ed = d.end_date.split('T')[0];
+                                desc += ` <span class="text-xs text-slate-400 font-normal">(${sd} to ${ed})</span>`;
+                            }
                         } else if (d.start_date && d.end_date) {
                             const sd = d.start_date.split('T')[0];
                             const ed = d.end_date.split('T')[0];
