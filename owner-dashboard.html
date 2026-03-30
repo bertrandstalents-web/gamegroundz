@@ -1547,7 +1547,8 @@
                     extendedProps: {
                         isManual: b.booking_type === 'manual',
                         status: b.status,
-                        originalNotes: b.manual_notes
+                        originalNotes: b.manual_notes,
+                        recurringGroupId: b.recurring_group_id
                     }
                 });
             });
