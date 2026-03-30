@@ -49,8 +49,8 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), (req, r
             const price = session.amount_total / 100;
             
             db.run(
-                "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type) VALUES (?, ?, ?, ?, ?, 'confirmed', 'online')",
-                [userId, facilityId, bookingDate, timeSlotsStr, price],
+                "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id) VALUES (?, ?, ?, ?, ?, 'confirmed', 'online', 'paid', ?)",
+                [userId, facilityId, bookingDate, timeSlotsStr, price, session.id],
                 function(err) {
                     if (err) console.error("Error creating booking from webhook:", err);
                     else {
@@ -1502,7 +1502,7 @@ app.post('/api/create-checkout-session', (req, res) => {
 
     // Secure Pricing Calculation
     db.get(`
-        SELECT f.name, f.base_price, f.pricing_rules, f.has_processing_fee, f.processing_fee_amount, u.stripe_account_id, u.stripe_onboarding_complete 
+        SELECT f.name, f.location, f.base_price, f.pricing_rules, f.has_processing_fee, f.processing_fee_amount, u.stripe_account_id, u.stripe_onboarding_complete 
         FROM facilities f 
         JOIN users u ON f.host_id = u.id 
         WHERE f.id = ?
@@ -1586,21 +1586,54 @@ app.post('/api/create-checkout-session', (req, res) => {
                         }
 
                         const sessionUrl = `${req.protocol}://${req.get('host')}`;
+                        
+                        const lineItems = [
+                            {
+                                price_data: {
+                                    currency: 'cad',
+                                    product_data: {
+                                        name: `${facility.name} Booking`,
+                                        description: `Date: ${booking_date} | Time: ${formattedSlots}`,
+                                    },
+                                    unit_amount: Math.round(secureTotalPrice * 100),
+                                },
+                                quantity: 1,
+                            }
+                        ];
+
+                        if (processingFee > 0) {
+                            lineItems.push({
+                                price_data: {
+                                    currency: 'cad',
+                                    product_data: {
+                                        name: 'Platform Processing Fee',
+                                    },
+                                    unit_amount: Math.round(processingFee * 100),
+                                },
+                                quantity: 1,
+                            });
+                        }
+
+                        const taxAmount = secureTotalPrice * taxRate;
+                        if (taxAmount > 0) {
+                            lineItems.push({
+                                price_data: {
+                                    currency: 'cad',
+                                    product_data: {
+                                        name: 'Taxes',
+                                        description: `Based on listing location: ${facility.location} (QST + GST 14.975%)`,
+                                    },
+                                    unit_amount: Math.round(taxAmount * 100),
+                                },
+                                quantity: 1,
+                            });
+                        }
+
+                        const finalAmountCentsCalculated = lineItems.reduce((acc, item) => acc + item.price_data.unit_amount, 0);
+
                         const sessionConfig = {
                             payment_method_types: ['card'],
-                            line_items: [
-                                {
-                                    price_data: {
-                                        currency: 'cad',
-                                        product_data: {
-                                            name: `${facility.name} Booking`,
-                                            description: `Date: ${booking_date} | Time: ${formattedSlots}`,
-                                        },
-                                        unit_amount: finalAmountCents,
-                                    },
-                                    quantity: 1,
-                                },
-                            ],
+                            line_items: lineItems,
                             mode: 'payment',
                             success_url: `${sessionUrl}/player-dashboard.html?success=true&session_id={CHECKOUT_SESSION_ID}`,
                             cancel_url: `${sessionUrl}/facility.html?id=${facility_id}&canceled=true`,
@@ -1614,7 +1647,7 @@ app.post('/api/create-checkout-session', (req, res) => {
 
                         // Split Payment if Host is onboarded via Stripe Connect
                         if (facility.stripe_account_id && facility.stripe_onboarding_complete) {
-                            const platformFeeCents = Math.round(finalAmountCents * 0.10); // 10% platform fee
+                            const platformFeeCents = Math.round(finalAmountCentsCalculated * 0.05); // 5% platform fee
                             sessionConfig.payment_intent_data = {
                                 application_fee_amount: platformFeeCents,
                                 transfer_data: {
