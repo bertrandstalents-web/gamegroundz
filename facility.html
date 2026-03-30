@@ -946,7 +946,7 @@
                 }
 
                 if (selectedSlotIds.size < 2) {
-                    alert("Please select at least two time slots (1 hour minimum).");
+                    await showAlertModal('Minimum Duration', 'Please select at least two time slots (1 hour minimum).', 'OK', true);
                     return;
                 }
                 
@@ -992,7 +992,7 @@
 
                 } catch (error) {
                     console.error("Booking Error", error);
-                    alert("There was an error processing your booking: " + error.message);
+                    await showAlertModal('Error', 'There was an error processing your booking: ' + error.message, 'OK', true);
                     reserveBtn.innerHTML = originalText;
                     reserveBtn.disabled = false;
                     reserveBtn.classList.remove('opacity-80', 'cursor-not-allowed');
@@ -1784,6 +1784,7 @@
             }
         });
     </script>
+    <script src="js/modals.js"></script>
     <script src="js/i18n.js"></script>
 </body>
 </html>

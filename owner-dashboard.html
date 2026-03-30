@@ -259,9 +259,25 @@
                                 </div>
 
                                 <!-- Offline Booking Fields -->
-                                <div id="modal-offline-fields">
-                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Booking Title<span class="text-red-500">*</span></label>
-                                    <input type="text" id="modal-block-notes" required placeholder="e.g. Private Lesson" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
+                                <div id="modal-offline-fields" class="space-y-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Booking Title<span class="text-red-500">*</span></label>
+                                        <input type="text" id="modal-block-notes" required placeholder="e.g. Private Lesson" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Repeat</label>
+                                            <select id="modal-repeat-option" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white transition-custom text-slate-800 font-medium" onchange="document.getElementById('modal-repeat-until-container').classList.toggle('hidden', this.value === 'none'); if(this.value !== 'none') document.getElementById('modal-repeat-until').required = true; else document.getElementById('modal-repeat-until').required = false;">
+                                                <option value="none">Does not repeat</option>
+                                                <option value="daily">Daily</option>
+                                                <option value="weekly">Weekly</option>
+                                            </select>
+                                        </div>
+                                        <div id="modal-repeat-until-container" class="hidden">
+                                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Repeat Until<span class="text-red-500">*</span></label>
+                                            <input type="date" id="modal-repeat-until" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none shadow-sm text-slate-800 font-medium">
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Discount Fields -->
@@ -1308,31 +1324,13 @@
                 if (!res.ok) throw new Error(data.error || 'Failed to cancel booking');
                 
                 closeHostCancelModal();
-                if (typeof Swal !== 'undefined') {
-                    await Swal.fire({
-                        icon: 'success',
-                        title: 'Cancelled',
-                        text: 'Booking canceled and fully refunded successfully.',
-                        confirmButtonColor: '#10b981'
-                    });
-                } else {
-                    alert('Booking canceled and fully refunded successfully.');
-                }
+                await showAlertModal('Cancelled', 'Booking canceled and fully refunded successfully.');
                 loadHostData(); 
             } catch (err) {
                 btn.disabled = false;
                 document.getElementById('confirm-host-cancel-text').classList.remove('hidden');
                 document.getElementById('confirm-host-cancel-spinner').classList.add('hidden');
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Error canceling booking: ' + err.message,
-                        confirmButtonColor: '#ef4444'
-                    });
-                } else {
-                    alert('Error canceling booking: ' + err.message);
-                }
+                await showAlertModal('Oops...', 'Error canceling booking: ' + err.message, 'OK', true);
             }
         }
 
@@ -1429,7 +1427,25 @@
                     `<div class="text-sm font-bold text-slate-400">Offline</div>` :
                     `<div class="text-lg font-bold text-primary">$${booking.total_price}</div>`;
 
-                const showCancelHost = (!isManual && (booking.status === 'confirmed' || booking.status === 'pending'));
+                let isPast = false;
+                try {
+                    const parsedSlots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
+                    let earliestSlot = "23:59";
+                    if (Array.isArray(parsedSlots) && parsedSlots.length > 0) {
+                        earliestSlot = [...parsedSlots].sort()[0];
+                    }
+                    const [sh, sm] = earliestSlot.split(':');
+                    const bDateForCheck = new Date(`${booking.booking_date}T${(sh || '23').padStart(2, '0')}:${(sm || '59').padStart(2, '0')}:00`);
+                    if (bDateForCheck < new Date()) {
+                        isPast = true;
+                    }
+                } catch(e) {
+                    const today = new Date();
+                    today.setHours(0,0,0,0);
+                    if (new Date(booking.booking_date) < today) isPast = true;
+                }
+
+                const showCancelHost = (!isManual && !isPast && (booking.status === 'confirmed' || booking.status === 'pending'));
 
                 container.innerHTML += `
                     <div class="flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white'} rounded-2xl p-4 transition-custom flex-wrap gap-4">
@@ -1541,7 +1557,8 @@
                 if (!d.is_active) return;
                 
                 const amountText = d.discount_type === 'percentage' ? `${d.value}%` : `$${d.value}`;
-                const evTitle = `🔥 ${amountText} OFF`;
+                let evTitle = `🔥 ${amountText} OFF`;
+                if (d.is_last_minute) evTitle += " (Last-Minute)";
                 
                 const extProps = {
                     isDiscount: true,
@@ -1625,7 +1642,7 @@
                 },
                 slotMinTime: '06:00:00', // start day at 6 AM
                 slotMaxTime: '24:00:00', // end day at midnight
-                allDaySlot: false,
+                allDaySlot: true,
                 height: 'auto',
                 events: calendarEvents,
                 selectable: true,
@@ -1646,7 +1663,7 @@
                     } else if (info.event.extendedProps && info.event.extendedProps.isDiscount) {
                         openDiscountEditModal(info.event);
                     } else {
-                        alert(`Online Booking: ${info.event.title}\nStatus: ${info.event.extendedProps ? info.event.extendedProps.status : 'undefined'}`);
+                        showAlertModal('Booking Info', `Online Booking: ${info.event.title}\nStatus: ${info.event.extendedProps ? info.event.extendedProps.status : 'undefined'}`);
                     }
                 }
             });
@@ -1733,8 +1750,9 @@
                 }
                 loadHostData(); // reload purely to keep data sync
             } catch (error) {
-                alert(error.message);
-                revertFunc();
+                console.error("Error updating event time:", error);
+                await showAlertModal('Error', error.message, 'OK', true);
+                if (revertFunc) revertFunc();
             }
         }
 
@@ -1822,8 +1840,8 @@
         // --- CALENDAR MODAL LOGIC ---
         function openEventModal(info) {
             const facId = document.getElementById('calendar-facility-select').value;
-            if(!facId) {
-                alert("Please select a facility first.");
+            if (!facId) {
+                showAlertModal('Required', "Please select a facility first.", 'OK', true);
                 if(currentCalendar) currentCalendar.unselect();
                 return;
             }
@@ -1981,7 +1999,8 @@
             const blockType = document.querySelector('input[name="modal-block-type"]:checked')?.value || 'offline';
             
             if (editId && blockType === 'offline') {
-                if (!confirm("Are you sure you want to cancel this offline booking?")) return;
+                const confirmed = await showConfirmModal('Cancel Offline Booking', "Are you sure you want to cancel this offline booking?", 'Cancel Booking', 'Go Back', true);
+                if (!confirmed) return;
                 
                 const btn = document.getElementById('modal-cancel-btn');
                 const originalText = btn.innerHTML;
@@ -2012,7 +2031,7 @@
                     if (activeFacilityId && typeof initCalendar === 'function') initCalendar(activeFacilityId);
                     
                 } catch (err) {
-                    alert(err.message);
+                    await showAlertModal('Error', err.message, 'OK', true);
                 } finally {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
@@ -2104,11 +2123,9 @@
                         const data = await response.json();
                         throw new Error(data.error || 'Failed to save discount');
                     }
-                    closeEventModal();
-                    alert(editId ? "Discount updated successfully!" : "Discount added successfully for the selected time slots!");
-                    
-                    // Refresh Discount Tab securely
-                    if(typeof loadFacilityDiscounts === 'function') loadFacilityDiscounts();
+                    closeDiscountModal();
+                    loadFacilityDiscounts();
+                    await showAlertModal('Success', editId ? "Discount updated successfully!" : "Discount added successfully for the selected time slots!");
                     
                     // Force refresh Calendar if it resolves to current facility
                     const activeFacilityId = document.getElementById('calendar-facility-select').value;
@@ -2126,11 +2143,16 @@
                 return; // Early return for discount
             }
 
+            const repeatOptEl = document.getElementById('modal-repeat-option');
+            const repeatUntilEl = document.getElementById('modal-repeat-until');
+
             const payload = {
                 facility_id: parseInt(document.getElementById('modal-facility-id').value, 10),
                 booking_date: document.getElementById('modal-date-val').value,
                 time_slots: slots,
-                manual_notes: document.getElementById('modal-block-notes').value
+                manual_notes: document.getElementById('modal-block-notes').value,
+                repeat_option: repeatOptEl ? repeatOptEl.value : 'none',
+                repeat_until: (repeatOptEl && repeatOptEl.value !== 'none' && repeatUntilEl) ? repeatUntilEl.value : null
             };
 
             const editId = document.getElementById('modal-edit-booking-id') ? document.getElementById('modal-edit-booking-id').value : '';
@@ -2592,7 +2614,7 @@
                 if (rulesContainer.children.length > 1) {
                     row.remove();
                 } else {
-                    alert("You must have at least one pricing rule.");
+                    showAlertModal('Required', "You must have at least one pricing rule.", 'OK', true);
                 }
             });
             
@@ -2632,6 +2654,25 @@
             });
 
             rulesContainer.appendChild(row);
+        }
+
+        function gatherPricingRules() {
+            const rules = [];
+            const rows = document.querySelectorAll('.pricing-rule-row');
+            if (rows.length === 0) {
+                showAlertModal('Required', "You must have at least one pricing rule.", 'OK', true);
+                return null;
+            }
+            rows.forEach(row => {
+                const daySelect = row.querySelector('.rule-days');
+                rules.push({
+                    days: daySelect ? daySelect.value : 'everyday',
+                    start: row.querySelector('.rule-start').value,
+                    end: row.querySelector('.rule-end').value,
+                    price: parseInt(row.querySelector('.rule-price').value, 10)
+                });
+            });
+            return rules;
         }
 
         function getTimeMins(val) {
@@ -2941,12 +2982,13 @@
         async function processFiles(files) {
             if (files.length === 0) return;
             
-            if (window.localImagesArray.length + files.length > 10) {
-                alert("You can upload a maximum of 10 images.");
+            const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+            if (window.localImagesArray.length + validFiles.length > 10) {
+                showAlertModal('Limit Exceeded', "You can upload a maximum of 10 images.", 'OK', true);
                 return;
             }
 
-            const readPromises = files.map(file => {
+            const readPromises = validFiles.map(file => {
                 return new Promise((resolve) => {
                     const reader = new FileReader();
                     reader.onload = (ev) => resolve(ev.target.result);
@@ -3296,14 +3338,15 @@
         }
 
         async function deleteDiscount(id) {
-            if(!confirm("Are you sure you want to delete this discount?")) return;
+            const confirmed = await showConfirmModal('Delete Discount', "Are you sure you want to delete this discount?", 'Delete', 'Cancel', true);
+            if(!confirmed) return;
             const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
             try {
                 const res = await fetch(`${API_BASE_URL}/api/host/discounts/${id}`, { method: 'DELETE', credentials: 'include' });
                 if (res.ok) loadFacilityDiscounts();
-                else alert("Failed to delete discount.");
+                else await showAlertModal('Error', "Failed to delete discount.", 'OK', true);
             } catch(e) {
-                alert(e.message);
+                await showAlertModal('Error', e.message, 'OK', true);
             }
         }
     </script>
@@ -3339,6 +3382,7 @@
         </div>
     </div>
     
+    <script src="js/modals.js"></script>
     <script src="js/i18n.js"></script>
 </body>
 </html>

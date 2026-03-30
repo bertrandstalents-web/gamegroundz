@@ -374,9 +374,9 @@
             // Check auth and role
             fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' })
                 .then(res => res.json())
-                .then(data => {
+                .then(async data => {
                     if (!data.user || data.user.role !== 'admin') {
-                        alert("Unauthorized: You must be an admin to access this dashboard.");
+                        await showAlertModal("Unauthorized", "You must be an admin to access this dashboard.", 'OK', true);
                         window.location.href = 'index.html';
                         return;
                     }
@@ -782,7 +782,9 @@
         }
 
         async function updateFacilityStatus(id, newStatus) {
-            if(!confirm(`Are you sure you want to change this facility's status to '${newStatus}'?`)) return;
+            const confirmed = await showConfirmModal('Update Status', `Are you sure you want to change this facility's status to '${newStatus}'?`, 'Yes', 'Cancel', true);
+            if(!confirmed) return;
+            const API = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
             try {
                 const res = await fetch(`${API_BASE_URL}/api/admin/facilities/${id}/status`, {
                     method: 'PUT',
@@ -795,15 +797,17 @@
                     loadDashboardStats(); // refresh dashboard preview
                 } else {
                     const data = await res.json();
-                    alert(data.error || 'Failed to update status');
+                    await showAlertModal('Error', data.error || 'Failed to update status', 'OK', true);
                 }
             } catch(e) {
-                alert('Network error');
+                await showAlertModal('Error', 'Network error', 'OK', true);
             }
         }
 
         async function updateUserStatus(id, newStatus) {
-            if(!confirm(`Are you sure you want to change this user's status to '${newStatus}'?`)) return;
+            const confirmed = await showConfirmModal('Update Status', `Are you sure you want to change this user's status to '${newStatus}'?`, 'Yes', 'Cancel', true);
+            if(!confirmed) return;
+            const API = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
             try {
                 const res = await fetch(`${API_BASE_URL}/api/admin/users/${id}/status`, {
                     method: 'PUT',
@@ -815,10 +819,10 @@
                     loadAdminUsers();
                 } else {
                     const data = await res.json();
-                    alert(data.error || 'Failed to update status');
+                    await showAlertModal('Error', data.error || 'Failed to update status', 'OK', true);
                 }
-            } catch(e) {
-                alert('Network error');
+            } catch (err) {
+                await showAlertModal('Error', 'Network error', 'OK', true);
             }
         }
 
@@ -879,31 +883,34 @@
                     credentials: 'include'
                 });
                 if(res.ok) {
-                    e.target.reset();
                     loadGlobalDiscounts();
+                    document.getElementById('global-discount-form').reset();
                 } else {
                     const data = await res.json();
-                    alert(data.error || 'Setup failed');
+                    await showAlertModal('Error', data.error || 'Setup failed', 'OK', true);
                 }
-            } catch (e) {
-                alert('Network error');
+            } catch (err) {
+                await showAlertModal('Error', 'Network error', 'OK', true);
             }
         });
 
         async function deleteGlobalDiscount(id) {
-            if(!confirm('Delete this global discount?')) return;
+            const confirmed = await showConfirmModal('Delete Discount', 'Delete this global discount?', 'Delete', 'Cancel', true);
+            if(!confirmed) return;
+            const API = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
             try {
-                const res = await fetch(`${API_BASE_URL}/api/admin/discounts/${id}`, { method: 'DELETE', credentials: 'include' });
+                const res = await fetch(`${API}/api/admin/global-discounts/${id}`, {method: 'DELETE', credentials: 'include'});
                 if(res.ok) loadGlobalDiscounts();
-                else alert('Failed to delete discount');
+                else await showAlertModal('Error', 'Failed to delete discount', 'OK', true);
             } catch(e) {
-                alert('Network error');
+                await showAlertModal('Error', 'Network error', 'OK', true);
             }
         }
 
         // Init on load
         window.addEventListener('DOMContentLoaded', initAdmin);
     </script>
+    <script src="js/modals.js"></script>
     <script src="js/i18n.js"></script>
 </body>
 </html>

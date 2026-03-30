@@ -279,7 +279,7 @@
                         confirmButtonColor: '#10b981'
                     });
                 } else {
-                    alert('Booking canceled and fully refunded successfully.');
+                    await showAlertModal('Cancelled', 'Booking canceled and fully refunded successfully.');
                 }
                 location.reload(); 
             } catch (err) {
@@ -295,7 +295,7 @@
                         confirmButtonColor: '#ef4444'
                     });
                 } else {
-                    alert('Error canceling booking: ' + err.message);
+                    await showAlertModal('Oops...', 'Error canceling booking: ' + err.message, 'OK', true);
                 }
             }
         }
@@ -404,7 +404,8 @@
         }
         
         async function unsaveFacility(facilityId) {
-            if (!confirm('Remove this facility from your saved surfaces?')) return;
+            const confirmed = await showConfirmModal('Remove Saved Surface', 'Remove this facility from your saved surfaces?', 'Remove', 'Cancel', true);
+            if (!confirmed) return;
             const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
             try {
                 const res = await fetch(`${API_BASE_URL}/api/saved-facilities/${facilityId}`, { method: 'DELETE', credentials: 'include' });
@@ -686,7 +687,8 @@
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', async (e) => {
                     e.preventDefault();
-                    if(confirm("Are you sure you want to log out?")) {
+                    const confirmed = await showConfirmModal('Log out', 'Are you sure you want to log out?', 'Log out', 'Cancel', true);
+                    if(confirmed) {
                         const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
                         await fetch(`${API_BASE_URL}/api/auth/logout`, {method: 'POST', credentials: 'omit'});
                         localStorage.removeItem('user');
@@ -774,6 +776,7 @@
         // I will remove this new DOMContentLoaded block as it conflicts and introduces an undefined function.
         // The modal's radio button logic is fine to keep in a separate script block.
     </script>
+    <script src="js/modals.js"></script>
     <script src="js/i18n.js"></script>
 </body>
 </html>

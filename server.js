@@ -657,10 +657,30 @@ app.post('/api/host/block-time', (req, res) => {
         return res.status(401).json({ error: "Unauthorized" });
     }
     
-    const { facility_id, booking_date, time_slots, manual_notes } = req.body;
+    const { facility_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until } = req.body;
     
     if (!facility_id || !booking_date || !time_slots || !manual_notes) {
         return res.status(400).json({ error: "Missing required fields" });
+    }
+    
+    // Generate dates
+    let datesToBook = [booking_date];
+    if (repeat_option && repeat_option !== 'none' && repeat_until) {
+        const startDate = new Date(booking_date + 'T00:00:00');
+        const endDate = new Date(repeat_until + 'T23:59:59');
+        let currentDate = new Date(startDate);
+        currentDate.setDate(currentDate.getDate() + 1); // skip the first date since we already added it
+        
+        while (currentDate <= endDate) {
+            if (repeat_option === 'daily') {
+                datesToBook.push(currentDate.toISOString().split('T')[0]);
+            } else if (repeat_option === 'weekly') {
+                if (currentDate.getDay() === startDate.getDay()) {
+                    datesToBook.push(currentDate.toISOString().split('T')[0]);
+                }
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
     }
     
     const sql = `
@@ -668,10 +688,21 @@ app.post('/api/host/block-time', (req, res) => {
         VALUES (?, ?, ?, 0, 'confirmed', 'manual', ?)
     `;
     
-    db.run(sql, [facility_id, booking_date, JSON.stringify(time_slots), manual_notes], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.status(201).json({ message: "Time blocked successfully", id: this.lastID });
+    const insertBooking = (dateObj) => new Promise((resolve, reject) => {
+        db.run(sql, [facility_id, dateObj, JSON.stringify(time_slots), manual_notes], function(err) {
+            if (err) reject(err);
+            else resolve();
+        });
     });
+
+    Promise.all(datesToBook.map(dateStr => insertBooking(dateStr)))
+        .then(() => {
+            res.status(201).json({ message: `Successfully created ${datesToBook.length} booking(s)` });
+        })
+        .catch(err => {
+            console.error("Booking insert error:", err);
+            res.status(500).json({ error: "Failed to create some or all bookings" });
+        });
 });
 
 // PUT (Edit) a booking
@@ -848,6 +879,28 @@ app.post('/api/host/bookings/:id/cancel', async (req, res) => {
         if (err || !booking) return res.status(403).json({ error: "Access denied or booking not found" });
 
         try {
+            // Check if booking is in the past
+            let isPast = false;
+            try {
+                let earliestSlot = "23:59";
+                const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
+                if (slots && slots.length > 0) earliestSlot = [...slots].sort()[0];
+                const [sh, sm] = earliestSlot.split(':');
+                const bDateStr = `${booking.booking_date}T${(sh || '23').padStart(2, '0')}:${(sm || '59').padStart(2, '0')}:00`;
+                const bDate = new Date(bDateStr);
+                const serverNow = new Date();
+                const tzStr = serverNow.toLocaleString('en-US', { timeZone: 'America/New_York' });
+                if (bDate < new Date(tzStr)) isPast = true;
+            } catch (e) {
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                if (new Date(booking.booking_date) < today) isPast = true;
+            }
+
+            if (isPast) {
+                return res.status(400).json({ error: "Cannot cancel a booking that has already past." });
+            }
+
             // Process Refund
             if (booking.stripe_session_id) {
                 const session = await stripe.checkout.sessions.retrieve(booking.stripe_session_id);

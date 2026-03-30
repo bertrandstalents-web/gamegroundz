@@ -1,2 +1,19 @@
+[dotenv@17.3.1] injecting env (4) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+(node:31484) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
 Server running on http://localhost:3000
-Connected to the SQLite database.
+Connected to PostgreSQL database.
+Email service configured with Ethereal test account.
+Review request email sent: <f18a2a90-9d73-78f3-3d5a-0ae79a6b6e5b@gamegroundz.com>
+Player email sent: <f263180f-df67-bec4-6118-256eb62f1de8@gamegroundz.com>
+Host email sent: <dea2d93d-a86b-0656-fc8f-bf59d3182f00@gamegroundz.com>
+Player email sent: <3d7539e2-e636-54b5-2c46-843105c91e9a@gamegroundz.com>
+Host email sent: <ebe176fe-b2d2-53c9-fb63-4f7d86bf6e44@gamegroundz.com>
