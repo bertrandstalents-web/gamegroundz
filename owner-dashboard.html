@@ -1630,29 +1630,32 @@
                     // Ongoing / recurring discount (no specific start_date/end_date)
                     if (d.recurring_day !== null && d.recurring_day !== undefined && d.recurring_day !== '') {
                          // Specific day of the week
-                         calendarEvents.push({
+                         const evt = {
                             id: `disc-${d.id}`,
                             title: evTitle,
-                            daysOfWeek: [d.recurring_day], // 0=Sunday
-                            startTime: d.start_time ? `${d.start_time}:00` : null,
-                            endTime: d.end_time ? `${d.end_time}:00` : null,
+                            daysOfWeek: [parseInt(d.recurring_day, 10)], // 0=Sunday (must be int)
                             className: 'g-event-discount',
                             editable: false,
                             allDay: (!d.start_time && !d.end_time),
                             extendedProps: extProps
-                         });
+                         };
+                         if (d.start_time) evt.startTime = `${d.start_time}:00`;
+                         if (d.end_time) evt.endTime = `${d.end_time}:00`;
+                         calendarEvents.push(evt);
                     } else {
                          // Applies every day indefinitely
-                         calendarEvents.push({
+                         const evt = {
                             id: `disc-${d.id}`,
                             title: evTitle,
-                            startTime: d.start_time ? `${d.start_time}:00` : null,
-                            endTime: d.end_time ? `${d.end_time}:00` : null,
-                            allDay: (!d.start_time && !d.end_time),
+                            daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // Repeat every day
                             className: 'g-event-discount',
                             editable: false,
+                            allDay: (!d.start_time && !d.end_time),
                             extendedProps: extProps
-                         });
+                         };
+                         if (d.start_time) evt.startTime = `${d.start_time}:00`;
+                         if (d.end_time) evt.endTime = `${d.end_time}:00`;
+                         calendarEvents.push(evt);
                     }
                 }
             });
