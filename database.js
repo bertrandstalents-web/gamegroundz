@@ -115,7 +115,8 @@ async function initDatabase() {
             lat REAL,
             lng REAL,
             has_processing_fee INTEGER DEFAULT 1,
-            processing_fee_amount REAL DEFAULT 15.00
+            processing_fee_amount REAL DEFAULT 15.00,
+            co_host_emails TEXT DEFAULT '[]'
         )`);
 
         // Facility Images Table
@@ -138,6 +139,10 @@ async function initDatabase() {
         try {
             await client.query(`ALTER TABLE facilities ADD COLUMN has_processing_fee INTEGER DEFAULT 1`);
             await client.query(`ALTER TABLE facilities ADD COLUMN processing_fee_amount REAL DEFAULT 15.00`);
+        } catch(e) {}
+
+        try {
+            await client.query(`ALTER TABLE facilities ADD COLUMN co_host_emails TEXT DEFAULT '[]'`);
         } catch(e) {}
 
         // Discounts Table

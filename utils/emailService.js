@@ -416,6 +416,40 @@ async function sendCancellationEmail(bookingDetails, cancelledBy) {
     }
 }
 
+async function sendCoHostInvitationEmail(toEmail, facilityName, inviterName) {
+    if (!transporter) return;
+
+    try {
+        const dashboardLink = `${process.env.APP_URL || 'http://localhost:3000'}/owner-dashboard.html`;
+
+        const bodyContent = `
+            <h2>You've been invited as a Co-Host!</h2>
+            <p>Hi there,</p>
+            <p><strong>${inviterName}</strong> has invited you to help manage the dashboard for <strong>${facilityName}</strong> on GameGroundz.</p>
+            <p>If you already have an account with this email, simply log in to access the facility dashboard.</p>
+            <p>If you don't have an account yet, please sign up and you'll automatically gain access as a co-host!</p>
+            
+            <center>
+                <a href="${dashboardLink}" class="btn">Go to Dashboard</a>
+            </center>
+        `;
+
+        const html = getBaseEmailTemplate('Co-Host Invitation', 'You have been invited to manage a facility on GameGroundz.', bodyContent);
+
+        let info = await transporter.sendMail({
+            from: '"GameGroundz Notifications" <support@gamegroundz.com>',
+            to: toEmail,
+            subject: `Invitation: Co-Host for ${facilityName}`,
+            html: html,
+        });
+
+        console.log("Co-host invitation email sent: %s", info.messageId);
+        if (info.messageId.includes('ethereal')) console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    } catch (error) {
+        console.error("Error sending co-host invitation email:", error);
+    }
+}
+
 module.exports = {
     sendPlayerConfirmation,
     sendHostConfirmation,
@@ -423,5 +457,6 @@ module.exports = {
     sendPasswordResetEmail,
     sendWelcomeEmail,
     sendPasswordChangedConfirmation,
-    sendCancellationEmail
+    sendCancellationEmail,
+    sendCoHostInvitationEmail
 };

@@ -267,7 +267,7 @@
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
                                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Repeat</label>
-                                            <select id="modal-repeat-option" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white transition-custom text-slate-800 font-medium" onchange="document.getElementById('modal-repeat-until-container').classList.toggle('hidden', this.value === 'none'); if(this.value !== 'none') document.getElementById('modal-repeat-until').required = true; else document.getElementById('modal-repeat-until').required = false;">
+                                            <select id="modal-repeat-option" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white transition-custom text-slate-800 font-medium" onchange="const isNone = this.value === 'none'; const isWeekly = this.value === 'weekly'; document.getElementById('modal-repeat-until-container').classList.toggle('hidden', isNone); document.getElementById('modal-repeat-until').required = !isNone; document.getElementById('modal-repeat-days-container').classList.toggle('hidden', !isWeekly);">
                                                 <option value="none">Does not repeat</option>
                                                 <option value="daily">Daily</option>
                                                 <option value="weekly">Weekly</option>
@@ -276,6 +276,41 @@
                                         <div id="modal-repeat-until-container" class="hidden">
                                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Repeat Until<span class="text-red-500">*</span></label>
                                             <input type="date" id="modal-repeat-until" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none shadow-sm text-slate-800 font-medium">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Days of the week (Only shown if 'Weekly' is selected) -->
+                                    <div id="modal-repeat-days-container" class="hidden">
+                                        <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Repeat On</label>
+                                        <div class="flex flex-wrap gap-2">
+                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
+                                                <input type="checkbox" name="repeat_day" value="0" class="sr-only">
+                                                <span class="text-sm font-semibold">Sun</span>
+                                            </label>
+                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
+                                                <input type="checkbox" name="repeat_day" value="1" class="sr-only">
+                                                <span class="text-sm font-semibold">Mon</span>
+                                            </label>
+                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
+                                                <input type="checkbox" name="repeat_day" value="2" class="sr-only">
+                                                <span class="text-sm font-semibold">Tue</span>
+                                            </label>
+                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
+                                                <input type="checkbox" name="repeat_day" value="3" class="sr-only">
+                                                <span class="text-sm font-semibold">Wed</span>
+                                            </label>
+                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
+                                                <input type="checkbox" name="repeat_day" value="4" class="sr-only">
+                                                <span class="text-sm font-semibold">Thu</span>
+                                            </label>
+                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
+                                                <input type="checkbox" name="repeat_day" value="5" class="sr-only">
+                                                <span class="text-sm font-semibold">Fri</span>
+                                            </label>
+                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
+                                                <input type="checkbox" name="repeat_day" value="6" class="sr-only">
+                                                <span class="text-sm font-semibold">Sat</span>
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
@@ -849,6 +884,26 @@
                     </div>
                 </div>
 
+                
+                <!-- Co-Hosts -->
+                <div id="co-hosts-section" class="hidden mb-8">
+                    <h2 class="text-xl font-bold text-dark mb-2 border-b border-slate-100 pb-2">8. Co-Hosts (Team)</h2>
+                    <p class="text-xs text-slate-500 mb-4">Invite team members to help manage this facility. They will have full access to this facility's dashboard.</p>
+                    
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                        <div id="co-hosts-list" class="space-y-3 mb-4">
+                            <p class="text-sm text-slate-500 italic">No co-hosts added yet.</p>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <input type="email" id="new-co-host-email" class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white" placeholder="Colleague's email address">
+                            <button type="button" onclick="addCoHost()" class="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg font-bold transition-custom flex items-center">
+                                <i class="fa-solid fa-user-plus mr-2"></i> Invite
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Media -->
                 <div>
                     <h2 class="text-xl font-bold text-dark mb-2 border-b border-slate-100 pb-2">6. Photos</h2>
@@ -1123,6 +1178,7 @@
 
             // Clear edit ID and form
             const idField = document.getElementById('edit-facility-id');
+            const coHostsSec = document.getElementById('co-hosts-section'); if(coHostsSec) coHostsSec.classList.add('hidden');
             if (idField) idField.value = '';
             document.getElementById('add-facility-form').reset();
             
@@ -1189,6 +1245,7 @@
 
             // Populate text/select fields
             document.getElementById('fac-name').value = facility.name || '';
+            if (typeof loadCoHosts === 'function') loadCoHosts(facility.id);
             document.getElementById('fac-subtitle').value = facility.subtitle || '';
             document.getElementById('fac-description').value = facility.description || '';
             document.getElementById('fac-locker-rooms').textContent = facility.locker_rooms || 0;
@@ -2273,13 +2330,17 @@
             const repeatOptEl = document.getElementById('modal-repeat-option');
             const repeatUntilEl = document.getElementById('modal-repeat-until');
 
+            // Collect selected days mapping (0=Sun...6=Sat)
+            const repeatDays = Array.from(document.querySelectorAll('input[name="repeat_day"]:checked')).map(cb => parseInt(cb.value, 10));
+
             const payload = {
                 facility_id: parseInt(document.getElementById('modal-facility-id').value, 10),
                 booking_date: document.getElementById('modal-date-val').value,
                 time_slots: slots,
                 manual_notes: document.getElementById('modal-block-notes').value,
                 repeat_option: repeatOptEl ? repeatOptEl.value : 'none',
-                repeat_until: (repeatOptEl && repeatOptEl.value !== 'none' && repeatUntilEl) ? repeatUntilEl.value : null
+                repeat_until: (repeatOptEl && repeatOptEl.value !== 'none' && repeatUntilEl) ? repeatUntilEl.value : null,
+                repeat_days: repeatDays
             };
 
             const editId = document.getElementById('modal-edit-booking-id') ? document.getElementById('modal-edit-booking-id').value : '';
@@ -3579,5 +3640,100 @@
     
     <script src="js/modals.js"></script>
     <script src="js/i18n.js"></script>
+    <script>
+        async function loadCoHosts(facilityId) {
+            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            const sec = document.getElementById('co-hosts-section');
+            if(sec) sec.classList.remove('hidden');
+            const list = document.getElementById('co-hosts-list');
+            if(!list) return;
+            list.innerHTML = '<p class="text-sm text-slate-500 italic">Loading co-hosts...</p>';
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/host/facilities/${facilityId}/co-hosts`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    renderCoHosts(data.emails || []);
+                }
+            } catch(e) {
+                list.innerHTML = '<p class="text-sm text-red-500 italic">Error loading co-hosts.</p>';
+            }
+        }
+
+        function renderCoHosts(emails) {
+            const list = document.getElementById('co-hosts-list');
+            if(!list) return;
+            if (!emails || emails.length === 0) {
+                list.innerHTML = '<p class="text-sm text-slate-500 italic">No co-hosts added yet.</p>';
+                return;
+            }
+            list.innerHTML = emails.map(email => `
+                <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 last:pb-0">
+                    <span class="text-sm font-semibold text-slate-700">${email}</span>
+                    <button type="button" onclick="removeCoHost('${email}')" class="text-red-500 hover:text-red-700 transition">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function addCoHost() {
+            const emailInput = document.getElementById('new-co-host-email');
+            const email = emailInput.value.trim();
+            if (!email) return;
+            
+            const facilityId = document.getElementById('edit-facility-id') ? document.getElementById('edit-facility-id').value : null;
+            if (!facilityId) return;
+            
+            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/host/facilities/${facilityId}/co-hosts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email })
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    emailInput.value = '';
+                    renderCoHosts(data.emails);
+                    if(typeof showAlertModal === 'function') showAlertModal('Success', 'Co-host invited successfully!');
+                    else alert('Co-host invited successfully!');
+                } else {
+                    const errData = await res.json();
+                    if(typeof showAlertModal === 'function') showAlertModal('Error', errData.error || 'Failed to add co-host');
+                    else alert(errData.error || 'Failed to add co-host');
+                }
+            } catch (e) {
+                if(typeof showAlertModal === 'function') showAlertModal('Error', 'Communication error. Please try again.');
+                else alert('Communication error');
+            }
+        }
+
+        async function removeCoHost(email) {
+            const facilityId = document.getElementById('edit-facility-id') ? document.getElementById('edit-facility-id').value : null;
+            if (!facilityId) return;
+            
+            if(!confirm(`Are you sure you want to remove ${email} as a co-host?`)) return;
+            
+            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/host/facilities/${facilityId}/co-hosts/${encodeURIComponent(email)}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    renderCoHosts(data.emails);
+                }
+            } catch (e) {
+                if(typeof showAlertModal === 'function') showAlertModal('Error', 'Failed to remove co-host');
+                else alert('Failed to remove co-host');
+            }
+        }
+    </script>
 </body>
 </html>

@@ -235,6 +235,7 @@ app.post('/api/users/signup', async (req, res) => {
                         req.session.userId = this.lastID;
                         req.session.userRole = userRole;
                         req.session.userName = name;
+                        req.session.email = email;
                         
                         res.status(201).json({ 
                             message: "User registered successfully", 
@@ -273,6 +274,7 @@ app.post('/api/auth/login', (req, res) => {
         req.session.userId = user.id;
         req.session.userRole = user.role;
         req.session.userName = user.name;
+        req.session.email = user.email;
 
         res.json({ 
             message: "Logged in successfully", 
@@ -416,6 +418,7 @@ app.put('/api/users/profile', async (req, res) => {
                         if (err) return res.status(500).json({ error: "Failed to update profile" });
                         
                         req.session.userName = name;
+                        req.session.email = email;
                         res.status(200).json({ message: "Profile updated successfully" });
                     }
                 );
@@ -688,8 +691,8 @@ app.put('/api/host/facilities/:id', (req, res) => {
             capacity = ?, size_info = ?, amenities = ?, type = ?, environment = ?, 
             base_price = ?, pricing_rules = ?, location = ?, lat = COALESCE(?, lat), lng = COALESCE(?, lng), image_url = ?, 
             is_instant_book = ?, operating_hours = ?, listing_status = ?, advance_booking_days = ?, has_processing_fee = ?, processing_fee_amount = ? 
-         WHERE id = ? AND host_id = ?`,
-        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00, facilityId, req.session.userId],
+         WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)`,
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00, facilityId, req.session.userId, `%"${req.session.email}"%` ],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
@@ -702,13 +705,73 @@ app.put('/api/host/facilities/:id', (req, res) => {
     );
 });
 
+// POST a co-host email
+app.post('/api/host/facilities/:id/co-hosts', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+    const facilityId = req.params.id;
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email is required" });
+    const targetEmail = email.trim().toLowerCase();
+
+    db.get("SELECT name, co_host_emails FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", [facilityId, req.session.userId, `%"${req.session.email}"%`], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: "Facility not found or unauthorized" });
+
+        let emails = [];
+        try { emails = JSON.parse(row.co_host_emails || '[]'); } catch(e){}
+        if (!emails.includes(targetEmail)) {
+            emails.push(targetEmail);
+            db.run("UPDATE facilities SET co_host_emails = ? WHERE id = ?", [JSON.stringify(emails), facilityId], (updateErr) => {
+                if (updateErr) return res.status(500).json({ error: "Could not add co-host" });
+                emailService.sendCoHostInvitationEmail(targetEmail, row.name, req.session.userName);
+                res.json({ message: "Co-host added successfully", emails });
+            });
+        } else {
+            res.json({ message: "Co-host already exists", emails });
+        }
+    });
+});
+
+// GET co-hosts
+app.get('/api/host/facilities/:id/co-hosts', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+    const facilityId = req.params.id;
+    db.get("SELECT co_host_emails FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", [facilityId, req.session.userId, `%"${req.session.email}"%`], (err, row) => {
+        if (err || !row) return res.status(404).json({ error: "Not found" });
+        let emails = [];
+        try { emails = JSON.parse(row.co_host_emails || '[]'); } catch(e){}
+        res.json({ emails });
+    });
+});
+
+// DELETE co-host
+app.delete('/api/host/facilities/:id/co-hosts/:email', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+    const facilityId = req.params.id;
+    const emailToRemove = req.params.email.trim().toLowerCase();
+
+    db.get("SELECT co_host_emails FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", [facilityId, req.session.userId, `%"${req.session.email}"%`], (err, row) => {
+        if (err || !row) return res.status(404).json({ error: "Not found" });
+        
+        let emails = [];
+        try { emails = JSON.parse(row.co_host_emails || '[]'); } catch(e){}
+        
+        emails = emails.filter(e => e !== emailToRemove);
+        
+        db.run("UPDATE facilities SET co_host_emails = ? WHERE id = ?", [JSON.stringify(emails), facilityId], (updateErr) => {
+            if (updateErr) return res.status(500).json({ error: "Could not remove co-host" });
+            res.json({ message: "Co-host removed", emails });
+        });
+    });
+});
+
 // GET all facilities for the logged-in host
 app.get('/api/host/facilities', (req, res) => {
     if (!req.session.userId) {
         return res.status(401).json({ error: "Unauthorized" });
     }
     
-    db.all("SELECT * FROM facilities WHERE host_id = ? ORDER BY id DESC", [req.session.userId], (err, rows) => {
+    db.all("SELECT * FROM facilities WHERE host_id = ? OR co_host_emails LIKE ? ORDER BY id DESC", [req.session.userId, `%"${req.session.email}"%`], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -722,10 +785,10 @@ app.get('/api/host/notifications/unread-count', (req, res) => {
         SELECT COUNT(*) as count 
         FROM bookings b
         JOIN facilities f ON b.facility_id = f.id
-        WHERE f.host_id = ? AND b.is_read = 0
+        WHERE (f.host_id = ? OR f.co_host_emails LIKE ?) AND b.is_read = 0
     `;
     
-    db.get(query, [req.session.userId], (err, row) => {
+    db.get(query, [req.session.userId, `%"${req.session.email}"%`], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ unread_count: row.count || 0 });
     });
@@ -741,11 +804,11 @@ app.post('/api/host/notifications/mark-read', (req, res) => {
         WHERE id IN (
             SELECT b.id FROM bookings b 
             JOIN facilities f ON b.facility_id = f.id 
-            WHERE f.host_id = ? AND b.is_read = 0
+            WHERE (f.host_id = ? OR f.co_host_emails LIKE ?) AND b.is_read = 0
         )
     `;
     
-    db.run(query, [req.session.userId], function(err) {
+    db.run(query, [req.session.userId, `%"${req.session.email}"%`], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ message: "Notifications marked as read" });
     });
@@ -762,11 +825,11 @@ app.get('/api/host/bookings', (req, res) => {
         FROM bookings b
         JOIN facilities f ON b.facility_id = f.id
         LEFT JOIN users u ON b.user_id = u.id
-        WHERE f.host_id = ?
+        WHERE (f.host_id = ? OR f.co_host_emails LIKE ?)
         ORDER BY b.booking_date ASC, b.time_slots ASC
     `;
     
-    db.all(query, [req.session.userId], (err, rows) => {
+    db.all(query, [req.session.userId, `%"${req.session.email}"%`], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -778,32 +841,38 @@ app.post('/api/host/block-time', (req, res) => {
         return res.status(401).json({ error: "Unauthorized" });
     }
     
-    const { facility_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until } = req.body;
+    const { facility_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days } = req.body;
     
     if (!facility_id || !booking_date || !time_slots || !manual_notes) {
         return res.status(400).json({ error: "Missing required fields" });
     }
     
     // Generate dates
-    let datesToBook = [booking_date];
+    let datesToBook = [];
     let recurringGroupId = null;
+    
     if (repeat_option && repeat_option !== 'none' && repeat_until) {
         recurringGroupId = 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
         const startDate = new Date(booking_date + 'T00:00:00');
         const endDate = new Date(repeat_until + 'T23:59:59');
         let currentDate = new Date(startDate);
-        currentDate.setDate(currentDate.getDate() + 1); // skip the first date since we already added it
         
+        // Ensure starting day is correctly bounded
+        const validDays = Array.isArray(repeat_days) && repeat_days.length > 0 ? repeat_days : [startDate.getDay()];
+
         while (currentDate <= endDate) {
             if (repeat_option === 'daily') {
                 datesToBook.push(currentDate.toISOString().split('T')[0]);
             } else if (repeat_option === 'weekly') {
-                if (currentDate.getDay() === startDate.getDay()) {
+                if (validDays.includes(currentDate.getDay())) {
                     datesToBook.push(currentDate.toISOString().split('T')[0]);
                 }
             }
             currentDate.setDate(currentDate.getDate() + 1);
         }
+    } else {
+        // No repeat, just book the single date
+        datesToBook.push(booking_date);
     }
     
     const sql = `
@@ -835,7 +904,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
     }
 
     const bookingId = req.params.id;
-    const { booking_date, time_slots, manual_notes } = req.body;
+    const { booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days } = req.body;
 
     if (!booking_date || !time_slots) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -843,22 +912,71 @@ app.put('/api/host/bookings/:id', (req, res) => {
 
     // Verify ownership via facilities table
     db.get(
-        `SELECT b.id FROM bookings b 
+        `SELECT b.id, b.facility_id, b.recurring_group_id FROM bookings b 
          JOIN facilities f ON b.facility_id = f.id 
-         WHERE b.id = ? AND f.host_id = ?`,
-        [bookingId, req.session.userId],
+         WHERE b.id = ? AND (f.host_id = ? OR f.co_host_emails LIKE ?)`,
+        [bookingId, req.session.userId, `%"${req.session.email}"%`],
         (err, row) => {
             if (err || !row) return res.status(403).json({ error: "Access denied or booking not found" });
 
+            let recurringGroupId = row.recurring_group_id;
+            let datesToBook = [];
+            
+            if (repeat_option && repeat_option !== 'none' && repeat_until) {
+                if (!recurringGroupId) {
+                    recurringGroupId = 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+                }
+                const startDate = new Date(booking_date + 'T00:00:00');
+                const endDate = new Date(repeat_until + 'T23:59:59');
+                let currentDate = new Date(startDate);
+                
+                const validDays = Array.isArray(repeat_days) && repeat_days.length > 0 ? repeat_days : [startDate.getDay()];
+
+                while (currentDate <= endDate) {
+                    const dateStr = currentDate.toISOString().split('T')[0];
+                    if (dateStr !== booking_date) {
+                        if (repeat_option === 'daily') {
+                            datesToBook.push(dateStr);
+                        } else if (repeat_option === 'weekly') {
+                            if (validDays.includes(currentDate.getDay())) {
+                                datesToBook.push(dateStr);
+                            }
+                        }
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            }
+
             const sql = `
                 UPDATE bookings 
-                SET booking_date = ?, time_slots = ?, manual_notes = COALESCE(?, manual_notes)
+                SET booking_date = ?, time_slots = ?, manual_notes = COALESCE(?, manual_notes), recurring_group_id = COALESCE(?, recurring_group_id)
                 WHERE id = ?
             `;
 
-            db.run(sql, [booking_date, JSON.stringify(time_slots), manual_notes, bookingId], function(err) {
+            db.run(sql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, bookingId], function(err) {
                 if (err) return res.status(500).json({ error: err.message });
-                res.status(200).json({ message: "Booking updated successfully" });
+                
+                if (datesToBook.length > 0) {
+                    const insertSql = `
+                        INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id)
+                        VALUES (?, ?, ?, 0, 'confirmed', 'manual', ?, ?)
+                    `;
+                    const insertBooking = (dateStr) => new Promise((resolve, reject) => {
+                        db.run(insertSql, [row.facility_id, dateStr, JSON.stringify(time_slots), manual_notes, recurringGroupId], function(insertErr) {
+                            if (insertErr) reject(insertErr);
+                            else resolve();
+                        });
+                    });
+
+                    Promise.all(datesToBook.map(d => insertBooking(d)))
+                        .then(() => res.status(200).json({ message: "Booking updated and series extended successfully" }))
+                        .catch(e => {
+                            console.error("Booking insert error:", e);
+                            res.status(500).json({ error: "Failed to create some repeating bookings" });
+                        });
+                } else {
+                    res.status(200).json({ message: "Booking updated successfully" });
+                }
             });
         }
     );
@@ -926,7 +1044,9 @@ app.get('/api/bookings/receipt/:id', (req, res) => {
         if (!row) return res.status(404).json({ error: "Booking not found" });
 
         // Ensure the requester is either the player, the host, or an admin
-        if (row.user_id !== req.session.userId && row.host_id !== req.session.userId && req.session.userRole !== 'admin') {
+        let isCoHost = false;
+        try { if (row.co_host_emails && JSON.parse(row.co_host_emails).includes(req.session.email)) isCoHost = true; } catch(e){}
+        if (row.user_id !== req.session.userId && row.host_id !== req.session.userId && !isCoHost && req.session.userRole !== 'admin') {
             return res.status(403).json({ error: "Forbidden: You don't have access to this receipt" });
         }
 
@@ -999,13 +1119,13 @@ app.post('/api/host/bookings/:id/cancel', async (req, res) => {
     const { cancel_scope } = req.body;
 
     const query = `
-        SELECT b.*, f.host_id 
+        SELECT b.*, f.host_id, f.co_host_emails 
         FROM bookings b
         JOIN facilities f ON b.facility_id = f.id
-        WHERE b.id = ? AND f.host_id = ?
+        WHERE b.id = ? AND (f.host_id = ? OR f.co_host_emails LIKE ?)
     `;
 
-    db.get(query, [bookingId, req.session.userId], async (err, booking) => {
+    db.get(query, [bookingId, req.session.userId, `%"${req.session.email}"%`], async (err, booking) => {
         if (err || !booking) return res.status(403).json({ error: "Access denied or booking not found" });
 
         try {
@@ -1080,7 +1200,7 @@ app.get('/api/host/discounts/:facility_id', (req, res) => {
     const facilityId = req.params.facility_id;
     
     // Verify host owns this facility
-    db.get("SELECT id FROM facilities WHERE id = ? AND host_id = ?", [facilityId, req.session.userId], (err, row) => {
+    db.get("SELECT id FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", [facilityId, req.session.userId, `%"${req.session.email}"%`], (err, row) => {
         if (err || !row) return res.status(403).json({ error: "Access denied" });
 
         db.all("SELECT * FROM discounts WHERE facility_id = ? ORDER BY id DESC", [facilityId], (err, rows) => {
@@ -1100,7 +1220,7 @@ app.post('/api/host/discounts', (req, res) => {
         return res.status(400).json({ error: "Missing required fields" });
     }
 
-    db.get("SELECT id FROM facilities WHERE id = ? AND host_id = ?", [facility_id, req.session.userId], (err, row) => {
+    db.get("SELECT id FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", [facility_id, req.session.userId, `%"${req.session.email}"%`], (err, row) => {
         if (err || !row) return res.status(403).json({ error: "Access denied" });
 
         db.run(
@@ -1130,10 +1250,10 @@ app.put('/api/host/discounts/:id', (req, res) => {
     const stmt = `
         SELECT d.id FROM discounts d 
         JOIN facilities f ON d.facility_id = f.id 
-        WHERE d.id = ? AND f.host_id = ?
+        WHERE d.id = ? AND (f.host_id = ? OR f.co_host_emails LIKE ?)
     `;
 
-    db.get(stmt, [discountId, req.session.userId], (err, row) => {
+    db.get(stmt, [discountId, req.session.userId, `%"${req.session.email}"%`], (err, row) => {
         if (err || !row) return res.status(403).json({ error: "Access denied or discount not found" });
 
         db.run(
@@ -1158,8 +1278,8 @@ app.delete('/api/host/discounts/:id', (req, res) => {
     // Verify ownership by joining facilities
     db.get(`SELECT d.id FROM discounts d 
             JOIN facilities f ON d.facility_id = f.id 
-            WHERE d.id = ? AND f.host_id = ?`, 
-            [discountId, req.session.userId], (err, row) => {
+            WHERE d.id = ? AND (f.host_id = ? OR f.co_host_emails LIKE ?)`, 
+            [discountId, req.session.userId, `%"${req.session.email}"%`], (err, row) => {
         
         if (err || !row) return res.status(403).json({ error: "Access denied" });
 
