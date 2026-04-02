@@ -3850,7 +3850,22 @@
 
         async function archiveHostBooking(id) {
             const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
-            if(!confirm("Are you sure you want to archive this booking? It will be removed from your view.")) return;
+            
+            let isConfirmed = false;
+            if (typeof showConfirmModal === 'function') {
+                // Set isDanger to true because it involves removing something from view (optional, but it fits the theme of "Archive" being a definitive action)
+                // Actually, let's keep it false (or not pass the 5th arg and let it default) so it matches the requested clean look, but using Archive.
+                isConfirmed = await showConfirmModal(
+                    'Archive Booking', 
+                    'Are you sure you want to archive this booking? It will be removed from your view.', 
+                    'Archive', 
+                    'Cancel'
+                );
+            } else {
+                isConfirmed = confirm("Are you sure you want to archive this booking? It will be removed from your view.");
+            }
+            
+            if(!isConfirmed) return;
             
             try {
                 const res = await fetch(`${API_BASE_URL}/api/host/bookings/${id}/archive`, {
