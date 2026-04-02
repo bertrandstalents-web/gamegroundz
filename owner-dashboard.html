@@ -3878,8 +3878,8 @@
                     else alert('Booking archived successfully');
                     
                     // Reload the host dashboard to refresh the reservations list
-                    if (typeof loadHostDashboardData === 'function') {
-                        await loadHostDashboardData();
+                    if (typeof loadHostData === 'function') {
+                        await loadHostData();
                     } else {
                         window.location.reload();
                     }
