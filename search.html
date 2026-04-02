@@ -528,6 +528,7 @@
                 if (filters.maxPrice && filters.maxPrice < 300) params.append('maxPrice', filters.maxPrice);
                 if (filters.environment) params.append('environment', filters.environment);
                 if (filters.types && filters.types.length > 0) params.append('types', filters.types.join(','));
+                if (filters.search) params.append('search', filters.search);
                 
                 params.append('limit', limitPerPage);
                 params.append('offset', (currentPage - 1) * limitPerPage);
@@ -579,10 +580,14 @@
                     else selectedTypes.push(cb.value);
                 });
 
+                const navSearch = document.getElementById('navLocationSearch');
+                const searchQuery = navSearch ? navSearch.value.trim() : '';
+
                 fetchFacilities({ 
                     maxPrice: maxPrice,
                     environment: selectedEnv,
-                    types: isAll ? [] : selectedTypes
+                    types: isAll ? [] : selectedTypes,
+                    search: searchQuery
                 }, true).finally(() => {
                     applyBtn.innerHTML = originalText;
                     applyBtn.disabled = false;
@@ -657,7 +662,7 @@
                     else selectedTypes.push(cb.value);
                 });
                 
-                fetchFacilities({ types: isAll ? [] : selectedTypes }, true);
+                fetchFacilities({ types: isAll ? [] : selectedTypes, search: explicitLocation }, false);
                 
             } else if ("geolocation" in navigator) {
                 // No explicit location, try geolocation to center the map on the user

@@ -450,6 +450,11 @@ app.get('/api/facilities', (req, res) => {
         query += " AND environment = ?";
         params.push(environment);
     }
+    
+    if (req.query.search) {
+        query += " AND (name LIKE ? OR location LIKE ? OR subtitle LIKE ?)";
+        params.push(`%${req.query.search}%`, `%${req.query.search}%`, `%${req.query.search}%`);
+    }
 
     if (maxPrice && !isNaN(maxPrice)) {
         query += " AND base_price <= ?";
