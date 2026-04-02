@@ -1545,32 +1545,8 @@
             const container = document.getElementById('host-reservations-list');
             container.innerHTML = '';
 
-            if (bookings.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-12 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
-                        <i class="fa-regular fa-calendar-xmark text-4xl mb-4 text-slate-300"></i>
-                        <p class="text-lg font-medium">No upcoming reservations.</p>
-                        <p class="text-sm">When players book your facilities, they will appear here.</p>
-                    </div>`;
-                return;
-            }
-
+            // Calculate isPast for all bookings first
             bookings.forEach(booking => {
-                const isManual = booking.booking_type === 'manual';
-                
-                let iconBlock = isManual ? 
-                    `<div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 text-xl flex-shrink-0"><i class="fa-solid fa-calendar-xmark"></i></div>` :
-                    `<div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary text-xl flex-shrink-0"><i class="fa-solid fa-calendar-check"></i></div>`;
-                
-                let phoneHtml = booking.player_phone_number ? `<span class="opacity-75 ml-1">&bull; <i class="fa-solid fa-phone mr-1"></i>${booking.player_phone_number}</span>` : '';
-                let detailBlock = isManual ? 
-                    `<h4 class="font-bold text-slate-700">${booking.facility_name}</h4><p class="text-sm text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Blocked: ${booking.manual_notes}</p>` :
-                    `<h4 class="font-bold text-dark">${booking.facility_name}</h4><p class="text-sm text-slate-500"><i class="fa-regular fa-user mr-1"></i> ${booking.player_name || 'Guest'} <span class="opacity-75">(${booking.player_email || ''})</span>${phoneHtml}</p>`;
-                    
-                let priceBlock = isManual ? 
-                    `<div class="text-sm font-bold text-slate-400">Offline</div>` :
-                    `<div class="text-lg font-bold text-primary">$${booking.total_price}</div>`;
-
                 let isPast = false;
                 try {
                     const parsedSlots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
@@ -1588,8 +1564,39 @@
                     today.setHours(0,0,0,0);
                     if (new Date(booking.booking_date) < today) isPast = true;
                 }
+                booking.isPast = isPast;
+            });
 
-                const showCancelHost = (!isManual && !isPast && (booking.status === 'confirmed' || booking.status === 'pending'));
+            // Filter out past bookings
+            const upcomingBookings = bookings.filter(b => !b.isPast);
+
+            if (upcomingBookings.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
+                        <i class="fa-regular fa-calendar-xmark text-4xl mb-4 text-slate-300"></i>
+                        <p class="text-lg font-medium">No upcoming reservations.</p>
+                        <p class="text-sm">When players book your facilities, they will appear here.</p>
+                    </div>`;
+                return;
+            }
+
+            upcomingBookings.forEach(booking => {
+                const isManual = booking.booking_type === 'manual';
+                
+                let iconBlock = isManual ? 
+                    `<div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 text-xl flex-shrink-0"><i class="fa-solid fa-calendar-xmark"></i></div>` :
+                    `<div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary text-xl flex-shrink-0"><i class="fa-solid fa-calendar-check"></i></div>`;
+                
+                let phoneHtml = booking.player_phone_number ? `<span class="opacity-75 ml-1">&bull; <i class="fa-solid fa-phone mr-1"></i>${booking.player_phone_number}</span>` : '';
+                let detailBlock = isManual ? 
+                    `<h4 class="font-bold text-slate-700">${booking.facility_name}</h4><p class="text-sm text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Blocked: ${booking.manual_notes}</p>` :
+                    `<h4 class="font-bold text-dark">${booking.facility_name}</h4><p class="text-sm text-slate-500"><i class="fa-regular fa-user mr-1"></i> ${booking.player_name || 'Guest'} <span class="opacity-75">(${booking.player_email || ''})</span>${phoneHtml}</p>`;
+                    
+                let priceBlock = isManual ? 
+                    `<div class="text-sm font-bold text-slate-400">Offline</div>` :
+                    `<div class="text-lg font-bold text-primary">$${booking.total_price}</div>`;
+
+                const showCancelHost = (!isManual && (booking.status === 'confirmed' || booking.status === 'pending'));
 
                 container.innerHTML += `
                     <div class="flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white'} rounded-2xl p-4 transition-custom flex-wrap gap-4">
