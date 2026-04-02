@@ -1017,6 +1017,11 @@
         }
 
         function switchTab(tabId) {
+            const resTab = document.getElementById('tab-reservations');
+            if (resTab && !resTab.classList.contains('hidden') && tabId !== 'reservations') {
+                document.querySelectorAll('.reservation-unread-badge').forEach(b => b.remove());
+            }
+
             // Hide all tabs
             document.getElementById('tab-facilities').classList.add('hidden');
             document.getElementById('tab-reservations').classList.add('hidden');
@@ -1630,7 +1635,7 @@
 
                     const showCancelHost = (!isManual && (booking.status === 'confirmed' || booking.status === 'pending'));
                     
-                    let unreadBadgeHtml = (booking.is_read === 0) ? `<span class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm z-10" title="New Reservation">1</span>` : '';
+                    let unreadBadgeHtml = (booking.is_read === 0) ? `<span class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm z-10 reservation-unread-badge" title="New Reservation">1</span>` : '';
 
                     container.innerHTML += `
                         <div class="relative flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white'} rounded-2xl p-4 transition-custom flex-wrap gap-4">
