@@ -1595,7 +1595,7 @@
                 if (unreadCount > 0) {
                     if (!badge) {
                         badge = document.createElement('span');
-                        badge.className = 'host-notification-badge absolute top-0 -right-3 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm pointer-events-none';
+                        badge.className = 'host-notification-badge absolute -top-1.5 -right-3 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm pointer-events-none';
                         resTabBtn.appendChild(badge);
                     }
                     badge.textContent = unreadCount;
@@ -1630,7 +1630,7 @@
 
                     const showCancelHost = (!isManual && (booking.status === 'confirmed' || booking.status === 'pending'));
                     
-                    let unreadBadgeHtml = (booking.is_read === 0) ? `<span class="absolute -top-1.5 -right-1.5 bg-red-500 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm z-10" title="New Reservation"></span>` : '';
+                    let unreadBadgeHtml = (booking.is_read === 0) ? `<span class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm z-10" title="New Reservation">1</span>` : '';
 
                     container.innerHTML += `
                         <div class="relative flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white'} rounded-2xl p-4 transition-custom flex-wrap gap-4">
