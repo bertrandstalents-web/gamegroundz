@@ -161,19 +161,61 @@
             <!-- Tab: Reservations -->
             <div id="tab-reservations" class="hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
-                    <h2 class="text-2xl font-bold text-dark mb-6">Upcoming Reservations</h2>
-                    <div id="host-reservations-list" class="space-y-4 mb-10">
+                    <div class="flex flex-col md:flex-row gap-4 mb-6 items-start md:items-center justify-between border-b border-slate-100 pb-6">
+                        <div class="flex flex-wrap items-center gap-4">
+                            <div class="relative" id="res-status-dropdown-container">
+                                <button type="button" onclick="document.getElementById('res-status-dropdown-menu').classList.toggle('hidden')" class="px-4 py-2 border-2 border-primary bg-primary/10 text-primary hover:bg-primary/20 transition-custom font-bold rounded-xl focus:outline-none flex items-center justify-between gap-2 min-w-[200px] cursor-pointer shadow-sm">
+                                    <span id="res-status-btn-text">Upcoming, Past</span>
+                                    <i class="fa-solid fa-chevron-down text-sm"></i>
+                                </button>
+                                
+                                <!-- Dropdown menu -->
+                                <div id="res-status-dropdown-menu" class="hidden absolute left-0 top-full mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden text-sm">
+                                    <div class="p-3 space-y-2 max-h-60 overflow-y-auto">
+                                        <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
+                                            <input type="checkbox" value="upcoming" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked onchange="updateStatusBtnText(); applyReservationFilters();" />
+                                            <span class="font-medium text-slate-700">Upcoming Reservations</span>
+                                        </label>
+                                        <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
+                                            <input type="checkbox" value="past" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked onchange="updateStatusBtnText(); applyReservationFilters();" />
+                                            <span class="font-medium text-slate-700">Past Reservations</span>
+                                        </label>
+                                        <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
+                                            <input type="checkbox" value="archived" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" onchange="updateStatusBtnText(); applyReservationFilters();" />
+                                            <span class="font-medium text-slate-700">Archived Reservations</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <select id="res-date-filter" class="px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm" onchange="applyReservationFilters()">
+                                <option value="all">Any Date</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                                <option value="year">This Year</option>
+                                <option value="advanced">Advanced (Custom Range)</option>
+                            </select>
+                            
+                            <div id="res-date-advanced" class="hidden items-center gap-2">
+                                <input type="date" id="res-start-date" class="px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm text-slate-700 shadow-sm" onchange="applyReservationFilters()">
+                                <span class="text-slate-400 text-sm font-medium">to</span>
+                                <input type="date" id="res-end-date" class="px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm text-slate-700 shadow-sm" onchange="applyReservationFilters()">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <select id="res-facility-filter" class="px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em; padding-right: 2.5rem;" onchange="applyReservationFilters()">
+                                <option value="all">All Facilities</option>
+                                <!-- Populated dynamically by JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="host-reservations-unified-list" class="space-y-4">
                         <div class="text-center py-8 text-slate-500">
                             <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
                             <p>Loading reservations...</p>
-                        </div>
-                    </div>
-                    
-                    <h2 class="text-2xl font-bold text-dark mb-6 border-t pt-8 border-slate-100">Past Reservations</h2>
-                    <div id="host-past-reservations-list" class="space-y-4">
-                        <div class="text-center py-8 text-slate-500">
-                            <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
-                            <p>Loading past reservations...</p>
                         </div>
                     </div>
                 </div>
@@ -1101,13 +1143,18 @@
             } catch (error) {
                 console.error("Error loading host data:", error);
                 document.getElementById('host-facilities-list').innerHTML = `<p class="text-red-500 font-medium">Error loading facilities. Please refresh the page.</p>`;
-                document.getElementById('host-reservations-list').innerHTML = `<p class="text-red-500 font-medium">Error loading reservations.</p>`;
+                document.getElementById('host-reservations-unified-list').innerHTML = `<p class="text-red-500 font-medium">Error loading reservations.</p>`;
             }
         }
 
         function renderFacilities(facilities) {
             const container = document.getElementById('host-facilities-list');
             container.innerHTML = '';
+            
+            const resFacFilter = document.getElementById('res-facility-filter');
+            if (resFacFilter) {
+                resFacFilter.innerHTML = '<option value="all">All Facilities</option>';
+            }
 
             if (facilities.length === 0) {
                 container.innerHTML = `
@@ -1131,9 +1178,13 @@
                         } else {
                             displayImage = fac.image_url;
                         }
-                    } catch (e) {
+                } catch (e) {
                         displayImage = fac.image_url; // Not JSON, use raw
                     }
+                }
+                
+                if (resFacFilter) {
+                    resFacFilter.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
                 }
 
                 container.innerHTML += `
@@ -1562,9 +1613,6 @@
             document.getElementById('stat-month-rev').innerText = '$' + formatRev(monthRev);
             document.getElementById('stat-today-count').innerText = bookingsTodayCount;
 
-            const container = document.getElementById('host-reservations-list');
-            container.innerHTML = '';
-
             // Calculate isPast for all bookings first
             bookings.forEach(booking => {
                 let isPast = false;
@@ -1586,10 +1634,6 @@
                 }
                 booking.isPast = isPast;
             });
-
-            // Filter out past bookings
-            const upcomingBookings = bookings.filter(b => !b.isPast);
-            const pastBookings = bookings.filter(b => b.isPast && !b.is_archived);
             
             // Notification Badge logic
             const unreadCount = bookings.filter(b => b.is_read === 0).length;
@@ -1608,37 +1652,175 @@
                     badge.remove();
                 }
             }
+            
+            applyReservationFilters();
 
-            if (upcomingBookings.length === 0) {
+            // Re-render calendar to reflect new bookings if it's currently active
+            if (currentCalendar) {
+                const activeFacilityId = document.getElementById('calendar-facility-select').value;
+                if (activeFacilityId) {
+                    initCalendar(activeFacilityId);
+                }
+            }
+        }
+        
+        function updateStatusBtnText() {
+            const checked = document.querySelectorAll('.res-status-checkbox:checked');
+            const btnText = document.getElementById('res-status-btn-text');
+            if(!btnText) return;
+            if (checked.length === 0) {
+                btnText.textContent = "None Selected";
+            } else if (checked.length === 3) {
+                btnText.textContent = "All Statuses";
+            } else {
+                const labels = Array.from(checked).map(cb => cb.nextElementSibling.textContent.trim().replace(' Reservations', ''));
+                btnText.textContent = labels.join(', ');
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropContainer = document.getElementById('res-status-dropdown-container');
+            const dropMenu = document.getElementById('res-status-dropdown-menu');
+            if (dropContainer && dropMenu && !dropContainer.contains(e.target)) {
+                dropMenu.classList.add('hidden');
+            }
+        });
+
+        function applyReservationFilters() {
+            const container = document.getElementById('host-reservations-unified-list');
+            if(!container) return;
+            
+            // Get selected statuses from checkboxes
+            const checkedStatusInputs = document.querySelectorAll('.res-status-checkbox:checked');
+            const selectedStatuses = Array.from(checkedStatusInputs).map(cb => cb.value);
+            
+            const dateFilter = document.getElementById('res-date-filter').value;
+            const facilityFilter = document.getElementById('res-facility-filter').value;
+            
+            // Handle advanced dates UI
+            const advancedDatesContainer = document.getElementById('res-date-advanced');
+            if(dateFilter === 'advanced') {
+                advancedDatesContainer.classList.remove('hidden');
+                advancedDatesContainer.classList.add('flex');
+            } else {
+                advancedDatesContainer.classList.add('hidden');
+                advancedDatesContainer.classList.remove('flex');
+            }
+            
+            let filteredBookings = [...allBookingsCache];
+            
+            // 1. Status Filter
+            filteredBookings = filteredBookings.filter(b => {
+                const bStatus = b.is_archived ? 'archived' : (b.isPast ? 'past' : 'upcoming');
+                return selectedStatuses.includes(bStatus);
+            });
+            
+            // 2. Date Filter
+            const now = new Date();
+            const todayStr = String(now.getFullYear()) + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+            
+            if (dateFilter === 'today') {
+                filteredBookings = filteredBookings.filter(b => b.booking_date === todayStr);
+            } else if (dateFilter === 'week') {
+                const dDay = now.getDay();
+                const firstDayOfWeek = new Date(now);
+                firstDayOfWeek.setDate(now.getDate() - dDay);
+                firstDayOfWeek.setHours(0,0,0,0);
+                const lastDayOfWeek = new Date(firstDayOfWeek);
+                lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+                lastDayOfWeek.setHours(23,59,59,999);
+                
+                filteredBookings = filteredBookings.filter(b => {
+                    if(!b.booking_date) return false;
+                    const bParts = b.booking_date.split('-');
+                    const bDate = new Date(bParts[0], bParts[1]-1, bParts[2]);
+                    return bDate >= firstDayOfWeek && bDate <= lastDayOfWeek;
+                });
+            } else if (dateFilter === 'month') {
+                const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+                filteredBookings = filteredBookings.filter(b => {
+                    if(!b.booking_date) return false;
+                    const bParts = b.booking_date.split('-');
+                    const bDate = new Date(bParts[0], bParts[1]-1, bParts[2]);
+                    return bDate >= firstDayOfMonth && bDate <= lastDayOfMonth;
+                });
+            } else if (dateFilter === 'year') {
+                const currentYear = now.getFullYear();
+                filteredBookings = filteredBookings.filter(b => {
+                    if(!b.booking_date) return false;
+                    return b.booking_date.startsWith(currentYear);
+                });
+            } else if (dateFilter === 'advanced') {
+                const sd = document.getElementById('res-start-date').value;
+                const ed = document.getElementById('res-end-date').value;
+                if(sd || ed) {
+                    filteredBookings = filteredBookings.filter(b => {
+                        if(!b.booking_date) return false;
+                        if(sd && b.booking_date < sd) return false;
+                        if(ed && b.booking_date > ed) return false;
+                        return true;
+                    });
+                }
+            }
+            
+            // 3. Facility Filter
+            if (facilityFilter && facilityFilter !== 'all') {
+                filteredBookings = filteredBookings.filter(b => b.facility_id == facilityFilter);
+            }
+            
+            // RENDER
+            container.innerHTML = '';
+            
+            if (filteredBookings.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-12 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
                         <i class="fa-regular fa-calendar-xmark text-4xl mb-4 text-slate-300"></i>
-                        <p class="text-lg font-medium">No upcoming reservations.</p>
-                        <p class="text-sm">When players book your facilities, they will appear here.</p>
+                        <p class="text-lg font-medium">No reservations match your filters.</p>
+                        <p class="text-sm">Try adjusting your filter settings above.</p>
                     </div>`;
             } else {
-                upcomingBookings.forEach(booking => {
+                filteredBookings.forEach(booking => {
                     const isManual = booking.booking_type === 'manual';
+                    const isPastOrArchived = booking.isPast || booking.is_archived;
                     
                     let iconBlock = isManual ? 
-                        `<div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 text-xl flex-shrink-0"><i class="fa-solid fa-calendar-xmark"></i></div>` :
-                        `<div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary text-xl flex-shrink-0"><i class="fa-solid fa-calendar-check"></i></div>`;
+                        `<div class="w-12 h-12 ${isPastOrArchived ? 'bg-slate-100 text-slate-400' : 'bg-slate-100 text-slate-500'} rounded-xl flex items-center justify-center text-xl flex-shrink-0"><i class="fa-solid fa-calendar-xmark"></i></div>` :
+                        `<div class="w-12 h-12 ${isPastOrArchived ? 'bg-slate-100 text-slate-400' : 'bg-primary/10 text-primary'} rounded-xl flex items-center justify-center text-xl flex-shrink-0"><i class="fa-solid fa-calendar-check"></i></div>`;
                     
                     let phoneHtml = booking.player_phone_number ? `<span class="opacity-75 ml-1">&bull; <i class="fa-solid fa-phone mr-1"></i>${booking.player_phone_number}</span>` : '';
                     let detailBlock = isManual ? 
-                        `<h4 class="font-bold text-slate-700">${booking.facility_name}</h4><p class="text-sm text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Blocked: ${booking.manual_notes}</p>` :
-                        `<h4 class="font-bold text-dark">${booking.facility_name}</h4><p class="text-sm text-slate-500"><i class="fa-regular fa-user mr-1"></i> ${booking.player_name || 'Guest'} <span class="opacity-75">(${booking.player_email || ''})</span>${phoneHtml}</p>`;
+                        `<h4 class="font-bold ${isPastOrArchived ? 'text-slate-500' : 'text-slate-700'}">${booking.facility_name}</h4><p class="text-sm ${isPastOrArchived ? 'text-slate-400' : 'text-slate-500'}"><i class="fa-solid fa-lock mr-1"></i> Blocked: ${booking.manual_notes}</p>` :
+                        `<h4 class="font-bold ${isPastOrArchived ? 'text-slate-600' : 'text-dark'}">${booking.facility_name}</h4><p class="text-sm ${isPastOrArchived ? 'text-slate-400' : 'text-slate-500'}"><i class="fa-regular fa-user mr-1"></i> ${booking.player_name || 'Guest'} <span class="opacity-75">(${booking.player_email || ''})</span>${phoneHtml}</p>`;
                         
                     let priceBlock = isManual ? 
                         `<div class="text-sm font-bold text-slate-400">Offline</div>` :
-                        `<div class="text-lg font-bold text-primary">$${Number(booking.total_price).toFixed(2)}</div>`;
+                        `<div class="text-lg font-bold ${isPastOrArchived ? 'text-slate-500' : 'text-primary'}">$${Number(booking.total_price).toFixed(2)}</div>`;
 
-                    const showCancelHost = (!isManual && (booking.status === 'confirmed' || booking.status === 'pending'));
+                    const showCancelHost = (!isManual && !isPastOrArchived && (booking.status === 'confirmed' || booking.status === 'pending'));
                     
                     let unreadBadgeHtml = (booking.is_read === 0) ? `<span class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm z-10 reservation-unread-badge" title="New Reservation">1</span>` : '';
 
+                    let actionHtml = '';
+                    if (isPastOrArchived && !isManual) {
+                        if (!booking.is_archived) {
+                             actionHtml = `<button onclick="event.stopPropagation(); archiveHostBooking(${booking.id})" class="text-slate-500 hover:text-dark bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Archive Booking"><i class="fa-solid fa-box-archive mr-1"></i>Archive</button>`;
+                        } else {
+                             actionHtml = `<span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full font-bold capitalize border border-gray-200 shadow-sm">Archived</span>`;
+                        }
+                    } else if (showCancelHost) {
+                        actionHtml = `<button onclick="event.stopPropagation(); openHostCancelModal(${booking.id})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Cancel & Refund"><i class="fa-solid fa-xmark mr-1"></i>Cancel</button>`;
+                    }
+                    
+                    let statusColor = 'bg-slate-200 text-slate-600';
+                    if(!isPastOrArchived) {
+                         if(booking.status === 'confirmed') statusColor = 'bg-green-100 text-green-700';
+                         if(booking.status === 'pending') statusColor = 'bg-yellow-100 text-yellow-700';
+                    }
+
                     container.innerHTML += `
-                        <div class="relative flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white cursor-pointer'} rounded-2xl p-4 transition-custom flex-wrap gap-4" ${!isManual ? `onclick="openReservationModal(${booking.id})"` : ''}>
+                        <div class="relative flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white cursor-pointer'} ${isPastOrArchived ? 'bg-slate-50/50 opacity-80' : ''} rounded-2xl p-4 transition-custom flex-wrap gap-4" ${!isManual ? `onclick="openReservationModal(${booking.id})"` : ''}>
                             ${unreadBadgeHtml}
                             <div class="flex items-center gap-4">
                                 ${iconBlock}
@@ -1646,83 +1828,22 @@
                                     ${detailBlock}
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <div class="font-bold text-dark">${booking.booking_date}</div>
-                                <div class="text-sm font-medium text-slate-600">${formatTimeSlots(JSON.parse(booking.time_slots))}</div>
+                            <div class="text-right ${isPastOrArchived ? 'grayscale' : ''}">
+                                <div class="font-bold ${isPastOrArchived ? 'text-slate-600' : 'text-dark'}">${booking.booking_date}</div>
+                                <div class="text-sm font-medium ${isPastOrArchived ? 'text-slate-500' : 'text-slate-600'}">${formatTimeSlots(JSON.parse(booking.time_slots))}</div>
                             </div>
                             <div class="text-right flex-shrink-0 min-w-[80px] flex flex-col items-end gap-2">
                                 ${priceBlock}
                                 <div class="flex items-center justify-end gap-2 w-full">
-                                    <span class="${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'} text-xs px-2 py-0.5 rounded-full font-bold capitalize">
-                                        ${booking.status}
-                                    </span>
-                                    ${showCancelHost ? `<button onclick="event.stopPropagation(); openHostCancelModal(${booking.id})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Cancel & Refund"><i class="fa-solid fa-xmark mr-1"></i>Cancel</button>` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-
-            const pastContainer = document.getElementById('host-past-reservations-list');
-            pastContainer.innerHTML = '';
-            
-            if (pastBookings.length === 0) {
-                pastContainer.innerHTML = `
-                    <div class="text-center py-12 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
-                        <i class="fa-regular fa-calendar-check text-4xl mb-4 text-slate-300"></i>
-                        <p class="text-lg font-medium">No past reservations.</p>
-                        <p class="text-sm">Completed reservations will appear here.</p>
-                    </div>`;
-            } else {
-                pastBookings.forEach(booking => {
-                    const isManual = booking.booking_type === 'manual';
-                    
-                    let iconBlock = isManual ? 
-                        `<div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 text-xl flex-shrink-0"><i class="fa-solid fa-calendar-xmark"></i></div>` :
-                        `<div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-xl flex-shrink-0"><i class="fa-solid fa-calendar-check"></i></div>`;
-                    
-                    let phoneHtml = booking.player_phone_number ? `<span class="opacity-75 ml-1">&bull; <i class="fa-solid fa-phone mr-1"></i>${booking.player_phone_number}</span>` : '';
-                    let detailBlock = isManual ? 
-                        `<h4 class="font-bold text-slate-500">${booking.facility_name}</h4><p class="text-sm text-slate-400"><i class="fa-solid fa-lock mr-1"></i> Blocked: ${booking.manual_notes}</p>` :
-                        `<h4 class="font-bold text-slate-600">${booking.facility_name}</h4><p class="text-sm text-slate-400"><i class="fa-regular fa-user mr-1"></i> ${booking.player_name || 'Guest'} <span class="opacity-75">(${booking.player_email || ''})</span>${phoneHtml}</p>`;
-                        
-                    let priceBlock = isManual ? 
-                        `<div class="text-sm font-bold text-slate-400">Offline</div>` :
-                        `<div class="text-lg font-bold text-slate-500">$${Number(booking.total_price).toFixed(2)}</div>`;
-
-                    pastContainer.innerHTML += `
-                        <div class="flex items-center justify-between border bg-slate-50/50 border-slate-200 rounded-2xl p-4 transition-custom flex-wrap gap-4 opacity-80 ${!isManual ? 'hover:bg-slate-100 cursor-pointer' : ''}" ${!isManual ? `onclick="openReservationModal(${booking.id})"` : ''}>
-                            <div class="flex items-center gap-4">
-                                ${iconBlock}
-                                <div>
-                                    ${detailBlock}
-                                </div>
-                            </div>
-                            <div class="text-right grayscale">
-                                <div class="font-bold text-slate-600">${booking.booking_date}</div>
-                                <div class="text-sm font-medium text-slate-500">${formatTimeSlots(JSON.parse(booking.time_slots))}</div>
-                            </div>
-                            <div class="text-right flex-shrink-0 min-w-[80px] flex flex-col items-end gap-2">
-                                ${priceBlock}
-                                <div class="flex items-center justify-end gap-2 w-full">
-                                    <span class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold capitalize">
+                                    <span class="${statusColor} text-xs px-2 py-0.5 rounded-full font-bold capitalize">
                                         ${isManual ? 'Offline' : booking.status}
                                     </span>
-                                    <button onclick="event.stopPropagation(); archiveHostBooking(${booking.id})" class="text-slate-500 hover:text-dark bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Archive Booking"><i class="fa-solid fa-box-archive mr-1"></i>Archive</button>
+                                    ${actionHtml}
                                 </div>
                             </div>
                         </div>
                     `;
                 });
-            }
-            
-            // Re-render calendar to reflect new bookings if it's currently active
-            if (currentCalendar) {
-                const activeFacilityId = document.getElementById('calendar-facility-select').value;
-                if (activeFacilityId) {
-                    initCalendar(activeFacilityId);
-                }
             }
         }
 
