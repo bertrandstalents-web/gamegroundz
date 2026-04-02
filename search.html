@@ -403,6 +403,9 @@
             if (facilities.length === 0) return;
 
             const bounds = L.latLngBounds();
+            
+            // Group facilities by exact coordinate (rounded to 5 decimals to catch ~1m differences)
+            const groupedFacilities = {};
 
             facilities.forEach((f, i) => {
                 let actualLat, actualLng;
@@ -418,22 +421,38 @@
                     f.lng = actualLng;
                 }
                 
-                // Add tiny random offset so exact same addresses don't perfectly overlap
-                const offLat = actualLat + (Math.random() - 0.5) * 0.0005;
-                const offLng = actualLng + (Math.random() - 0.5) * 0.0005;
+                const key = `${actualLat.toFixed(5)}_${actualLng.toFixed(5)}`;
+                if (!groupedFacilities[key]) {
+                    groupedFacilities[key] = { lat: actualLat, lng: actualLng, items: [] };
+                }
+                groupedFacilities[key].items.push(f);
+            });
+
+            // Render each grouped marker
+            Object.values(groupedFacilities).forEach(group => {
+                const marker = L.marker([group.lat, group.lng]).addTo(map);
                 
-                const marker = L.marker([offLat, offLng]).addTo(map);
+                let popupContent = `<div class="max-h-[300px] overflow-y-auto space-y-4 pr-2 custom-scrollbar">`;
                 
-                const popupContent = `
-                    <div class="w-48 cursor-pointer" onclick="window.location.href='facility.html?id=${f.id}'">
-                        <img src="${getPrimaryImageUrl(f.image_url)}" class="w-full h-24 object-cover rounded-lg mb-2">
-                        <div class="font-bold text-sm truncate hover:text-primary transition-custom">${f.name}</div>
-                        <div class="font-bold text-primary">From $${f.base_price}<span class="text-xs text-slate-500 font-normal">/hr</span></div>
-                    </div>
-                `;
+                // Add a header if multiple facilities are under the exact same roof
+                if (group.items.length > 1) {
+                    popupContent += `<div class="text-xs font-bold text-slate-500 uppercase tracking-wide border-b border-slate-200 pb-1 mb-2">${group.items.length} Facilities Here</div>`;
+                }
+                
+                group.items.forEach(f => {
+                    popupContent += `
+                        <div class="w-48 cursor-pointer ${group.items.length > 1 ? 'border-b border-slate-100 pb-3 last:border-0 last:pb-0' : ''}" onclick="window.location.href='facility.html?id=${f.id}'">
+                            <img src="${getPrimaryImageUrl(f.image_url)}" class="w-full h-24 object-cover rounded-lg mb-2">
+                            <div class="font-bold text-sm truncate hover:text-primary transition-custom">${f.name}</div>
+                            <div class="font-bold text-primary">From $${f.base_price}<span class="text-xs text-slate-500 font-normal">/hr</span></div>
+                        </div>
+                    `;
+                });
+                
+                popupContent += `</div>`;
                 marker.bindPopup(popupContent);
                 markers.push(marker);
-                bounds.extend([offLat, offLng]);
+                bounds.extend([group.lat, group.lng]);
             });
 
             // Set a slightly tighter padding and lower maxZoom for better context display
