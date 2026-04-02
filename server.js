@@ -614,6 +614,42 @@ app.get('/api/facilities/:id', (req, res) => {
     });
 });
 
+// Helper to sync bi-directional connected facilities
+function syncConnectedFacilities(subjectId, newConnections) {
+    db.all(`SELECT id, connected_facilities FROM facilities`, [], (err, rows) => {
+        if (err || !rows) return;
+        
+        const stringSubjectId = String(subjectId);
+        const intSubjectId = parseInt(subjectId, 10);
+        const shouldBeLinkedIds = newConnections.map(n => parseInt(n, 10));
+        
+        rows.forEach(row => {
+            if (row.id == subjectId) return; // Skip self
+            
+            let changed = false;
+            let linkedIds = [];
+            try {
+                linkedIds = JSON.parse(row.connected_facilities || '[]');
+            } catch(e) {}
+            
+            const isCurrentlyLinked = linkedIds.includes(intSubjectId) || linkedIds.includes(stringSubjectId);
+            const shouldBeLinked = shouldBeLinkedIds.includes(parseInt(row.id, 10));
+            
+            if (shouldBeLinked && !isCurrentlyLinked) {
+                linkedIds = linkedIds.filter(id => String(id) !== stringSubjectId).concat([intSubjectId]);
+                changed = true;
+            } else if (!shouldBeLinked && isCurrentlyLinked) {
+                linkedIds = linkedIds.filter(id => String(id) !== stringSubjectId);
+                changed = true;
+            }
+            
+            if (changed) {
+                db.run(`UPDATE facilities SET connected_facilities = ? WHERE id = ?`, [JSON.stringify(linkedIds), row.id]);
+            }
+        });
+    });
+}
+
 // POST a new facility
 app.post('/api/facilities', (req, res) => {
     // Check if user is authenticated (backend guard)
@@ -660,6 +696,11 @@ app.post('/api/facilities', (req, res) => {
             if (err) {
                 return res.status(500).json({ error: err.message });
             }
+            
+            if (Array.isArray(connected_facilities)) {
+                syncConnectedFacilities(this.lastID, connected_facilities);
+            }
+
             res.status(201).json({ 
                 message: "Facility created successfully", 
                 facility_id: this.lastID 
@@ -721,6 +762,11 @@ app.put('/api/host/facilities/:id', (req, res) => {
             if (this.changes === 0) {
                 return res.status(404).json({ error: "Facility not found or you do not have permission to edit it." });
             }
+            
+            if (Array.isArray(connected_facilities)) {
+                syncConnectedFacilities(facilityId, connected_facilities);
+            }
+
             res.status(200).json({ message: "Facility updated successfully" });
         }
     );
