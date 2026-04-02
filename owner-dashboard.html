@@ -1631,7 +1631,7 @@
                         
                     let priceBlock = isManual ? 
                         `<div class="text-sm font-bold text-slate-400">Offline</div>` :
-                        `<div class="text-lg font-bold text-primary">$${booking.total_price}</div>`;
+                        `<div class="text-lg font-bold text-primary">$${Number(booking.total_price).toFixed(2)}</div>`;
 
                     const showCancelHost = (!isManual && (booking.status === 'confirmed' || booking.status === 'pending'));
                     
@@ -1689,7 +1689,7 @@
                         
                     let priceBlock = isManual ? 
                         `<div class="text-sm font-bold text-slate-400">Offline</div>` :
-                        `<div class="text-lg font-bold text-slate-500">$${booking.total_price}</div>`;
+                        `<div class="text-lg font-bold text-slate-500">$${Number(booking.total_price).toFixed(2)}</div>`;
 
                     pastContainer.innerHTML += `
                         <div class="flex items-center justify-between border bg-slate-50/50 border-slate-200 rounded-2xl p-4 transition-custom flex-wrap gap-4 opacity-80">
