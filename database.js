@@ -195,6 +195,10 @@ async function initDatabase() {
             await client.query(`ALTER TABLE bookings ADD COLUMN is_read INTEGER DEFAULT 0`);
             await client.query(`UPDATE bookings SET is_read = 1 WHERE is_read IS NULL OR is_read = 0`);
         } catch(e) {}
+        
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN is_archived INTEGER DEFAULT 0`);
+        } catch(e) {}
 
         // Reviews Table
         await client.query(`CREATE TABLE IF NOT EXISTS reviews (

@@ -162,10 +162,18 @@
             <div id="tab-reservations" class="hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
                     <h2 class="text-2xl font-bold text-dark mb-6">Upcoming Reservations</h2>
-                    <div id="host-reservations-list" class="space-y-4">
+                    <div id="host-reservations-list" class="space-y-4 mb-10">
                         <div class="text-center py-8 text-slate-500">
                             <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
                             <p>Loading reservations...</p>
+                        </div>
+                    </div>
+                    
+                    <h2 class="text-2xl font-bold text-dark mb-6 border-t pt-8 border-slate-100">Past Reservations</h2>
+                    <div id="host-past-reservations-list" class="space-y-4">
+                        <div class="text-center py-8 text-slate-500">
+                            <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p>Loading past reservations...</p>
                         </div>
                     </div>
                 </div>
@@ -1569,6 +1577,7 @@
 
             // Filter out past bookings
             const upcomingBookings = bookings.filter(b => !b.isPast);
+            const pastBookings = bookings.filter(b => b.isPast && !b.is_archived);
 
             if (upcomingBookings.length === 0) {
                 container.innerHTML = `
@@ -1577,51 +1586,103 @@
                         <p class="text-lg font-medium">No upcoming reservations.</p>
                         <p class="text-sm">When players book your facilities, they will appear here.</p>
                     </div>`;
-                return;
+            } else {
+                upcomingBookings.forEach(booking => {
+                    const isManual = booking.booking_type === 'manual';
+                    
+                    let iconBlock = isManual ? 
+                        `<div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 text-xl flex-shrink-0"><i class="fa-solid fa-calendar-xmark"></i></div>` :
+                        `<div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary text-xl flex-shrink-0"><i class="fa-solid fa-calendar-check"></i></div>`;
+                    
+                    let phoneHtml = booking.player_phone_number ? `<span class="opacity-75 ml-1">&bull; <i class="fa-solid fa-phone mr-1"></i>${booking.player_phone_number}</span>` : '';
+                    let detailBlock = isManual ? 
+                        `<h4 class="font-bold text-slate-700">${booking.facility_name}</h4><p class="text-sm text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Blocked: ${booking.manual_notes}</p>` :
+                        `<h4 class="font-bold text-dark">${booking.facility_name}</h4><p class="text-sm text-slate-500"><i class="fa-regular fa-user mr-1"></i> ${booking.player_name || 'Guest'} <span class="opacity-75">(${booking.player_email || ''})</span>${phoneHtml}</p>`;
+                        
+                    let priceBlock = isManual ? 
+                        `<div class="text-sm font-bold text-slate-400">Offline</div>` :
+                        `<div class="text-lg font-bold text-primary">$${booking.total_price}</div>`;
+
+                    const showCancelHost = (!isManual && (booking.status === 'confirmed' || booking.status === 'pending'));
+
+                    container.innerHTML += `
+                        <div class="flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white'} rounded-2xl p-4 transition-custom flex-wrap gap-4">
+                            <div class="flex items-center gap-4">
+                                ${iconBlock}
+                                <div>
+                                    ${detailBlock}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-dark">${booking.booking_date}</div>
+                                <div class="text-sm font-medium text-slate-600">${formatTimeSlots(JSON.parse(booking.time_slots))}</div>
+                            </div>
+                            <div class="text-right flex-shrink-0 min-w-[80px] flex flex-col items-end gap-2">
+                                ${priceBlock}
+                                <div class="flex items-center justify-end gap-2 w-full">
+                                    <span class="${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'} text-xs px-2 py-0.5 rounded-full font-bold capitalize">
+                                        ${booking.status}
+                                    </span>
+                                    ${showCancelHost ? `<button onclick="openHostCancelModal(${booking.id})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Cancel & Refund"><i class="fa-solid fa-xmark mr-1"></i>Cancel</button>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
             }
 
-            upcomingBookings.forEach(booking => {
-                const isManual = booking.booking_type === 'manual';
-                
-                let iconBlock = isManual ? 
-                    `<div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 text-xl flex-shrink-0"><i class="fa-solid fa-calendar-xmark"></i></div>` :
-                    `<div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary text-xl flex-shrink-0"><i class="fa-solid fa-calendar-check"></i></div>`;
-                
-                let phoneHtml = booking.player_phone_number ? `<span class="opacity-75 ml-1">&bull; <i class="fa-solid fa-phone mr-1"></i>${booking.player_phone_number}</span>` : '';
-                let detailBlock = isManual ? 
-                    `<h4 class="font-bold text-slate-700">${booking.facility_name}</h4><p class="text-sm text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Blocked: ${booking.manual_notes}</p>` :
-                    `<h4 class="font-bold text-dark">${booking.facility_name}</h4><p class="text-sm text-slate-500"><i class="fa-regular fa-user mr-1"></i> ${booking.player_name || 'Guest'} <span class="opacity-75">(${booking.player_email || ''})</span>${phoneHtml}</p>`;
+            const pastContainer = document.getElementById('host-past-reservations-list');
+            pastContainer.innerHTML = '';
+            
+            if (pastBookings.length === 0) {
+                pastContainer.innerHTML = `
+                    <div class="text-center py-12 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
+                        <i class="fa-regular fa-calendar-check text-4xl mb-4 text-slate-300"></i>
+                        <p class="text-lg font-medium">No past reservations.</p>
+                        <p class="text-sm">Completed reservations will appear here.</p>
+                    </div>`;
+            } else {
+                pastBookings.forEach(booking => {
+                    const isManual = booking.booking_type === 'manual';
                     
-                let priceBlock = isManual ? 
-                    `<div class="text-sm font-bold text-slate-400">Offline</div>` :
-                    `<div class="text-lg font-bold text-primary">$${booking.total_price}</div>`;
+                    let iconBlock = isManual ? 
+                        `<div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 text-xl flex-shrink-0"><i class="fa-solid fa-calendar-xmark"></i></div>` :
+                        `<div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-xl flex-shrink-0"><i class="fa-solid fa-calendar-check"></i></div>`;
+                    
+                    let phoneHtml = booking.player_phone_number ? `<span class="opacity-75 ml-1">&bull; <i class="fa-solid fa-phone mr-1"></i>${booking.player_phone_number}</span>` : '';
+                    let detailBlock = isManual ? 
+                        `<h4 class="font-bold text-slate-500">${booking.facility_name}</h4><p class="text-sm text-slate-400"><i class="fa-solid fa-lock mr-1"></i> Blocked: ${booking.manual_notes}</p>` :
+                        `<h4 class="font-bold text-slate-600">${booking.facility_name}</h4><p class="text-sm text-slate-400"><i class="fa-regular fa-user mr-1"></i> ${booking.player_name || 'Guest'} <span class="opacity-75">(${booking.player_email || ''})</span>${phoneHtml}</p>`;
+                        
+                    let priceBlock = isManual ? 
+                        `<div class="text-sm font-bold text-slate-400">Offline</div>` :
+                        `<div class="text-lg font-bold text-slate-500">$${booking.total_price}</div>`;
 
-                const showCancelHost = (!isManual && (booking.status === 'confirmed' || booking.status === 'pending'));
-
-                container.innerHTML += `
-                    <div class="flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white'} rounded-2xl p-4 transition-custom flex-wrap gap-4">
-                        <div class="flex items-center gap-4">
-                            ${iconBlock}
-                            <div>
-                                ${detailBlock}
+                    pastContainer.innerHTML += `
+                        <div class="flex items-center justify-between border bg-slate-50/50 border-slate-200 rounded-2xl p-4 transition-custom flex-wrap gap-4 opacity-80">
+                            <div class="flex items-center gap-4">
+                                ${iconBlock}
+                                <div>
+                                    ${detailBlock}
+                                </div>
+                            </div>
+                            <div class="text-right grayscale">
+                                <div class="font-bold text-slate-600">${booking.booking_date}</div>
+                                <div class="text-sm font-medium text-slate-500">${formatTimeSlots(JSON.parse(booking.time_slots))}</div>
+                            </div>
+                            <div class="text-right flex-shrink-0 min-w-[80px] flex flex-col items-end gap-2">
+                                ${priceBlock}
+                                <div class="flex items-center justify-end gap-2 w-full">
+                                    <span class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold capitalize">
+                                        ${isManual ? 'Offline' : booking.status}
+                                    </span>
+                                    <button onclick="archiveHostBooking(${booking.id})" class="text-slate-500 hover:text-dark bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Archive Booking"><i class="fa-solid fa-box-archive mr-1"></i>Archive</button>
+                                </div>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <div class="font-bold text-dark">${booking.booking_date}</div>
-                            <div class="text-sm font-medium text-slate-600">${formatTimeSlots(JSON.parse(booking.time_slots))}</div>
-                        </div>
-                        <div class="text-right flex-shrink-0 min-w-[80px] flex flex-col items-end gap-2">
-                            ${priceBlock}
-                            <div class="flex items-center justify-end gap-2 w-full">
-                                <span class="${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'} text-xs px-2 py-0.5 rounded-full font-bold capitalize">
-                                    ${booking.status}
-                                </span>
-                                ${showCancelHost ? `<button onclick="openHostCancelModal(${booking.id})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Cancel & Refund"><i class="fa-solid fa-xmark mr-1"></i>Cancel</button>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            }
             
             // Re-render calendar to reflect new bookings if it's currently active
             if (currentCalendar) {
@@ -3784,6 +3845,37 @@
             } catch (e) {
                 if(typeof showAlertModal === 'function') showAlertModal('Error', 'Failed to remove co-host');
                 else alert('Failed to remove co-host');
+            }
+        }
+
+        async function archiveHostBooking(id) {
+            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            if(!confirm("Are you sure you want to archive this booking? It will be removed from your view.")) return;
+            
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/host/bookings/${id}/archive`, {
+                    method: 'PUT',
+                    credentials: 'include'
+                });
+                
+                if (res.ok) {
+                    if(typeof showAlertModal === 'function') showAlertModal('Success', 'Booking archived successfully');
+                    else alert('Booking archived successfully');
+                    
+                    // Reload the host dashboard to refresh the reservations list
+                    if (typeof loadHostDashboardData === 'function') {
+                        await loadHostDashboardData();
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    const errData = await res.json();
+                    if(typeof showAlertModal === 'function') showAlertModal('Error', errData.error || 'Failed to archive booking');
+                    else alert(errData.error || 'Failed to archive booking');
+                }
+            } catch (e) {
+                if(typeof showAlertModal === 'function') showAlertModal('Error', 'Communication error. Please try again.');
+                else alert('Communication error');
             }
         }
     </script>

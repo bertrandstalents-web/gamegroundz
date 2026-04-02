@@ -1183,6 +1183,29 @@ app.post('/api/bookings/:id/cancel', async (req, res) => {
     });
 });
 
+// PUT archive a past booking
+app.put('/api/host/bookings/:id/archive', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const bookingId = req.params.id;
+
+    const query = `
+        SELECT b.id 
+        FROM bookings b
+        JOIN facilities f ON b.facility_id = f.id
+        WHERE b.id = ? AND (f.host_id = ? OR f.co_host_emails LIKE ?)
+    `;
+
+    db.get(query, [bookingId, req.session.userId, `%"${req.session.email}"%`], (err, booking) => {
+        if (err || !booking) return res.status(403).json({ error: "Access denied or booking not found" });
+
+        db.run("UPDATE bookings SET is_archived = 1 WHERE id = ?", [bookingId], function(err) {
+            if (err) return res.status(500).json({ error: "Failed to archive booking" });
+            res.json({ message: "Booking archived successfully." });
+        });
+    });
+});
+
 // POST cancel booking (Host)
 app.post('/api/host/bookings/:id/cancel', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
