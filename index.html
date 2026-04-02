@@ -1037,7 +1037,7 @@
                         let badge = btnElement.querySelector('.host-notification-badge');
                         if (!badge) {
                             badge = document.createElement('span');
-                            badge.className = 'host-notification-badge absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm';
+                            badge.className = 'host-notification-badge absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm';
                             btnElement.appendChild(badge);
                         }
                         badge.textContent = data.unread_count;
