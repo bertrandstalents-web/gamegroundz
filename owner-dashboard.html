@@ -904,6 +904,18 @@
                     </div>
                 </div>
 
+                <!-- Connected Facilities -->
+                <div id="connected-facilities-section" class="mb-8">
+                    <h2 class="text-xl font-bold text-dark mb-2 border-b border-slate-100 pb-2">9. Connected Facilities</h2>
+                    <p class="text-xs text-slate-500 mb-4">Link this facility to other facilities you manage (e.g., multiple rinks in the same building). Players will be able to easily switch between them when booking.</p>
+                    
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                        <div id="connected-facilities-list" class="space-y-3">
+                            <p class="text-sm text-slate-500 italic" id="connected-facilities-empty">Loading your facilities...</p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Media -->
                 <div>
                     <h2 class="text-xl font-bold text-dark mb-2 border-b border-slate-100 pb-2">6. Photos</h2>
@@ -1182,6 +1194,10 @@
             if (idField) idField.value = '';
             document.getElementById('add-facility-form').reset();
             
+            if (typeof populateConnectedFacilities === 'function') {
+                populateConnectedFacilities(null, []);
+            }
+            
             window.localImagesArray = [];
             renderImageGallery();
 
@@ -1218,6 +1234,30 @@
             if (facility) {
                 openEditModal(facility);
             }
+        }
+
+        function populateConnectedFacilities(currentFacId, selectedIds = []) {
+            const container = document.getElementById('connected-facilities-list');
+            if(!container) return;
+            
+            const otherFacilities = typeof ownerFacilities !== 'undefined' ? ownerFacilities.filter(f => f.id != currentFacId) : [];
+            
+            if(otherFacilities.length === 0) {
+                container.innerHTML = '<p class="text-sm text-slate-500 italic">No other facilities available to connect.</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            otherFacilities.forEach(f => {
+                const isSelected = selectedIds.includes(f.id.toString()) || selectedIds.includes(f.id);
+                container.innerHTML += `
+                    <label class="flex items-center cursor-pointer p-3 border border-slate-200 rounded-lg hover:border-slate-300 bg-white transition-custom">
+                        <input type="checkbox" name="connected_fac" value="${f.id}" class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer transition-custom" ${isSelected ? 'checked' : ''}>
+                        <span class="ml-3 text-sm font-semibold text-slate-700">${f.name}</span>
+                        <span class="ml-auto text-xs text-slate-400 capitalize">${f.type}</span>
+                    </label>
+                `;
+            });
         }
 
         function openEditModal(facility) {
@@ -1298,6 +1338,10 @@
             } else {
                 document.getElementById('fac-listing-status').value = 'pending';
             }
+
+            let selectedConnected = [];
+            try { selectedConnected = JSON.parse(facility.connected_facilities || '[]'); } catch(e){}
+            populateConnectedFacilities(facility.id, selectedConnected);
 
             if (facility.operating_hours) {
                 let parsedHours = facility.operating_hours;
@@ -3285,6 +3329,7 @@
                 base_price: basePrice,
                 pricing_rules: pricingRules,
                 image_url: JSON.stringify(window.localImagesArray),
+                connected_facilities: Array.from(document.querySelectorAll('input[name="connected_fac"]:checked')).map(cb => parseInt(cb.value, 10)),
                 is_instant_book: document.getElementById('fac-instant').checked ? 1 : 0,
                 advance_booking_days: document.getElementById('fac-advance-booking').value ? parseInt(document.getElementById('fac-advance-booking').value, 10) : 180,
                 has_processing_fee: document.getElementById('fac-has-processing-fee') && document.getElementById('fac-has-processing-fee').checked ? 1 : 0,
@@ -3735,5 +3780,7 @@
             }
         }
     </script>
+    <!-- Idle Timeout Tracker -->
+    <script src="js/idle-timeout.js"></script>
 </body>
 </html>

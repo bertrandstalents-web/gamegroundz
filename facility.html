@@ -207,6 +207,15 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Connected Facilities Switcher -->
+                        <div id="connected-facilities-switcher-container" class="hidden border-b border-slate-300 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative">
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="connected-facility-select">Facility Option</label>
+                            <select id="connected-facility-select" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none pr-6">
+                            </select>
+                            <div class="absolute right-3 top-6 text-slate-400 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                        </div>
+
                         <div class="p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-b-xl">
                             <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="activity-type">Activity Type</label>
                             <select id="activity-type" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none pr-6">
@@ -602,6 +611,28 @@
                     currentFacilityName = facility.name;
                     currentFacilityId = facility.id;
                     const facilityDiscounts = facility.discounts || [];
+                    
+                    // Handle Connected Facilities Switcher
+                    const connectedContainer = document.getElementById('connected-facilities-switcher-container');
+                    const connectedSelect = document.getElementById('connected-facility-select');
+                    
+                    if (facility.connected_facilities_data && facility.connected_facilities_data.length > 0) {
+                        connectedContainer.classList.remove('hidden');
+                        
+                        let optionsHtml = `<option value="${facility.id}" selected>${facility.name} (Current)</option>`;
+                        facility.connected_facilities_data.forEach(f => {
+                            optionsHtml += `<option value="${f.id}">${f.name}</option>`;
+                        });
+                        
+                        connectedSelect.innerHTML = optionsHtml;
+                        
+                        // Listen for switch
+                        connectedSelect.addEventListener('change', (e) => {
+                            if (e.target.value != facility.id) {
+                                window.location.href = `facility.html?id=${e.target.value}`;
+                            }
+                        });
+                    }
 
                     // Expose it globally for render
                     window.facilityDiscounts = facilityDiscounts;

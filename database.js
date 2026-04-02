@@ -116,7 +116,8 @@ async function initDatabase() {
             lng REAL,
             has_processing_fee INTEGER DEFAULT 1,
             processing_fee_amount REAL DEFAULT 15.00,
-            co_host_emails TEXT DEFAULT '[]'
+            co_host_emails TEXT DEFAULT '[]',
+            connected_facilities TEXT DEFAULT '[]'
         )`);
 
         // Facility Images Table
@@ -143,6 +144,10 @@ async function initDatabase() {
 
         try {
             await client.query(`ALTER TABLE facilities ADD COLUMN co_host_emails TEXT DEFAULT '[]'`);
+        } catch(e) {}
+
+        try {
+            await client.query(`ALTER TABLE facilities ADD COLUMN connected_facilities TEXT DEFAULT '[]'`);
         } catch(e) {}
 
         // Discounts Table
@@ -241,8 +246,8 @@ async function initDatabase() {
             ];
 
             const insertQuery = `INSERT INTO facilities 
-                (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, rating, reviews_count, image_url, is_instant_book, host_id, operating_hours, listing_status, advance_booking_days, lat, lng, has_processing_fee, processing_fee_amount) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, 180, $21, $22, 1, 15.00)`;
+                (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, rating, reviews_count, image_url, is_instant_book, host_id, operating_hours, listing_status, advance_booking_days, lat, lng, has_processing_fee, processing_fee_amount, connected_facilities) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, 180, $21, $22, 1, 15.00, '[]')`;
 
             for (let f of facilitiesData) {
                 await client.query(insertQuery, f);
