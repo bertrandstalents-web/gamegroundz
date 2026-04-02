@@ -1638,7 +1638,7 @@
                     let unreadBadgeHtml = (booking.is_read === 0) ? `<span class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm z-10 reservation-unread-badge" title="New Reservation">1</span>` : '';
 
                     container.innerHTML += `
-                        <div class="relative flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white'} rounded-2xl p-4 transition-custom flex-wrap gap-4">
+                        <div class="relative flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white cursor-pointer'} rounded-2xl p-4 transition-custom flex-wrap gap-4" ${!isManual ? `onclick="openReservationModal(${booking.id})"` : ''}>
                             ${unreadBadgeHtml}
                             <div class="flex items-center gap-4">
                                 ${iconBlock}
@@ -1656,7 +1656,7 @@
                                     <span class="${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'} text-xs px-2 py-0.5 rounded-full font-bold capitalize">
                                         ${booking.status}
                                     </span>
-                                    ${showCancelHost ? `<button onclick="openHostCancelModal(${booking.id})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Cancel & Refund"><i class="fa-solid fa-xmark mr-1"></i>Cancel</button>` : ''}
+                                    ${showCancelHost ? `<button onclick="event.stopPropagation(); openHostCancelModal(${booking.id})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Cancel & Refund"><i class="fa-solid fa-xmark mr-1"></i>Cancel</button>` : ''}
                                 </div>
                             </div>
                         </div>
@@ -1692,7 +1692,7 @@
                         `<div class="text-lg font-bold text-slate-500">$${Number(booking.total_price).toFixed(2)}</div>`;
 
                     pastContainer.innerHTML += `
-                        <div class="flex items-center justify-between border bg-slate-50/50 border-slate-200 rounded-2xl p-4 transition-custom flex-wrap gap-4 opacity-80">
+                        <div class="flex items-center justify-between border bg-slate-50/50 border-slate-200 rounded-2xl p-4 transition-custom flex-wrap gap-4 opacity-80 ${!isManual ? 'hover:bg-slate-100 cursor-pointer' : ''}" ${!isManual ? `onclick="openReservationModal(${booking.id})"` : ''}>
                             <div class="flex items-center gap-4">
                                 ${iconBlock}
                                 <div>
@@ -1709,7 +1709,7 @@
                                     <span class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold capitalize">
                                         ${isManual ? 'Offline' : booking.status}
                                     </span>
-                                    <button onclick="archiveHostBooking(${booking.id})" class="text-slate-500 hover:text-dark bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Archive Booking"><i class="fa-solid fa-box-archive mr-1"></i>Archive</button>
+                                    <button onclick="event.stopPropagation(); archiveHostBooking(${booking.id})" class="text-slate-500 hover:text-dark bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Archive Booking"><i class="fa-solid fa-box-archive mr-1"></i>Archive</button>
                                 </div>
                             </div>
                         </div>
@@ -3924,6 +3924,24 @@
             } catch (e) {
                 if(typeof showAlertModal === 'function') showAlertModal('Error', 'Communication error. Please try again.');
                 else alert('Communication error');
+            }
+        }
+
+        window.openReservationModal = async function(bookingId) {
+            const booking = allBookingsCache.find(b => b.id === bookingId);
+            if (!booking) return;
+
+            if (booking.booking_type !== 'manual') {
+                const confirmCancel = await showConfirmModal(
+                    'Booking Info', 
+                    `Name: ${booking.player_name || 'Guest'}\nEmail: ${booking.player_email || 'N/A'}\nPhone: ${booking.player_phone_number || 'N/A'}\nStatus: ${booking.status || 'undefined'}\n\nWould you like to cancel this booking?`,
+                    'Cancel Booking',
+                    'Close',
+                    true
+                );
+                if (confirmCancel) {
+                    openHostCancelModal(booking.id);
+                }
             }
         }
     </script>
