@@ -1055,6 +1055,13 @@
                 const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
                 fetch(`${API_BASE_URL}/api/host/notifications/mark-read`, { method: 'POST', credentials: 'include' })
                     .catch(e => console.error('Error marking notifications read:', e));
+                    
+                // Immediately remove the badge visually from the tab
+                const resTabBtn = document.getElementById('tab-btn-reservations');
+                if (resTabBtn) {
+                    const badge = resTabBtn.querySelector('.host-notification-badge');
+                    if (badge) badge.remove();
+                }
             }
         }
 
@@ -1578,6 +1585,24 @@
             // Filter out past bookings
             const upcomingBookings = bookings.filter(b => !b.isPast);
             const pastBookings = bookings.filter(b => b.isPast && !b.is_archived);
+            
+            // Notification Badge logic
+            const unreadCount = bookings.filter(b => b.is_read === 0).length;
+            const resTabBtn = document.getElementById('tab-btn-reservations');
+            if (resTabBtn) {
+                resTabBtn.classList.add('relative');
+                let badge = resTabBtn.querySelector('.host-notification-badge');
+                if (unreadCount > 0) {
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.className = 'host-notification-badge absolute top-0 -right-3 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm pointer-events-none';
+                        resTabBtn.appendChild(badge);
+                    }
+                    badge.textContent = unreadCount;
+                } else if (badge) {
+                    badge.remove();
+                }
+            }
 
             if (upcomingBookings.length === 0) {
                 container.innerHTML = `
@@ -1604,9 +1629,12 @@
                         `<div class="text-lg font-bold text-primary">$${booking.total_price}</div>`;
 
                     const showCancelHost = (!isManual && (booking.status === 'confirmed' || booking.status === 'pending'));
+                    
+                    let unreadBadgeHtml = (booking.is_read === 0) ? `<span class="absolute -top-1.5 -right-1.5 bg-red-500 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm z-10" title="New Reservation"></span>` : '';
 
                     container.innerHTML += `
-                        <div class="flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white'} rounded-2xl p-4 transition-custom flex-wrap gap-4">
+                        <div class="relative flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white'} rounded-2xl p-4 transition-custom flex-wrap gap-4">
+                            ${unreadBadgeHtml}
                             <div class="flex items-center gap-4">
                                 ${iconBlock}
                                 <div>
