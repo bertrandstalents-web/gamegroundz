@@ -167,7 +167,7 @@
                 <!-- Filter: Date & Time -->
                 <div class="mb-6 border-t border-slate-100 pt-6">
                     <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Availability</h4>
-                    <input type="date" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-3">
+                    <input type="text" placeholder="Any Date" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-3 cursor-pointer" onclick="if(this.showPicker) this.showPicker();">
                     <select class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                         <option>Any Time</option>
                         <option>Morning (6am - 12pm)</option>
