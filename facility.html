@@ -1043,7 +1043,7 @@
 
             // Handle reserve button clicks
             reserveBtn.addEventListener('click', initiateCheckout);
-            if(mobileReserveBtn) mobileReserveBtn.addEventListener('click', initiateCheckout);
+            // mobileReserveBtn handles opening the booking sheet instead (bound at bottom of document)
 
             // Handle browser back button (bfcache) restoring the disabled button state
             window.addEventListener('pageshow', (event) => {
@@ -1901,26 +1901,6 @@
     </script>
     <script src="js/modals.js"></script>
     <script src="js/i18n.js"></script>
-
-    <!-- Mobile Bottom Tab Bar -->
-    <div class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pt-3 pb-8 px-2 z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]" style="padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);">
-        <a href="index.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
-            <i class="fa-solid fa-compass text-xl mb-1"></i>
-            <span class="text-[10px] font-medium">Explore</span>
-        </a>
-        <a href="search.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
-            <i class="fa-solid fa-search text-xl mb-1"></i>
-            <span class="text-[10px] font-medium">Search</span>
-        </a>
-        <a href="player-dashboard.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
-            <i class="fa-regular fa-calendar-check text-xl mb-1 pt-0.5"></i>
-            <span class="text-[10px] font-medium mt-0.5">Bookings</span>
-        </a>
-        <a href="#" onclick="window.location.href='index.html?login=true'; return false;" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom" id="mobile-bottom-profile-btn">
-            <i class="fa-regular fa-user text-xl mb-1 pb-0.5"></i>
-            <span class="text-[10px] font-medium">Profile</span>
-        </a>
-    </div>
 
 </body>
 </html>
