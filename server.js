@@ -452,8 +452,9 @@ app.get('/api/facilities', (req, res) => {
     }
     
     if (req.query.search) {
-        query += " AND (name LIKE ? OR location LIKE ? OR subtitle LIKE ?)";
-        params.push(`%${req.query.search}%`, `%${req.query.search}%`, `%${req.query.search}%`);
+        const primarySearchTerm = req.query.search.split(',')[0].trim();
+        query += " AND (name ILIKE ? OR location ILIKE ? OR subtitle ILIKE ?)";
+        params.push(`%${primarySearchTerm}%`, `%${primarySearchTerm}%`, `%${primarySearchTerm}%`);
     }
 
     if (maxPrice && !isNaN(maxPrice)) {

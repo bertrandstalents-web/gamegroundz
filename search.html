@@ -326,7 +326,7 @@
 
         
         async function panMapToLocation(locationName) {
-            if (!map || !locationName) return;
+            if (!map || !locationName) return false;
 
             // Fallback: Fetch from Nominatim
             try {
@@ -335,11 +335,13 @@
                     const data = await response.json();
                     if (data.length > 0) {
                         map.setView([data[0].lat, data[0].lon], 10);
+                        return true;
                     }
                 }
             } catch (err) {
                 console.error("Failed to geocode location fallback:", err);
             }
+            return false;
         }
 
         // Price Range Slider Logic
@@ -630,7 +632,7 @@
 
         // Apply Filters API Call
         if(applyBtn && resultsCountEl) {
-            applyBtn.addEventListener('click', () => {
+            applyBtn.addEventListener('click', async () => {
                 currentPage = 1; // reset string on filter
                 const originalText = applyBtn.innerHTML;
                 applyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Filtering...';
@@ -648,7 +650,13 @@
                 });
 
                 const navSearch = document.getElementById('navLocationSearch');
-                const searchQuery = navSearch ? navSearch.value.trim() : '';
+                const rawSearchQuery = navSearch ? navSearch.value.trim() : '';
+                
+                let isLocation = false;
+                if (rawSearchQuery) {
+                    isLocation = await panMapToLocation(rawSearchQuery);
+                }
+                const searchQuery = isLocation ? '' : rawSearchQuery;
 
                 fetchFacilities({ 
                     maxPrice: maxPrice,
@@ -718,7 +726,7 @@
                 if (navSearch) navSearch.value = explicitLocation;
                 
                 // Pan map and fetch results
-                await panMapToLocation(explicitLocation);
+                const isLocation = await panMapToLocation(explicitLocation);
                 
                 // Construct initial filters based on URL
                 const typeCheckboxes = document.querySelectorAll('.type-filter:checked');
@@ -729,7 +737,7 @@
                     else selectedTypes.push(cb.value);
                 });
                 
-                fetchFacilities({ types: isAll ? [] : selectedTypes, search: explicitLocation }, false);
+                fetchFacilities({ types: isAll ? [] : selectedTypes, search: isLocation ? '' : explicitLocation }, isLocation);
                 
             } else if ("geolocation" in navigator && window.isSecureContext) {
                 // No explicit location, try geolocation to center the map on the user
