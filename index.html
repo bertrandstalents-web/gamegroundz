@@ -65,6 +65,31 @@
                         <i class="fa-solid fa-bars text-2xl"></i>
                     </button>
                 </div>
+
+                <!-- Profile Puck -->
+                <div class="relative flex items-center ml-auto md:ml-4">
+                    <button id="profile-puck-btn" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-custom shadow-sm overflow-hidden focus:outline-none z-10">
+                        <i class="fa-solid fa-user text-lg text-slate-400" id="puck-icon"></i>
+                        <span id="puck-initials" class="hidden text-sm font-bold text-slate-700 uppercase"></span>
+                        <img id="puck-img" class="hidden w-full h-full object-cover" src="" alt="Profile">
+                    </button>
+                    
+                    <!-- Dropdown -->
+                    <div id="puck-dropdown" class="hidden absolute top-12 right-0 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 transform origin-top-right transition-all">
+                        <div id="puck-logged-out">
+                            <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); openAuthModal(event);">Log in</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); toggleAuthMode(event); openAuthModal(event);">Sign up</a>
+                        </div>
+                        <div id="puck-logged-in" class="hidden">
+                            <div class="px-4 py-2 border-b border-slate-100 mb-1">
+                                <span class="block text-sm font-bold text-slate-800 truncate" id="puck-name">User</span>
+                                <span class="block text-xs text-slate-500 truncate" id="puck-email">user@example.com</span>
+                            </div>
+                            <a href="#" id="puck-dashboard" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary">Dashboard</a>
+                            <button id="puck-logout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom">Log out</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -612,6 +637,24 @@
             const menu = document.getElementById('mobile-menu');
             menu.classList.toggle('hidden');
         });
+
+        // Profile Puck Logic
+        const puckBtn = document.getElementById('profile-puck-btn');
+        const puckDropdown = document.getElementById('puck-dropdown');
+        if (puckBtn && puckDropdown) {
+            puckBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                puckDropdown.classList.toggle('hidden');
+            });
+            document.addEventListener('click', (e) => {
+                if (!puckDropdown.contains(e.target) && e.target !== puckBtn && !puckBtn.contains(e.target)) {
+                    puckDropdown.classList.add('hidden');
+                }
+            });
+        }
+        const puckLogout = document.getElementById('puck-logout');
+        if (puckLogout) puckLogout.addEventListener('click', handleLogout);
 
         // Autocomplete for Location Search via Google Places API
         const searchInput = document.getElementById('locationSearch');
@@ -1183,6 +1226,46 @@
                         <span class="text-[10px] font-medium text-primary">Profile</span>
                     `;
                 }
+                
+                // Update puck UI for logged in user
+                const puckIcon = document.getElementById('puck-icon');
+                const puckInitials = document.getElementById('puck-initials');
+                const puckImg = document.getElementById('puck-img');
+                const puckLoggedOut = document.getElementById('puck-logged-out');
+                const puckLoggedIn = document.getElementById('puck-logged-in');
+                const puckName = document.getElementById('puck-name');
+                const puckEmail = document.getElementById('puck-email');
+                const puckDashboard = document.getElementById('puck-dashboard');
+                
+                if (puckIcon) puckIcon.classList.add('hidden');
+                
+                if (user.profile_picture) {
+                    if (puckImg) {
+                        puckImg.src = user.profile_picture;
+                        puckImg.classList.remove('hidden');
+                    }
+                    if (puckInitials) puckInitials.classList.add('hidden');
+                } else {
+                    if (puckImg) puckImg.classList.add('hidden');
+                    if (puckInitials) {
+                        const initials = (user.name || user.first_name || 'U').substring(0, 2);
+                        puckInitials.textContent = initials;
+                        puckInitials.classList.remove('hidden');
+                    }
+                }
+                
+                if (puckLoggedOut) puckLoggedOut.classList.add('hidden');
+                if (puckLoggedIn) {
+                    puckLoggedIn.classList.remove('hidden');
+                    if (puckName) puckName.textContent = user.name || user.first_name || 'User';
+                    if (puckEmail) puckEmail.textContent = user.email || '';
+                    if (puckDashboard) {
+                        if (user.role === 'admin') puckDashboard.href = 'admin-dashboard.html';
+                        else if (user.role === 'host') puckDashboard.href = 'owner-dashboard.html';
+                        else puckDashboard.href = 'player-dashboard.html';
+                    }
+                }
+
             } else {
                 if (loginBtn) {
                     loginBtn.textContent = "Log in";
@@ -1204,6 +1287,19 @@
                         <span class="text-[10px] font-medium">Log in</span>
                     `;
                 }
+
+                // Update puck UI for logged out user
+                const puckIcon = document.getElementById('puck-icon');
+                const puckInitials = document.getElementById('puck-initials');
+                const puckImg = document.getElementById('puck-img');
+                const puckLoggedOut = document.getElementById('puck-logged-out');
+                const puckLoggedIn = document.getElementById('puck-logged-in');
+
+                if (puckIcon) puckIcon.classList.remove('hidden');
+                if (puckInitials) puckInitials.classList.add('hidden');
+                if (puckImg) puckImg.classList.add('hidden');
+                if (puckLoggedOut) puckLoggedOut.classList.remove('hidden');
+                if (puckLoggedIn) puckLoggedIn.classList.add('hidden');
             }
         }
 
