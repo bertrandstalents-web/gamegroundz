@@ -78,7 +78,7 @@ function triggerGoogleTranslate(targetLangCode) {
 
 // Helper: update the UI of the custom toggle switches
 function updateToggleUI(currentLang) {
-    // Desktop UI elements
+    // Desktop UI elements (Old style in header)
     const btnEn = document.getElementById('lang-btn-en');
     const btnFr = document.getElementById('lang-btn-fr');
 
@@ -90,6 +90,21 @@ function updateToggleUI(currentLang) {
             // French active
             btnFr.className = "px-3 py-1 rounded-full text-sm font-bold bg-white text-dark shadow-sm transition-all duration-200 notranslate";
             btnEn.className = "px-3 py-1 rounded-full text-sm font-bold text-slate-500 hover:text-dark transition-all duration-200 cursor-pointer notranslate";
+        }
+    }
+
+    // Dropdown UI elements (New style in puck dropdown)
+    const dropBtnEn = document.getElementById('dropdown-lang-btn-en');
+    const dropBtnFr = document.getElementById('dropdown-lang-btn-fr');
+
+    if (dropBtnEn && dropBtnFr) {
+        if (currentLang === 'en') {
+            dropBtnEn.className = "px-2 py-0.5 rounded text-xs font-bold bg-white text-dark shadow-sm border border-slate-200 cursor-pointer notranslate";
+            dropBtnFr.className = "px-2 py-0.5 rounded text-xs font-bold text-slate-500 hover:text-dark border border-transparent cursor-pointer notranslate";
+        } else {
+            // French active
+            dropBtnFr.className = "px-2 py-0.5 rounded text-xs font-bold bg-white text-dark shadow-sm border border-slate-200 cursor-pointer notranslate";
+            dropBtnEn.className = "px-2 py-0.5 rounded text-xs font-bold text-slate-500 hover:text-dark border border-transparent cursor-pointer notranslate";
         }
     }
 

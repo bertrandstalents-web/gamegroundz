@@ -61,6 +61,8 @@
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-6" id="nav-actions">
                     <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
+                    <div class="h-6 w-px bg-slate-300"></div>
+                    
                     <!-- Profile Puck -->
                     <div class="relative flex items-center">
                         <button id="profile-puck-btn" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-custom shadow-sm overflow-hidden focus:outline-none z-10">
@@ -70,7 +72,16 @@
                         </button>
                         
                         <!-- Dropdown -->
-                        <div id="puck-dropdown" class="hidden absolute top-12 right-0 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 transform origin-top-right transition-all">
+                        <div id="puck-dropdown" class="hidden absolute top-12 right-0 w-48 bg-white rounded-xl shadow-lg border border-slate-100 pb-2 z-50 transform origin-top-right transition-all">
+                            <!-- Language Toggle -->
+                            <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl mb-2">
+                                <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Language</span>
+                                <div class="flex items-center space-x-1">
+                                    <button onclick="window.switchLanguage('en')" id="dropdown-lang-btn-en" class="px-2 py-0.5 rounded text-xs font-bold bg-white text-dark shadow-sm border border-slate-200 cursor-pointer notranslate">EN</button>
+                                    <button onclick="window.switchLanguage('fr')" id="dropdown-lang-btn-fr" class="px-2 py-0.5 rounded text-xs font-bold text-slate-500 hover:text-dark border border-transparent cursor-pointer notranslate">FR</button>
+                                </div>
+                            </div>
+
                             <div id="puck-logged-out">
                                 <a href="#" onclick="window.location.href='index.html?login=true&redirect='+encodeURIComponent(window.location.pathname+window.location.search); return false;" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary">Log in</a>
                                 <a href="#" onclick="window.location.href='index.html?login=true&redirect='+encodeURIComponent(window.location.pathname+window.location.search); return false;" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary">Sign up</a>
@@ -80,7 +91,7 @@
                                     <span class="block text-sm font-bold text-slate-800 truncate" id="puck-name">User</span>
                                     <span class="block text-xs text-slate-500 truncate" id="puck-email">user@example.com</span>
                                 </div>
-                                <a href="#" id="puck-dashboard" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary">Dashboard</a>
+                                <a href="player-dashboard.html" id="puck-dashboard" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary">Dashboard</a>
                                 <button id="puck-logout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom">Log out</button>
                             </div>
                         </div>
