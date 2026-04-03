@@ -1891,17 +1891,17 @@
                     container.innerHTML += `
                         <div class="relative flex items-center justify-between border ${isManual ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-300 bg-white cursor-pointer'} ${isPastOrArchived ? 'bg-slate-50/50 opacity-80' : ''} rounded-2xl p-4 transition-custom flex-wrap gap-4" ${!isManual ? `onclick="openReservationModal(${booking.id})"` : ''}>
                             ${unreadBadgeHtml}
-                            <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-4 flex-1 min-w-[250px]">
                                 ${iconBlock}
                                 <div>
                                     ${detailBlock}
                                 </div>
                             </div>
-                            <div class="text-right ${isPastOrArchived ? 'grayscale' : ''}">
+                            <div class="text-center w-40 flex-shrink-0 ${isPastOrArchived ? 'grayscale' : ''}">
                                 <div class="font-bold ${isPastOrArchived ? 'text-slate-600' : 'text-dark'}">${booking.booking_date}</div>
                                 <div class="text-sm font-medium ${isPastOrArchived ? 'text-slate-500' : 'text-slate-600'}">${formatTimeSlots(JSON.parse(booking.time_slots))}</div>
                             </div>
-                            <div class="text-right flex-shrink-0 min-w-[80px] flex flex-col items-end gap-2">
+                            <div class="flex-1 min-w-[120px] flex flex-col items-end gap-2">
                                 ${priceBlock}
                                 <div class="flex items-center justify-end gap-2 w-full">
                                     <span class="${statusColor} text-xs px-2 py-0.5 rounded-full font-bold capitalize">
