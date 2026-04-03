@@ -589,8 +589,8 @@
         function updateListingsFromMapBounds() {
             if (!map || allFetchedFacilities.length === 0) return;
 
-            const mapContainer = document.getElementById('map');
-            const isMapVisible = window.getComputedStyle(mapContainer).display !== 'none';
+            const mapViewEl = document.getElementById('map-view');
+            const isMapVisible = window.getComputedStyle(mapViewEl).display !== 'none';
 
             let visibleFacilities = allFetchedFacilities;
 
@@ -636,11 +636,11 @@
 
         // Handle window resize to invalidate map size if it becomes visible
         window.addEventListener('resize', () => {
-            const mapContainer = document.getElementById('map');
-            if (map && mapContainer && window.getComputedStyle(mapContainer).display !== 'none') {
+            const mapViewEl = document.getElementById('map-view');
+            if (map && mapViewEl && window.getComputedStyle(mapViewEl).display !== 'none') {
                 map.invalidateSize();
                 updateListingsFromMapBounds();
-            } else if (mapContainer && window.getComputedStyle(mapContainer).display === 'none') {
+            } else if (mapViewEl && window.getComputedStyle(mapViewEl).display === 'none') {
                 updateListingsFromMapBounds();
             }
         });
