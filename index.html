@@ -109,10 +109,13 @@
                 
                 <!-- Search Box -->
                 <div class="glass-dark p-3 rounded-2xl md:rounded-full shadow-2xl backdrop-blur-md max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-2 border border-slate-700/50">
-                    <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom">
+                    <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom relative">
                         <i class="fa-solid fa-location-dot text-slate-400 mr-3"></i>
-                        <div class="relative w-full">
-                            <input type="text" id="locationSearch" autocomplete="off" placeholder="Where do you want to play?" class="bg-transparent text-white w-full outline-none placeholder-slate-400 font-medium">
+                        <div class="relative w-full flex items-center">
+                            <input type="text" id="locationSearch" autocomplete="off" placeholder="Where do you want to play?" class="bg-transparent text-white w-full outline-none placeholder-slate-400 font-medium pr-10">
+                            <button id="home-locate-me-btn" type="button" class="absolute right-0 text-slate-400 hover:text-white transition-custom focus:outline-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700" title="Use my current location">
+                                <i class="fa-solid fa-location-crosshairs"></i>
+                            </button>
                         </div>
                     </div>
                     <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom">
@@ -743,6 +746,48 @@
                 if (typeSelect) params.append('type', typeSelect);
                 
                 window.location.href = `search.html?${params.toString()}`;
+            });
+        }
+
+        const homeLocateBtn = document.getElementById('home-locate-me-btn');
+        if (homeLocateBtn) {
+            homeLocateBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const icon = homeLocateBtn.querySelector('i');
+                const searchInput = document.getElementById('locationSearch');
+                
+                if ("geolocation" in navigator && window.isSecureContext) {
+                    icon.className = 'fa-solid fa-spinner fa-spin';
+                    navigator.geolocation.getCurrentPosition(
+                        async (position) => {
+                            try {
+                                const lat = position.coords.latitude;
+                                const lng = position.coords.longitude;
+                                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`);
+                                const data = await res.json();
+                                if (data && data.address) {
+                                    const city = data.address.city || data.address.town || data.address.village || data.address.county || "Current Location";
+                                    searchInput.value = city;
+                                    homeSearchBtn.click();
+                                } else {
+                                    searchInput.value = 'Current Location';
+                                    homeSearchBtn.click();
+                                }
+                            } catch (err) {
+                                searchInput.value = 'Current Location';
+                                homeSearchBtn.click();
+                            } finally {
+                                icon.className = 'fa-solid fa-location-crosshairs';
+                            }
+                        },
+                        (error) => {
+                            alert("Location access denied or unavailable. Please enter your location manually.");
+                            icon.className = 'fa-solid fa-location-crosshairs';
+                        }
+                    );
+                } else {
+                    alert("Exact GPS location is blocked by your browser on this connection. Please enter your location manually.");
+                }
             });
         }
 

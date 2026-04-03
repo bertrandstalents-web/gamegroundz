@@ -83,8 +83,8 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-1 max-w-[800px] mx-auto w-full px-4 py-12">
-        <div class="mb-8 text-center">
+    <main class="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+        <div class="mb-8">
             <h1 class="text-3xl font-extrabold text-dark tracking-tight mb-2" id="dashboard-title">Host Dashboard</h1>
             <p class="text-slate-500 text-lg">Manage your facilities and upcoming reservations.</p>
         </div>
@@ -102,43 +102,53 @@
         </div>
 
         <div id="dashboard-content" class="hidden">
-            <!-- Live Revenue Dashboard -->
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-dark mb-4">Live Revenue Dashboard</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Today's Revenue -->
-                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                        <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Today's Revenue</span>
-                        <span id="stat-today-rev" class="text-3xl font-extrabold text-dark">$0</span>
-                    </div>
-                    <!-- This Week's Revenue -->
-                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                        <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Week's Revenue</span>
-                        <span id="stat-week-rev" class="text-3xl font-extrabold text-dark">$0</span>
-                    </div>
-                    <!-- This Month's Revenue -->
-                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                        <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Month's Revenue</span>
-                        <span id="stat-month-rev" class="text-3xl font-extrabold text-dark">$0</span>
-                    </div>
-                    <!-- Bookings Today -->
-                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                        <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Bookings Today</span>
-                        <span id="stat-today-count" class="text-3xl font-extrabold text-dark">0</span>
+            <!-- Dashboard Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                
+                <!-- Sidebar Navigation -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sticky top-28">
+                        <ul class="space-y-1">
+                            <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom"><i class="fa-solid fa-list w-6 mr-3"></i> My Facilities</button></li>
+                            <li><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 mr-3"></i> Reservations</button></li>
+                            <li><button id="tab-btn-calendar" onclick="switchTab('calendar')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-regular fa-calendar w-6 mr-3"></i> Calendar</button></li>
+                            <li><button id="tab-btn-discounts" onclick="switchTab('discounts')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tags w-6 mr-3"></i> Discounts</button></li>
+                            <li><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 mr-3"></i> Wallet & Payouts</button></li>
+                            <li><button id="tab-btn-profile" onclick="switchTab('profile')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-user w-6 mr-3"></i> Profile</button></li>
+                            <li><button id="tab-btn-add-new" onclick="switchTab('add-new')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-plus w-6 mr-3"></i> Add New Facility</button></li>
+                        </ul>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tabs Navigation -->
-            <div class="flex border-b border-slate-200 mb-8 space-x-8">
-                <button onclick="switchTab('facilities')" id="tab-btn-facilities" class="pb-4 font-bold text-lg border-b-2 border-primary text-primary transition-custom">My Facilities</button>
-                <button onclick="switchTab('reservations')" id="tab-btn-reservations" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Reservations</button>
-                <button onclick="switchTab('calendar')" id="tab-btn-calendar" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Calendar</button>
-                <button onclick="switchTab('discounts')" id="tab-btn-discounts" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Discounts</button>
-                <button onclick="switchTab('wallet')" id="tab-btn-wallet" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Wallet & Payouts</button>
-                <button onclick="switchTab('profile')" id="tab-btn-profile" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Profile</button>
-                <button onclick="switchTab('add-new')" id="tab-btn-add-new" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Add New Facility</button>
-            </div>
+                <!-- Content Area -->
+                <div class="lg:col-span-3">
+
+                    <!-- Live Revenue Dashboard -->
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold text-dark mb-4">Live Revenue Dashboard</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <!-- Today's Revenue -->
+                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                                <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Today's Revenue</span>
+                                <span id="stat-today-rev" class="text-3xl font-extrabold text-dark">$0</span>
+                            </div>
+                            <!-- This Week's Revenue -->
+                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                                <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Week's Revenue</span>
+                                <span id="stat-week-rev" class="text-3xl font-extrabold text-dark">$0</span>
+                            </div>
+                            <!-- This Month's Revenue -->
+                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                                <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Month's Revenue</span>
+                                <span id="stat-month-rev" class="text-3xl font-extrabold text-dark">$0</span>
+                            </div>
+                            <!-- Bookings Today -->
+                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                                <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Bookings Today</span>
+                                <span id="stat-today-count" class="text-3xl font-extrabold text-dark">0</span>
+                            </div>
+                        </div>
+                    </div>
 
             <!-- Tab: My Facilities -->
             <div id="tab-facilities" class="block">
@@ -183,6 +193,27 @@
                                         <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
                                             <input type="checkbox" value="archived" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" onchange="updateStatusBtnText(); applyReservationFilters();" />
                                             <span class="font-medium text-slate-700">Archived Reservations</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="relative" id="res-type-dropdown-container">
+                                <button type="button" onclick="document.getElementById('res-type-dropdown-menu').classList.toggle('hidden')" class="px-4 py-2 border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-custom font-medium rounded-xl focus:outline-none flex items-center justify-between gap-2 min-w-[180px] cursor-pointer shadow-sm">
+                                    <span id="res-type-btn-text">Online, Offline</span>
+                                    <i class="fa-solid fa-chevron-down text-sm"></i>
+                                </button>
+                                
+                                <!-- Dropdown menu -->
+                                <div id="res-type-dropdown-menu" class="hidden absolute left-0 top-full mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden text-sm">
+                                    <div class="p-3 space-y-2 max-h-60 overflow-y-auto">
+                                        <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
+                                            <input type="checkbox" value="online" class="res-type-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked onchange="updateTypeBtnText(); applyReservationFilters();" />
+                                            <span class="font-medium text-slate-700">Online Bookings</span>
+                                        </label>
+                                        <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
+                                            <input type="checkbox" value="offline" class="res-type-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked onchange="updateTypeBtnText(); applyReservationFilters();" />
+                                            <span class="font-medium text-slate-700">Offline Bookings</span>
                                         </label>
                                     </div>
                                 </div>
@@ -1002,13 +1033,14 @@
 
                 <div class="pt-4 border-t border-slate-100 flex justify-end">
                     <button type="button" id="cancel-btn" class="text-slate-500 hover:text-dark font-medium px-6 py-3 mr-2 transition-custom" onclick="window.history.back()">Cancel</button>
-                    <button type="submit" id="submit-btn" class="bg-primary hover:bg-primaryHover text-white px-8 py-3 rounded-xl font-bold transition-custom shadow-glow flex items-center">
-                        <i class="fa-solid fa-plus mr-2"></i> Create Listing
                     </button>
                     </form>
                 </div>
             </div>
-        </div>
+
+                </div> <!-- End lg:col-span-3 -->
+            </div> <!-- End Dashboard Content Grid -->
+        </div> <!-- End dashboard-content -->
     </main>
 
     <script>
@@ -1083,12 +1115,12 @@
             const btns = ['facilities', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile'];
             btns.forEach(btn => {
                 const el = document.getElementById(`tab-btn-${btn}`);
-                if(el) el.className = 'pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom';
+                if(el) el.className = 'w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
             });
 
             // Active button styles
             const activeBtn = document.getElementById(`tab-btn-${tabId}`);
-            if(activeBtn) activeBtn.className = 'pb-4 font-bold text-lg border-b-2 border-primary text-primary transition-custom';
+            if(activeBtn) activeBtn.className = 'w-full text-left flex items-center px-4 py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom';
 
             if (tabId === 'discounts') {
                 const discSelectEl = document.getElementById('discount-facility-select');
@@ -1678,12 +1710,32 @@
             }
         }
 
-        // Close dropdown when clicking outside
+        function updateTypeBtnText() {
+            const checked = document.querySelectorAll('.res-type-checkbox:checked');
+            const btnText = document.getElementById('res-type-btn-text');
+            if(!btnText) return;
+            if (checked.length === 0) {
+                btnText.textContent = "None Selected";
+            } else if (checked.length === 2) {
+                btnText.textContent = "All Bookings";
+            } else {
+                const labels = Array.from(checked).map(cb => cb.nextElementSibling.textContent.trim().replace(' Bookings', ''));
+                btnText.textContent = labels.join(', ');
+            }
+        }
+
+        // Close dropdowns when clicking outside
         document.addEventListener('click', function(e) {
-            const dropContainer = document.getElementById('res-status-dropdown-container');
-            const dropMenu = document.getElementById('res-status-dropdown-menu');
-            if (dropContainer && dropMenu && !dropContainer.contains(e.target)) {
-                dropMenu.classList.add('hidden');
+            const statusContainer = document.getElementById('res-status-dropdown-container');
+            const statusMenu = document.getElementById('res-status-dropdown-menu');
+            if (statusContainer && statusMenu && !statusContainer.contains(e.target)) {
+                statusMenu.classList.add('hidden');
+            }
+            
+            const typeContainer = document.getElementById('res-type-dropdown-container');
+            const typeMenu = document.getElementById('res-type-dropdown-menu');
+            if (typeContainer && typeMenu && !typeContainer.contains(e.target)) {
+                typeMenu.classList.add('hidden');
             }
         });
 
@@ -1694,6 +1746,10 @@
             // Get selected statuses from checkboxes
             const checkedStatusInputs = document.querySelectorAll('.res-status-checkbox:checked');
             const selectedStatuses = Array.from(checkedStatusInputs).map(cb => cb.value);
+            
+            // Get selected types from checkboxes
+            const checkedTypeInputs = document.querySelectorAll('.res-type-checkbox:checked');
+            const selectedTypes = Array.from(checkedTypeInputs).map(cb => cb.value);
             
             const dateFilter = document.getElementById('res-date-filter').value;
             const facilityFilter = document.getElementById('res-facility-filter').value;
@@ -1714,6 +1770,12 @@
             filteredBookings = filteredBookings.filter(b => {
                 const bStatus = b.is_archived ? 'archived' : (b.isPast ? 'past' : 'upcoming');
                 return selectedStatuses.includes(bStatus);
+            });
+            
+            // 1.5 Type Filter
+            filteredBookings = filteredBookings.filter(b => {
+                const bType = b.booking_type === 'manual' ? 'offline' : 'online';
+                return selectedTypes.includes(bType);
             });
             
             // 2. Date Filter
