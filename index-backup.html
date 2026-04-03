@@ -59,8 +59,8 @@
                     <a href="owner-dashboard.html" id="list-facility-btn" class="bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-full font-medium transition-custom shadow-md hover:shadow-lg">List Your Facility</a>
                 </div>
 
-                <!-- Mobile Menu Button (Hidden in favor of bottom nav) -->
-                <div class="hidden md:hidden items-center">
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
                     <button id="mobile-menu-btn" class="text-slate-600 hover:text-dark focus:outline-none">
                         <i class="fa-solid fa-bars text-2xl"></i>
                     </button>
@@ -89,20 +89,19 @@
     <!-- Hero Section -->
     <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-darker">
         <!-- Background Elements -->
-        <div class="absolute inset-0 z-0 opacity-70">
-            <img src="images/colisee_laval_real.jpg" alt="Ice Rink Background" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-t from-darker via-darker/70 to-transparent"></div>
-            <div class="absolute inset-0 bg-gradient-to-r from-darker via-darker/50 to-transparent"></div>
+        <div class="absolute inset-0 z-0 opacity-40">
+            <img src="https://images.unsplash.com/photo-1574629810360-1e82846f49ca?q=80&w=2800&auto=format&fit=crop" alt="Ice Rink Background" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-darker via-darker/80 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-darker via-darker/60 to-transparent"></div>
         </div>
         
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center w-full max-w-6xl mx-auto">
+            <div class="text-center max-w-4xl mx-auto">
                 <span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 font-semibold text-sm mb-6 shadow-glow">
                     <i class="fa-solid fa-bolt mr-1"></i> The New Standard for Sports Booking
                 </span>
-                <h1 class="text-4xl md:text-7xl font-extrabold text-white tracking-tight mb-6 md:mb-8 leading-tight">
-                    <span class="whitespace-normal md:whitespace-nowrap">Stop chasing Sport Facilities.</span> <br class="hidden md:block" />
-                    <span class="text-gradient inline-block mt-1 md:mt-5">Start BOOKING them.</span>
+                <h1 class="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-8 leading-tight">
+                    Book sports facilities as easily as <span class="text-gradient inline-block">booking an Airbnb.</span>
                 </h1>
                 <p class="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto font-light">
                     The single destination to discover, compare, and reserve ice rinks, fields, courts, and training spaces.
@@ -154,9 +153,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-3xl font-bold text-dark mb-10 text-center">Browse by Surface Type</h2>
             
-            <div class="flex overflow-x-auto md:grid md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 pb-6 md:pb-0 snap-x snap-mandatory" style="scrollbar-width: none;">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                 <!-- Category 1 -->
-                <a href="search.html?type=ice" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
+                <a href="search.html?type=ice" class="group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
                     <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
                         <i class="fa-solid fa-snowflake text-2xl"></i>
                     </div>
@@ -164,7 +163,7 @@
                 </a>
                 
                 <!-- Category 2 -->
-                <a href="search.html?type=soccer" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
+                <a href="search.html?type=soccer" class="group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
                     <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
                         <i class="fa-solid fa-futbol text-2xl"></i>
                     </div>
@@ -172,7 +171,7 @@
                 </a>
 
                 <!-- Category 3 -->
-                <a href="search.html?type=basketball" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
+                <a href="search.html?type=basketball" class="group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
                     <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
                         <i class="fa-solid fa-basketball text-2xl"></i>
                     </div>
@@ -180,7 +179,7 @@
                 </a>
 
                 <!-- Category 4 -->
-                <a href="search.html?type=tennis" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
+                <a href="search.html?type=tennis" class="group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
                     <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
                         <i class="fa-solid fa-baseball text-2xl"></i>
                     </div>
@@ -188,7 +187,7 @@
                 </a>
 
                 <!-- Category 5 -->
-                <a href="search.html?type=football" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
+                <a href="search.html?type=football" class="group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
                     <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
                         <i class="fa-solid fa-football text-2xl"></i>
                     </div>
@@ -196,23 +195,13 @@
                 </a>
 
                 <!-- Category 6 -->
-                <a href="search.html?type=gym" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
+                <a href="search.html?type=gym" class="group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
                     <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
                         <i class="fa-solid fa-dumbbell text-2xl"></i>
                     </div>
                     <span class="font-semibold text-slate-800 group-hover:text-primary transition-custom text-center">Training Gyms</span>
                 </a>
             </div>
-            
-            <style>
-                .hide-scrollbar::-webkit-scrollbar {
-                    display: none;
-                }
-                .hide-scrollbar {
-                    -ms-overflow-style: none; /* IE and Edge */
-                    scrollbar-width: none; /* Firefox */
-                }
-            </style>
         </div>
     </section>
 
@@ -480,26 +469,6 @@
     </footer>
 
     
-
-    <!-- Mobile Bottom Tab Bar -->
-    <div class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pt-3 pb-8 px-2 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]" style="padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);">
-        <a href="index.html" class="flex flex-col items-center p-2 text-primary">
-            <i class="fa-solid fa-compass text-xl mb-1"></i>
-            <span class="text-[10px] font-bold">Explore</span>
-        </a>
-        <a href="search.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
-            <i class="fa-solid fa-search text-xl mb-1"></i>
-            <span class="text-[10px] font-medium">Search</span>
-        </a>
-        <a href="player-dashboard.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
-            <i class="fa-regular fa-calendar-check text-xl mb-1 pt-0.5"></i>
-            <span class="text-[10px] font-medium mt-0.5">Bookings</span>
-        </a>
-        <a href="#" onclick="window.location.href='index.html?login=true'; return false;" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom" id="mobile-bottom-profile-btn">
-            <i class="fa-regular fa-user text-xl mb-1 pb-0.5"></i>
-            <span class="text-[10px] font-medium">Profile</span>
-        </a>
-    </div>
 
     <!-- Auth Modal Overlay -->
     <div id="auth-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">

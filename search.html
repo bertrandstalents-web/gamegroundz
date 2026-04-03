@@ -65,7 +65,7 @@
                     <a href="owner-dashboard.html" id="list-facility-btn" class="bg-dark hover:bg-slate-800 text-white px-5 py-2 rounded-full font-medium transition-custom shadow-sm text-sm">List Your Facility</a>
                 </div>
 
-                <div class="md:hidden flex items-center">
+                <div class="hidden md:hidden items-center">
                     <button class="text-slate-600 hover:text-dark focus:outline-none"><i class="fa-solid fa-bars text-2xl"></i></button>
                 </div>
             </div>
@@ -75,12 +75,23 @@
     <!-- Main Content -->
     <div class="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
         
+        <!-- Mobile Filter Overlay -->
+        <div id="mobile-filter-overlay" class="fixed inset-0 bg-slate-900/60 z-[55] hidden lg:hidden backdrop-blur-sm transition-opacity opacity-0"></div>
+
         <!-- Sidebar Filters -->
-        <aside class="w-full lg:w-72 flex-shrink-0">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-28">
+        <aside id="filters-sidebar" class="fixed inset-x-0 bottom-0 z-[60] transform translate-y-full transition-transform duration-300 ease-in-out lg:relative lg:translate-y-0 lg:z-auto lg:w-72 lg:flex-shrink-0 w-full h-[85vh] lg:h-auto rounded-t-3xl lg:rounded-none bg-white lg:bg-transparent shadow-2xl lg:shadow-none flex flex-col">
+            
+            <!-- Mobile Handle -->
+            <div class="lg:hidden w-full flex justify-center pt-3 pb-2 cursor-pointer" id="close-filters-handle">
+                <div class="w-12 h-1.5 bg-slate-300 rounded-full"></div>
+            </div>
+
+            <!-- Inner container -->
+            <div class="bg-white lg:rounded-2xl lg:shadow-sm lg:border lg:border-slate-200 p-6 lg:sticky lg:top-28 overflow-y-auto flex-1 pb-24 lg:pb-6">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="font-bold text-lg text-dark">Filters</h3>
-                    <button class="text-sm text-primary hover:text-primaryHover font-medium">Clear All</button>
+                    <button class="text-sm text-primary hover:text-primaryHover font-medium lg:hidden" id="mobile-filter-close-text">Close</button>
+                    <button class="text-sm text-primary hover:text-primaryHover font-medium hidden lg:block">Clear All</button>
                 </div>
                 
                 <!-- Filter: Sport Type -->
@@ -140,7 +151,7 @@
                     </select>
                 </div>
 
-                <button id="apply-filters-btn" class="w-full bg-dark hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-custom flex items-center justify-center">
+                <button id="apply-filters-btn" class="w-full bg-dark hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-custom flex items-center justify-center mt-auto lg:mt-0">
                     Apply Filters
                 </button>
             </div>
@@ -169,7 +180,7 @@
             <div class="flex flex-col xl:flex-row gap-6 mt-6">
                 
                 <!-- Results Grid -->
-                <div class="flex-1 w-full">
+                <div class="flex-1 w-full pb-20 lg:pb-0" id="results-view">
                     <div id="facilitiesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8">
                         <!-- Facilities will be injected here -->
                         <div class="col-span-full flex justify-center py-12">
@@ -192,8 +203,12 @@
                 </div>
 
                 <!-- Map View -->
-                <div class="hidden xl:block w-[450px] flex-shrink-0 h-[calc(100vh-120px)] sticky top-28 rounded-2xl overflow-hidden shadow-soft border border-slate-200 z-10" id="map">
+                <div class="hidden lg:block w-[450px] flex-shrink-0 h-[calc(100vh-120px)] sticky top-28 rounded-2xl overflow-hidden shadow-soft border border-slate-200 z-10" id="map-view">
+                    <button id="mobile-close-map-btn" class="lg:hidden absolute top-4 left-4 z-[1000] bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-md text-slate-800 text-lg">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
                     <!-- Leaflet map goes here -->
+                    <div id="map" class="w-full h-full"></div>
                 </div>
             </div>
             
@@ -848,7 +863,107 @@
                 }
             } catch (e) { }
         });
+
+        // Mobile Filter & Map Logic
+        const filtersSidebar = document.getElementById('filters-sidebar');
+        const filterOverlay = document.getElementById('mobile-filter-overlay');
+        const openFiltersBtn = document.getElementById('open-filters-btn');
+        const closeFiltersHandle = document.getElementById('close-filters-handle');
+        const closeFiltersText = document.getElementById('mobile-filter-close-text');
+        
+        function openFilters() {
+            filterOverlay.classList.remove('hidden');
+            // small delay to allow display block to take effect before transition
+            setTimeout(() => {
+                filterOverlay.classList.remove('opacity-0');
+                filtersSidebar.classList.remove('translate-y-full');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFilters() {
+            filterOverlay.classList.add('opacity-0');
+            filtersSidebar.classList.add('translate-y-full');
+            
+            setTimeout(() => {
+                filterOverlay.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        if(openFiltersBtn) openFiltersBtn.addEventListener('click', openFilters);
+        if(closeFiltersHandle) closeFiltersHandle.addEventListener('click', closeFilters);
+        if(closeFiltersText) closeFiltersText.addEventListener('click', closeFilters);
+        if(filterOverlay) filterOverlay.addEventListener('click', closeFilters);
+
+        // We also want the Apply Filters button on mobile to close the modal
+        const applyFiltersMobileBtn = document.getElementById('apply-filters-btn');
+        if(applyFiltersMobileBtn) {
+            applyFiltersMobileBtn.addEventListener('click', () => {
+                if(window.innerWidth < 1024) closeFilters(); // lg breakpoint
+            });
+        }
+
+        // Mobile Map Toggle
+        const mobileMapToggle = document.getElementById('mobile-map-toggle');
+        const resultsView = document.getElementById('results-view');
+        const mapView = document.getElementById('map-view');
+        const mobileCloseMapBtn = document.getElementById('mobile-close-map-btn');
+
+        if(mobileMapToggle) {
+            mobileMapToggle.addEventListener('click', () => {
+                resultsView.classList.add('hidden');
+                mapView.classList.remove('hidden');
+                mapView.classList.add('fixed', 'inset-0', 'z-[80]', 'w-full', 'h-full', 'rounded-none');
+                
+                // Trigger Leaflet resize calculation
+                if (typeof map !== 'undefined' && map !== null) {
+                    setTimeout(() => { map.invalidateSize(); }, 100);
+                }
+            });
+        }
+
+        if(mobileCloseMapBtn) {
+            mobileCloseMapBtn.addEventListener('click', () => {
+                mapView.classList.add('hidden');
+                mapView.classList.remove('fixed', 'inset-0', 'z-[80]', 'w-full', 'h-full', 'rounded-none');
+                resultsView.classList.remove('hidden');
+            });
+        }
+
     </script>
     <script src="js/i18n.js"></script>
+
+    <!-- Mobile FABs for Map & Filters -->
+    <div class="lg:hidden fixed bottom-24 left-0 w-full flex justify-center z-40 pointer-events-none">
+        <div class="bg-dark text-white rounded-full flex shadow-xl pointer-events-auto divide-x divide-slate-700">
+            <button id="open-filters-btn" class="px-6 py-3 font-bold text-sm flex items-center hover:bg-slate-800 rounded-l-full transition-custom">
+                <i class="fa-solid fa-sliders mr-2"></i> Filters
+            </button>
+            <button id="mobile-map-toggle" class="px-6 py-3 font-bold text-sm flex items-center hover:bg-slate-800 rounded-r-full transition-custom">
+                <i class="fa-regular fa-map mr-2"></i> Map
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Tab Bar -->
+    <div class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pt-3 pb-8 px-2 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]" style="padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);">
+        <a href="index.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
+            <i class="fa-solid fa-compass text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Explore</span>
+        </a>
+        <a href="search.html" class="flex flex-col items-center p-2 text-primary">
+            <i class="fa-solid fa-search text-xl mb-1"></i>
+            <span class="text-[10px] font-bold">Search</span>
+        </a>
+        <a href="player-dashboard.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
+            <i class="fa-regular fa-calendar-check text-xl mb-1 pt-0.5"></i>
+            <span class="text-[10px] font-medium mt-0.5">Bookings</span>
+        </a>
+        <a href="#" onclick="window.location.href='index.html?login=true'; return false;" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom" id="mobile-bottom-profile-btn">
+            <i class="fa-regular fa-user text-xl mb-1 pb-0.5"></i>
+            <span class="text-[10px] font-medium">Profile</span>
+        </a>
+    </div>
 </body>
 </html>

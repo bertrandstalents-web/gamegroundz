@@ -173,9 +173,18 @@
 
             </div>
 
+            <!-- Mobile Booking Overlay -->
+            <div id="mobile-booking-overlay" class="fixed inset-0 bg-slate-900/60 z-[55] hidden lg:hidden backdrop-blur-sm transition-opacity opacity-0"></div>
+
             <!-- Right Column: Sticky Booking Widget -->
-            <div class="hidden lg:block w-[380px] relative">
-                <div class="sticky top-28 bg-white border border-slate-200 shadow-xl rounded-2xl p-6 shadow-soft">
+            <div id="booking-widget-container" class="fixed inset-x-0 bottom-0 z-[60] bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.2)] transform translate-y-full transition-transform duration-300 ease-in-out lg:translate-y-0 lg:relative lg:block lg:w-[380px] lg:bg-transparent lg:shadow-none lg:rounded-none flex flex-col">
+                
+                <!-- Mobile Handle -->
+                <div class="lg:hidden w-full flex justify-center pt-3 pb-0 cursor-pointer" id="close-booking-handle">
+                    <div class="w-12 h-1.5 bg-slate-300 rounded-full mb-2"></div>
+                </div>
+
+                <div class="bg-white lg:sticky lg:top-28 lg:border lg:border-slate-200 lg:shadow-xl rounded-t-3xl lg:rounded-2xl px-6 pt-2 pb-24 lg:p-6 lg:shadow-soft overflow-y-auto lg:overflow-visible max-h-[82vh] lg:max-h-none">
                     
                     <div class="flex justify-between items-start mb-6">
                         <div>
@@ -269,9 +278,9 @@
     </main>
 
     <!-- Mobile Sticky Booking Footer -->
-    <div class="fixed bottom-0 w-full bg-white border-t border-slate-200 p-4 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] lg:hidden z-40 flex justify-between items-center">
+    <div id="mobile-sticky-footer" class="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 px-4 pt-3 pb-8 lg:hidden z-40 flex justify-between items-center transition-transform duration-300 ease-in-out transform shadow-[0_-10px_20px_rgba(0,0,0,0.05)]" style="padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);">
         <div>
-            <span class="text-lg font-bold text-dark">$197 <span class="text-sm font-normal text-slate-500">/ hour</span></span>
+            <span class="text-lg font-bold text-dark" id="mobile-footer-price">$197 <span class="text-sm font-normal text-slate-500">/ hour</span></span>
             <div class="text-xs font-semibold text-primary"><i class="fa-solid fa-bolt"></i> Instant Book</div>
         </div>
         <button id="mobile-reserve-btn" class="bg-primary text-white px-8 py-3 rounded-full font-bold shadow-glow hover:bg-primaryHover transition-custom">
@@ -662,73 +671,64 @@
 
                     // Dynamically build the gallery
                     galleryContainer.innerHTML = '';
+                    const baseClass = "flex overflow-x-auto snap-x snap-mandatory hide-scrollbar md:grid gap-2 h-64 md:h-[450px] mb-8 md:mb-12 md:rounded-2xl md:overflow-hidden cursor-pointer group w-[100vw] -ml-4 sm:-ml-6 lg:ml-0 lg:w-full px-4 sm:px-6 lg:px-0";
+                    const mobileImgClass = "w-[85vw] md:w-full h-full flex-shrink-0 snap-center rounded-xl md:rounded-none overflow-hidden relative bg-slate-100 flex items-center justify-center";
                     
                     if (images.length === 1) {
-                        galleryContainer.className = "grid grid-cols-1 h-auto md:h-[450px] mb-12 rounded-2xl overflow-hidden cursor-pointer group";
+                        galleryContainer.className = `${baseClass} md:grid-cols-1 w-full mt-4 md:mt-0`;
                         galleryContainer.innerHTML = `
-                            <div class="relative h-64 md:h-full overflow-hidden bg-slate-100">
+                            <div class="${mobileImgClass} w-full pr-4 md:pr-0">
                                 <img src="${images[0]}" class="w-full h-full object-cover transition duration-500">
                             </div>
                         `;
                     } else if (images.length === 2) {
-                        galleryContainer.className = "grid grid-cols-1 md:grid-cols-2 gap-2 h-auto md:h-[450px] mb-12 rounded-2xl overflow-hidden cursor-pointer group";
+                        galleryContainer.className = `${baseClass} md:grid-cols-2 mt-4 md:mt-0`;
                         galleryContainer.innerHTML = `
-                            <div class="relative h-64 md:h-full overflow-hidden bg-slate-100">
+                            <div class="${mobileImgClass}">
                                 <img src="${images[0]}" class="w-full h-full object-cover transition duration-500">
                             </div>
-                            <div class="relative h-64 md:h-full overflow-hidden bg-slate-100 hidden md:block">
+                            <div class="${mobileImgClass} pr-4 md:pr-0">
                                 <img src="${images[1]}" class="w-full h-full object-cover transition duration-500">
                             </div>
                         `;
                     } else if (images.length === 3) {
-                        galleryContainer.className = "grid grid-cols-1 md:grid-cols-3 gap-2 h-auto md:h-[450px] mb-12 rounded-2xl overflow-hidden cursor-pointer group";
+                        galleryContainer.className = `${baseClass} md:grid-cols-3 mt-4 md:mt-0`;
                         galleryContainer.innerHTML = `
-                            <div class="md:col-span-2 relative h-64 md:h-full overflow-hidden bg-slate-100">
+                            <div class="${mobileImgClass} md:col-span-2">
                                 <img src="${images[0]}" class="w-full h-full object-cover transition duration-500">
                             </div>
-                            <div class="hidden md:flex flex-col gap-2 h-full">
-                                <div class="relative flex-1 overflow-hidden bg-slate-100">
+                            <div class="hidden md:flex flex-col gap-2 h-full w-[85vw] md:w-auto flex-shrink-0 snap-center">
+                                <div class="relative flex-1 overflow-hidden bg-slate-100 block">
                                     <img src="${images[1]}" class="w-full h-full object-cover transition duration-500">
                                 </div>
-                                <div class="relative flex-1 overflow-hidden bg-slate-100">
+                                <div class="relative flex-1 overflow-hidden bg-slate-100 block">
                                     <img src="${images[2]}" class="w-full h-full object-cover transition duration-500">
                                 </div>
                             </div>
+                            <div class="md:hidden ${mobileImgClass}"><img src="${images[1]}" class="w-full h-full object-cover transition duration-500"></div>
+                            <div class="md:hidden ${mobileImgClass} pr-4 md:pr-0"><img src="${images[2]}" class="w-full h-full object-cover transition duration-500"></div>
                         `;
                     } else if (images.length >= 4) {
-                        // Standard 4-grid bento layout for 4 or 5+ images
-                        galleryContainer.className = "grid grid-cols-1 md:grid-cols-4 gap-2 h-auto md:h-[450px] mb-12 rounded-2xl overflow-hidden cursor-pointer group";
+                        galleryContainer.className = `${baseClass} md:grid-cols-4 mt-4 md:mt-0`;
                         
                         let html = `
-                            <div class="md:col-span-2 md:row-span-2 relative h-64 md:h-full overflow-hidden bg-slate-100">
+                            <div class="${mobileImgClass} md:col-span-2 md:row-span-2">
                                 <img src="${images[0]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
                             </div>
-                            <div class="hidden md:block relative overflow-hidden bg-slate-100">
+                            <div class="${mobileImgClass}">
                                 <img src="${images[1]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
                             </div>
-                            <div class="hidden md:block relative overflow-hidden bg-slate-100">
+                            <div class="${mobileImgClass}">
                                 <img src="${images[2]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
                             </div>
-                            <div class="hidden md:block relative overflow-hidden bg-slate-100">
+                            <div class="${mobileImgClass} md:block">
                                 <img src="${images[3]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
                             </div>
                         `;
                         
-                        let lastBoxHtml = '';
-                        if (images.length === 4) {
-                            // If exactly 4, the 4th box just has image 3
-                            lastBoxHtml = `
-                                <div class="hidden md:block relative overflow-hidden bg-slate-100">
-                                    <img src="${images[3]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
-                                </div>
-                            `;
-                            // Remove last empty from the base HTML string
-                            html = html.replace(/<div class="hidden md:block relative overflow-hidden bg-slate-100">\s*<img src="\${images\[3\]}".*?<\/div>/, '');
-                            html += lastBoxHtml;
-                        } else if (images.length >= 5) {
-                            // If 5 or more, the 4th outer box (index 4 of array but the 5th image) becomes the "show more" button
+                        if (images.length >= 5) {
                             html += `
-                                <div class="hidden md:block relative overflow-hidden bg-slate-100">
+                                <div class="${mobileImgClass} md:block ${images.length === 5 ? 'pr-4 md:pr-0' : ''}">
                                     <img src="${images[4]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
                                     ${images.length > 5 ? `
                                     <div class="absolute inset-0 bg-black/40 flex items-center justify-center transition-custom hover:bg-black/50">
@@ -739,6 +739,11 @@
                                     ` : ''}
                                 </div>
                             `;
+                            for (let i = 5; i < images.length; i++) {
+                                html += `<div class="${mobileImgClass} md:hidden ${i === images.length - 1 ? 'pr-4' : ''}">
+                                            <img src="${images[i]}" class="w-full h-full object-cover">
+                                         </div>`;
+                            }
                         }
 
                         galleryContainer.innerHTML = html;
@@ -1858,8 +1863,64 @@
                 });
             }
         });
+        // Hide scrollbar globally for gallery snap
+        document.head.insertAdjacentHTML("beforeend", `<style> .hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } </style>`);
+
+        // Mobile Booking Bottom Sheet Logic
+        const mobileReserveBtn = document.getElementById('mobile-reserve-btn');
+        const mobileStickyFooter = document.getElementById('mobile-sticky-footer');
+        const bookingWidgetContainer = document.getElementById('booking-widget-container');
+        const mobileBookingOverlay = document.getElementById('mobile-booking-overlay');
+        const closeBookingHandle = document.getElementById('close-booking-handle');
+
+        function openBookingSheet() {
+            mobileBookingOverlay.classList.remove('hidden');
+            setTimeout(() => {
+                mobileBookingOverlay.classList.remove('opacity-0');
+                bookingWidgetContainer.classList.remove('translate-y-full');
+                mobileStickyFooter.classList.add('translate-y-[150%]'); // hide sticky footer down
+            }, 10);
+            document.body.style.overflow = 'hidden'; // stop page scroll
+        }
+
+        function closeBookingSheet() {
+            mobileBookingOverlay.classList.add('opacity-0');
+            bookingWidgetContainer.classList.add('translate-y-full');
+            mobileStickyFooter.classList.remove('translate-y-[150%]'); // bring it back
+            
+            setTimeout(() => {
+                mobileBookingOverlay.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        if(mobileReserveBtn) mobileReserveBtn.addEventListener('click', openBookingSheet);
+        if(closeBookingHandle) closeBookingHandle.addEventListener('click', closeBookingSheet);
+        if(mobileBookingOverlay) mobileBookingOverlay.addEventListener('click', closeBookingSheet);
+
     </script>
     <script src="js/modals.js"></script>
     <script src="js/i18n.js"></script>
+
+    <!-- Mobile Bottom Tab Bar -->
+    <div class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pt-3 pb-8 px-2 z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]" style="padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);">
+        <a href="index.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
+            <i class="fa-solid fa-compass text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Explore</span>
+        </a>
+        <a href="search.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
+            <i class="fa-solid fa-search text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Search</span>
+        </a>
+        <a href="player-dashboard.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
+            <i class="fa-regular fa-calendar-check text-xl mb-1 pt-0.5"></i>
+            <span class="text-[10px] font-medium mt-0.5">Bookings</span>
+        </a>
+        <a href="#" onclick="window.location.href='index.html?login=true'; return false;" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom" id="mobile-bottom-profile-btn">
+            <i class="fa-regular fa-user text-xl mb-1 pb-0.5"></i>
+            <span class="text-[10px] font-medium">Profile</span>
+        </a>
+    </div>
+
 </body>
 </html>

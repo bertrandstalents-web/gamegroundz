@@ -59,25 +59,25 @@
             
             <!-- Sidebar Navigation -->
             <div class="w-full lg:w-[280px] flex-shrink-0">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sticky top-28">
-                    <ul class="space-y-1">
-                        <li>
-                            <button id="nav-btn-bookings" onclick="switchNav('bookings')" class="w-full text-left flex items-center px-4 py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3 lg:p-4 sticky top-28 w-full">
+                    <ul class="flex lg:flex-col overflow-x-auto lg:overflow-x-visible space-x-2 lg:space-x-0 lg:space-y-1 hide-scrollbar snap-x snap-mandatory pb-1 lg:pb-0">
+                        <li class="flex-shrink-0 snap-start">
+                            <button id="nav-btn-bookings" onclick="switchNav('bookings')" class="w-full text-left flex items-center px-4 py-2 lg:py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom whitespace-nowrap text-sm lg:text-base">
                                 <i class="fa-solid fa-calendar-check w-6"></i> Bookings
                             </button>
                         </li>
-                        <li>
-                            <button id="nav-btn-saved" onclick="switchNav('saved')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom">
+                        <li class="flex-shrink-0 snap-start">
+                            <button id="nav-btn-saved" onclick="switchNav('saved')" class="w-full text-left flex items-center px-4 py-2 lg:py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom whitespace-nowrap text-sm lg:text-base">
                                 <i class="fa-regular fa-heart w-6"></i> Saved Surfaces
                             </button>
                         </li>
-                        <li>
-                            <button id="nav-btn-profile" onclick="switchNav('profile')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom">
+                        <li class="flex-shrink-0 snap-start">
+                            <button id="nav-btn-profile" onclick="switchNav('profile')" class="w-full text-left flex items-center px-4 py-2 lg:py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom whitespace-nowrap text-sm lg:text-base">
                                 <i class="fa-solid fa-user w-6"></i> Profile
                             </button>
                         </li>
-                        <li>
-                            <button class="w-full text-left flex items-center px-4 py-3 text-slate-400 cursor-not-allowed rounded-xl font-medium transition-custom">
+                        <li class="flex-shrink-0 snap-start">
+                            <button class="w-full text-left flex items-center px-4 py-2 lg:py-3 text-slate-400 cursor-not-allowed rounded-xl font-medium transition-custom whitespace-nowrap text-sm lg:text-base">
                                 <i class="fa-solid fa-credit-card w-6"></i> Payments (Soon)
                             </button>
                         </li>
@@ -168,6 +168,7 @@
 
         </div>
     </main>
+    <style> .hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } </style>
 
     <script>
         function formatTimeSlots(slotsArray) {
@@ -778,5 +779,26 @@
     </script>
     <script src="js/modals.js"></script>
     <script src="js/i18n.js"></script>
+
+    <!-- Mobile Bottom Tab Bar -->
+    <div class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pt-3 pb-8 px-2 z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]" style="padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);">
+        <a href="index.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
+            <i class="fa-solid fa-compass text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Explore</span>
+        </a>
+        <a href="search.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
+            <i class="fa-solid fa-search text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Search</span>
+        </a>
+        <a href="player-dashboard.html" class="flex flex-col items-center p-2 text-primary">
+            <i class="fa-solid fa-calendar-check text-xl mb-1 pt-0.5"></i>
+            <span class="text-[10px] font-bold mt-0.5">Bookings</span>
+        </a>
+        <a href="#" onclick="switchNav('profile'); return false;" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom" id="mobile-bottom-profile-btn">
+            <i class="fa-solid fa-user text-xl mb-1 pb-0.5"></i>
+            <span class="text-[10px] font-medium">Profile</span>
+        </a>
+    </div>
+
 </body>
 </html>
