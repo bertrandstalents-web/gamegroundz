@@ -544,13 +544,15 @@
                 loadingUI.classList.add('hidden');
                 
                 if (response.status === 401) {
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('gg_user');
                     contentUI.classList.remove('hidden');
                     upContainer.innerHTML = `
                         <div class="bg-white rounded-2xl p-8 text-center border border-slate-200">
                             <i class="fa-solid fa-lock text-4xl text-slate-300 mb-4"></i>
                             <h3 class="text-xl font-bold text-dark mb-2">Please log in</h3>
-                            <p class="text-slate-500 mb-6">You need to be logged in to view your bookings.</p>
-                            <a href="index.html" class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primaryHover transition-custom cursor-pointer inline-block">Go to Login</a>
+                            <p class="text-slate-500 mb-6">Your session has expired. You need to log in again.</p>
+                            <a href="index.html?login=true" class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primaryHover transition-custom cursor-pointer inline-block">Go to Login</a>
                         </div>
                     `;
                     return;

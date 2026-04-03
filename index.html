@@ -1097,6 +1097,10 @@
                     const data = await res.json();
                     updateUserUI(data.user);
                     localStorage.setItem('gg_user', JSON.stringify(data.user));
+                } else if (res.status === 401) {
+                    localStorage.removeItem('gg_user');
+                    localStorage.removeItem('user');
+                    updateUserUI(null);
                 }
             } catch (e) {
                 // Ignore
