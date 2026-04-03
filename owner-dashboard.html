@@ -67,7 +67,7 @@
 
     <!-- Navbar -->
     <nav class="sticky top-0 w-full z-50 bg-white border-b border-slate-200 shadow-sm" id="navbar">
-        <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='index.html'">
                     <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
@@ -83,7 +83,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+    <main class="flex-1 max-w-[1600px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
         <div class="mb-8">
             <h1 class="text-3xl font-extrabold text-dark tracking-tight mb-2" id="dashboard-title">Host Dashboard</h1>
             <p class="text-slate-500 text-lg">Manage your facilities and upcoming reservations.</p>
@@ -102,11 +102,11 @@
         </div>
 
         <div id="dashboard-content" class="hidden">
-            <!-- Dashboard Content Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Dashboard Content Layout -->
+            <div class="flex flex-col lg:flex-row gap-8">
                 
                 <!-- Sidebar Navigation -->
-                <div class="lg:col-span-1">
+                <div class="w-full lg:w-[280px] flex-shrink-0">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sticky top-28">
                         <ul class="space-y-1">
                             <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom"><i class="fa-solid fa-list w-6 mr-3"></i> My Facilities</button></li>
@@ -121,7 +121,7 @@
                 </div>
 
                 <!-- Content Area -->
-                <div class="lg:col-span-3">
+                <div class="flex-1 min-w-0">
 
                     <!-- Live Revenue Dashboard -->
                     <div class="mb-8">
