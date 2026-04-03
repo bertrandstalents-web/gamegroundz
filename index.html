@@ -1168,6 +1168,17 @@
                         mobileListBtn.href = "player-dashboard.html";
                     }
                 }
+                
+                const mobileProfileBtn = document.getElementById('mobile-bottom-profile-btn');
+                if (mobileProfileBtn) {
+                    const profileHref = user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'host' ? 'owner-dashboard.html' : 'player-dashboard.html');
+                    mobileProfileBtn.onclick = null;
+                    mobileProfileBtn.href = profileHref;
+                    mobileProfileBtn.innerHTML = `
+                        <i class="fa-solid fa-user-check text-xl mb-1 pb-0.5 text-primary"></i>
+                        <span class="text-[10px] font-medium text-primary">Profile</span>
+                    `;
+                }
             } else {
                 if (loginBtn) {
                     loginBtn.textContent = "Log in";
@@ -1179,6 +1190,16 @@
                 }
                 if (listBtn) listBtn.textContent = "List Your Facility";
                 if (mobileListBtn) mobileListBtn.textContent = "List Your Facility";
+                
+                const mobileProfileBtn = document.getElementById('mobile-bottom-profile-btn');
+                if (mobileProfileBtn) {
+                    mobileProfileBtn.onclick = function(e){ e.preventDefault(); window.location.href='index.html?login=true'; };
+                    mobileProfileBtn.href = "#";
+                    mobileProfileBtn.innerHTML = `
+                        <i class="fa-regular fa-user text-xl mb-1 pb-0.5"></i>
+                        <span class="text-[10px] font-medium">Log in</span>
+                    `;
+                }
             }
         }
 

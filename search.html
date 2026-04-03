@@ -846,6 +846,17 @@
                         window.location.reload();
                     });
                 }
+                
+                const mobileProfileBtn = document.getElementById('mobile-bottom-profile-btn');
+                if (mobileProfileBtn && user) {
+                    const profileHref = user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'host' ? 'owner-dashboard.html' : 'player-dashboard.html');
+                    mobileProfileBtn.onclick = null;
+                    mobileProfileBtn.href = profileHref;
+                    mobileProfileBtn.innerHTML = `
+                        <i class="fa-solid fa-user-check text-xl mb-1 pb-0.5 text-primary"></i>
+                        <span class="text-[10px] font-medium text-primary">Profile</span>
+                    `;
+                }
             }
 
             const storedUser = localStorage.getItem('gg_user');

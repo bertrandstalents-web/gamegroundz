@@ -1701,7 +1701,11 @@ app.post('/api/create-checkout-session', (req, res) => {
     const { facility_id, booking_date, time_slots } = req.body;
     
     // In a real app we would get the user_id from an auth token or session
-    const user_id = req.session.userId || 1; 
+    const user_id = req.session.userId; 
+    
+    if (!user_id) {
+        return res.status(401).json({ error: "Unauthorized. Please log in to book." });
+    }
 
     // Validate inputs
     if (!facility_id || !booking_date || !time_slots) {

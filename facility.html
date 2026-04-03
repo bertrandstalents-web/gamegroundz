@@ -1013,6 +1013,11 @@
                      });
 
                      if(!bookingResponse.ok) {
+                         if (bookingResponse.status === 401) {
+                             localStorage.removeItem('gg_user');
+                             window.location.href = `index.html?login=true&redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                             return;
+                         }
                          let errMsg = "Failed to initialize checkout";
                          try {
                              const errData = await bookingResponse.json();
@@ -1588,6 +1593,17 @@
                         localStorage.removeItem('gg_user');
                         window.location.reload();
                     });
+                }
+                
+                const mobileProfileBtn = document.getElementById('mobile-bottom-profile-btn');
+                if (mobileProfileBtn && user) {
+                    const profileHref = user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'host' ? 'owner-dashboard.html' : 'player-dashboard.html');
+                    mobileProfileBtn.onclick = null;
+                    mobileProfileBtn.href = profileHref;
+                    mobileProfileBtn.innerHTML = `
+                        <i class="fa-solid fa-user-check text-xl mb-1 pb-0.5 text-primary"></i>
+                        <span class="text-[10px] font-medium text-primary">Profile</span>
+                    `;
                 }
             }
 

@@ -693,9 +693,28 @@
                         const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
                         await fetch(`${API_BASE_URL}/api/auth/logout`, {method: 'POST', credentials: 'omit'});
                         localStorage.removeItem('user');
+                        localStorage.removeItem('gg_user');
                         window.location.href = 'index.html';
                     }
                 });
+            }
+            
+            // Check login status for mobile profile button
+            const storedUserStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
+            if (storedUserStr) {
+                try {
+                    const user = JSON.parse(storedUserStr);
+                    const mobileProfileBtn = document.getElementById('mobile-bottom-profile-btn');
+                    if (mobileProfileBtn) {
+                        const profileHref = user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'host' ? 'owner-dashboard.html' : 'player-dashboard.html');
+                        mobileProfileBtn.onclick = null;
+                        mobileProfileBtn.href = profileHref;
+                        mobileProfileBtn.innerHTML = `
+                            <i class="fa-solid fa-user text-xl mb-1 pb-0.5"></i>
+                            <span class="text-[10px] font-medium">Profile</span>
+                        `;
+                    }
+                } catch(e) {}
             }
         });
     </script>
