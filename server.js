@@ -1057,7 +1057,16 @@ app.put('/api/host/bookings/:id', (req, res) => {
 
 // GET all bookings for current user
 app.get('/api/bookings/my', (req, res) => {
-    const user_id = req.session.userId || 1; 
+    let user_id = req.session.userId; 
+    
+    // Explicitly fallback to user 1 on test mode or localhost ONLY IF NEEDED
+    if (!user_id && req.hostname === 'localhost' && process.env.NODE_ENV !== 'production') {
+        user_id = 1;
+    }
+
+    if (!user_id) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
 
     // Join with facilities to get facility name and image
     const query = `
