@@ -699,15 +699,53 @@
         }
         initGoogleMaps();
 
+        function getDistance(lat1, lon1, lat2, lon2) {
+            if(!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
+            const R = 6371; // Radius of the earth in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2); 
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            return R * c; 
+        }
+
+        const getUserLocationSilently = async () => {
+            try {
+                if (navigator.permissions && window.isSecureContext) {
+                    const perm = await navigator.permissions.query({name: 'geolocation'});
+                    if (perm.state === 'granted') {
+                        return new Promise((resolve) => {
+                            navigator.geolocation.getCurrentPosition(
+                                (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                                () => resolve(null),
+                                { timeout: 3000, maximumAge: 600000 }
+                            );
+                        });
+                    }
+                }
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                if (data && data.latitude && data.longitude) {
+                    return { lat: data.latitude, lng: data.longitude };
+                }
+                return null;
+            } catch (e) {
+                return null;
+            }
+        };
+
         // Fetch Featured Facilities
         async function fetchFeaturedFacilities() {
             const grid = document.getElementById('featured-facilities-grid');
             if (!grid) return;
 
             try {
-                // Fetch all and take first 3 for featured. In a real app we might have a specific endpoint or flag.
                 const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
-                const response = await fetch(`${API_BASE_URL}/api/facilities?limit=3`);
+                // Fetch all to sort dynamically based on user location
+                const response = await fetch(`${API_BASE_URL}/api/facilities`);
                 if (!response.ok) throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                 
                 const text = await response.text();
@@ -721,7 +759,39 @@
                 }
                 grid.innerHTML = ''; // clear loading state
                 
-                // Get exactly 3 or fewer
+                // Fetch user location without aggressive prompting
+                const loc = await getUserLocationSilently();
+                const userLat = loc ? loc.lat : null;
+                const userLng = loc ? loc.lng : null;
+
+                // Compute distances
+                facilities.forEach(f => {
+                    f.distance = getDistance(userLat, userLng, f.lat, f.lng);
+                });
+
+                // Sort facilities based on business rules
+                facilities.sort((a, b) => {
+                    if (userLat && userLng) {
+                        // Priority 1: Distance grouped into 10km radius buckets
+                        const bucketA = Math.floor(a.distance / 10);
+                        const bucketB = Math.floor(b.distance / 10);
+                        if (bucketA !== bucketB) {
+                            return bucketA - bucketB;
+                        }
+                    }
+
+                    // Priority 2: Has a discount
+                    const aDiscount = a.active_promotions ? 1 : 0;
+                    const bDiscount = b.active_promotions ? 1 : 0;
+                    if (aDiscount !== bDiscount) {
+                        return bDiscount - aDiscount; 
+                    }
+
+                    // Priority 3: Base price (cheapest first)
+                    return a.base_price - b.base_price;
+                });
+                
+                // Get exactly 3 or fewer dynamically ordered listings
                 const featured = facilities.slice(0, 3);
                 
                 featured.forEach(facility => {
