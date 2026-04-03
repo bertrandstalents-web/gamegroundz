@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | GameGroundz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981', // Emerald
+                        primaryHover: '#059669',
+                        dark: '#0f172a',
+                        darker: '#020617',
+                        light: '#f8fafc',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glow': '0 0 20px rgba(16, 185, 129, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light text-slate-800 font-sans antialiased">
+    
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 glass transition-custom border-b border-slate-200" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='index.html'">
+                    <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
+                    <span class="font-bold text-2xl tracking-tight text-dark notranslate">Game<span class="text-primary">Groundz</span></span>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
+                    <a href="how-it-works.html" class="text-slate-600 hover:text-primary font-medium transition-custom">How it Works</a>
+                    
+                    <!-- Language Toggle -->
+                    <div class="flex items-center space-x-1 bg-slate-100 rounded-full p-1 border border-slate-200 shadow-inner ml-4 lang-switcher-container">
+                        <button onclick="window.switchLanguage('en')" id="lang-btn-en" class="px-3 py-1 rounded-full text-sm font-bold bg-white text-dark shadow-sm transition-all duration-200">EN</button>
+                        <button onclick="window.switchLanguage('fr')" id="lang-btn-fr" class="px-3 py-1 rounded-full text-sm font-bold text-slate-500 hover:text-dark transition-all duration-200">FR</button>
+                    </div>
+
+                    <div class="h-6 w-px bg-slate-300"></div>
+                    <a href="#" id="login-btn" class="text-slate-600 hover:text-dark font-medium transition-custom">Log in</a>
+                    <a href="owner-dashboard.html" id="list-facility-btn" class="bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-full font-medium transition-custom shadow-md hover:shadow-lg">List Your Facility</a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-slate-600 hover:text-dark focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-100">
+            <div class="px-4 pt-2 pb-6 space-y-2">
+                <a href="search.html" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary">Find a Surface</a>
+                <a href="how-it-works.html" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary">How it Works</a>
+                <a href="#" id="mobile-login-btn" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary">Log in</a>
+                <a href="owner-dashboard.html" id="mobile-list-facility-btn" class="block px-3 py-3 mt-4 text-center rounded-full text-base font-medium bg-dark text-white hover:bg-slate-800">List Your Facility</a>
+                <!-- Mobile Language Toggle -->
+                <div class="flex items-center space-x-2 px-3 py-3 border-t border-slate-100 mt-2 pt-4">
+                    <span class="text-sm font-medium text-slate-500 mr-2">Language:</span>
+                    <button onclick="window.switchLanguage('en')" id="mobile-lang-btn-en" class="px-3 py-1 rounded-full text-sm font-bold bg-slate-200 text-dark shadow-sm transition-all duration-200">EN</button>
+                    <button onclick="window.switchLanguage('fr')" id="mobile-lang-btn-fr" class="px-3 py-1 rounded-full text-sm font-bold text-slate-500 bg-slate-50 transition-all duration-200">FR</button>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-darker">
+        <!-- Background Elements -->
+        <div class="absolute inset-0 z-0 opacity-40">
+            <img src="https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=2800&auto=format&fit=crop" alt="Sports Background" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-darker via-darker/80 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-darker via-darker/90 to-transparent"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
+            <div class="text-center max-w-4xl mx-auto">
+                <span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 font-semibold text-sm mb-6 shadow-glow">
+                    <i class="fa-solid fa-users mr-1"></i> Our Story
+                </span>
+                <h1 class="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-8 leading-tight">
+                    Built for the love <br/><span class="text-gradient">of the game.</span>
+                </h1>
+                <p class="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
+                    We are building the single destination to discover, compare, and reserve sports facilities. Connecting athletes, organizers, and facility owners.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="py-24 bg-white relative z-20 -mt-10 rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-extrabold text-dark mb-8">Our Mission</h2>
+            <p class="text-2xl font-light text-slate-600 leading-relaxed mb-10">
+                To eliminate the friction of organizing sports by making the discovery and booking of facilities as easy as showing up to play. Think marketplace meets sports community.
+            </p>
+            <div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+        </div>
+    </section>
+
+    <!-- Problem vs Solution Section -->
+    <section class="py-24 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
+                
+                <!-- The Problem -->
+                <div class="bg-white p-10 md:p-14 rounded-3xl shadow-soft border border-slate-200 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity duration-500">
+                        <i class="fa-solid fa-phone-slash text-9xl text-slate-800"></i>
+                    </div>
+                    <div class="w-16 h-16 bg-red-100 text-red-500 rounded-2xl flex items-center justify-center text-3xl mb-8 relative z-10">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <h3 class="text-3xl font-extrabold text-dark mb-6 relative z-10">The Problem</h3>
+                    <p class="text-lg text-slate-600 mb-6 leading-relaxed relative z-10">
+                        Booking sports facilities today is stuck in the past. It's fragmented, frustrating, and incredibly inefficient.
+                    </p>
+                    <ul class="space-y-4 relative z-10 text-slate-600">
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-xmark text-red-400 mt-1 mr-3"></i> Endless phone calls and unanswered emails.
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-xmark text-red-400 mt-1 mr-3"></i> Outdated spreadsheets and physical schedules.
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-xmark text-red-400 mt-1 mr-3"></i> Hidden fees and surprise charges.
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- The Solution -->
+                <div class="bg-dark p-10 md:p-14 rounded-3xl shadow-[0_20px_50px_-12px_rgba(16,185,129,0.3)] border border-slate-700 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-50"></div>
+                    <div class="absolute bottom-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity duration-500">
+                        <i class="fa-solid fa-bolt text-9xl text-white"></i>
+                    </div>
+                    <div class="w-16 h-16 bg-primary/20 backdrop-blur-md text-primary rounded-2xl flex items-center justify-center text-3xl mb-8 relative z-10 border border-primary/30">
+                        <i class="fa-solid fa-check-double"></i>
+                    </div>
+                    <h3 class="text-3xl font-extrabold text-white mb-6 relative z-10">Our Solution</h3>
+                    <p class="text-lg text-slate-300 mb-6 leading-relaxed relative z-10">
+                        We developed a seamless platform that connects you directly to available surfaces in real-time. No hassle, just sports.
+                    </p>
+                    <ul class="space-y-4 relative z-10 text-slate-300">
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check text-primary mt-1 mr-3"></i> Instant booking and confirmation.
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check text-primary mt-1 mr-3"></i> Verified facilities with real photos and reviews.
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check text-primary mt-1 mr-3"></i> Transparent pricing with absolutely zero hidden fees.
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Who We Are Section -->
+    <section class="py-24 bg-white border-t border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                <div class="flex-1 w-full relative">
+                    <div class="absolute -inset-4 bg-primary/10 rounded-3xl transform -rotate-3 z-0"></div>
+                    <img src="https://images.unsplash.com/photo-1526676037777-05a232554f77?q=80&w=2000&auto=format&fit=crop" alt="Team high-five" class="relative z-10 rounded-2xl shadow-xl w-full object-cover h-96">
+                </div>
+                <div class="flex-1">
+                    <span class="text-primary font-bold tracking-wider uppercase mb-2 block">Who We Are</span>
+                    <h2 class="text-4xl font-extrabold text-dark mb-6">The Team Behind the Turf</h2>
+                    <p class="text-lg text-slate-600 mb-6 leading-relaxed">
+                        We are a proudly bilingual, Quebec-based team of sports enthusiasts who got tired of the old way of doing things. From organizing our own beer league hockey to trying to find a turf field on a Sunday afternoon, we experienced the frustration firsthand.
+                    </p>
+                    <p class="text-lg text-slate-600 leading-relaxed">
+                        <span class="notranslate font-semibold">GameGroundz</span> wasn't built in a boardroom. It was conceptualized in the locker room, built by players, and designed for anyone who loves the game as much as we do. energetic, authentic, and driven by our community.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Values / Pillars Section -->
+    <section class="py-24 bg-dark text-white relative overflow-hidden">
+        <!-- Decoration -->
+        <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-darker to-dark opacity-80 pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-extrabold mb-4">Our Core Pillars</h2>
+                <p class="text-xl text-slate-400">The values that drive every decision we make.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <!-- Pillar 1 -->
+                <div class="bg-slate-800/50 backdrop-blur-sm p-10 rounded-3xl border border-slate-700/50 hover:border-primary/50 transition-custom transform hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-primary/20 text-primary rounded-2xl flex items-center justify-center text-2xl mb-6">
+                        <i class="fa-solid fa-door-open"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Accessibility</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        We believe sports should be for everyone. By removing the barriers to booking space, we make it easier for people to get active and stay connected.
+                    </p>
+                </div>
+
+                <!-- Pillar 2 -->
+                <div class="bg-slate-800/50 backdrop-blur-sm p-10 rounded-3xl border border-slate-700/50 hover:border-primary/50 transition-custom transform hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-primary/20 text-primary rounded-2xl flex items-center justify-center text-2xl mb-6">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Transparency</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        What you see is what you pay. We don't believe in hidden fees or surprises. Honest pricing and honest availability, always.
+                    </p>
+                </div>
+
+                <!-- Pillar 3 -->
+                <div class="bg-slate-800/50 backdrop-blur-sm p-10 rounded-3xl border border-slate-700/50 hover:border-primary/50 transition-custom transform hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-primary/20 text-primary rounded-2xl flex items-center justify-center text-2xl mb-6">
+                        <i class="fa-solid fa-handshake-angle"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Community</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        We aren't just software. We are athletes, organizers, and builders fighting to strengthen the sports community locally and globally.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-20 relative overflow-hidden bg-primary">
+        <!-- Abstract patterns -->
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-white opacity-10 rounded-full blur-3xl z-0 pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-black opacity-10 rounded-full blur-3xl z-0 pointer-events-none"></div>
+        
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-6">Join the Movement</h2>
+            <p class="text-xl text-primary-50 mb-10">Whether you're looking to hit the ice, field, or court, or you manage a premier sports facility, we want you on our team.</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="search.html" class="bg-white text-primary px-8 py-4 rounded-full font-bold text-lg hover:bg-slate-50 transition-custom shadow-lg hover:shadow-xl">Find a Surface</a>
+                <a href="owner-dashboard.html" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-custom">List Your Facility</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white pt-20 pb-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
+                <!-- Brand col -->
+                <div class="lg:col-span-2">
+                    <div class="flex items-center mb-6">
+                        <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
+                        <span class="font-bold text-2xl tracking-tight text-white notranslate">Game<span class="text-primary">Groundz</span></span>
+                    </div>
+                    <p class="text-slate-400 mb-6 leading-relaxed max-w-sm">The single destination to discover, compare, and reserve sports surfaces. Modernizing how the world books ice, field, and court times.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-primary transition-custom">
+                            <i class="fa-brands fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-primary transition-custom">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-primary transition-custom">
+                            <i class="fa-brands fa-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Links 1 -->
+                <div>
+                    <h4 class="font-bold text-lg mb-6">Discover</h4>
+                    <ul class="space-y-4 text-slate-400">
+                        <li><a href="#" class="hover:text-primary transition-custom">Ice Rinks</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Soccer Fields</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Basketball Courts</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Tennis Courts</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">View All</a></li>
+                    </ul>
+                </div>
+
+                <!-- Links 2 -->
+                <div>
+                    <h4 class="font-bold text-lg mb-6">Partners</h4>
+                    <ul class="space-y-4 text-slate-400">
+                        <li><a href="owner-dashboard.html" class="hover:text-primary transition-custom">List Your Facility</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Dashboard Login</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Pricing</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Resources</a></li>
+                    </ul>
+                </div>
+
+                <!-- Links 3 -->
+                <div>
+                    <h4 class="font-bold text-lg mb-6">Company</h4>
+                    <ul class="space-y-4 text-slate-400">
+                        <li><a href="about.html" class="hover:text-primary transition-custom">About Us</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Contact</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-slate-500 text-sm">
+                <p>&copy; 2026 GameGroundz. All rights reserved.</p>
+                <div class="mt-4 md:mt-0 flex space-x-6">
+                    <span>Built with passion for the game.</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Core Scripts -->
+    <script src="js/i18n.js"></script>
+    <script>
+        // Navbar blur and sticky behavior
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 20) {
+                nav.classList.add('shadow-md');
+                nav.classList.replace('border-slate-200', 'border-slate-200/50');
+            } else {
+                nav.classList.remove('shadow-md');
+                nav.classList.replace('border-slate-200/50', 'border-slate-200');
+            }
+        });
+
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>
