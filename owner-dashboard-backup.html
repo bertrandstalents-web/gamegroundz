@@ -83,8 +83,8 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
-        <div class="mb-8">
+    <main class="flex-1 max-w-[800px] mx-auto w-full px-4 py-12">
+        <div class="mb-8 text-center">
             <h1 class="text-3xl font-extrabold text-dark tracking-tight mb-2" id="dashboard-title">Host Dashboard</h1>
             <p class="text-slate-500 text-lg">Manage your facilities and upcoming reservations.</p>
         </div>
@@ -102,53 +102,43 @@
         </div>
 
         <div id="dashboard-content" class="hidden">
-            <!-- Dashboard Content Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                
-                <!-- Sidebar Navigation -->
-                <div class="lg:col-span-1">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sticky top-28">
-                        <ul class="space-y-1">
-                            <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom"><i class="fa-solid fa-list w-6 mr-3"></i> My Facilities</button></li>
-                            <li><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 mr-3"></i> Reservations</button></li>
-                            <li><button id="tab-btn-calendar" onclick="switchTab('calendar')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-regular fa-calendar w-6 mr-3"></i> Calendar</button></li>
-                            <li><button id="tab-btn-discounts" onclick="switchTab('discounts')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tags w-6 mr-3"></i> Discounts</button></li>
-                            <li><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 mr-3"></i> Wallet & Payouts</button></li>
-                            <li><button id="tab-btn-profile" onclick="switchTab('profile')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-user w-6 mr-3"></i> Profile</button></li>
-                            <li><button id="tab-btn-add-new" onclick="switchTab('add-new')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-plus w-6 mr-3"></i> Add New Facility</button></li>
-                        </ul>
+            <!-- Live Revenue Dashboard -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-dark mb-4">Live Revenue Dashboard</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Today's Revenue -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                        <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Today's Revenue</span>
+                        <span id="stat-today-rev" class="text-3xl font-extrabold text-dark">$0</span>
+                    </div>
+                    <!-- This Week's Revenue -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                        <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Week's Revenue</span>
+                        <span id="stat-week-rev" class="text-3xl font-extrabold text-dark">$0</span>
+                    </div>
+                    <!-- This Month's Revenue -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                        <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Month's Revenue</span>
+                        <span id="stat-month-rev" class="text-3xl font-extrabold text-dark">$0</span>
+                    </div>
+                    <!-- Bookings Today -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                        <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Bookings Today</span>
+                        <span id="stat-today-count" class="text-3xl font-extrabold text-dark">0</span>
                     </div>
                 </div>
+            </div>
 
-                <!-- Content Area -->
-                <div class="lg:col-span-3">
-
-                    <!-- Live Revenue Dashboard -->
-                    <div class="mb-8">
-                        <h2 class="text-2xl font-bold text-dark mb-4">Live Revenue Dashboard</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <!-- Today's Revenue -->
-                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                                <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Today's Revenue</span>
-                                <span id="stat-today-rev" class="text-3xl font-extrabold text-dark">$0</span>
-                            </div>
-                            <!-- This Week's Revenue -->
-                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                                <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Week's Revenue</span>
-                                <span id="stat-week-rev" class="text-3xl font-extrabold text-dark">$0</span>
-                            </div>
-                            <!-- This Month's Revenue -->
-                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                                <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Month's Revenue</span>
-                                <span id="stat-month-rev" class="text-3xl font-extrabold text-dark">$0</span>
-                            </div>
-                            <!-- Bookings Today -->
-                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                                <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Bookings Today</span>
-                                <span id="stat-today-count" class="text-3xl font-extrabold text-dark">0</span>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Tabs Navigation -->
+            <div class="flex border-b border-slate-200 mb-8 space-x-8">
+                <button onclick="switchTab('facilities')" id="tab-btn-facilities" class="pb-4 font-bold text-lg border-b-2 border-primary text-primary transition-custom">My Facilities</button>
+                <button onclick="switchTab('reservations')" id="tab-btn-reservations" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Reservations</button>
+                <button onclick="switchTab('calendar')" id="tab-btn-calendar" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Calendar</button>
+                <button onclick="switchTab('discounts')" id="tab-btn-discounts" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Discounts</button>
+                <button onclick="switchTab('wallet')" id="tab-btn-wallet" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Wallet & Payouts</button>
+                <button onclick="switchTab('profile')" id="tab-btn-profile" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Profile</button>
+                <button onclick="switchTab('add-new')" id="tab-btn-add-new" class="pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom">Add New Facility</button>
+            </div>
 
             <!-- Tab: My Facilities -->
             <div id="tab-facilities" class="block">
@@ -1044,10 +1034,7 @@
                     </form>
                 </div>
             </div>
-
-                </div> <!-- End lg:col-span-3 -->
-            </div> <!-- End Dashboard Content Grid -->
-        </div> <!-- End dashboard-content -->
+        </div>
     </main>
 
     <script>
@@ -1122,12 +1109,12 @@
             const btns = ['facilities', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile'];
             btns.forEach(btn => {
                 const el = document.getElementById(`tab-btn-${btn}`);
-                if(el) el.className = 'w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
+                if(el) el.className = 'pb-4 font-bold text-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-custom';
             });
 
             // Active button styles
             const activeBtn = document.getElementById(`tab-btn-${tabId}`);
-            if(activeBtn) activeBtn.className = 'w-full text-left flex items-center px-4 py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom';
+            if(activeBtn) activeBtn.className = 'pb-4 font-bold text-lg border-b-2 border-primary text-primary transition-custom';
 
             if (tabId === 'discounts') {
                 const discSelectEl = document.getElementById('discount-facility-select');
