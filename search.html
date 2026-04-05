@@ -997,11 +997,14 @@
             const mapView = document.getElementById('map-view');
             const mobileCloseMapBtn = document.getElementById('mobile-close-map-btn');
 
+            const desktopMapClasses = ['lg:block', 'w-[450px]', 'h-[calc(100vh-120px)]', 'sticky', 'top-28', 'rounded-2xl', 'z-10'];
+            const mobileMapClasses = ['fixed', 'inset-0', 'z-[80]', 'w-full', 'h-[100dvh]', 'rounded-none'];
+
             if(mobileMapToggle) {
                 mobileMapToggle.addEventListener('click', () => {
                     resultsView.classList.add('hidden');
-                    mapView.classList.remove('hidden');
-                    mapView.classList.add('fixed', 'inset-0', 'z-[80]', 'w-full', 'h-full', 'rounded-none');
+                    mapView.classList.remove('hidden', ...desktopMapClasses);
+                    mapView.classList.add(...mobileMapClasses);
                     
                     // Trigger Leaflet resize calculation
                     if (typeof map !== 'undefined' && map !== null) {
@@ -1012,8 +1015,8 @@
 
             if(mobileCloseMapBtn) {
                 mobileCloseMapBtn.addEventListener('click', () => {
-                    mapView.classList.add('hidden');
-                    mapView.classList.remove('fixed', 'inset-0', 'z-[80]', 'w-full', 'h-full', 'rounded-none');
+                    mapView.classList.remove(...mobileMapClasses);
+                    mapView.classList.add('hidden', ...desktopMapClasses);
                     resultsView.classList.remove('hidden');
                 });
             }
