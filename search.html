@@ -951,71 +951,73 @@
         });
 
         // Mobile Filter & Map Logic
-        const filtersSidebar = document.getElementById('filters-sidebar');
-        const filterOverlay = document.getElementById('mobile-filter-overlay');
-        const openFiltersBtn = document.getElementById('open-filters-btn');
-        const closeFiltersHandle = document.getElementById('close-filters-handle');
-        const closeFiltersText = document.getElementById('mobile-filter-close-text');
-        
-        function openFilters() {
-            filterOverlay.classList.remove('hidden');
-            // small delay to allow display block to take effect before transition
-            setTimeout(() => {
-                filterOverlay.classList.remove('opacity-0');
-                filtersSidebar.classList.remove('translate-y-full');
-            }, 10);
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeFilters() {
-            filterOverlay.classList.add('opacity-0');
-            filtersSidebar.classList.add('translate-y-full');
+        document.addEventListener('DOMContentLoaded', () => {
+            const filtersSidebar = document.getElementById('filters-sidebar');
+            const filterOverlay = document.getElementById('mobile-filter-overlay');
+            const openFiltersBtn = document.getElementById('open-filters-btn');
+            const closeFiltersHandle = document.getElementById('close-filters-handle');
+            const closeFiltersText = document.getElementById('mobile-filter-close-text');
             
-            setTimeout(() => {
-                filterOverlay.classList.add('hidden');
-                document.body.style.overflow = '';
-            }, 300);
-        }
+            function openFilters() {
+                filterOverlay.classList.remove('hidden');
+                // small delay to allow display block to take effect before transition
+                setTimeout(() => {
+                    filterOverlay.classList.remove('opacity-0');
+                    filtersSidebar.classList.remove('translate-y-full');
+                }, 10);
+                document.body.style.overflow = 'hidden';
+            }
 
-        if(openFiltersBtn) openFiltersBtn.addEventListener('click', openFilters);
-        if(closeFiltersHandle) closeFiltersHandle.addEventListener('click', closeFilters);
-        if(closeFiltersText) closeFiltersText.addEventListener('click', closeFilters);
-        if(filterOverlay) filterOverlay.addEventListener('click', closeFilters);
-
-        // We also want the Apply Filters button on mobile to close the modal
-        const applyFiltersMobileBtn = document.getElementById('apply-filters-btn');
-        if(applyFiltersMobileBtn) {
-            applyFiltersMobileBtn.addEventListener('click', () => {
-                if(window.innerWidth < 1024) closeFilters(); // lg breakpoint
-            });
-        }
-
-        // Mobile Map Toggle
-        const mobileMapToggle = document.getElementById('mobile-map-toggle');
-        const resultsView = document.getElementById('results-view');
-        const mapView = document.getElementById('map-view');
-        const mobileCloseMapBtn = document.getElementById('mobile-close-map-btn');
-
-        if(mobileMapToggle) {
-            mobileMapToggle.addEventListener('click', () => {
-                resultsView.classList.add('hidden');
-                mapView.classList.remove('hidden');
-                mapView.classList.add('fixed', 'inset-0', 'z-[80]', 'w-full', 'h-full', 'rounded-none');
+            function closeFilters() {
+                filterOverlay.classList.add('opacity-0');
+                filtersSidebar.classList.add('translate-y-full');
                 
-                // Trigger Leaflet resize calculation
-                if (typeof map !== 'undefined' && map !== null) {
-                    setTimeout(() => { map.invalidateSize(); }, 100);
-                }
-            });
-        }
+                setTimeout(() => {
+                    filterOverlay.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }, 300);
+            }
 
-        if(mobileCloseMapBtn) {
-            mobileCloseMapBtn.addEventListener('click', () => {
-                mapView.classList.add('hidden');
-                mapView.classList.remove('fixed', 'inset-0', 'z-[80]', 'w-full', 'h-full', 'rounded-none');
-                resultsView.classList.remove('hidden');
-            });
-        }
+            if(openFiltersBtn) openFiltersBtn.addEventListener('click', openFilters);
+            if(closeFiltersHandle) closeFiltersHandle.addEventListener('click', closeFilters);
+            if(closeFiltersText) closeFiltersText.addEventListener('click', closeFilters);
+            if(filterOverlay) filterOverlay.addEventListener('click', closeFilters);
+
+            // We also want the Apply Filters button on mobile to close the modal
+            const applyFiltersMobileBtn = document.getElementById('apply-filters-btn');
+            if(applyFiltersMobileBtn) {
+                applyFiltersMobileBtn.addEventListener('click', () => {
+                    if(window.innerWidth < 1024) closeFilters(); // lg breakpoint
+                });
+            }
+
+            // Mobile Map Toggle
+            const mobileMapToggle = document.getElementById('mobile-map-toggle');
+            const resultsView = document.getElementById('results-view');
+            const mapView = document.getElementById('map-view');
+            const mobileCloseMapBtn = document.getElementById('mobile-close-map-btn');
+
+            if(mobileMapToggle) {
+                mobileMapToggle.addEventListener('click', () => {
+                    resultsView.classList.add('hidden');
+                    mapView.classList.remove('hidden');
+                    mapView.classList.add('fixed', 'inset-0', 'z-[80]', 'w-full', 'h-full', 'rounded-none');
+                    
+                    // Trigger Leaflet resize calculation
+                    if (typeof map !== 'undefined' && map !== null) {
+                        setTimeout(() => { map.invalidateSize(); }, 100);
+                    }
+                });
+            }
+
+            if(mobileCloseMapBtn) {
+                mobileCloseMapBtn.addEventListener('click', () => {
+                    mapView.classList.add('hidden');
+                    mapView.classList.remove('fixed', 'inset-0', 'z-[80]', 'w-full', 'h-full', 'rounded-none');
+                    resultsView.classList.remove('hidden');
+                });
+            }
+        });
 
     </script>
     <script src="js/i18n.js"></script>
