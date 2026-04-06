@@ -863,9 +863,13 @@ app.put('/api/host/facilities/reorder', (req, res) => {
     if (pending === 0) return res.json({ message: "No change" });
     
     orderIds.forEach((facId, index) => {
+        const parsedId = parseInt(facId, 10);
         db.run("UPDATE facilities SET sort_order = ? WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", 
-        [index, facId, req.session.userId, `%"${req.session.email}"%`], (err) => {
-            if (err) hasError = true;
+        [index, parsedId, req.session.userId, `%"${req.session.email}"%`], (err) => {
+            if (err) {
+                console.error("Error updating sort_order for facility", parsedId, err);
+                hasError = true;
+            }
             pending--;
             if (pending === 0) {
                 if (hasError) return res.status(500).json({ error: "Error updating some facilities" });
