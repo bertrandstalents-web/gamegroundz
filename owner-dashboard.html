@@ -63,6 +63,67 @@
         
         /* Interaction */
         .fc-highlight { background: rgba(16, 185, 129, 0.2) !important; } /* Primary light highlight */
+
+        /* --- MOBILE OVERRIDES --- */
+        @media (max-width: 768px) {
+            /* Better Toolbar Layout */
+            .fc .fc-toolbar.fc-header-toolbar {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+                margin-bottom: 1rem !important;
+            }
+            .fc-toolbar-chunk:first-child button {
+                flex: 1;
+            }
+            .fc-toolbar-chunk {
+                display: flex;
+                justify-content: center;
+                width: 100%;
+            }
+            .fc-toolbar-title {
+                font-size: 1.35rem !important;
+                text-align: center;
+            }
+            /* Make button groups stretch nicely */
+            .fc-button-group {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+            .fc .fc-button-group > .fc-button {
+                flex: 1;
+                font-size: 0.8rem !important;
+                padding: 6px 4px !important;
+                white-space: nowrap;
+            }
+            .fc-button-primary {
+                font-size: 0.8rem !important;
+                padding: 6px 12px !important;
+            }
+            /* Day headers & time grid formatting */
+            .fc-col-header-cell-cushion {
+                font-size: 0.65rem !important;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
+                width: 100%;
+                max-width: 13vw;
+                box-sizing: border-box;
+                padding: 0 2px;
+            }
+            .fc-timegrid-slot-label-cushion {
+                font-size: 0.65rem !important;
+            }
+            .fc-theme-standard th {
+                padding: 6px 0 !important;
+            }
+            .fc-event-main {
+                font-size: 0.7rem !important;
+                line-height: 1.1 !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
@@ -188,7 +249,7 @@
 
             <!-- Tab: My Facilities -->
             <div id="tab-facilities" class="block">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-dark">My Facilities</h2>
                         <button onclick="switchTab('add-new')" class="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg font-bold transition-custom text-sm">
@@ -206,7 +267,7 @@
 
             <!-- Tab: Reservations -->
             <div id="tab-reservations" class="hidden">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
                     <div class="flex flex-col md:flex-row gap-4 mb-6 items-start md:items-center justify-between border-b border-slate-100 pb-6">
                         <div class="flex flex-wrap items-center gap-4">
                             <div class="relative" id="res-status-dropdown-container">
@@ -291,7 +352,7 @@
 
             <!-- Tab: Calendar -->
             <div id="tab-calendar" class="hidden">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 relative">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8 relative">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-100 pb-6 gap-4">
                         <div>
                             <h2 class="text-2xl font-bold text-dark mb-2">Calendar Manager</h2>
@@ -324,7 +385,7 @@
                                 </button>
                             </div>
                             
-                            <form id="block-time-interactive-form" class="p-8 space-y-6">
+                            <form id="block-time-interactive-form" class="p-4 md:p-8 space-y-6">
                                 
                                 <input type="hidden" id="modal-facility-id">
                                 <input type="hidden" id="modal-date-val">
@@ -470,7 +531,7 @@
 
             <!-- Tab: Discounts -->
             <div id="tab-discounts" class="hidden">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 relative">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8 relative">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-100 pb-6 gap-4">
                         <div>
                             <h2 class="text-2xl font-bold text-dark mb-2">Discount Manager</h2>
@@ -598,7 +659,7 @@
 
             <!-- Tab: Wallet -->
             <div id="tab-wallet" class="hidden">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
                     <h2 class="text-2xl font-bold text-dark mb-6">Wallet & Payouts</h2>
                     
                     <div id="wallet-alert" class="hidden"></div>
@@ -634,7 +695,7 @@
 
             <!-- Tab: Profile -->
             <div id="tab-profile" class="hidden">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
                     <h2 class="text-2xl font-bold text-dark mb-6">My Profile</h2>
                     <form id="profile-form" class="space-y-6 max-w-2xl">
                         <!-- Profile Picture Section -->
@@ -723,7 +784,7 @@
 
             <!-- Tab: Add New Facility (Original Form) -->
             <div id="tab-add-new" class="hidden">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
                     <form id="add-facility-form" class="space-y-8">
                 
                 <!-- Facility Basics -->
