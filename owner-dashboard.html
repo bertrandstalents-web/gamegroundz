@@ -1957,6 +1957,116 @@
         // --- FULLCALENDAR LOGIC ---
         let currentCalendar = null;
         let allBookingsCache = [];
+        let currentHoveredEvent = null;
+        let clipboardBooking = null; // { notes: string, durationMins: number }
+        let lastEventClickTime = 0;
+        let lastEventClickId = null;
+        let lastSelectTime = 0;
+
+        function showToast(message) {
+            let toast = document.getElementById('toast-msg');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast-msg';
+                toast.className = 'fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-xl shadow-lg font-bold text-sm z-[9999] opacity-0 transition-opacity duration-300 pointer-events-none';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = message;
+            toast.classList.remove('opacity-0');
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 3000);
+        }
+
+        async function pasteBookingAutomatically(startObj, clipData, facilityId) {
+            if (!facilityId) return;
+            const start24 = `${startObj.getHours().toString().padStart(2, '0')}:${startObj.getMinutes().toString().padStart(2, '0')}`;
+            const [sh, sm] = start24.split(':').map(Number);
+            let currentMins = sh * 60 + sm;
+            const endMins = currentMins + clipData.durationMins;
+            const slots = [];
+            while(currentMins < endMins) {
+                const h = Math.floor(currentMins / 60).toString().padStart(2, '0');
+                const m = (currentMins % 60).toString().padStart(2, '0');
+                slots.push(`${h}:${m}`);
+                currentMins += 30;
+            }
+            const mYear = startObj.getFullYear();
+            const mMonth = String(startObj.getMonth() + 1).padStart(2, '0');
+            const mDay = String(startObj.getDate()).padStart(2, '0');
+            const bookingDate = `${mYear}-${mMonth}-${mDay}`;
+            const payload = {
+                facility_id: parseInt(facilityId, 10),
+                booking_date: bookingDate,
+                time_slots: slots,
+                manual_notes: clipData.notes,
+                repeat_option: 'none',
+                repeat_until: null,
+                repeat_days: []
+            };
+            try {
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const response = await fetch(`${API_BASE_URL}/api/host/block-time`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+                if (response.status === 401) { window.location.href = 'index.html'; return; }
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Failed to paste booking');
+                showToast("Offline booking pasted!");
+                loadHostData(); 
+            } catch (error) {
+                console.error("Paste error", error);
+                showToast("Error pasting booking: " + error.message);
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'c') {
+                if (currentHoveredEvent && currentHoveredEvent.extendedProps && currentHoveredEvent.extendedProps.isManual) {
+                    e.preventDefault();
+                    clipboardBooking = {
+                        notes: currentHoveredEvent.extendedProps.originalNotes || 'Offline Booking',
+                        durationMins: Math.round((currentHoveredEvent.end.getTime() - currentHoveredEvent.start.getTime()) / 60000)
+                    };
+                    showToast("Offline booking copied! Hover an empty slot and press Cmd+V (or double-click it) to paste.");
+                }
+            }
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'v') {
+                if (clipboardBooking) {
+                    const modal = document.getElementById('event-modal-backdrop');
+                    const editIdVal = document.getElementById('modal-edit-booking-id') ? document.getElementById('modal-edit-booking-id').value : '';
+                    if (!modal.classList.contains('hidden') && editIdVal === '') {
+                        e.preventDefault();
+                        const notesInput = document.getElementById('modal-block-notes');
+                        if (notesInput) notesInput.value = clipboardBooking.notes;
+                        
+                        const startSelect = document.getElementById('modal-start-time');
+                        const start24 = startSelect.value;
+                        const [sh, sm] = start24.split(':').map(Number);
+                        const endMinsTotal = (sh * 60 + sm) + clipboardBooking.durationMins;
+                        const eh = Math.floor(endMinsTotal / 60).toString().padStart(2, '0');
+                        const em = (endMinsTotal % 60).toString().padStart(2, '0');
+                        const end24 = `${eh}:${em}`;
+                        
+                        const endSelect = document.getElementById('modal-end-time');
+                        if (endSelect && [...endSelect.options].some(o => o.value === end24)) {
+                            endSelect.value = end24;
+                            if (typeof calculateModalPrice === 'function') calculateModalPrice();
+                        }
+                        
+                        const offlineRadio = document.querySelector('input[name="modal-block-type"][value="offline"]');
+                        if (offlineRadio) {
+                            offlineRadio.checked = true;
+                            if (typeof toggleModalBlockType === 'function') toggleModalBlockType();
+                        }
+                        showToast("Pasted! Click Confirm booking.");
+                    }
+                }
+            }
+        });
 
         async function initCalendar(facilityId) {
             const calendarEl = document.getElementById('calendar');
@@ -2124,8 +2234,25 @@
                 events: calendarEvents,
                 selectable: true,
                 selectMirror: true,
+                eventMouseEnter: function(info) {
+                    if (info.event.extendedProps && info.event.extendedProps.isManual) {
+                        currentHoveredEvent = info.event;
+                    }
+                },
+                eventMouseLeave: function(info) {
+                    if (currentHoveredEvent && currentHoveredEvent.id === info.event.id) {
+                        currentHoveredEvent = null;
+                    }
+                },
                 select: function(info) {
-                    // Open the modal when time is highlighted
+                    const now = new Date().getTime();
+                    if (clipboardBooking && (now - lastSelectTime) < 400) {
+                        closeEventModal(); // close modal from first click
+                        pasteBookingAutomatically(info.start, clipboardBooking, document.getElementById('calendar-facility-select').value);
+                        lastSelectTime = 0;
+                        return;
+                    }
+                    lastSelectTime = now;
                     openEventModal(info);
                 },
                 eventDrop: async function(info) {
@@ -2135,6 +2262,22 @@
                     await handleEventChange(info.event, info.revert);
                 },
                 eventClick: async function(info) {
+                    const now = new Date().getTime();
+                    if (lastEventClickId === info.event.id && (now - lastEventClickTime) < 400) {
+                        if (info.event.extendedProps && info.event.extendedProps.isManual) {
+                            closeEventModal(); // close modal from first click
+                            clipboardBooking = {
+                                notes: info.event.extendedProps.originalNotes || 'Offline Booking',
+                                durationMins: Math.round((info.event.end.getTime() - info.event.start.getTime()) / 60000)
+                            };
+                            showToast("Offline booking copied! Double click any empty slot to paste.");
+                            lastEventClickTime = 0;
+                            return;
+                        }
+                    }
+                    lastEventClickTime = now;
+                    lastEventClickId = info.event.id;
+
                     if (info.event.extendedProps && info.event.extendedProps.isManual) {
                         openEditEventModal(info.event);
                     } else if (info.event.extendedProps && info.event.extendedProps.isDiscount) {
