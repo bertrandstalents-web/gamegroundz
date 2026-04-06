@@ -150,6 +150,10 @@ async function initDatabase() {
             await client.query(`ALTER TABLE facilities ADD COLUMN connected_facilities TEXT DEFAULT '[]'`);
         } catch(e) {}
 
+        try {
+            await client.query(`ALTER TABLE facilities ADD COLUMN sort_order INTEGER DEFAULT 0`);
+        } catch(e) {}
+
         // Discounts Table
         await client.query(`CREATE TABLE IF NOT EXISTS discounts (
             id SERIAL PRIMARY KEY,
