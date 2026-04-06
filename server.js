@@ -1743,6 +1743,10 @@ app.post('/api/create-checkout-session', (req, res) => {
         return res.status(401).json({ error: "Unauthorized. Please log in to book." });
     }
 
+    if (req.session.userRole === 'host') {
+        return res.status(403).json({ error: "Hosts are not permitted to book facilities." });
+    }
+
     // Validate inputs
     if (!facility_id || !booking_date || !time_slots) {
         return res.status(400).json({ error: "Missing required booking information." });

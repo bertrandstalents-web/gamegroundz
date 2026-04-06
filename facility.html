@@ -1027,6 +1027,14 @@
                     return;
                 }
 
+                try {
+                    const parsedUser = JSON.parse(storedUser);
+                    if (parsedUser.role === 'host') {
+                        await showAlertModal('Booking Restricted', 'Hosts are not allowed to book facilities. Please log in as a Player to make a booking.', 'OK', true);
+                        return;
+                    }
+                } catch (e) {}
+
                 if (selectedSlotIds.size < 2) {
                     await showAlertModal('Minimum Duration', 'Please select at least two time slots (1 hour minimum).', 'OK', true);
                     return;
