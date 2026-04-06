@@ -2246,14 +2246,19 @@
                 },
                 select: function(info) {
                     const now = new Date().getTime();
-                    if (clipboardBooking && (now - lastSelectTime) < 400) {
-                        closeEventModal(); // close modal from first click
+                    if (clipboardBooking && (now - lastSelectTime) < 300) {
+                        clearTimeout(window.selectTimer);
                         pasteBookingAutomatically(info.start, clipboardBooking, document.getElementById('calendar-facility-select').value);
                         lastSelectTime = 0;
+                        if(currentCalendar) currentCalendar.unselect();
                         return;
                     }
                     lastSelectTime = now;
-                    openEventModal(info);
+                    
+                    // Delay modal so double click has time to resolve
+                    window.selectTimer = setTimeout(() => {
+                        openEventModal(info);
+                    }, 300);
                 },
                 eventDrop: async function(info) {
                     await handleEventChange(info.event, info.revert);
@@ -2263,9 +2268,9 @@
                 },
                 eventClick: async function(info) {
                     const now = new Date().getTime();
-                    if (lastEventClickId === info.event.id && (now - lastEventClickTime) < 400) {
+                    if (lastEventClickId === info.event.id && (now - lastEventClickTime) < 300) {
                         if (info.event.extendedProps && info.event.extendedProps.isManual) {
-                            closeEventModal(); // close modal from first click
+                            clearTimeout(window.clickTimer);
                             clipboardBooking = {
                                 notes: info.event.extendedProps.originalNotes || 'Offline Booking',
                                 durationMins: Math.round((info.event.end.getTime() - info.event.start.getTime()) / 60000)
@@ -2278,23 +2283,25 @@
                     lastEventClickTime = now;
                     lastEventClickId = info.event.id;
 
-                    if (info.event.extendedProps && info.event.extendedProps.isManual) {
-                        openEditEventModal(info.event);
-                    } else if (info.event.extendedProps && info.event.extendedProps.isDiscount) {
-                        openDiscountEditModal(info.event);
-                    } else {
-                        const props = info.event.extendedProps || {};
-                        const confirmCancel = await showConfirmModal(
-                            'Booking Info', 
-                            `Name: ${props.playerName || 'Guest'}\nEmail: ${props.playerEmail || 'N/A'}\nPhone: ${props.playerPhone || 'N/A'}\nStatus: ${props.status || 'undefined'}\n\nWould you like to cancel this booking?`,
-                            'Cancel Booking',
-                            'Close',
-                            true
-                        );
-                        if (confirmCancel) {
-                            openHostCancelModal(info.event.id);
+                    window.clickTimer = setTimeout(async () => {
+                        if (info.event.extendedProps && info.event.extendedProps.isManual) {
+                            openEditEventModal(info.event);
+                        } else if (info.event.extendedProps && info.event.extendedProps.isDiscount) {
+                            openDiscountEditModal(info.event);
+                        } else {
+                            const props = info.event.extendedProps || {};
+                            const confirmCancel = await showConfirmModal(
+                                'Booking Info', 
+                                `Name: ${props.playerName || 'Guest'}\nEmail: ${props.playerEmail || 'N/A'}\nPhone: ${props.playerPhone || 'N/A'}\nStatus: ${props.status || 'undefined'}\n\nWould you like to cancel this booking?`,
+                                'Cancel Booking',
+                                'Close',
+                                true
+                            );
+                            if (confirmCancel) {
+                                openHostCancelModal(info.event.id);
+                            }
                         }
-                    }
+                    }, 300);
                 }
             };
 
