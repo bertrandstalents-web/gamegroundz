@@ -1210,7 +1210,7 @@
             
             try {
                 // Fetch Facilities
-                const facRes = await fetch(`${API_BASE_URL}/api/host/facilities`, { credentials: 'include' });
+                const facRes = await fetch(`${API_BASE_URL}/api/host/facilities?_t=${Date.now()}`, { credentials: 'include', cache: 'no-store' });
                 if (facRes.status === 401) {
                     localStorage.removeItem('gg_user');
                     window.location.href = 'index.html';

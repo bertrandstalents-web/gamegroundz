@@ -851,32 +851,30 @@ app.get('/api/host/facilities', (req, res) => {
 });
 
 // PUT reorder facilities
-app.put('/api/host/facilities/reorder', (req, res) => {
+app.put('/api/host/facilities/reorder', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
     
     const { orderIds } = req.body;
     if (!orderIds || !Array.isArray(orderIds)) return res.status(400).json({ error: "Invalid order array" });
     
-    let pending = orderIds.length;
-    let hasError = false;
+    if (orderIds.length === 0) return res.json({ message: "No change" });
     
-    if (pending === 0) return res.json({ message: "No change" });
-    
-    orderIds.forEach((facId, index) => {
-        const parsedId = parseInt(facId, 10);
-        db.run("UPDATE facilities SET sort_order = ? WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", 
-        [index, parsedId, req.session.userId, `%"${req.session.email}"%`], (err) => {
-            if (err) {
-                console.error("Error updating sort_order for facility", parsedId, err);
-                hasError = true;
-            }
-            pending--;
-            if (pending === 0) {
-                if (hasError) return res.status(500).json({ error: "Error updating some facilities" });
-                res.json({ message: "Reordered successfully" });
-            }
-        });
-    });
+    try {
+        for (let i = 0; i < orderIds.length; i++) {
+            const parsedId = parseInt(orderIds[i], 10);
+            await new Promise((resolve, reject) => {
+                db.run("UPDATE facilities SET sort_order = ? WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", 
+                [i, parsedId, req.session.userId, `%"${req.session.email}"%`], (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+        }
+        res.json({ message: "Reordered successfully" });
+    } catch (err) {
+        console.error("Error updating sort_order:", err);
+        res.status(500).json({ error: "Error updating some facilities" });
+    }
 });
 
 // GET unread host notifications count
