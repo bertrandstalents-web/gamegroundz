@@ -106,6 +106,7 @@
                                 <span class="block text-xs text-slate-500 truncate" id="puck-email">user@example.com</span>
                             </div>
                             <a href="index.html" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary">Home</a>
+                            <a href="#profile" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('owner-dashboard.html')){ try{ switchTab('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); return false;}catch(e){} }">Profile</a>
                             <button id="nav-logout-btn" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom">Log out</button>
                         </div>
                     </div>
@@ -4449,5 +4450,13 @@
     </script>
     <!-- Idle Timeout Tracker -->
     <script src="js/idle-timeout.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.location.hash === '#profile' && typeof switchTab === 'function') {
+                switchTab('profile');
+            }
+        });
+    </script>
 </body>
 </html>
