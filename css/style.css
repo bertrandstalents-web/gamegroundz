@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
+/* Language specific visibility */
+html[data-lang="fr"] .lang-en-only { display: none !important; }
+html:not([data-lang="fr"]) .lang-fr-only { display: none !important; }
+
 html {
     scroll-behavior: smooth;
 }

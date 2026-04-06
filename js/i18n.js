@@ -2,6 +2,7 @@
 
 // 1. Get saved language
 const savedLang = localStorage.getItem('gg_language') || 'en';
+document.documentElement.setAttribute('data-lang', savedLang);
 
 // 2. Inject Google Translate script dynamically
 (function() {
