@@ -70,7 +70,10 @@
                                 <span class="block text-sm font-bold text-slate-800 truncate" id="puck-name">User</span>
                                 <span class="block text-xs text-slate-500 truncate" id="puck-email">user@example.com</span>
                             </div>
-                            <a href="index.html" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary">Home</a>
+                            <a href="index.html" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary">
+                                <span class="lang-en-only">Home</span>
+                                <span class="lang-fr-only notranslate">Accueil</span>
+                            </a>
                             <a href="player-dashboard.html" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('-dashboard.html')){ try{ switchNav('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); return false;}catch(e){} }">Profile</a>
                             <button id="nav-logout-btn" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom">Log out</button>
                         </div>
