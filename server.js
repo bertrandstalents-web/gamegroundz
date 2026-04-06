@@ -470,7 +470,7 @@ app.get('/api/facilities', (req, res) => {
             params.push(offset);
         }
     } else {
-         query += " ORDER BY id DESC";
+         query += " ORDER BY sort_order ASC, id DESC";
     }
 
     db.all(query, params, (err, rows) => {
@@ -844,9 +844,34 @@ app.get('/api/host/facilities', (req, res) => {
         return res.status(401).json({ error: "Unauthorized" });
     }
     
-    db.all("SELECT * FROM facilities WHERE host_id = ? OR co_host_emails LIKE ? ORDER BY id DESC", [req.session.userId, `%"${req.session.email}"%`], (err, rows) => {
+    db.all("SELECT * FROM facilities WHERE host_id = ? OR co_host_emails LIKE ? ORDER BY sort_order ASC, id DESC", [req.session.userId, `%"${req.session.email}"%`], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
+    });
+});
+
+// PUT reorder facilities
+app.put('/api/host/facilities/reorder', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+    
+    const { orderIds } = req.body;
+    if (!orderIds || !Array.isArray(orderIds)) return res.status(400).json({ error: "Invalid order array" });
+    
+    let pending = orderIds.length;
+    let hasError = false;
+    
+    if (pending === 0) return res.json({ message: "No change" });
+    
+    orderIds.forEach((facId, index) => {
+        db.run("UPDATE facilities SET sort_order = ? WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", 
+        [index, facId, req.session.userId, `%"${req.session.email}"%`], (err) => {
+            if (err) hasError = true;
+            pending--;
+            if (pending === 0) {
+                if (hasError) return res.status(500).json({ error: "Error updating some facilities" });
+                res.json({ message: "Reordered successfully" });
+            }
+        });
     });
 });
 

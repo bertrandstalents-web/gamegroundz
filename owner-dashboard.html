@@ -30,6 +30,8 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- SortableJS -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <!-- FullCalendar JS and CSS -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
     <style>
@@ -1258,7 +1260,7 @@
                 }
 
                 container.innerHTML += `
-                    <div class="flex flex-col border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-custom bg-white">
+                    <div data-id="${fac.id}" class="flex flex-col border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-custom bg-white cursor-grab active:cursor-grabbing">
                         <div class="h-40 w-full overflow-hidden relative">
                             <img src="${displayImage}" alt="${fac.name}" class="w-full h-full object-cover">
                             ${fac.is_instant_book ? '<span class="absolute top-3 left-3 bg-white text-primary text-xs font-bold px-2 py-1 rounded-md shadow-sm"><i class="fa-solid fa-bolt text-yellow-500 mr-1"></i> Instant Book</span>' : ''}
@@ -1297,6 +1299,63 @@
             }
             if (prevDiscVal && discSelectEl) {
                 discSelectEl.value = prevDiscVal;
+            }
+
+            // Initialize Sortable on the facilities container
+            if (window.Sortable) {
+                Sortable.create(container, {
+                    animation: 150,
+                    ghostClass: 'opacity-50',
+                    onEnd: function (evt) {
+                        const orderIds = Array.from(container.children).map(child => child.getAttribute('data-id'));
+                        
+                        if (ownerFacilities && ownerFacilities.length > 0) {
+                            const newFacilitiesOrder = [];
+                            orderIds.forEach(id => {
+                                const fac = ownerFacilities.find(f => f.id == id);
+                                if (fac) newFacilitiesOrder.push(fac);
+                            });
+                            ownerFacilities = newFacilitiesOrder;
+                            
+                            const selectEl = document.getElementById('calendar-facility-select');
+                            const discSelectEl = document.getElementById('discount-facility-select');
+                            const resFacFilter = document.getElementById('res-facility-filter');
+                            const prevVal = selectEl ? selectEl.value : '';
+                            const prevDiscVal = discSelectEl ? discSelectEl.value : '';
+                            const prevResVal = resFacFilter ? resFacFilter.value : '';
+                            
+                            if (selectEl) {
+                                selectEl.innerHTML = '<option value="" disabled>Choose a facility</option>';
+                                ownerFacilities.forEach(fac => {
+                                    selectEl.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
+                                });
+                                if (prevVal) selectEl.value = prevVal;
+                            }
+                            if (discSelectEl) {
+                                discSelectEl.innerHTML = '<option value="" disabled>Choose a facility</option>';
+                                ownerFacilities.forEach(fac => {
+                                    discSelectEl.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
+                                });
+                                if (prevDiscVal) discSelectEl.value = prevDiscVal;
+                            }
+                            if (resFacFilter) {
+                                resFacFilter.innerHTML = '<option value="all">All Facilities</option>';
+                                ownerFacilities.forEach(fac => {
+                                    resFacFilter.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
+                                });
+                                if (prevResVal) resFacFilter.value = prevResVal;
+                            }
+                        }
+
+                        const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                        fetch(`${API_BASE_URL}/api/host/facilities/reorder`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ orderIds: orderIds }),
+                            credentials: 'include'
+                        }).catch(e => console.error('Error reordering facilities:', e));
+                    }
+                });
             }
 
             // Initialize calendar if not already initialized
