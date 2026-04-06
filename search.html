@@ -1090,5 +1090,67 @@
             <span class="text-[10px] font-medium">Profile</span>
         </a>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const u = JSON.parse(userStr);
+                    const puckDashboard = document.getElementById('puck-dashboard');
+                    const puckProfile = document.getElementById('puck-profile');
+                    if (u.role === 'host') {
+                        if (puckDashboard) puckDashboard.href = 'owner-dashboard.html';
+                        if (puckProfile) {
+                            puckProfile.href = 'owner-dashboard.html#profile';
+                            puckProfile.removeAttribute('onclick');
+                        }
+                    } else if (u.role === 'admin') {
+                        if (puckDashboard) puckDashboard.href = 'admin-dashboard.html';
+                        if (puckProfile) {
+                            puckProfile.href = 'admin-dashboard.html';
+                            puckProfile.removeAttribute('onclick');
+                        }
+                    } else {
+                        if (puckDashboard) puckDashboard.href = 'player-dashboard.html';
+                        if (puckProfile) puckProfile.href = 'player-dashboard.html';
+                    }
+                } catch(e) {}
+            }
+        });
+    </script>
+
+    <!-- Dynamically update puck links based on user role -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const u = JSON.parse(userStr);
+                    const puckDashboard = document.getElementById('puck-dashboard');
+                    const puckProfile = document.getElementById('puck-profile');
+                    if (u.role === 'host') {
+                        if (puckDashboard) puckDashboard.href = 'owner-dashboard.html';
+                        if (puckProfile) {
+                            puckProfile.href = 'owner-dashboard.html#profile';
+                            puckProfile.removeAttribute('onclick');
+                        }
+                    } else if (u.role === 'admin') {
+                        if (puckDashboard) puckDashboard.href = 'admin-dashboard.html';
+                        if (puckProfile) {
+                            puckProfile.href = 'admin-dashboard.html';
+                            puckProfile.removeAttribute('onclick');
+                        }
+                    } else {
+                        if (puckDashboard) puckDashboard.href = 'player-dashboard.html';
+                        if (puckProfile) {
+                            puckProfile.href = 'player-dashboard.html';
+                            puckProfile.removeAttribute('onclick');
+                        }
+                    }
+                } catch(e) {}
+            }
+        });
+    </script>
 </body>
 </html>
