@@ -1982,7 +1982,12 @@
             }
 
             // Destroy the old calendar AFTER our await safely resolves
+            let previousDate = null;
+            let previousView = 'timeGridWeek';
+
             if (currentCalendar) {
+                previousDate = currentCalendar.getDate();
+                previousView = currentCalendar.view.type;
                 currentCalendar.destroy();
                 currentCalendar = null;
             }
@@ -2105,8 +2110,8 @@
                 calendarEvents.push(evt);
             });
 
-            currentCalendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridWeek',
+            const calendarConfig = {
+                initialView: previousView,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
@@ -2148,7 +2153,13 @@
                         }
                     }
                 }
-            });
+            };
+
+            if (previousDate) {
+                calendarConfig.initialDate = previousDate;
+            }
+
+            currentCalendar = new FullCalendar.Calendar(calendarEl, calendarConfig);
 
             currentCalendar.render();
         }
