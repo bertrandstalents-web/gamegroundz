@@ -39,8 +39,36 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), (req, r
         const session = event.data.object;
         const metadata = session.metadata;
         
-        if (metadata && metadata.facility_id) {
-            // Confirm booking
+        if (metadata && metadata.checkout_token) {
+            db.get("SELECT payload FROM pending_checkouts WHERE id = ?", [metadata.checkout_token], (err, row) => {
+                if (!err && row) {
+                    try {
+                        const payload = JSON.parse(row.payload);
+                        const { user_id, facility_id, multi_day_slots } = payload;
+                        // For simplicity, we just save the total session amount across the multiple bookings, 
+                        // or divide it? Let's just store total per row or 0. We'll store it on the first one or divide.
+                        // Actually let's just store the total session price.
+                        const price = session.amount_total / 100;
+                        const recurringGroupId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(7);
+
+                        for (const [date, slots] of Object.entries(multi_day_slots)) {
+                            const slotsStr = JSON.stringify(slots);
+                            db.run(
+                                "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id) VALUES (?, ?, ?, ?, ?, 'confirmed', 'online', 'paid', ?, ?)",
+                                [user_id, facility_id, date, slotsStr, price, session.id, recurringGroupId],
+                                function(err) {
+                                    if (err) console.error("Error creating multi-day booking from webhook:", err);
+                                    else {
+                                        sendBookingEmails(this.lastID);
+                                    }
+                                }
+                            );
+                        }
+                    } catch(e) { console.error("Error parsing checkout payload", e); }
+                }
+            });
+        } else if (metadata && metadata.facility_id) {
+            // Confirm single booking
             const facilityId = metadata.facility_id;
             const bookingDate = metadata.booking_date;
             const timeSlotsStr = metadata.time_slots;
@@ -1714,27 +1742,40 @@ function calculatePrice(facility, timeSlots, discounts, bookingDateStr) {
 
 // Calculate price before booking
 app.post('/api/bookings/calculate', (req, res) => {
-    const { facility_id, booking_date, time_slots } = req.body;
-    if (!facility_id || !booking_date || !time_slots) return res.status(400).json({ error: "Missing fields" });
-
-    let slots = [];
-    try {
-        slots = typeof time_slots === 'string' ? JSON.parse(time_slots) : time_slots;
-    } catch(e) { return res.status(400).json({ error: "Invalid format" }); }
+    const { facility_id, booking_date, time_slots, multi_day_slots } = req.body;
+    if (!facility_id || (!booking_date && !multi_day_slots)) return res.status(400).json({ error: "Missing fields" });
 
     db.get("SELECT base_price, pricing_rules FROM facilities WHERE id = ?", [facility_id], (err, facility) => {
         if (err || !facility) return res.status(404).json({ error: "Facility not found" });
 
         db.all("SELECT * FROM discounts WHERE facility_id = ? OR facility_id IS NULL", [facility_id], (err, discounts) => {
             if (err) return res.status(500).json({ error: "DB Error" });
-            const pricing = calculatePrice(facility, slots, discounts, booking_date);
-            res.json(pricing);
+            
+            let totalPricing = { base_price: 0, discount_amount: 0, total_price: 0 };
+            
+            try {
+                if (multi_day_slots) {
+                    let parsedMulti = typeof multi_day_slots === 'string' ? JSON.parse(multi_day_slots) : multi_day_slots;
+                    for (const [dateStr, slots] of Object.entries(parsedMulti)) {
+                        const pricing = calculatePrice(facility, slots, discounts, dateStr);
+                        totalPricing.base_price += pricing.base_price;
+                        totalPricing.discount_amount += pricing.discount_amount;
+                        totalPricing.total_price += pricing.total_price;
+                    }
+                } else {
+                    let slots = typeof time_slots === 'string' ? JSON.parse(time_slots) : time_slots;
+                    totalPricing = calculatePrice(facility, slots, discounts, booking_date);
+                }
+                res.json(totalPricing);
+            } catch (e) {
+                res.status(400).json({ error: "Invalid format" });
+            }
         });
     });
 });
 
 app.post('/api/create-checkout-session', (req, res) => {
-    const { facility_id, booking_date, time_slots } = req.body;
+    const { facility_id, booking_date, time_slots, multi_day_slots } = req.body;
     
     // In a real app we would get the user_id from an auth token or session
     const user_id = req.session.userId; 
@@ -1748,16 +1789,27 @@ app.post('/api/create-checkout-session', (req, res) => {
     }
 
     // Validate inputs
-    if (!facility_id || !booking_date || !time_slots) {
+    if (!facility_id || (!booking_date && !multi_day_slots)) {
         return res.status(400).json({ error: "Missing required booking information." });
     }
 
-    let parsedNewSlots = [];
-    try {
-        parsedNewSlots = typeof time_slots === 'string' ? JSON.parse(time_slots) : time_slots;
-        if (!Array.isArray(parsedNewSlots)) throw new Error("time_slots must be an array");
-    } catch (e) {
-        return res.status(400).json({ error: "Invalid time_slots format." });
+    let parsedMultiDaySlots = null;
+    let singleDaySlots = null;
+
+    if (multi_day_slots) {
+        try {
+            parsedMultiDaySlots = typeof multi_day_slots === 'string' ? JSON.parse(multi_day_slots) : multi_day_slots;
+        } catch(e) {
+            return res.status(400).json({ error: "Invalid multi_day_slots format." });
+        }
+    } else {
+        try {
+            singleDaySlots = typeof time_slots === 'string' ? JSON.parse(time_slots) : time_slots;
+            if (!Array.isArray(singleDaySlots)) throw new Error("time_slots must be an array");
+            parsedMultiDaySlots = { [booking_date]: singleDaySlots };
+        } catch (e) {
+            return res.status(400).json({ error: "Invalid time_slots format." });
+        }
     }
 
     // Secure Pricing Calculation
@@ -1772,8 +1824,11 @@ app.post('/api/create-checkout-session', (req, res) => {
         db.all("SELECT * FROM discounts WHERE facility_id = ? OR facility_id IS NULL", [facility_id], (err, discounts) => {
             if (err) return res.status(500).json({ error: "DB Error" });
             
-            const pricing = calculatePrice(facility, parsedNewSlots, discounts, booking_date);
-            const secureTotalPrice = pricing.total_price;
+            let secureTotalPrice = 0;
+            for (const [dateStr, slots] of Object.entries(parsedMultiDaySlots)) {
+                const p = calculatePrice(facility, slots, discounts, dateStr);
+                secureTotalPrice += p.total_price;
+            }
             
             // Add processing fee and tax to match frontend
             const taxRate = 0.14975;
@@ -1781,27 +1836,30 @@ app.post('/api/create-checkout-session', (req, res) => {
             const finalAmount = secureTotalPrice + processingFee + (secureTotalPrice * taxRate);
             const finalAmountCents = Math.round(finalAmount * 100);
 
-            // 1. Check for existing overlapping bookings
+            // 1. Check for existing overlapping bookings across all dates
+            const datesArr = Object.keys(parsedMultiDaySlots);
+            const placeholders = datesArr.map(() => '?').join(',');
+            
             db.all(
-                "SELECT time_slots FROM bookings WHERE facility_id = ? AND booking_date = ?",
-                [facility_id, booking_date],
+                `SELECT booking_date, time_slots FROM bookings WHERE facility_id = ? AND booking_date IN (${placeholders})`,
+                [facility_id, ...datesArr],
                 async (err, existingBookings) => {
                     if (err) return res.status(500).json({ error: "Database error during availability check." });
 
-                    let allBookedSlots = [];
+                    let hasConflict = false;
                     existingBookings.forEach(booking => {
                         try {
                             const slots = typeof booking.time_slots === 'string' 
                                 ? JSON.parse(booking.time_slots) 
                                 : booking.time_slots;
+                            const newSlotsForDate = parsedMultiDaySlots[booking.booking_date] || [];
                             if (Array.isArray(slots)) {
-                                allBookedSlots = allBookedSlots.concat(slots);
+                                if (newSlotsForDate.some(newSlot => slots.includes(newSlot))) {
+                                    hasConflict = true;
+                                }
                             }
                         } catch (e) {}
                     });
-
-                    // 2. Determine if there is an overlap
-                    const hasConflict = parsedNewSlots.some(newSlot => allBookedSlots.includes(newSlot));
 
                     if (hasConflict) {
                         return res.status(409).json({ 
@@ -1810,56 +1868,38 @@ app.post('/api/create-checkout-session', (req, res) => {
                     }
 
                     // 4. Proceed with Stripe Session
-                    const slotsString = JSON.stringify(parsedNewSlots);
+                    const checkoutToken = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(7));
                     
-                    try {
-                        let formattedSlots = "";
-                        if (parsedNewSlots.length > 0) {
-                            const sorted = [...parsedNewSlots].sort();
-                            const blocks = [];
-                            let currentBlock = [sorted[0]];
-                            for (let i = 1; i < sorted.length; i++) {
-                                const prev = sorted[i-1];
-                                const curr = sorted[i];
-                                let [ph, pm] = prev.split(':').map(Number);
-                                pm += 30; if (pm >= 60) { ph += 1; pm -= 60; }
-                                const prevEnd = `${ph.toString().padStart(2, '0')}:${pm.toString().padStart(2, '0')}`;
-                                if (prevEnd === curr) {
-                                    currentBlock.push(curr);
-                                } else {
-                                    blocks.push(currentBlock);
-                                    currentBlock = [curr];
-                                }
-                            }
-                            blocks.push(currentBlock);
-                            
-                            formattedSlots = blocks.map(block => {
-                                const start = block[0];
-                                const endSlot = block[block.length - 1];
-                                let [eh, em] = endSlot.split(':').map(Number);
-                                em += 30; if (em >= 60) { eh += 1; em -= 60; }
-                                const end = `${eh.toString().padStart(2, '0')}:${em.toString().padStart(2, '0')}`;
-                                return `${start} - ${end}`;
-                            }).join(', ');
-                        } else {
-                            formattedSlots = `${parsedNewSlots.length} slots`;
-                        }
+                    const payloadToStore = JSON.stringify({
+                        user_id,
+                        facility_id,
+                        multi_day_slots: parsedMultiDaySlots
+                    });
 
-                        const sessionUrl = `${req.protocol}://${req.get('host')}`;
-                        
-                        const lineItems = [
-                            {
-                                price_data: {
-                                    currency: 'cad',
-                                    product_data: {
-                                        name: `${facility.name} Booking`,
-                                        description: `Date: ${booking_date} | Time: ${formattedSlots}`,
+                    db.run("INSERT INTO pending_checkouts (id, payload) VALUES (?, ?)", [checkoutToken, payloadToStore], async function(err) {
+                        if (err) return res.status(500).json({ error: "Failed to initialize checkout." });
+
+                        try {
+                            const totalDates = Object.keys(parsedMultiDaySlots).length;
+                            const descriptionStr = totalDates > 1 
+                                ? `Multiple days (${totalDates} dates)` 
+                                : `Date: ${Object.keys(parsedMultiDaySlots)[0]}`;
+
+                            const sessionUrl = `${req.protocol}://${req.get('host')}`;
+                            
+                            const lineItems = [
+                                {
+                                    price_data: {
+                                        currency: 'cad',
+                                        product_data: {
+                                            name: `${facility.name} Booking`,
+                                            description: descriptionStr,
+                                        },
+                                        unit_amount: Math.round(secureTotalPrice * 100),
                                     },
-                                    unit_amount: Math.round(secureTotalPrice * 100),
-                                },
-                                quantity: 1,
-                            }
-                        ];
+                                    quantity: 1,
+                                }
+                            ];
 
                         if (processingFee > 0) {
                             lineItems.push({
@@ -1898,10 +1938,7 @@ app.post('/api/create-checkout-session', (req, res) => {
                             success_url: `${sessionUrl}/player-dashboard.html?success=true&session_id={CHECKOUT_SESSION_ID}`,
                             cancel_url: `${sessionUrl}/facility.html?id=${facility_id}&canceled=true`,
                             metadata: {
-                                facility_id: facility_id.toString(),
-                                booking_date: booking_date,
-                                time_slots: slotsString,
-                                user_id: user_id.toString()
+                                checkout_token: checkoutToken
                             }
                         };
 
@@ -1923,6 +1960,7 @@ app.post('/api/create-checkout-session', (req, res) => {
                         console.error("Stripe Checkout Error:", stripeErr);
                         res.status(500).json({ error: "Could not create payment session" });
                     }
+                    }); // END pending_checkouts insert callback
                 }
             );
         });
@@ -1938,8 +1976,7 @@ app.post('/api/bookings/confirm', async (req, res) => {
         const session = await stripe.checkout.sessions.retrieve(session_id);
         
         if (session.payment_status === 'paid') {
-            const { facility_id, booking_date, time_slots, user_id } = session.metadata;
-            
+            const metadata = session.metadata;
             // Check if it already exists (in case webhook actually fired in prod)
             db.get("SELECT id FROM bookings WHERE stripe_session_id = ?", [session.id], (err, existing) => {
                 if (err) return res.status(500).json({ error: "DB Error" });
@@ -1947,19 +1984,42 @@ app.post('/api/bookings/confirm', async (req, res) => {
                     return res.json({ success: true, message: "Booking already confirmed." });
                 }
 
-                // Insert booking
-                db.run(
-                    "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id) VALUES (?, ?, ?, ?, ?, 'confirmed', 'online', 'paid', ?)",
-                    [user_id, facility_id, booking_date, time_slots, session.amount_total / 100, session.id],
-                    function(err) {
-                        if (err) {
-                            console.error("Booking Insertion Error Sync:", err);
-                            return res.status(500).json({ error: "Failed to save booking" });
+                if (metadata && metadata.checkout_token) {
+                    db.get("SELECT payload FROM pending_checkouts WHERE id = ?", [metadata.checkout_token], (err, row) => {
+                        if (err || !row) return res.status(500).json({ error: "Missing payload" });
+                        
+                        try {
+                            const payload = JSON.parse(row.payload);
+                            const { user_id, facility_id, multi_day_slots } = payload;
+                            const price = session.amount_total / 100;
+                            const recurringGroupId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(7);
+
+                            for (const [date, slots] of Object.entries(multi_day_slots)) {
+                                const slotsStr = JSON.stringify(slots);
+                                db.run(
+                                    "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id) VALUES (?, ?, ?, ?, ?, 'confirmed', 'online', 'paid', ?, ?)",
+                                    [user_id, facility_id, date, slotsStr, price, session.id, recurringGroupId],
+                                    function(err) {
+                                        if (!err) sendBookingEmails(this.lastID);
+                                    }
+                                );
+                            }
+                            res.json({ success: true, message: "Bookings confirmed" });
+                        } catch(e) {
+                            res.status(500).json({ error: "Payload error" });
                         }
-                        sendBookingEmails(this.lastID);
-                        res.json({ success: true, booking_id: this.lastID });
-                    }
-                );
+                    });
+                } else if (metadata && metadata.facility_id) {
+                    // Backward compatibility
+                    db.run(
+                        "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id) VALUES (?, ?, ?, ?, ?, 'confirmed', 'online', 'paid', ?)",
+                        [metadata.user_id, metadata.facility_id, metadata.booking_date, metadata.time_slots, session.amount_total / 100, session.id],
+                        function(err) {
+                            if (!err) sendBookingEmails(this.lastID);
+                            res.json({ success: true, booking_id: this.lastID });
+                        }
+                    );
+                }
             });
         } else {
             res.status(400).json({ error: "Payment not completed" });

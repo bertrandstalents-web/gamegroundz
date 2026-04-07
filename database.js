@@ -233,6 +233,13 @@ async function initDatabase() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
 
+        // Pending Checkouts Table for storing large multi-day payload metadata
+        await client.query(`CREATE TABLE IF NOT EXISTS pending_checkouts (
+            id TEXT PRIMARY KEY,
+            payload TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+
         // Seed initial Facility data if the table is empty
         const res = await client.query("SELECT COUNT(*) as count FROM facilities");
         if (parseInt(res.rows[0].count) === 0) {

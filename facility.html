@@ -1051,6 +1051,14 @@
                 }
 
                 try {
+                     // Group array into multi-day format
+                     const multiDayPayload = {};
+                     Array.from(selectedSlotIds).forEach(slotKey => {
+                         const [dStr, tId] = slotKey.split('|');
+                         if(!multiDayPayload[dStr]) multiDayPayload[dStr] = [];
+                         multiDayPayload[dStr].push(tId);
+                     });
+
                      const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
                      const bookingResponse = await fetch(`${API_BASE_URL}/api/create-checkout-session`, {
                         method: 'POST',
@@ -1060,8 +1068,10 @@
                         },
                         body: JSON.stringify({
                             facility_id: currentFacilityId || 1,
-                            booking_date: selectedDateStr, 
-                            time_slots: Array.from(selectedSlotIds)
+                            multi_day_slots: multiDayPayload,
+                            // Send booking_date for single-day fallback compatibility if needed anywhere
+                            booking_date: selectedDateStr,
+                            time_slots: []
                         })
                      });
 
@@ -1211,12 +1221,13 @@
                     const isBooked = bookedSlotIds.has(slot.id);
                     const isUnavailable = isBooked || isPast;
                     
+                    const slotKey = `${selectedDateStr}|${slot.id}`;
                     // Always unselect past slots if they were previously somehow selected
-                    if (isPast && selectedSlotIds.has(slot.id)) {
-                        selectedSlotIds.delete(slot.id);
+                    if (isPast && selectedSlotIds.has(slotKey)) {
+                        selectedSlotIds.delete(slotKey);
                     }
                     
-                    const isSelected = selectedSlotIds.has(slot.id);
+                    const isSelected = selectedSlotIds.has(slotKey);
                     const div = document.createElement('div');
                     
                     const slotDiscount = getBestDiscountForSlot(slot.id, validDiscounts);
@@ -1244,16 +1255,20 @@
                         div.onclick = (e) => {
                             e.stopPropagation();
                             if (isSelected) {
-                                selectedSlotIds.delete(slot.id);
+                                selectedSlotIds.delete(slotKey);
                             } else {
-                                selectedSlotIds.add(slot.id);
-                                // Auto-select next slot if this is the only one selected (to help meet 1hr minimum)
-                                if (selectedSlotIds.size === 1) {
+                                selectedSlotIds.add(slotKey);
+                                // Auto-select next slot if this is the only one selected for this day
+                                // (counting slots for selectedDateStr to help meet 1hr min)
+                                let daySlotsCount = 0;
+                                selectedSlotIds.forEach(k => { if(k.startsWith(selectedDateStr)) daySlotsCount++; });
+                                
+                                if (daySlotsCount === 1) {
                                     const currentIndex = availableSlots.findIndex(s => s.id === slot.id);
                                     if (currentIndex !== -1 && currentIndex + 1 < availableSlots.length) {
                                         const nextSlot = availableSlots[currentIndex + 1];
                                         if (!bookedSlotIds.has(nextSlot.id)) {
-                                            selectedSlotIds.add(nextSlot.id);
+                                            selectedSlotIds.add(`${selectedDateStr}|${nextSlot.id}`);
                                         }
                                     }
                                 }
@@ -1268,23 +1283,48 @@
                 const count = selectedSlotIds.size;
                 slotsSummary.textContent = count === 0 ? "Select Times" : `${count} Slot${count > 1 ? 's' : ''} Selected`;
 
-                // Update chips
+                // Update chips (Group by Date)
                 selectedContainer.innerHTML = '';
                 if (count === 0) {
                     selectedContainer.innerHTML = '<span class="text-sm text-slate-400 italic">No slots selected</span>';
                 } else {
-                    availableSlots.forEach(slot => {
-                        if (selectedSlotIds.has(slot.id)) {
+                    const groupedSlots = {};
+                    selectedSlotIds.forEach(slotKey => {
+                        const [dStr, tId] = slotKey.split('|');
+                        if (!groupedSlots[dStr]) groupedSlots[dStr] = [];
+                        groupedSlots[dStr].push(tId);
+                    });
+
+                    Object.keys(groupedSlots).sort().forEach(dStr => {
+                        const dObj = new Date(dStr + 'T00:00:00');
+                        const dayLabel = dObj.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+                        
+                        const groupDiv = document.createElement('div');
+                        groupDiv.className = 'w-full mb-2 last:mb-0';
+                        groupDiv.innerHTML = `<div class="text-xs font-bold text-slate-500 mb-1 pl-1 border-l-2 border-primary">${dayLabel}</div><div class="flex flex-wrap gap-2" id="chips-${dStr}"></div>`;
+                        selectedContainer.appendChild(groupDiv);
+
+                        const chipsDiv = groupDiv.querySelector(`#chips-${dStr}`);
+                        const sortedTimes = groupedSlots[dStr].sort();
+                        
+                        sortedTimes.forEach(tId => {
+                            let ampm = 'AM';
+                            let [h, m] = tId.split(':');
+                            h = parseInt(h);
+                            if (h >= 12) { ampm = 'PM'; if (h > 12) h -= 12; }
+                            if (h === 0) h = 12;
+                            const tLabel = `${h}:${m} ${ampm}`;
+
                             const span = document.createElement('span');
                             span.className = 'px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-sm font-semibold flex items-center shadow-sm';
-                            span.innerHTML = `${slot.time} <i class="fa-solid fa-xmark ml-2 text-xs opacity-60 hover:opacity-100 cursor-pointer"></i>`;
+                            span.innerHTML = `${tLabel} <i class="fa-solid fa-xmark ml-2 text-xs opacity-60 hover:opacity-100 cursor-pointer"></i>`;
                             span.querySelector('i').onclick = (e) => {
                                 e.stopPropagation();
-                                selectedSlotIds.delete(slot.id);
+                                selectedSlotIds.delete(`${dStr}|${tId}`);
                                 render();
                             };
-                            selectedContainer.appendChild(span);
-                        }
+                            chipsDiv.appendChild(span);
+                        });
                     });
                 }
 
@@ -1292,42 +1332,83 @@
                 const hours = count / 2; // 1 slot = 0.5 hour
                 if (hours > 0) {
                     let subtotal = 0;
-                    selectedSlotIds.forEach(slotId => {
-                        const slot = availableSlots.find(s => s.id === slotId);
-                        if (slot) {
-                            subtotal += getPriceForTimeSlot(slot.time, hourlyRate, pricingRules, isWeekend) / 2;
-                        }
+                    let bestDiscountValue = 0;
+
+                    // Group slots by date first to apply discounts accurately day-by-day or globally
+                    const groupedForPricing = {};
+                    selectedSlotIds.forEach(slotKey => {
+                        const [dStr, tId] = slotKey.split('|');
+                        if(!groupedForPricing[dStr]) groupedForPricing[dStr] = [];
+                        groupedForPricing[dStr].push(tId);
                     });
 
-                    // --- Discount logic ---
-                    let bestDiscountValue = 0;
-                    
-                    validDiscounts.forEach(d => {
-                        let applicableSlotsCount = 0;
-                        let applicableSubtotal = 0;
+                    for (const [dStr, tIds] of Object.entries(groupedForPricing)) {
+                        const dateObj = new Date(dStr + 'T12:00:00');
+                        const dayOfWeekGroup = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+                        const isWeekendGroup = dayOfWeekGroup === 'Saturday' || dayOfWeekGroup === 'Sunday';
                         
-                        selectedSlotIds.forEach(slotId => {
-                            let applies = true;
-                            if (d.start_time && d.end_time) {
-                                applies = (slotId >= d.start_time && slotId < d.end_time);
+                        let groupSubtotal = 0;
+                        tIds.forEach(tId => {
+                            // We need formatted AM/PM time for getPriceForTimeSlot
+                            let ampm = 'AM';
+                            let h = parseInt(tId.split(':')[0]);
+                            const m = tId.split(':')[1];
+                            if(h >= 12) { ampm = 'PM'; if(h > 12) h -= 12; }
+                            if(h === 0) h = 12;
+                            const formattedTime = `${h}:${m} ${ampm}`;
+
+                            groupSubtotal += getPriceForTimeSlot(formattedTime, hourlyRate, pricingRules, isWeekendGroup) / 2;
+                        });
+                        subtotal += groupSubtotal;
+
+                        // Calculate discount for this group (date) exactly as the backend does
+                        let bestGroupDiscount = 0;
+                        discounts.forEach(d => {
+                            if (!d.is_active) return;
+                            const dStart = d.start_date ? new Date(d.start_date.split('T')[0] + 'T00:00:00') : null;
+                            const dEnd = d.end_date ? new Date(d.end_date.split('T')[0] + 'T23:59:59') : null;
+                            const pDate = new Date(dStr + 'T00:00:00');
+                            
+                            if (dStart && pDate < dStart) return;
+                            if (dEnd && pDate > dEnd) return;
+                            if (d.recurring_day !== null && d.recurring_day !== undefined && d.recurring_day !== '') {
+                                const daysMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                                if (daysMap[parseInt(d.recurring_day, 10)] !== dayOfWeekGroup) return;
                             }
-                            if (applies) {
-                                applicableSlotsCount++;
-                                const slot = availableSlots.find(s => s.id === slotId);
-                                if (slot) applicableSubtotal += getPriceForTimeSlot(slot.time, hourlyRate, pricingRules, isWeekend) / 2;
+
+                            if (d.is_last_minute) {
+                                // Simplified for frontend (accurate calc done on backend anyway)
+                            }
+                            
+                            let applicableSlotsSubtotal = 0;
+                            tIds.forEach(tId => {
+                                let applies = true;
+                                if (d.start_time && d.end_time) {
+                                    if (tId < d.start_time || tId >= d.end_time) applies = false;
+                                }
+                                if (applies) {
+                                    let ampm = 'AM', h = parseInt(tId.split(':')[0]), m = tId.split(':')[1];
+                                    if(h >= 12) { ampm = 'PM'; if(h>12) h-=12; }
+                                    if(h===0) h=12;
+                                    applicableSlotsSubtotal += getPriceForTimeSlot(`${h}:${m} ${ampm}`, hourlyRate, pricingRules, isWeekendGroup) / 2;
+                                }
+                            });
+
+                            if (applicableSlotsSubtotal > 0) {
+                                let discountVal = 0;
+                                if (d.discount_type === 'percentage') {
+                                    discountVal = applicableSlotsSubtotal * (d.value / 100);
+                                } else if (d.discount_type === 'fixed_amount') {
+                                    discountVal = d.value;
+                                }
+                                if (discountVal > bestGroupDiscount) bestGroupDiscount = discountVal;
                             }
                         });
+                        bestDiscountValue += bestGroupDiscount;
+                    }
+                    
 
-                        if (applicableSlotsCount === 0) return;
 
-                        let discountVal = 0;
-                        if (d.discount_type === 'percentage') {
-                            discountVal = applicableSubtotal * (d.value / 100);
-                        } else if (d.discount_type === 'fixed_amount') {
-                            discountVal = d.value;
-                        }
-                        if (discountVal > bestDiscountValue) bestDiscountValue = discountVal;
-                    });
 
                     const discountedSubtotal = Math.max(0, subtotal - bestDiscountValue);
 
@@ -1525,8 +1606,7 @@
                             if (bookingDateInput) {
                                 bookingDateInput.value = dateStr;
                             }
-                            // Reset time slots for a new day
-                            selectedSlotIds.clear();
+                            // Do NOT clear selected slots to preserve multi-day selection
                             renderCalendar();
                             
                             // Highlight time slots as if they reloaded (visual cue)
@@ -1563,7 +1643,6 @@
                     if (!isNaN(newDate.getTime())) {
                         currentDate = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
                     }
-                    selectedSlotIds.clear();
                     renderCalendar();
 
                     const slotsSummary = document.getElementById('slots-summary');
