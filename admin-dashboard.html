@@ -673,7 +673,10 @@
                             <td class="py-4 px-4 border-b border-slate-100">
                                 ${u.role === 'host' 
                                     ? (u.terms_accepted === 1 
-                                        ? `<div class="flex items-center text-green-600 text-xs font-bold" title="Accepted: ${new Date(u.terms_accepted_at).toLocaleString()}"><i class="fa-solid fa-check-circle mr-1"></i> Accepted</div>` 
+                                        ? `<div class="flex flex-col">
+                                              <span class="flex items-center text-green-600 text-xs font-bold"><i class="fa-solid fa-check-circle mr-1"></i> Accepted</span>
+                                              ${u.terms_accepted_at ? `<span class="text-[0.65rem] text-slate-400 mt-0.5 font-medium whitespace-nowrap">${new Date(u.terms_accepted_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</span>` : ''}
+                                           </div>` 
                                         : `<div class="flex items-center text-slate-400 text-xs font-bold"><i class="fa-solid fa-circle-minus mr-1"></i> Pending</div>`)
                                     : `<span class="text-slate-300">-</span>`}
                             </td>
