@@ -213,6 +213,7 @@
                                     <th class="py-4 px-8">User ID/Name</th>
                                     <th class="py-4 px-4">Contact Info</th>
                                     <th class="py-4 px-4">Role</th>
+                                    <th class="py-4 px-4">T&C</th>
                                     <th class="py-4 px-4">Status</th>
                                     <th class="py-4 px-8 text-right">Actions</th>
                                 </tr>
@@ -608,7 +609,7 @@
 
         async function loadAdminUsers() {
             const tbody = document.getElementById('admin-users-list');
-            tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading users...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading users...</td></tr>`;
             
             const filter = document.getElementById('usr-filter-role').value;
             const searchInput = document.getElementById('usr-search');
@@ -634,7 +635,7 @@
 
                 tbody.innerHTML = '';
                 if(users.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-500">No users found.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-500">No users found.</td></tr>`;
                     return;
                 }
 
@@ -670,6 +671,13 @@
                                 ${roleBadge}
                             </td>
                             <td class="py-4 px-4 border-b border-slate-100">
+                                ${u.role === 'host' 
+                                    ? (u.terms_accepted === 1 
+                                        ? `<div class="flex items-center text-green-600 text-xs font-bold" title="Accepted: ${new Date(u.terms_accepted_at).toLocaleString()}"><i class="fa-solid fa-check-circle mr-1"></i> Accepted</div>` 
+                                        : `<div class="flex items-center text-slate-400 text-xs font-bold"><i class="fa-solid fa-circle-minus mr-1"></i> Pending</div>`)
+                                    : `<span class="text-slate-300">-</span>`}
+                            </td>
+                            <td class="py-4 px-4 border-b border-slate-100">
                                 ${statusBadge}
                             </td>
                             <td class="py-4 px-8 border-b border-slate-100 text-right opacity-80 group-hover:opacity-100 transition-opacity">
@@ -679,7 +687,7 @@
                     `;
                 });
             } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500">Error loading users.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-500">Error loading users.</td></tr>`;
             }
         }
 
