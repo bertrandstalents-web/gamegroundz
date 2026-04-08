@@ -203,10 +203,10 @@
 
         <div id="dashboard-content" class="hidden">
             <!-- Dashboard Content Layout -->
-            <div class="flex flex-col lg:flex-row gap-4 md:gap-8">
+            <div class="grid grid-cols-2 lg:flex lg:flex-row gap-4 md:gap-8">
                 
                 <!-- Sidebar Navigation -->
-                <div class="w-full lg:w-[280px] flex-shrink-0">
+                <div class="col-span-1 lg:w-[280px] flex-shrink-0">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 md:p-4 sticky top-28">
                         <ul class="space-y-0.5 md:space-y-1">
                             <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base bg-primary/10 text-primary rounded-xl font-bold transition-custom"><i class="fa-solid fa-list w-6 mr-2 md:mr-3"></i> My Facilities</button></li>
@@ -221,12 +221,12 @@
                 </div>
 
                 <!-- Content Area -->
-                <div class="flex-1 min-w-0">
+                <div class="col-span-2 lg:flex-1 min-w-0 contents lg:block">
 
                     <!-- Live Revenue Dashboard -->
-                    <div class="mb-4 md:mb-8">
-                        <h2 class="text-xl md:text-2xl font-bold text-dark mb-3 md:mb-4">Live Revenue Dashboard</h2>
-                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+                    <div class="col-span-1 lg:col-span-none mb-4 md:mb-8">
+                        <h2 class="text-lg md:text-2xl font-bold text-dark mb-3 md:mb-4">Live Revenue Dashboard</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                             <!-- Today's Revenue -->
                             <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-4 md:p-6 flex flex-col">
                                 <span class="text-xs md:text-sm font-semibold text-slate-500 mb-1 md:mb-2 uppercase tracking-wider">Today's Revenue</span>
@@ -251,7 +251,7 @@
                     </div>
 
             <!-- Tab: My Facilities -->
-            <div id="tab-facilities" class="block">
+            <div id="tab-facilities" class="col-span-2 lg:col-span-none block">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-dark">My Facilities</h2>
@@ -269,7 +269,7 @@
             </div>
 
             <!-- Tab: Reservations -->
-            <div id="tab-reservations" class="hidden">
+            <div id="tab-reservations" class="col-span-2 lg:col-span-none hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
                     <div class="flex flex-col md:flex-row gap-4 mb-6 items-start md:items-center justify-between border-b border-slate-100 pb-6">
                         <div class="flex flex-wrap items-center gap-4">
@@ -354,7 +354,7 @@
             </div>
 
             <!-- Tab: Calendar -->
-            <div id="tab-calendar" class="hidden">
+            <div id="tab-calendar" class="col-span-2 lg:col-span-none hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8 relative">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-100 pb-6 gap-4">
                         <div>
@@ -533,7 +533,7 @@
             </div>
 
             <!-- Tab: Discounts -->
-            <div id="tab-discounts" class="hidden">
+            <div id="tab-discounts" class="col-span-2 lg:col-span-none hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8 relative">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-100 pb-6 gap-4">
                         <div>
@@ -661,7 +661,7 @@
             </div>
 
             <!-- Tab: Wallet -->
-            <div id="tab-wallet" class="hidden">
+            <div id="tab-wallet" class="col-span-2 lg:col-span-none hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
                     <h2 class="text-2xl font-bold text-dark mb-6">Wallet & Payouts</h2>
                     
@@ -697,7 +697,7 @@
             </div>
 
             <!-- Tab: Profile -->
-            <div id="tab-profile" class="hidden">
+            <div id="tab-profile" class="col-span-2 lg:col-span-none hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
                     <h2 class="text-2xl font-bold text-dark mb-6">My Profile</h2>
                     <form id="profile-form" class="space-y-6 max-w-2xl">
@@ -801,8 +801,8 @@
                 </div>
             </div>
 
-            <!-- Tab: Add New Facility (Original Form) -->
-            <div id="tab-add-new" class="hidden">
+            <!-- Tab: Add New Facility -->
+            <div id="tab-add-new" class="col-span-2 hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
                     <form id="add-facility-form" class="space-y-8">
                 
