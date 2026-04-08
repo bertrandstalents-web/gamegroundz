@@ -388,7 +388,7 @@ app.get('/api/auth/me', (req, res) => {
         return res.status(401).json({ error: "Not authenticated" });
     }
     
-    db.get("SELECT id, name, first_name, last_name, email, phone_number, company_name, profile_picture, role, stripe_account_id, stripe_onboarding_complete FROM users WHERE id = ?", [req.session.userId], (err, user) => {
+    db.get("SELECT id, name, first_name, last_name, email, phone_number, company_name, profile_picture, role, stripe_account_id, stripe_onboarding_complete, terms_accepted, terms_accepted_at FROM users WHERE id = ?", [req.session.userId], (err, user) => {
         if (err) return res.status(500).json({ error: "Database error" });
         if (!user) return res.status(404).json({ error: "User not found" });
         res.json({ user });
