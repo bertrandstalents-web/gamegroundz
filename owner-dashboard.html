@@ -226,7 +226,7 @@
                     <!-- Live Revenue Dashboard -->
                     <div class="mb-4 md:mb-8">
                         <h2 class="text-xl md:text-2xl font-bold text-dark mb-3 md:mb-4">Live Revenue Dashboard</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                             <!-- Today's Revenue -->
                             <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-4 md:p-6 flex flex-col">
                                 <span class="text-xs md:text-sm font-semibold text-slate-500 mb-1 md:mb-2 uppercase tracking-wider">Today's Revenue</span>
@@ -1258,12 +1258,12 @@
             const btns = ['facilities', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile'];
             btns.forEach(btn => {
                 const el = document.getElementById(`tab-btn-${btn}`);
-                if(el) el.className = 'w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
+                if(el) el.className = 'w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
             });
 
             // Active button styles
             const activeBtn = document.getElementById(`tab-btn-${tabId}`);
-            if(activeBtn) activeBtn.className = 'w-full text-left flex items-center px-4 py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom';
+            if(activeBtn) activeBtn.className = 'w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base bg-primary/10 text-primary rounded-xl font-bold transition-custom';
 
             if (tabId === 'discounts') {
                 const discSelectEl = document.getElementById('discount-facility-select');
