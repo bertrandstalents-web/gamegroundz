@@ -1460,7 +1460,8 @@ app.post('/api/host/accept-terms', (req, res) => {
         res.json({ success: true, message: "Terms accepted" });
     });
 });
-\n// --- STRIPE CONNECT Endpoints ---
+
+// --- STRIPE CONNECT Endpoints ---
 
 // Create Stripe Account and Onboarding Link
 app.post('/api/stripe/onboard', async (req, res) => {
