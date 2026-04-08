@@ -183,10 +183,10 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-1 max-w-[1600px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
-        <div class="mb-8">
-            <h1 class="text-3xl font-extrabold text-dark tracking-tight mb-2" id="dashboard-title">Host Dashboard</h1>
-            <p class="text-slate-500 text-lg">Manage your facilities and upcoming reservations.</p>
+    <main class="flex-1 max-w-[1600px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 md:py-10">
+        <div class="mb-4 md:mb-8">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight mb-1 md:mb-2" id="dashboard-title">Host Dashboard</h1>
+            <p class="text-slate-500 text-sm md:text-lg">Manage your facilities and upcoming reservations.</p>
         </div>
 
         <!-- Auth Guard Message (Hidden by default) -->
@@ -203,19 +203,19 @@
 
         <div id="dashboard-content" class="hidden">
             <!-- Dashboard Content Layout -->
-            <div class="flex flex-col lg:flex-row gap-8">
+            <div class="flex flex-col lg:flex-row gap-4 md:gap-8">
                 
                 <!-- Sidebar Navigation -->
                 <div class="w-full lg:w-[280px] flex-shrink-0">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sticky top-28">
-                        <ul class="space-y-1">
-                            <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom"><i class="fa-solid fa-list w-6 mr-3"></i> My Facilities</button></li>
-                            <li><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 mr-3"></i> Reservations</button></li>
-                            <li><button id="tab-btn-calendar" onclick="switchTab('calendar')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-regular fa-calendar w-6 mr-3"></i> Calendar</button></li>
-                            <li><button id="tab-btn-discounts" onclick="switchTab('discounts')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tags w-6 mr-3"></i> Discounts</button></li>
-                            <li><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 mr-3"></i> Wallet & Payouts</button></li>
-                            <li><button id="tab-btn-profile" onclick="switchTab('profile')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-user w-6 mr-3"></i> Profile</button></li>
-                            <li><button id="tab-btn-add-new" onclick="switchTab('add-new')" class="w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-plus w-6 mr-3"></i> Add New Facility</button></li>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 md:p-4 sticky top-28">
+                        <ul class="space-y-0.5 md:space-y-1">
+                            <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base bg-primary/10 text-primary rounded-xl font-bold transition-custom"><i class="fa-solid fa-list w-6 mr-2 md:mr-3"></i> My Facilities</button></li>
+                            <li><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 mr-2 md:mr-3"></i> Reservations</button></li>
+                            <li><button id="tab-btn-calendar" onclick="switchTab('calendar')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-regular fa-calendar w-6 mr-2 md:mr-3"></i> Calendar</button></li>
+                            <li><button id="tab-btn-discounts" onclick="switchTab('discounts')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tags w-6 mr-2 md:mr-3"></i> Discounts</button></li>
+                            <li><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 mr-2 md:mr-3"></i> Wallet & Payouts</button></li>
+                            <li><button id="tab-btn-profile" onclick="switchTab('profile')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-user w-6 mr-2 md:mr-3"></i> Profile</button></li>
+                            <li><button id="tab-btn-add-new" onclick="switchTab('add-new')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-plus w-6 mr-2 md:mr-3"></i> Add New Facility</button></li>
                         </ul>
                     </div>
                 </div>
@@ -224,28 +224,28 @@
                 <div class="flex-1 min-w-0">
 
                     <!-- Live Revenue Dashboard -->
-                    <div class="mb-8">
-                        <h2 class="text-2xl font-bold text-dark mb-4">Live Revenue Dashboard</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="mb-4 md:mb-8">
+                        <h2 class="text-xl md:text-2xl font-bold text-dark mb-3 md:mb-4">Live Revenue Dashboard</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                             <!-- Today's Revenue -->
-                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                                <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Today's Revenue</span>
-                                <span id="stat-today-rev" class="text-3xl font-extrabold text-dark">$0</span>
+                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-4 md:p-6 flex flex-col">
+                                <span class="text-xs md:text-sm font-semibold text-slate-500 mb-1 md:mb-2 uppercase tracking-wider">Today's Revenue</span>
+                                <span id="stat-today-rev" class="text-2xl md:text-3xl font-extrabold text-dark">$0</span>
                             </div>
                             <!-- This Week's Revenue -->
-                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                                <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Week's Revenue</span>
-                                <span id="stat-week-rev" class="text-3xl font-extrabold text-dark">$0</span>
+                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-4 md:p-6 flex flex-col">
+                                <span class="text-xs md:text-sm font-semibold text-slate-500 mb-1 md:mb-2 uppercase tracking-wider">This Week's Revenue</span>
+                                <span id="stat-week-rev" class="text-2xl md:text-3xl font-extrabold text-dark">$0</span>
                             </div>
                             <!-- This Month's Revenue -->
-                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                                <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">This Month's Revenue</span>
-                                <span id="stat-month-rev" class="text-3xl font-extrabold text-dark">$0</span>
+                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-4 md:p-6 flex flex-col">
+                                <span class="text-xs md:text-sm font-semibold text-slate-500 mb-1 md:mb-2 uppercase tracking-wider">This Month's Revenue</span>
+                                <span id="stat-month-rev" class="text-2xl md:text-3xl font-extrabold text-dark">$0</span>
                             </div>
                             <!-- Bookings Today -->
-                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                                <span class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">Bookings Today</span>
-                                <span id="stat-today-count" class="text-3xl font-extrabold text-dark">0</span>
+                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-4 md:p-6 flex flex-col">
+                                <span class="text-xs md:text-sm font-semibold text-slate-500 mb-1 md:mb-2 uppercase tracking-wider">Bookings Today</span>
+                                <span id="stat-today-count" class="text-2xl md:text-3xl font-extrabold text-dark">0</span>
                             </div>
                         </div>
                     </div>
