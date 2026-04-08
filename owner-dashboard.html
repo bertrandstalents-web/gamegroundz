@@ -207,7 +207,7 @@
                 
                 <!-- Sidebar Navigation -->
                 <div class="col-span-1 lg:w-[280px] flex-shrink-0">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 md:p-4 sticky top-28 h-full">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 md:p-4 sticky top-28 h-full lg:h-auto">
                         <ul class="space-y-0.5 md:space-y-1">
                             <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base bg-primary/10 text-primary rounded-xl font-bold transition-custom"><i class="fa-solid fa-list w-6 mr-2 md:mr-3"></i> My Facilities</button></li>
                             <li><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 mr-2 md:mr-3"></i> Reservations</button></li>
@@ -224,26 +224,26 @@
                 <div class="col-span-2 lg:flex-1 min-w-0 contents lg:block">
 
                     <!-- Live Revenue Dashboard -->
-                    <div class="col-span-1 lg:col-span-none lg:mb-8 flex flex-col h-full w-full">
+                    <div class="col-span-1 lg:col-span-none lg:mb-8 flex flex-col h-full w-full lg:block lg:h-auto">
                         <h2 class="hidden lg:block text-lg md:text-2xl font-bold text-dark mb-3 md:mb-4">Live Revenue Dashboard</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 flex-1 h-full">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 flex-1 h-full lg:flex-none lg:h-auto">
                             <!-- Today's Revenue -->
-                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full">
+                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto">
                                 <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider">Today's Revenue</span>
                                 <span id="stat-today-rev" class="text-xl md:text-3xl font-extrabold text-dark">$0</span>
                             </div>
                             <!-- This Week's Revenue -->
-                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full">
+                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto">
                                 <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider"><span class="hidden lg:inline">This </span>Week's Revenue</span>
                                 <span id="stat-week-rev" class="text-xl md:text-3xl font-extrabold text-dark">$0</span>
                             </div>
                             <!-- This Month's Revenue -->
-                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full">
+                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto">
                                 <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider"><span class="hidden lg:inline">This </span>Month's Revenue</span>
                                 <span id="stat-month-rev" class="text-xl md:text-3xl font-extrabold text-dark">$0</span>
                             </div>
                             <!-- Bookings Today -->
-                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full">
+                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto">
                                 <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider">Bookings Today</span>
                                 <span id="stat-today-count" class="text-xl md:text-3xl font-extrabold text-dark">0</span>
                             </div>
