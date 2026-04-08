@@ -1409,6 +1409,9 @@
 
         const globalUrlParams = new URLSearchParams(window.location.search);
         if (globalUrlParams.get('login') === 'true') {
+            if (globalUrlParams.get('signup') === 'true') {
+                toggleAuthMode({ preventDefault: () => {} });
+            }
             openAuthModal({ preventDefault: () => {} });
         }
 

@@ -82,8 +82,8 @@
                                                 </div>
                                                 
                                                 <div id="puck-logged-out">
-                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); openAuthModal(event);">Log in</a>
-                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); toggleAuthMode(event); openAuthModal(event);">Sign up</a>
+                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); window.location.href='index.html?login=true&redirect=' + encodeURIComponent(window.location.pathname + window.location.search); return false;">Log in</a>
+                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); window.location.href='index.html?login=true&signup=true&redirect=' + encodeURIComponent(window.location.pathname + window.location.search); return false;">Sign up</a>
                                                 </div>
                                                 <div id="puck-logged-in" class="hidden">
                                                     <div class="px-4 py-2 border-b border-slate-100 mb-1">
