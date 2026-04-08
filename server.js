@@ -1455,7 +1455,7 @@ app.delete('/api/host/discounts/:id', (req, res) => {
 app.post('/api/host/accept-terms', (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
     
-    db.run("UPDATE users SET terms_accepted = 1 WHERE id = ?", [req.session.userId], function(err) {
+    db.run("UPDATE users SET terms_accepted = 1, terms_accepted_at = ? WHERE id = ?", [new Date().toISOString(), req.session.userId], function(err) {
         if (err) return res.status(500).json({ error: "Database error" });
         res.json({ success: true, message: "Terms accepted" });
     });
@@ -1580,7 +1580,7 @@ app.put('/api/admin/facilities/:id/status', requireAdmin, (req, res) => {
 
 // GET all users
 app.get('/api/admin/users', requireAdmin, (req, res) => {
-    db.all("SELECT id, name, first_name, last_name, phone_number, email, role, status FROM users ORDER BY id DESC", [], (err, rows) => {
+    db.all("SELECT id, name, first_name, last_name, phone_number, email, role, status, terms_accepted, terms_accepted_at FROM users ORDER BY id DESC", [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });

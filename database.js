@@ -86,7 +86,8 @@ async function initDatabase() {
             last_name TEXT,
             phone_number TEXT,
             profile_picture TEXT,
-            terms_accepted INTEGER DEFAULT 0
+            terms_accepted INTEGER DEFAULT 0,
+            terms_accepted_at TEXT
         )`);
 
         // Facilities Table
@@ -124,6 +125,10 @@ async function initDatabase() {
         try {
             await client.query(`ALTER TABLE users ADD COLUMN terms_accepted INTEGER DEFAULT 0`);
             await client.query(`UPDATE users SET terms_accepted = 1 WHERE role = 'admin'`);
+        } catch(e) {}
+        
+        try {
+            await client.query(`ALTER TABLE users ADD COLUMN terms_accepted_at TEXT`);
         } catch(e) {}
 
         // Facility Images Table
