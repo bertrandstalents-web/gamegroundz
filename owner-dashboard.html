@@ -3179,6 +3179,15 @@
                 const data = await res.json();
                 const u = data.user;
                 if (!u) return;
+                
+                // Show T&C Modal if host has not accepted
+                if (u.role === 'host' && (u.terms_accepted === 0 || u.terms_accepted == null)) {
+                    const tcModal = document.getElementById('tc-modal');
+                    if (tcModal) {
+                        tcModal.classList.remove('hidden');
+                        document.body.style.overflow = 'hidden'; // prevent interacting behind it
+                    }
+                }
 
                 // Update puck
                 const puckName = document.getElementById('puck-name');
@@ -4612,6 +4621,94 @@
                         }
                     }
                 } catch(e) {}
+            }
+        });
+    </script>
+
+    <!-- Terms and Conditions Modal -->
+    <div id="tc-modal" class="hidden fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <div>
+                    <h3 class="text-xl font-extrabold text-slate-800">GameGroundz Host Terms & Conditions</h3>
+                    <p class="text-sm text-slate-500 mt-1">Please read and accept our updated terms to continue managing your facilities.</p>
+                </div>
+            </div>
+            <div class="flex-1 overflow-hidden relative bg-slate-100 p-2">
+                <iframe src="pdfs/GameGroundz_Terms_and_Conditions_v2.docx.pdf" class="w-full h-full rounded-xl border border-slate-200" title="Terms and Conditions PDF"></iframe>
+            </div>
+            <div class="p-6 border-t border-slate-100 bg-white">
+                <div class="flex items-start gap-3 mb-6">
+                    <div class="flex items-center h-5">
+                        <input id="tc-agree-checkbox" aria-describedby="tc-agree-description" type="checkbox" class="w-5 h-5 bg-slate-100 border-slate-300 rounded text-primary focus:ring-primary focus:ring-2 cursor-pointer transition-custom">
+                    </div>
+                    <div class="ml-2 text-sm">
+                        <label for="tc-agree-checkbox" class="font-bold text-slate-700 cursor-pointer">I have read and agree to the Terms and Conditions.</label>
+                        <p id="tc-agree-description" class="text-xs font-normal text-slate-500 mt-1">By checking this box, you enter into a binding agreement with GameGroundz regarding your use of the host platform and payout structures.</p>
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button id="tc-accept-btn" class="px-6 py-2.5 bg-slate-200 text-slate-500 rounded-xl font-bold transition-custom flex items-center shadow-sm cursor-not-allowed" disabled>
+                        <span>Accept & Continue</span>
+                        <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script overlay for T&C Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tcCheckbox = document.getElementById('tc-agree-checkbox');
+            const tcAcceptBtn = document.getElementById('tc-accept-btn');
+            
+            if (tcCheckbox && tcAcceptBtn) {
+                tcCheckbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        tcAcceptBtn.disabled = false;
+                        tcAcceptBtn.classList.remove('bg-slate-200', 'text-slate-500', 'cursor-not-allowed');
+                        tcAcceptBtn.classList.add('bg-primary', 'text-white', 'hover:bg-primary/90', 'hover:-translate-y-0.5', 'hover:shadow-md');
+                    } else {
+                        tcAcceptBtn.disabled = true;
+                        tcAcceptBtn.classList.add('bg-slate-200', 'text-slate-500', 'cursor-not-allowed');
+                        tcAcceptBtn.classList.remove('bg-primary', 'text-white', 'hover:bg-primary/90', 'hover:-translate-y-0.5', 'hover:shadow-md');
+                    }
+                });
+
+                tcAcceptBtn.addEventListener('click', async () => {
+                    if (!tcCheckbox.checked) return;
+                    
+                    tcAcceptBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Accepting...';
+                    
+                    try {
+                        const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                        const res = await fetch(`${API_BASE_URL}/api/host/accept-terms`, {
+                            method: 'POST',
+                            credentials: 'include'
+                        });
+                        
+                        if (res.ok) {
+                            document.getElementById('tc-modal').classList.add('hidden');
+                            document.body.style.overflow = 'auto'; // restore scrolling
+                            
+                            // Update localStorage user obj to prevent popup on refesh before auth check
+                            const storedUser = localStorage.getItem('gg_user');
+                            if (storedUser) {
+                                try {
+                                    const u = JSON.parse(storedUser);
+                                    u.terms_accepted = 1;
+                                    localStorage.setItem('gg_user', JSON.stringify(u));
+                                } catch(e){}
+                            }
+                        } else {
+                            throw new Error("Failed to accept terms");
+                        }
+                    } catch (error) {
+                        alert("There was an error saving your acceptance. Please try again.");
+                        tcAcceptBtn.innerHTML = '<span>Accept & Continue</span><i class="fa-solid fa-arrow-right ml-2"></i>';
+                    }
+                });
             }
         });
     </script>

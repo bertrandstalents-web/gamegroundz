@@ -1450,7 +1450,17 @@ app.delete('/api/host/discounts/:id', (req, res) => {
     });
 });
 
-// --- STRIPE CONNECT Endpoints ---
+
+// Accept Terms and Conditions
+app.post('/api/host/accept-terms', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+    
+    db.run("UPDATE users SET terms_accepted = 1 WHERE id = ?", [req.session.userId], function(err) {
+        if (err) return res.status(500).json({ error: "Database error" });
+        res.json({ success: true, message: "Terms accepted" });
+    });
+});
+\n// --- STRIPE CONNECT Endpoints ---
 
 // Create Stripe Account and Onboarding Link
 app.post('/api/stripe/onboard', async (req, res) => {
