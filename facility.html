@@ -892,7 +892,7 @@
                     const headerStats = document.querySelector('div.flex.items-center.text-sm.font-medium.text-slate-600');
                     if(headerStats) {
                         headerStats.innerHTML = `
-                            <span class="flex items-center"><i class="fa-solid fa-star text-yellow-400 mr-1.5 text-base"></i> ${facility.rating || '4.9'} <span class="text-slate-400 font-normal underline ml-1 cursor-pointer hover:text-dark">(${facility.reviews_count || 0} reviews)</span></span>
+                            <span class="flex items-center"><i class="fa-solid fa-star text-yellow-400 mr-1.5 text-base"></i> ${facility.rating || '4.9'} <span class="text-slate-400 font-normal underline ml-1 cursor-pointer hover:text-dark" onclick="document.getElementById('reviews-section').scrollIntoView({behavior: 'smooth'})">(${facility.reviews_count || 0} reviews)</span></span>
                             <span class="mx-3 text-slate-300">•</span>
                             <span class="flex items-center text-slate-500"><i class="fa-solid fa-medal text-primary mr-1.5"></i> Superhost Facility</span>
                             <span class="mx-3 text-slate-300">•</span>
@@ -910,7 +910,7 @@
                     if (widgetRatingEl) {
                         widgetRatingEl.innerHTML = `
                             <span class="flex items-center font-bold text-sm"><i class="fa-solid fa-star text-yellow-400 text-xs mr-1"></i> ${facility.rating || '4.9'}</span>
-                            <span class="text-xs text-slate-400 underline">${facility.reviews_count || 0} reviews</span>
+                            <span class="text-xs text-slate-400 underline cursor-pointer hover:text-dark" onclick="document.getElementById('reviews-section').scrollIntoView({behavior: 'smooth'})">${facility.reviews_count || 0} reviews</span>
                         `;
                     }
 
