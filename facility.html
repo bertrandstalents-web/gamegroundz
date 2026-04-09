@@ -1699,17 +1699,29 @@
                 let slots = generateDailySlots(opHours);
 
                 const timeCol = document.createElement('div');
-                timeCol.className = "flex flex-col flex-shrink-0 w-16 mr-2 mt-8";
+                timeCol.className = "flex flex-col flex-shrink-0 w-16 mr-2 mt-[1px]";
+
+                const emptyHeader = document.createElement('div');
+                emptyHeader.className = "py-2 text-[11px] font-bold uppercase tracking-wider border-b border-transparent opacity-0 text-center";
+                emptyHeader.innerHTML = `<div>W</div><div class="text-base sm:text-lg mt-0.5">00</div>`;
+                timeCol.appendChild(emptyHeader);
+
+                const timeSlotsWrapper = document.createElement('div');
+                timeSlotsWrapper.className = "flex-1 relative pt-4";
+
                 slots.forEach(s => {
-                    const label = document.createElement('div');
-                    label.className = "h-10 text-[10px] font-semibold text-slate-400 absolute -mt-2";
-                    if (s.id.endsWith(':00')) label.textContent = s.time.split(' - ')[0];
-                    
                     const cellWrap = document.createElement('div');
-                    cellWrap.className = "h-10 relative border-r mt-4 border-slate-100 flex items-start justify-end pr-2";
-                    if (s.id.endsWith(':00')) cellWrap.appendChild(label);
-                    timeCol.appendChild(cellWrap);
+                    cellWrap.className = "h-10 relative flex items-start justify-end pr-2 border-r border-slate-100/50";
+                    if (s.id.endsWith(':00')) {
+                        const label = document.createElement('div');
+                        label.className = "text-[10px] font-semibold text-slate-400 absolute -top-2 right-1 lg:right-2 bg-white px-1 leading-none";
+                        label.textContent = s.time.split(' - ')[0];
+                        cellWrap.appendChild(label);
+                    }
+                    timeSlotsWrapper.appendChild(cellWrap);
                 });
+                
+                timeCol.appendChild(timeSlotsWrapper);
                 weeklyGrid.appendChild(timeCol);
 
                 const daysWrapper = document.createElement('div');
