@@ -34,6 +34,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <!-- FullCalendar JS and CSS -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Custom FullCalendar Overrides to match GameGroundz styling */
         .fc { font-family: 'Outfit', sans-serif; }
@@ -210,6 +212,7 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 md:p-4 sticky top-28 h-full lg:h-auto">
                         <ul class="space-y-0.5 md:space-y-1">
                             <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base bg-primary/10 text-primary rounded-xl font-bold transition-custom"><i class="fa-solid fa-list w-6 mr-2 md:mr-3"></i> My Facilities</button></li>
+                            <li><button id="tab-btn-analytics" onclick="switchTab('analytics')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-chart-pie w-6 mr-2 md:mr-3"></i> Analytics / Statistiques</button></li>
                             <li><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 mr-2 md:mr-3"></i> Reservations</button></li>
                             <li><button id="tab-btn-calendar" onclick="switchTab('calendar')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-regular fa-calendar w-6 mr-2 md:mr-3"></i> Calendar</button></li>
                             <li><button id="tab-btn-discounts" onclick="switchTab('discounts')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tags w-6 mr-2 md:mr-3"></i> Discounts</button></li>
@@ -228,22 +231,26 @@
                         <h2 class="hidden lg:block text-lg md:text-2xl font-bold text-dark mb-3 md:mb-4">Live Revenue Dashboard</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 flex-1 h-full lg:flex-none lg:h-auto">
                             <!-- Today's Revenue -->
-                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto">
+                            <div onclick="switchTab('analytics')" class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto cursor-pointer hover:-translate-y-1 hover:shadow-md hover:border-primary/30 transition-custom transform duration-300 relative group">
+                                <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 rounded-2xl md:rounded-3xl transition-opacity duration-300 pointer-events-none"></div>
                                 <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider">Today's Revenue</span>
                                 <span id="stat-today-rev" class="text-xl md:text-3xl font-extrabold text-dark">$0</span>
                             </div>
                             <!-- This Week's Revenue -->
-                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto">
+                            <div onclick="switchTab('analytics')" class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto cursor-pointer hover:-translate-y-1 hover:shadow-md hover:border-primary/30 transition-custom transform duration-300 relative group">
+                                <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 rounded-2xl md:rounded-3xl transition-opacity duration-300 pointer-events-none"></div>
                                 <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider"><span class="hidden lg:inline">This </span>Week's Revenue</span>
                                 <span id="stat-week-rev" class="text-xl md:text-3xl font-extrabold text-dark">$0</span>
                             </div>
                             <!-- This Month's Revenue -->
-                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto">
+                            <div onclick="switchTab('analytics')" class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto cursor-pointer hover:-translate-y-1 hover:shadow-md hover:border-primary/30 transition-custom transform duration-300 relative group">
+                                <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 rounded-2xl md:rounded-3xl transition-opacity duration-300 pointer-events-none"></div>
                                 <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider"><span class="hidden lg:inline">This </span>Month's Revenue</span>
                                 <span id="stat-month-rev" class="text-xl md:text-3xl font-extrabold text-dark">$0</span>
                             </div>
                             <!-- Bookings Today -->
-                            <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto">
+                            <div onclick="showTodayReservations()" class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto cursor-pointer hover:-translate-y-1 hover:shadow-md hover:border-primary/30 transition-custom transform duration-300 relative group">
+                                <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 rounded-2xl md:rounded-3xl transition-opacity duration-300 pointer-events-none"></div>
                                 <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider">Bookings Today</span>
                                 <span id="stat-today-count" class="text-xl md:text-3xl font-extrabold text-dark">0</span>
                             </div>
@@ -801,6 +808,146 @@
                 </div>
             </div>
 
+            <!-- Tab: Analytics -->
+            <div id="tab-analytics" class="col-span-2 lg:col-span-none hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-100 pb-4 gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-dark mb-1">Performance Analytics</h2>
+                            <p class="text-slate-500 text-sm">Visualize your facility bookings and revenue trends over time.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                            <!-- Timeframe Filter -->
+                            <select id="analytics-time-filter" class="flex-1 md:flex-none px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm min-w-[150px]" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em; padding-right: 2.5rem;" onchange="updateAnalyticsState()">
+                                <option value="today">Today</option>
+                                <option value="weekly" selected>This Week</option>
+                                <option value="monthly">This Month</option>
+                            </select>
+                            
+                            <!-- Facility Filter -->
+                            <select id="analytics-fac-filter" class="flex-1 md:flex-none px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm min-w-[200px]" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em; padding-right: 2.5rem;" onchange="updateAnalyticsState()">
+                                <option value="all" selected>All Facilities</option>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <!-- Revenue Chart -->
+                        <div class="bg-slate-50 rounded-2xl p-4 md:p-6 border border-slate-200 shadow-inner w-full flex flex-col">
+                            <h3 id="analytics-rev-title" class="text-sm font-bold text-slate-500 mb-4 uppercase tracking-wider">Revenue Trend (This Week)</h3>
+                            <div class="relative w-full h-[300px] flex-1">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Bookings Doughnut Chart -->
+                        <div class="bg-slate-50 rounded-2xl p-4 md:p-6 border border-slate-200 shadow-inner w-full flex flex-col justify-between items-center">
+                            <h3 class="text-sm font-bold text-slate-500 mb-4 uppercase tracking-wider self-start w-full text-center">Bookings Breakdown</h3>
+                            <div class="relative w-full h-[250px] flex justify-center items-center">
+                                <canvas id="bookingsChart"></canvas>
+                            </div>
+                            <div class="mt-4 text-center text-xs text-slate-400 font-medium">Visualizing distribution across your facilities</div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced KPIs -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                        <div class="bg-primary/5 rounded-2xl p-4 border border-primary/10 flex items-center justify-between">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Hours Rented</h4>
+                                <span id="analytics-stat-hours" class="text-2xl font-extrabold text-dark">0<span class="text-base text-slate-500 font-medium ml-1">hrs</span></span>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-lg"><i class="fa-solid fa-clock"></i></div>
+                        </div>
+                        <div class="bg-blue-50 rounded-2xl p-4 border border-blue-100 flex items-center justify-between">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Avg. Order Value</h4>
+                                <span id="analytics-stat-aov" class="text-2xl font-extrabold text-dark">$0</span>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-lg"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        </div>
+                        <div class="bg-red-50 rounded-2xl p-4 border border-red-100 flex items-center justify-between">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Cancellation Rate</h4>
+                                <span id="analytics-stat-cancellation" class="text-2xl font-extrabold text-dark">0%</span>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center text-lg"><i class="fa-solid fa-ban"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- Profitability Calculator -->
+                    <div class="bg-slate-800 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-lg border border-slate-700">
+                        <!-- Decorative bg -->
+                        <div class="absolute -top-24 -right-24 w-64 h-64 bg-primary/20 rounded-full blur-3xl pointer-events-none"></div>
+                        <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="flex items-center mb-6 border-b border-slate-700 pb-4">
+                                <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-2xl mr-4 shadow-sm backdrop-blur-sm border border-white/5"><i class="fa-solid fa-calculator text-primary"></i></div>
+                                <div>
+                                    <h3 class="text-xl md:text-2xl font-bold text-white mb-1">Pricing & Profit Calculator</h3>
+                                    <p class="text-slate-300 text-sm">Calculate your break-even point and find the perfect hourly rate to hit your targets.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+                                <!-- Inputs -->
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-300 mb-1">Fixed Monthly Expenses ($)</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-slate-400 font-bold">$</span></div>
+                                            <input type="number" id="calc-fixed-exp" class="w-full bg-slate-900/50 border border-slate-600 rounded-xl pl-8 pr-4 py-2.5 text-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-custom placeholder-slate-500" placeholder="e.g. Rent, Insurance" value="5000" oninput="calculateProfitability()">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-300 mb-1">Variable Hourly Expenses ($/hr)</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-slate-400 font-bold">$</span></div>
+                                            <input type="number" id="calc-var-exp" class="w-full bg-slate-900/50 border border-slate-600 rounded-xl pl-8 pr-4 py-2.5 text-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-custom placeholder-slate-500" placeholder="e.g. Staff, Electricity" value="30" oninput="calculateProfitability()">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-semibold text-slate-300 mb-1">Target Monthly Profit ($)</label>
+                                            <div class="relative">
+                                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-slate-400 font-bold">$</span></div>
+                                                <input type="number" id="calc-target-profit" class="w-full bg-slate-900/50 border border-slate-600 rounded-xl pl-8 pr-4 py-2.5 text-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-custom" value="3000" oninput="calculateProfitability()">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-semibold text-slate-300 mb-1"><span class="block truncate">Est. Hours Rented/Wk</span></label>
+                                            <div class="relative">
+                                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span class="text-slate-400 font-bold text-xs">hrs</span></div>
+                                                <input type="number" id="calc-est-hours" class="w-full bg-slate-900/50 border border-slate-600 rounded-xl px-4 py-2.5 text-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-custom" value="40" oninput="calculateProfitability()">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Outputs -->
+                                <div class="flex flex-col justify-center space-y-4">
+                                    <div class="bg-slate-900/40 rounded-2xl p-5 border border-slate-700/50 flex flex-col items-center justify-center text-center">
+                                        <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Absolute Minimum (Break-Even)</h4>
+                                        <p class="text-3xl font-extrabold text-slate-200" id="calc-out-breakeven">$0.00 <span class="text-sm text-slate-500 font-medium">/hr</span></p>
+                                        <p class="text-xs text-slate-500 mt-2">Price required just to cover expenses.</p>
+                                    </div>
+                                    
+                                    <div class="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl p-5 border border-primary/30 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                                        <div class="absolute top-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+                                        <h4 class="text-sm font-bold text-primary-light uppercase tracking-wider mb-2 text-primary">Recommended Hourly Rate</h4>
+                                        <p class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white drop-shadow-md" id="calc-out-recommended">$0.00</p>
+                                        <p class="text-xs text-primary/80 mt-2 font-medium">Charge this to hit your Monthly Profit Goal.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
             <!-- Tab: Add New Facility -->
             <div id="tab-add-new" class="col-span-2 hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
@@ -1244,6 +1391,8 @@
             document.getElementById('tab-reservations').classList.add('hidden');
             document.getElementById('tab-calendar').classList.add('hidden');
             document.getElementById('tab-add-new').classList.add('hidden');
+            const analyticsTab = document.getElementById('tab-analytics');
+            if(analyticsTab) analyticsTab.classList.add('hidden');
             const discTab = document.getElementById('tab-discounts');
             if(discTab) discTab.classList.add('hidden');
             const walletTab = document.getElementById('tab-wallet');
@@ -1255,7 +1404,7 @@
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
 
             // Reset tab button styles
-            const btns = ['facilities', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile'];
+            const btns = ['facilities', 'analytics', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile'];
             btns.forEach(btn => {
                 const el = document.getElementById(`tab-btn-${btn}`);
                 if(el) el.className = 'w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
@@ -1264,6 +1413,12 @@
             // Active button styles
             const activeBtn = document.getElementById(`tab-btn-${tabId}`);
             if(activeBtn) activeBtn.className = 'w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base bg-primary/10 text-primary rounded-xl font-bold transition-custom';
+
+            if (tabId === 'analytics') {
+                if (window.renderAnalyticsCharts) {
+                    window.renderAnalyticsCharts();
+                }
+            }
 
             if (tabId === 'discounts') {
                 const discSelectEl = document.getElementById('discount-facility-select');
@@ -1894,6 +2049,9 @@
                     initCalendar(activeFacilityId);
                 }
             }
+            
+            // Re-render analytics if data changed
+            if (window.updateAnalyticsState) window.updateAnalyticsState();
         }
         
         function updateStatusBtnText() {
@@ -4743,6 +4901,298 @@
                 });
             }
         });
+
+        // Analytics Charting Logic
+        let revenueChartInstance = null;
+        let bookingsChartInstance = null;
+
+        window.updateAnalyticsState = function() {
+            if (!document.getElementById('revenueChart') || !document.getElementById('bookingsChart')) return;
+            
+            const timeFilter = document.getElementById('analytics-time-filter').value;
+            const facFilter = document.getElementById('analytics-fac-filter').value;
+            const revTitle = document.getElementById('analytics-rev-title');
+            
+            // Populate Facility list if empty
+            const facSelect = document.getElementById('analytics-fac-filter');
+            if (facSelect && facSelect.options.length <= 1 && typeof ownerFacilities !== 'undefined') {
+                ownerFacilities.forEach(f => {
+                    if(!Array.from(facSelect.options).some(opt => opt.value == f.id)) {
+                        facSelect.innerHTML += `<option value="${f.id}">${f.name}</option>`;
+                    }
+                });
+            }
+
+            const rawBookings = (typeof allBookingsCache !== 'undefined') ? allBookingsCache : [];
+            
+            // Filter by Facility
+            let filteredBookings = rawBookings.filter(b => b.status !== 'cancelled' && b.status !== 'rejected');
+            if (facFilter !== 'all') {
+                filteredBookings = filteredBookings.filter(b => b.facility_id == facFilter);
+            }
+
+            // Date setup
+            const now = new Date();
+            let startDate = new Date(now);
+            startDate.setHours(0,0,0,0);
+            let endDate = new Date(now);
+            endDate.setHours(23,59,59,999);
+            
+            let labels = [];
+            let revData = [];
+            let titleText = 'Revenue Trend';
+
+            if (timeFilter === 'today') {
+                titleText = 'Revenue Trend (Today)';
+                // Hourly bins (e.g. 6AM to 11PM)
+                for (let i = 6; i <= 23; i++) {
+                    labels.push(i + ':00');
+                    revData.push(0);
+                }
+            } else if (timeFilter === 'weekly') {
+                titleText = 'Revenue Trend (This Week)';
+                const dDay = now.getDay();
+                startDate.setDate(now.getDate() - dDay); // Sunday
+                endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 6);
+                endDate.setHours(23,59,59,999);
+                labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                revData = [0, 0, 0, 0, 0, 0, 0];
+            } else if (timeFilter === 'monthly') {
+                titleText = 'Revenue Trend (This Month)';
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+                labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'];
+                revData = [0, 0, 0, 0, 0];
+            }
+            
+            if(revTitle) revTitle.innerText = titleText;
+
+            let onlineCount = 0;
+            let offlineCount = 0;
+            
+            // KPI Tracking
+            let totalHoursRented = 0;
+            let totalRevenueRaw = 0;
+            
+            // Cancellation tracking requires looking at unfiltered bookings in timeframe
+            let totalBookingsInPeriod = 0;
+            let cancelledBookingsInPeriod = 0;
+            if (facFilter !== 'all') {
+                rawBookings.filter(b => b.facility_id == facFilter).forEach(b => {
+                    const bParts = b.booking_date ? b.booking_date.split('T')[0].split('-') : null;
+                    if (bParts) {
+                        const bD = new Date(bParts[0], bParts[1]-1, bParts[2]);
+                        if (bD >= startDate && bD <= endDate) {
+                            totalBookingsInPeriod++;
+                            if (b.status === 'cancelled' || b.status === 'rejected') cancelledBookingsInPeriod++;
+                        }
+                    }
+                });
+            } else {
+                rawBookings.forEach(b => {
+                    const bParts = b.booking_date ? b.booking_date.split('T')[0].split('-') : null;
+                    if (bParts) {
+                        const bD = new Date(bParts[0], bParts[1]-1, bParts[2]);
+                        if (bD >= startDate && bD <= endDate) {
+                            totalBookingsInPeriod++;
+                            if (b.status === 'cancelled' || b.status === 'rejected') cancelledBookingsInPeriod++;
+                        }
+                    }
+                });
+            }
+
+            filteredBookings.forEach(b => {
+                if (!b.booking_date) return;
+                const bParts = b.booking_date.split('T')[0].split('-');
+                const bDate = new Date(bParts[0], bParts[1]-1, bParts[2]);
+                
+                // Aggregation
+                if (bDate >= startDate && bDate <= endDate) {
+                    // Count Type
+                    if (b.booking_type === 'manual') offlineCount++;
+                    else onlineCount++;
+                    
+                    // Count hours
+                    const parsedSlots = typeof b.time_slots === 'string' ? JSON.parse(b.time_slots) : b.time_slots;
+                    if (parsedSlots && parsedSlots.length > 0) {
+                        totalHoursRented += (parsedSlots.length * 0.5); // 30 min slots
+                    }
+
+                    // Aggregate Revenue
+                    if (b.booking_type !== 'manual') {
+                        const price = parseFloat(b.total_price) || 0;
+                        totalRevenueRaw += price;
+                        
+                        if (timeFilter === 'today') {
+                            if (parsedSlots && parsedSlots.length > 0) {
+                                const h = parseInt(parsedSlots[0].split(':')[0]);
+                                if (h >= 6 && h <= 23) {
+                                    revData[h - 6] += price;
+                                }
+                            }
+                        } else if (timeFilter === 'weekly') {
+                            revData[bDate.getDay()] += price;
+                        } else if (timeFilter === 'monthly') {
+                            const dom = bDate.getDate();
+                            let weekIdx = Math.floor((dom - 1) / 7);
+                            if (weekIdx > 4) weekIdx = 4;
+                            revData[weekIdx] += price;
+                        }
+                    }
+                }
+            });
+            
+            // Push KPIs to DOM
+            const hoursEl = document.getElementById('analytics-stat-hours');
+            const aovEl = document.getElementById('analytics-stat-aov');
+            const cancEl = document.getElementById('analytics-stat-cancellation');
+            
+            if (hoursEl) hoursEl.innerHTML = `${totalHoursRented}<span class="text-base text-slate-500 font-medium ml-1">hrs</span>`;
+            if (aovEl) {
+                const totalValid = onlineCount + offlineCount;
+                const aov = totalValid > 0 ? (totalRevenueRaw / totalValid) : 0;
+                aovEl.innerText = '$' + aov.toFixed(2);
+            }
+            if (cancEl) {
+                const perc = totalBookingsInPeriod > 0 ? Math.round((cancelledBookingsInPeriod / totalBookingsInPeriod) * 100) : 0;
+                cancEl.innerText = perc + '%';
+            }
+
+            // Render logic
+            const themeColors = {
+                primary: '#10b981', secondary: '#3b82f6',
+                dark: '#0f172a', slate: '#64748b',
+                white: '#ffffff', border: '#e2e8f0'
+            };
+
+            const revCtx = document.getElementById('revenueChart').getContext('2d');
+            const bookCtx = document.getElementById('bookingsChart').getContext('2d');
+
+            let gradient = revCtx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+            if (revenueChartInstance) revenueChartInstance.destroy();
+            revenueChartInstance = new Chart(revCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Gross Revenue ($)',
+                        data: revData,
+                        borderColor: themeColors.primary,
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: themeColors.white,
+                        pointBorderColor: themeColors.primary,
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: themeColors.dark,
+                            titleFont: { family: 'Outfit', size: 13 },
+                            bodyFont: { family: 'Outfit', size: 14, weight: 'bold' },
+                            padding: 12, cornerRadius: 8, displayColors: false,
+                            callbacks: { label: function(c) { return '$' + c.parsed.y; } }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false, drawBorder: false }, ticks: { font: { family: 'Outfit', size: 12 }, color: themeColors.slate } },
+                        y: { grid: { color: themeColors.border, borderDash: [5, 5], drawBorder: false }, ticks: { font: { family: 'Outfit', size: 12 }, color: themeColors.slate, callback: function(v) { return '$' + v; } } }
+                    }
+                }
+            });
+
+            if (bookingsChartInstance) bookingsChartInstance.destroy();
+            
+            // Add Empty State fallback if counts are 0
+            const hasData = onlineCount > 0 || offlineCount > 0;
+            const bData = hasData ? [onlineCount, offlineCount] : [1];
+            const bColors = hasData ? [themeColors.primary, themeColors.secondary] : ['#e2e8f0'];
+            const bLabels = hasData ? ['Online Bookings', 'Manual/Offline'] : ['No Data in Range'];
+
+            bookingsChartInstance = new Chart(bookCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: bLabels,
+                    datasets: [{
+                        data: bData,
+                        backgroundColor: bColors,
+                        hoverOffset: hasData ? 4 : 0,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '75%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { family: 'Outfit', size: 13, weight: '500' }, color: themeColors.dark, padding: 20, usePointStyle: true, pointStyle: 'circle' }
+                        },
+                        tooltip: {
+                            enabled: hasData,
+                            backgroundColor: themeColors.dark, bodyFont: { family: 'Outfit', size: 14, weight: 'bold' }, padding: 12, cornerRadius: 8
+                        }
+                    }
+                }
+            });
+        };
+        
+        // Alias for the old reference in switchTab
+        window.renderAnalyticsCharts = window.updateAnalyticsState;
+        
+        window.showTodayReservations = function() {
+            switchTab('reservations');
+            const dateFilter = document.getElementById('res-date-filter');
+            if (dateFilter) {
+                dateFilter.value = 'today';
+                applyReservationFilters();
+            }
+        };
+        
+        window.calculateProfitability = function() {
+            const fixedExpStr = document.getElementById('calc-fixed-exp')?.value || '0';
+            const varExpStr = document.getElementById('calc-var-exp')?.value || '0';
+            const targetStr = document.getElementById('calc-target-profit')?.value || '0';
+            const hoursStr = document.getElementById('calc-est-hours')?.value || '0';
+            
+            const fixedExp = parseFloat(fixedExpStr) || 0;
+            const varExp = parseFloat(varExpStr) || 0;
+            const targetProfit = parseFloat(targetStr) || 0;
+            const weeklyHours = parseFloat(hoursStr) || 0;
+            
+            const outBreak = document.getElementById('calc-out-breakeven');
+            const outRec = document.getElementById('calc-out-recommended');
+            if(!outBreak || !outRec) return;
+            
+            if (weeklyHours <= 0) {
+                outBreak.innerHTML = '$0.00 <span class="text-sm text-slate-500 font-medium">/hr</span>';
+                outRec.innerText = '$0.00';
+                return;
+            }
+            
+            // Assuming 4.33 weeks per month
+            const monthlyHours = weeklyHours * 4.333;
+            
+            const breakeven = (fixedExp / monthlyHours) + varExp;
+            const recommended = ((fixedExp + targetProfit) / monthlyHours) + varExp;
+            
+            outBreak.innerHTML = `$${breakeven.toFixed(2)} <span class="text-sm text-slate-500 font-medium">/hr</span>`;
+            outRec.innerText = `$${recommended.toFixed(2)}`;
+        };
+        
+        // Initial calculator run if exists
+        setTimeout(() => { if(window.calculateProfitability) window.calculateProfitability(); }, 500);
+
     </script>
 </body>
 </html>
