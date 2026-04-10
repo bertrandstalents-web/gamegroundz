@@ -133,15 +133,25 @@
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='index.html'">
-                    <i class="fa-solid fa-layer-group text-primary text-2xl md:text-3xl mr-2"></i>
-                    <span class="font-bold text-xl md:text-2xl tracking-tight text-dark notranslate">Game<span class="text-primary">Groundz</span></span>
-                    <span class="ml-2 pl-2 md:ml-4 md:pl-4 border-l border-slate-300 font-medium text-slate-500 text-xs md:text-base truncate max-w-[90px] sm:max-w-none">Host Dashboard</span>
+                    <!-- Desktop Logo -->
+                    <div class="hidden md:flex items-center">
+                        <i class="fa-solid fa-layer-group text-primary text-2xl md:text-3xl mr-2"></i>
+                        <span class="font-bold text-xl md:text-2xl tracking-tight text-dark notranslate">Game<span class="text-primary">Groundz</span></span>
+                    </div>
+                    <!-- Mobile Stacked Logo -->
+                    <div class="flex md:hidden flex-col items-center justify-center mr-2">
+                        <i class="fa-solid fa-layer-group text-primary text-[1.75rem]"></i>
+                        <div class="flex flex-col items-center leading-none mt-[3px]">
+                            <span class="font-extrabold text-[11px] tracking-tight text-dark notranslate leading-none">Game</span>
+                            <span class="font-extrabold text-[11px] tracking-tight text-primary notranslate leading-none">Groundz</span>
+                        </div>
+                    </div>
+                    <span class="ml-2 pl-2 md:ml-4 md:pl-4 border-l border-slate-300 font-medium text-slate-500 text-xs md:text-base whitespace-nowrap sm:whitespace-normal">Host Dashboard</span>
                 </div>
                 <div class="flex flex-1 max-w-xl mx-2 md:mx-8 relative"></div>
                 <div class="flex items-center space-x-3 md:space-x-6">
-                    <a href="index.html" class="text-slate-600 hover:text-dark font-medium transition-custom text-sm flex items-center">
-                        <span class="hidden md:inline">Return to GameGroundz</span>
-                        <i class="fa-solid fa-arrow-left md:hidden text-lg" title="Return to GameGroundz"></i>
+                    <a href="index.html" class="text-slate-600 hover:text-dark font-medium transition-custom text-sm hidden md:flex items-center">
+                        <span>Return to GameGroundz</span>
                     </a>
                     
                     <div class="h-6 w-px bg-slate-300"></div>
