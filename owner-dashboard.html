@@ -107,14 +107,12 @@
             /* Day headers & time grid formatting */
             .fc-col-header-cell-cushion {
                 font-size: 0.65rem !important;
-                text-overflow: ellipsis;
-                overflow: hidden;
-                white-space: nowrap;
                 width: 100%;
-                max-width: 13vw;
                 box-sizing: border-box;
                 padding: 0 2px;
             }
+            html[data-lang="fr"] .fc-desktop-label { display: none !important; }
+            html[data-lang="fr"] .fc-mobile-fr-label { display: block !important; }
             .fc-timegrid-slot-label-cushion {
                 font-size: 0.65rem !important;
             }
@@ -2556,6 +2554,28 @@
                 events: calendarEvents,
                 selectable: true,
                 selectMirror: true,
+                eventLongPressDelay: window.innerWidth <= 768 ? 250 : 1000,
+                selectLongPressDelay: window.innerWidth <= 768 ? 250 : 1000,
+                dayHeaderContent: function(arg) {
+                    const defaultText = arg.text; 
+                    const frDays = ['DIM', 'LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM'];
+                    const mobileFrDay = frDays[arg.date.getDay()];
+                    
+                    return { html: `
+                        <div class="fc-desktop-label">${defaultText}</div>
+                        <div class="fc-mobile-fr-label notranslate" style="display:none;">${mobileFrDay}</div>
+                    ` };
+                },
+                slotLabelContent: function(arg) {
+                    const defaultText = arg.text; 
+                    let h = arg.date.getHours();
+                    const mobileFrText = `${h}h`;
+                    
+                    return { html: `
+                        <div class="fc-desktop-label">${defaultText}</div>
+                        <div class="fc-mobile-fr-label notranslate" style="display:none;">${mobileFrText}</div>
+                    ` };
+                },
                 eventMouseEnter: function(info) {
                     if (info.event.extendedProps && info.event.extendedProps.isManual) {
                         currentHoveredEvent = info.event;
