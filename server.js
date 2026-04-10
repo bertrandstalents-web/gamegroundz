@@ -102,7 +102,8 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
+        secure: process.env.NODE_ENV === 'production' || process.env.RENDER === 'true', // Set to true if using HTTPS
+        sameSite: (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') ? 'none' : 'lax',
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24 // 24 hours
     }
