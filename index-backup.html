@@ -1026,7 +1026,7 @@
                 }
 
                 // Success - Since we might be on file://, we also save user in localStorage
-                localStorage.setItem('gg_user', JSON.stringify(data.user));
+                (function(){ const _u = {...data.user}; delete _u.profile_picture; localStorage.setItem('gg_user', JSON.stringify(_u)); })();
                 
                 const urlParams = new URLSearchParams(window.location.search);
                 const redirectUrl = urlParams.get('redirect');
@@ -1065,7 +1065,7 @@
                 if (res.ok) {
                     const data = await res.json();
                     updateUserUI(data.user);
-                    localStorage.setItem('gg_user', JSON.stringify(data.user));
+                    (function(){ const _u = {...data.user}; delete _u.profile_picture; localStorage.setItem('gg_user', JSON.stringify(_u)); })();
                 }
             } catch (e) {
                 // Ignore

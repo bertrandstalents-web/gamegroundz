@@ -3511,7 +3511,7 @@
                         userObj.name = updatedName;
                         userObj.email = payload.email;
                         userObj.profile_picture = payload.profile_picture;
-                        localStorage.setItem('gg_user', JSON.stringify(userObj));
+                        (function(){ const _u2 = {...userObj}; delete _u2.profile_picture; localStorage.setItem('gg_user', JSON.stringify(_u2)); })();
                     } catch(e) {}
                 }
 
@@ -4908,7 +4908,7 @@
                                 try {
                                     const u = JSON.parse(storedUser);
                                     u.terms_accepted = 1;
-                                    localStorage.setItem('gg_user', JSON.stringify(u));
+                                    (function(){ const _u3 = {...u}; delete _u3.profile_picture; localStorage.setItem('gg_user', JSON.stringify(_u3)); })();
                                 } catch(e){}
                             }
                         } else {

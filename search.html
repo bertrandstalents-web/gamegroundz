@@ -979,7 +979,7 @@
                 if (res.ok) {
                     const data = await res.json();
                     updateNavUI(data.user);
-                    localStorage.setItem('gg_user', JSON.stringify(data.user));
+                    (function(){ const _u = {...data.user}; delete _u.profile_picture; localStorage.setItem('gg_user', JSON.stringify(_u)); })();
                 }
             } catch (e) { }
         });

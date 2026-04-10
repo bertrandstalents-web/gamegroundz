@@ -2874,7 +2874,7 @@
                         userObj.name = updatedName;
                         userObj.email = payload.email;
                         userObj.profile_picture = payload.profile_picture;
-                        localStorage.setItem('gg_user', JSON.stringify(userObj));
+                        (function(){ const _u2 = {...userObj}; delete _u2.profile_picture; localStorage.setItem('gg_user', JSON.stringify(_u2)); })();
                     } catch(e) {}
                 }
 
