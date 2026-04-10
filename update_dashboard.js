@@ -53,7 +53,7 @@ if (content.includes(editNameAnchor) && !content.includes(`loadCoHosts(fac.id)`)
 // 4. Add JS functions at the end of the script block
 const jsFunctions = `
         async function loadCoHosts(facilityId) {
-            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
             const sec = document.getElementById('co-hosts-section');
             if(sec) sec.classList.remove('hidden');
             const list = document.getElementById('co-hosts-list');
@@ -95,7 +95,7 @@ const jsFunctions = `
             const facilityId = document.getElementById('edit-facility-id') ? document.getElementById('edit-facility-id').value : null;
             if (!facilityId) return;
             
-            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
             
             try {
                 const res = await fetch(\`\${API_BASE_URL}/api/host/facilities/\${facilityId}/co-hosts\`, {
@@ -128,7 +128,7 @@ const jsFunctions = `
             
             if(!confirm(\`Are you sure you want to remove \${email} as a co-host?\`)) return;
             
-            const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
             
             try {
                 const res = await fetch(\`\${API_BASE_URL}/api/host/facilities/\${facilityId}/co-hosts/\${encodeURIComponent(email)}\`, {
