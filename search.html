@@ -284,7 +284,7 @@
 
         async function initGoogleMaps() {
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const response = await fetch(`${API_BASE_URL}/api/config/maps`);
                 if (!response.ok) return;
                 
@@ -670,7 +670,7 @@
                 params.append('limit', limitPerPage);
                 params.append('offset', (currentPage - 1) * limitPerPage);
                 
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const response = await fetch(`${API_BASE_URL}/api/facilities?` + params.toString());
                 
                 if (!response.ok) throw new Error(`Server returned ${response.status}`);
@@ -848,7 +848,7 @@
     <script>
         async function checkHostNotifications(btnElement) {
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const res = await fetch(`${API_BASE_URL}/api/host/notifications/unread-count`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
@@ -893,7 +893,7 @@
 
                     document.getElementById('logout-btn').addEventListener('click', async (e) => {
                         e.preventDefault();
-                        const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                        const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                         await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
                         localStorage.removeItem('gg_user');
                         window.location.reload();
@@ -953,7 +953,7 @@
                     if (puckLogout) {
                         puckLogout.onclick = async (e) => {
                             e.preventDefault();
-                            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                             await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
                             localStorage.removeItem('gg_user');
                             window.location.reload();
@@ -974,7 +974,7 @@
             }
 
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();

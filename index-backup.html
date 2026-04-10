@@ -587,7 +587,7 @@
 
         async function initGoogleMaps() {
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const response = await fetch(`${API_BASE_URL}/api/config/maps`);
                 if (!response.ok) return;
                 
@@ -632,7 +632,7 @@
 
             try {
                 // Fetch all and take first 3 for featured. In a real app we might have a specific endpoint or flag.
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const response = await fetch(`${API_BASE_URL}/api/facilities?limit=3`);
                 if (!response.ok) throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                 
@@ -1010,7 +1010,7 @@
                 const endpoint = isLoginMode ? '/api/auth/login' : '/api/users/signup';
                 const body = isLoginMode ? { email, password } : { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture };
 
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 
                 const res = await fetch(`${API_BASE_URL}${endpoint}`, {
                     method: 'POST',
@@ -1060,7 +1060,7 @@
             
             // Then optionally verify with backend if we wanted to
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
@@ -1074,7 +1074,7 @@
 
         async function checkHostNotifications(btnElement) {
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const res = await fetch(`${API_BASE_URL}/api/host/notifications/unread-count`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
@@ -1154,7 +1154,7 @@
         async function handleLogout(e) {
             if (e) e.preventDefault();
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
             } catch(e) {}
             localStorage.removeItem('gg_user');

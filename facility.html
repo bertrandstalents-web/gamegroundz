@@ -611,7 +611,7 @@
             async function fetchBookedSlots() {
                 if (!currentFacilityId) return new Set();
                 try {
-                    const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                    const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                     // Fetch all without date param
                     const response = await fetch(`${API_BASE_URL}/api/bookings/${currentFacilityId}`);
                     if (response.ok) {
@@ -660,7 +660,7 @@
 
             if (facilityIdParam) {
                 try {
-                    const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                    const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                     const response = await fetch(`${API_BASE_URL}/api/facilities/${facilityIdParam}`);
                     if (!response.ok) throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                     
@@ -1088,7 +1088,7 @@
                          multiDayPayload[dStr].push(tId);
                      });
 
-                     const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                     const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                      const bookingResponse = await fetch(`${API_BASE_URL}/api/create-checkout-session`, {
                         method: 'POST',
                         credentials: 'include',
@@ -1960,7 +1960,7 @@
     <script>
         async function checkHostNotifications(btnElement) {
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const res = await fetch(`${API_BASE_URL}/api/host/notifications/unread-count`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
@@ -2004,7 +2004,7 @@
 
                     document.getElementById('logout-btn').addEventListener('click', async (e) => {
                         e.preventDefault();
-                        const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                        const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                         await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
                         localStorage.removeItem('gg_user');
                         window.location.reload();
@@ -2029,7 +2029,7 @@
             }
 
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
@@ -2049,7 +2049,7 @@
             const facilityIdParam = urlParams.get('id');
             const reviewBookingId = urlParams.get('review_booking');
 
-            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
 
             // 1. Fetch and Display Reviews
             if (facilityIdParam) {
@@ -2386,7 +2386,7 @@
                     if (logoutBtn) {
                         logoutBtn.addEventListener('click', async (e) => {
                             e.preventDefault();
-                            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                             await fetch(`${API_BASE_URL}/api/auth/logout`, {method: 'POST', credentials: 'include'});
                             localStorage.removeItem('user');
                             localStorage.removeItem('gg_user');

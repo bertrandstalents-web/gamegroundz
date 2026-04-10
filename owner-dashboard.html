@@ -1427,7 +1427,7 @@
 
             if (tabId === 'reservations') {
                 // Clear unread notifications when viewing reservations
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 fetch(`${API_BASE_URL}/api/host/notifications/mark-read`, { method: 'POST', credentials: 'include' })
                     .catch(e => console.error('Error marking notifications read:', e));
                     
@@ -1442,7 +1442,7 @@
 
         // Fetch Host Data Overview
         async function loadHostData() {
-            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
             
             try {
                 // Fetch Facilities
@@ -1603,7 +1603,7 @@
                             }
                         }
 
-                        const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                        const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                         fetch(`${API_BASE_URL}/api/host/facilities/reorder`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
@@ -1911,7 +1911,7 @@
             document.getElementById('confirm-host-cancel-text').classList.add('hidden');
             document.getElementById('confirm-host-cancel-spinner').classList.remove('hidden');
 
-            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
             try {
                 const res = await fetch(`${API_BASE_URL}/api/host/bookings/${currentHostCancelId}/cancel`, {
                     method: 'POST',
@@ -2324,7 +2324,7 @@
                 repeat_days: []
             };
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const response = await fetch(`${API_BASE_URL}/api/host/block-time`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -2401,7 +2401,7 @@
             // Fetch discounts for this facility
             let facilityDiscounts = [];
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const discRes = await fetch(`${API_BASE_URL}/api/host/discounts/${facilityId}`, { credentials: 'include' });
                 if (discRes.ok) {
                     facilityDiscounts = await discRes.json();
@@ -2715,7 +2715,7 @@
             };
 
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const response = await fetch(`${API_BASE_URL}/api/host/bookings/${eventObj.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -3065,7 +3065,7 @@
                 btn.disabled = true;
 
                 try {
-                    const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                    const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                     const response = await fetch(`${API_BASE_URL}/api/host/bookings/${editId}/cancel`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -3162,7 +3162,7 @@
 
                 const editId = document.getElementById('modal-edit-discount-id')?.value;
                 const method = editId ? 'PUT' : 'POST';
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const endpoint = editId ? `${API_BASE_URL}/api/host/discounts/${editId}` : `${API_BASE_URL}/api/host/discounts`;
 
                 try {
@@ -3220,7 +3220,7 @@
             const editId = document.getElementById('modal-edit-booking-id') ? document.getElementById('modal-edit-booking-id').value : '';
 
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 
                 let resUrl = `${API_BASE_URL}/api/host/block-time`;
                 let resMethod = 'POST';
@@ -3360,7 +3360,7 @@
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 await fetch(`${API_BASE_URL}/api/auth/logout`, {method: 'POST', credentials: 'omit'});
                 localStorage.removeItem('user');
                 localStorage.removeItem('gg_user');
@@ -3369,7 +3369,7 @@
         }
 
         async function fetchProfile() {
-            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
             try {
                 const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
                 if (!res.ok) return;
@@ -3478,7 +3478,7 @@
                 profile_picture: currentProfilePicBase64
             };
 
-            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
             try {
                 const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
                     method: 'PUT',
@@ -3564,7 +3564,7 @@
             document.getElementById('wallet-dashboard-prompt').classList.add('hidden');
             
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
                 if (!res.ok) throw new Error("Failed to load user status");
                 const data = await res.json();
@@ -3586,7 +3586,7 @@
             if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Redirecting to Stripe...';
             
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const res = await fetch(`${API_BASE_URL}/api/stripe/onboard`, { 
                     method: 'POST',
                     credentials: 'include',
@@ -3615,7 +3615,7 @@
             if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Opening Dashboard...';
             
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const res = await fetch(`${API_BASE_URL}/api/stripe/dashboard`, { 
                     method: 'POST',
                     credentials: 'include',
@@ -4010,7 +4010,7 @@
 
         async function initGoogleMaps() {
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const response = await fetch(`${API_BASE_URL}/api/config/maps`);
                 if (!response.ok) return;
                 
@@ -4254,7 +4254,7 @@
             };
 
             try {
-                const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 
                 const editIdElement = document.getElementById('edit-facility-id');
                 const editId = editIdElement ? editIdElement.value : '';
@@ -4378,7 +4378,7 @@
             const container = document.getElementById('host-discounts-list');
             container.innerHTML = `<div class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><p>Loading discounts...</p></div>`;
 
-            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
             fetch(`${API_BASE_URL}/api/host/discounts/${facId}`, { credentials: 'include' })
                 .then(res => {
                     if (res.status === 401) window.location.href = 'index.html';
@@ -4487,7 +4487,7 @@
                 try {
                     const editId = document.getElementById('disc-edit-id') ? document.getElementById('disc-edit-id').value : '';
                     const dsMethod = editId ? 'PUT' : 'POST';
-                    const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                    const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                     const dsUrl = editId ? `${API_BASE_URL}/api/host/discounts/${editId}` : `${API_BASE_URL}/api/host/discounts`;
 
                     const res = await fetch(dsUrl, {
@@ -4523,7 +4523,7 @@
         window.deleteDiscount = async function(id) {
             const confirmed = await showConfirmModal('Delete Discount', "Are you sure you want to delete this discount?", 'Delete', 'Cancel', true);
             if(!confirmed) return;
-            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
             try {
                 const res = await fetch(`${API_BASE_URL}/api/host/discounts/${id}`, { method: 'DELETE', credentials: 'include' });
                 if (res.ok) {
@@ -4602,7 +4602,7 @@
     <script src="js/i18n.js"></script>
     <script>
         async function loadCoHosts(facilityId) {
-            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
             const sec = document.getElementById('co-hosts-section');
             if(sec) sec.classList.remove('hidden');
             const list = document.getElementById('co-hosts-list');
@@ -4644,7 +4644,7 @@
             const facilityId = document.getElementById('edit-facility-id') ? document.getElementById('edit-facility-id').value : null;
             if (!facilityId) return;
             
-            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
             
             try {
                 const res = await fetch(`${API_BASE_URL}/api/host/facilities/${facilityId}/co-hosts`, {
@@ -4677,7 +4677,7 @@
             
             if(!confirm(`Are you sure you want to remove ${email} as a co-host?`)) return;
             
-            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
             
             try {
                 const res = await fetch(`${API_BASE_URL}/api/host/facilities/${facilityId}/co-hosts/${encodeURIComponent(email)}`, {
@@ -4696,7 +4696,7 @@
         }
 
         async function archiveHostBooking(id) {
-            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
             
             let isConfirmed = false;
             if (typeof showConfirmModal === 'function') {
@@ -4892,7 +4892,7 @@
                     tcAcceptBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Accepting...';
                     
                     try {
-                        const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000' ? '' : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://gamegroundz.onrender.com';
+                        const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                         const res = await fetch(`${API_BASE_URL}/api/host/accept-terms`, {
                             method: 'POST',
                             credentials: 'include'

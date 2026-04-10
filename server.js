@@ -268,7 +268,7 @@ app.post('/api/users/signup', async (req, res) => {
                         
                         res.status(201).json({ 
                             message: "User registered successfully", 
-                            user: { id: this.lastID, name: name, email: email, role: userRole } 
+                            user: { id: this.lastID, name: name, email: email, role: userRole, profile_picture: profile_picture } 
                         });
                     }
                 );
@@ -307,7 +307,7 @@ app.post('/api/auth/login', (req, res) => {
 
         res.json({ 
             message: "Logged in successfully", 
-            user: { id: user.id, name: user.name, email: user.email, role: user.role } 
+            user: { id: user.id, name: user.name, email: user.email, role: user.role, profile_picture: user.profile_picture } 
         });
     });
 });
