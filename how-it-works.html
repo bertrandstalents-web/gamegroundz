@@ -411,7 +411,7 @@
                     logoutBtn.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
-                        await fetch(`${API_BASE_URL}/api/auth/logout`, {method: 'POST', credentials: 'omit'});
+                        await fetch(`${API_BASE_URL}/api/auth/logout`, {method: 'POST', credentials: 'include'});
                         localStorage.removeItem('user');
                         localStorage.removeItem('gg_user');
                         window.location.reload();

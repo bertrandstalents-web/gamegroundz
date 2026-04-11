@@ -37,7 +37,8 @@
             // Call logout API
             await fetch('/api/auth/logout', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
             });
             
             // Try to use the modern custom modal if it exists
