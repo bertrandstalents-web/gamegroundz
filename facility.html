@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View details, pricing, and availability for this sports facility on GameGroundz.">
     <title>Loading Facility... | GameGroundz</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -665,13 +666,13 @@
                     if (!response.ok) throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                     
                     const text = await response.text();
-                    if (!text) throw new Error("Server returned an empty response. Port 3000 might be taken by another app. Please navigate directly to the Node server URL: http://localhost:3000/");
+                    if (!text) throw new Error("Server returned an empty response.");
                     
                     let facility;
                     try {
                         facility = JSON.parse(text);
                     } catch (e) {
-                        throw new Error("Invalid JSON received. Ensure you are viewing the site via the backend server at http://localhost:3000.");
+                        throw new Error("Invalid format received from server.");
                     }
                     
                     // Update global state
@@ -721,7 +722,7 @@
                     window.facilityDiscounts = facilityDiscounts;
 
                     // Update UI elements
-                    document.title = `${facility.name} - GameGroundz`;
+                    document.title = `${facility.name} | GameGroundz`;
                     
                     // Image Gallery Logic
                     const galleryContainer = document.getElementById('facility-gallery');
@@ -1067,6 +1068,45 @@
                 if (selectedSlotIds.size < 2) {
                     await showAlertModal('Minimum Duration', 'Please select at least two time slots (1 hour minimum).', 'OK', true);
                     return;
+                }
+                
+                // Check for slots within 48 hours
+                let hasSlotUnder48h = false;
+                const now = new Date();
+                const fortyEightHoursInMs = 48 * 60 * 60 * 1000;
+
+                for (const slotKey of selectedSlotIds) {
+                    const [dStr, tId] = slotKey.split('|');
+                    const [h, m] = tId.split(':');
+                    const slotDate = new Date(`${dStr}T00:00:00`);
+                    slotDate.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0);
+
+                    const timeDiff = slotDate.getTime() - now.getTime();
+                    if (timeDiff > 0 && timeDiff < fortyEightHoursInMs) {
+                        hasSlotUnder48h = true;
+                        break;
+                    }
+                }
+
+                if (hasSlotUnder48h) {
+                    if (typeof window.showConfirmModal === 'function') {
+                        const confirmed = await window.showConfirmModal(
+                            "Short Notice Booking", 
+                            "You are booking a slot less than 48 hours away. Please note that a refund will not be possible for this transaction if you proceed due to the facility's short notice cancellation policy.", 
+                            "I Understand, Proceed", 
+                            "Cancel", 
+                            true
+                        );
+                        if (!confirmed) {
+                            return; // User cancelled
+                        }
+                    } else {
+                        // Fallback if modal is not available for some reason
+                        const confirmed = confirm("You are booking a slot less than 48 hours away. Please note that a refund will not be possible for this transaction if you proceed.\n\nDo you want to proceed?");
+                        if (!confirmed) {
+                            return;
+                        }
+                    }
                 }
                 
                 const originalText = reserveBtn.innerHTML;

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GameGroundz — The easiest way to find and book sports surfaces near you.">
     <title>GameGroundz | The Easiest Way to Book Sports Surfaces</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -768,13 +769,13 @@
                 if (!response.ok) throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                 
                 const text = await response.text();
-                if (!text) throw new Error("Server returned an empty response. Port 3000 might be taken by another app. Please navigate directly to the Node server URL: http://localhost:3000/");
+                if (!text) throw new Error("Server returned an empty response.");
                 
                 let facilities;
                 try {
                     facilities = JSON.parse(text);
                 } catch(e) {
-                    throw new Error("Invalid JSON received. Ensure you are viewing the site via the backend server at http://localhost:3000.");
+                    throw new Error("Invalid format received from server.");
                 }
                 grid.innerHTML = ''; // clear loading state
                 
@@ -886,9 +887,11 @@
             } catch (error) {
                 console.error("Failed to load featured facilities:", error);
                  grid.innerHTML = `
-                    <div class="col-span-full bg-red-50 border border-red-100 text-red-500 p-4 rounded-xl text-center">
-                        Failed to load featured facilities. Please make sure the backend server (\`node server.js\`) is running. <br>
-                        Error: ${error.message}
+                    <div class="col-span-full bg-slate-50 border border-slate-100 text-slate-500 p-8 rounded-2xl text-center">
+                        <i class="fa-solid fa-calendar-xmark text-4xl mb-3 text-slate-300"></i>
+                        <h3 class="text-xl font-bold text-dark mb-2">Temporarily Unavailable</h3>
+                        <p>We're having trouble loading the featured facilities right now. Please check back in a few moments.</p>
+                        <button onclick="fetchFeaturedFacilities()" class="mt-4 px-6 py-2 bg-white border border-slate-200 rounded-lg font-semibold hover:bg-slate-50 transition-custom shadow-sm text-sm">Try Again</button>
                     </div>
                 `;
             }

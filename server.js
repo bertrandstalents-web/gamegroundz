@@ -14,7 +14,20 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.set('trust proxy', true);
-app.use(cors({ origin: true, credentials: true }));
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : ['http://localhost:3000'];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}));
 
 // Stripe webhook needs raw body
 app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), (req, res) => {
@@ -98,7 +111,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Session Middleware
 app.use(session({
-    secret: 'gamegroundz-super-secret-key', // In production, use environment variable
+    secret: process.env.SESSION_SECRET || 'gamegroundz-dev-secret-fallback', // In production, use environment variable
     resave: false,
     saveUninitialized: false,
     cookie: { 
@@ -975,55 +988,61 @@ app.post('/api/host/block-time', (req, res) => {
     if (!facility_id || !booking_date || !time_slots || !manual_notes) {
         return res.status(400).json({ error: "Missing required fields" });
     }
-    
-    // Generate dates
-    let datesToBook = [];
-    let recurringGroupId = null;
-    
-    if (repeat_option && repeat_option !== 'none' && repeat_until) {
-        recurringGroupId = 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-        const startDate = new Date(booking_date + 'T00:00:00');
-        const endDate = new Date(repeat_until + 'T23:59:59');
-        let currentDate = new Date(startDate);
+
+    // Verify this facility belongs to the logged-in host
+    db.get("SELECT id FROM facilities WHERE id = ? AND host_id = ?", [facility_id, req.session.userId], (err, facility) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!facility) return res.status(403).json({ error: "Forbidden: You do not own this facility." });
+
+        // Generate dates
+        let datesToBook = [];
+        let recurringGroupId = null;
         
-        // Ensure starting day is correctly bounded
-        const validDays = Array.isArray(repeat_days) && repeat_days.length > 0 ? repeat_days : [startDate.getDay()];
+        if (repeat_option && repeat_option !== 'none' && repeat_until) {
+            recurringGroupId = 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+            const startDate = new Date(booking_date + 'T00:00:00');
+            const endDate = new Date(repeat_until + 'T23:59:59');
+            let currentDate = new Date(startDate);
+            
+            // Ensure starting day is correctly bounded
+            const validDays = Array.isArray(repeat_days) && repeat_days.length > 0 ? repeat_days : [startDate.getDay()];
 
-        while (currentDate <= endDate) {
-            if (repeat_option === 'daily') {
-                datesToBook.push(currentDate.toISOString().split('T')[0]);
-            } else if (repeat_option === 'weekly') {
-                if (validDays.includes(currentDate.getDay())) {
+            while (currentDate <= endDate) {
+                if (repeat_option === 'daily') {
                     datesToBook.push(currentDate.toISOString().split('T')[0]);
+                } else if (repeat_option === 'weekly') {
+                    if (validDays.includes(currentDate.getDay())) {
+                        datesToBook.push(currentDate.toISOString().split('T')[0]);
+                    }
                 }
+                currentDate.setDate(currentDate.getDate() + 1);
             }
-            currentDate.setDate(currentDate.getDate() + 1);
+        } else {
+            // No repeat, just book the single date
+            datesToBook.push(booking_date);
         }
-    } else {
-        // No repeat, just book the single date
-        datesToBook.push(booking_date);
-    }
-    
-    const sql = `
-        INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id)
-        VALUES (?, ?, ?, 0, 'confirmed', 'manual', ?, ?)
-    `;
-    
-    const insertBooking = (dateObj) => new Promise((resolve, reject) => {
-        db.run(sql, [facility_id, dateObj, JSON.stringify(time_slots), manual_notes, recurringGroupId], function(err) {
-            if (err) reject(err);
-            else resolve();
+        
+        const sql = `
+            INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id)
+            VALUES (?, ?, ?, 0, 'confirmed', 'manual', ?, ?)
+        `;
+        
+        const insertBooking = (dateObj) => new Promise((resolve, reject) => {
+            db.run(sql, [facility_id, dateObj, JSON.stringify(time_slots), manual_notes, recurringGroupId], function(err) {
+                if (err) reject(err);
+                else resolve();
+            });
         });
-    });
 
-    Promise.all(datesToBook.map(dateStr => insertBooking(dateStr)))
-        .then(() => {
-            res.status(201).json({ message: `Successfully created ${datesToBook.length} booking(s)` });
-        })
-        .catch(err => {
-            console.error("Booking insert error:", err);
-            res.status(500).json({ error: "Failed to create some or all bookings" });
-        });
+        Promise.all(datesToBook.map(dateStr => insertBooking(dateStr)))
+            .then(() => {
+                res.status(201).json({ message: `Successfully created ${datesToBook.length} booking(s)` });
+            })
+            .catch(err => {
+                console.error("Booking insert error:", err);
+                res.status(500).json({ error: "Failed to create some or all bookings" });
+            });
+    });
 });
 
 // PUT (Edit) a booking
@@ -1113,16 +1132,10 @@ app.put('/api/host/bookings/:id', (req, res) => {
 
 // GET all bookings for current user
 app.get('/api/bookings/my', (req, res) => {
-    let user_id = req.session.userId; 
-    
-    // Explicitly fallback to user 1 on test mode or localhost ONLY IF NEEDED
-    if (!user_id && req.hostname === 'localhost' && process.env.NODE_ENV !== 'production') {
-        user_id = 1;
+    if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
     }
-
-    if (!user_id) {
-        return res.status(401).json({ error: "Unauthorized" });
-    }
+    const user_id = req.session.userId;
 
     // Join with facilities to get facility name and image
     const query = `
@@ -1853,7 +1866,7 @@ app.post('/api/create-checkout-session', (req, res) => {
             const placeholders = datesArr.map(() => '?').join(',');
             
             db.all(
-                `SELECT booking_date, time_slots FROM bookings WHERE facility_id = ? AND booking_date IN (${placeholders})`,
+                `SELECT booking_date, time_slots FROM bookings WHERE facility_id = ? AND booking_date IN (${placeholders}) AND status != 'cancelled'`,
                 [facility_id, ...datesArr],
                 async (err, existingBookings) => {
                     if (err) return res.status(500).json({ error: "Database error during availability check." });
