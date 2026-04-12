@@ -196,7 +196,10 @@ async function initDatabase() {
             stripe_session_id TEXT,
             review_email_sent INTEGER DEFAULT 0,
             recurring_group_id TEXT,
-            is_read INTEGER DEFAULT 0
+            is_read INTEGER DEFAULT 0,
+            is_archived INTEGER DEFAULT 0,
+            capacity INTEGER DEFAULT 0,
+            participant_price REAL DEFAULT 0.0
         )`);
 
         try {
@@ -214,6 +217,22 @@ async function initDatabase() {
         try {
             await client.query(`ALTER TABLE bookings ADD COLUMN is_archived INTEGER DEFAULT 0`);
         } catch(e) {}
+
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN capacity INTEGER DEFAULT 0`);
+            await client.query(`ALTER TABLE bookings ADD COLUMN participant_price REAL DEFAULT 0.0`);
+        } catch(e) {}
+
+        // Public Session Participants Table
+        await client.query(`CREATE TABLE IF NOT EXISTS public_session_participants (
+            id SERIAL PRIMARY KEY,
+            booking_id INTEGER REFERENCES bookings(id),
+            user_id INTEGER REFERENCES users(id),
+            payment_status TEXT DEFAULT 'pending',
+            stripe_session_id TEXT,
+            quantity INTEGER DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
 
         // Reviews Table
         await client.query(`CREATE TABLE IF NOT EXISTS reviews (

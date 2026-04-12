@@ -758,9 +758,14 @@
         };
 
         // Fetch Featured Facilities
-        async function fetchFeaturedFacilities() {
+        async function fetchFeaturedFacilities(retryCount = 0) {
             const grid = document.getElementById('featured-facilities-grid');
             if (!grid) return;
+
+            // Only show spinner on first load
+            if (retryCount === 0) {
+                grid.innerHTML = '<div class="col-span-full flex justify-center py-12"><i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i></div>';
+            }
 
             try {
                 const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
@@ -885,13 +890,26 @@
                 });
 
             } catch (error) {
-                console.error("Failed to load featured facilities:", error);
+                console.error(`Failed to load featured facilities (Attempt ${retryCount + 1}):`, error);
+                
+                const MAX_RETRIES = 3;
+                if (retryCount < MAX_RETRIES) {
+                    const delay = (retryCount + 1) * 2000; // 2s, 4s, 6s
+                    console.log(`Retrying in ${delay/1000}s...`);
+                    // Create subtle loading pulse while retrying silently
+                    if (retryCount === 0) {
+                        grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center py-12 text-slate-400"><i class="fa-solid fa-cloud-arrow-down animate-bounce text-xl mb-3"></i><p class="text-sm font-medium">Waking up server...</p></div>';
+                    }
+                    setTimeout(() => fetchFeaturedFacilities(retryCount + 1), delay);
+                    return;
+                }
+
                  grid.innerHTML = `
                     <div class="col-span-full bg-slate-50 border border-slate-100 text-slate-500 p-8 rounded-2xl text-center">
                         <i class="fa-solid fa-calendar-xmark text-4xl mb-3 text-slate-300"></i>
                         <h3 class="text-xl font-bold text-dark mb-2">Temporarily Unavailable</h3>
-                        <p>We're having trouble loading the featured facilities right now. Please check back in a few moments.</p>
-                        <button onclick="fetchFeaturedFacilities()" class="mt-4 px-6 py-2 bg-white border border-slate-200 rounded-lg font-semibold hover:bg-slate-50 transition-custom shadow-sm text-sm">Try Again</button>
+                        <p>We're having trouble connecting to the database right now (server timeout or network policy).</p>
+                        <button onclick="fetchFeaturedFacilities(0)" class="mt-4 px-6 py-2 bg-white border border-slate-200 rounded-lg font-semibold hover:bg-slate-50 transition-custom shadow-sm text-sm">Try Again</button>
                     </div>
                 `;
             }

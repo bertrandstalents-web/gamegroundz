@@ -653,6 +653,24 @@
                     }
                 }
 
+                if (urlParams.get('session_joined') === 'success') {
+                    if (typeof Swal !== 'undefined') {
+                        setTimeout(() => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Successfully Joined!',
+                                text: 'You have been added to the public session. An email receipt will be sent shortly.',
+                                confirmButtonColor: '#10b981'
+                            });
+                        }, 500);
+                    } else if (typeof showAlertModal === 'function') {
+                        setTimeout(() => {
+                            showAlertModal('Successfully Joined!', 'You have been added to the public session. An email receipt will be sent shortly.');
+                        }, 500);
+                    }
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+
                 const response = await fetch(`${API_BASE_URL}/api/bookings/my`, {credentials: 'include'});
                 
                 loadingUI.classList.add('hidden');
@@ -759,7 +777,10 @@
                             </div>
                             <div class="flex-1 flex flex-col justify-between">
                                 <div>
-                                    <h3 class="text-xl font-bold text-dark mb-1 cursor-pointer hover:text-primary transition-custom" onclick="window.location.href='facility.html?id=${booking.facility_id}'">${booking.facility_name}</h3>
+                                    <h3 class="text-xl font-bold text-dark mb-1 cursor-pointer hover:text-primary transition-custom flex items-center flex-wrap gap-2" onclick="window.location.href='facility.html?id=${booking.facility_id}'">
+                                        ${booking.facility_name} 
+                                        ${booking.booking_type === 'public_session' ? `<span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-md">Public Session <span class="font-black">(x${booking.quantity || 1} Spots)</span></span>` : ''}
+                                    </h3>
                                     <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${booking.location}</p>
                                     
                                     <div class="flex flex-wrap gap-4 text-sm font-medium text-slate-700">
