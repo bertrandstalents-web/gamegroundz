@@ -990,7 +990,7 @@ app.post('/api/host/block-time', (req, res) => {
         return res.status(401).json({ error: "Unauthorized" });
     }
     
-    const { facility_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price } = req.body;
+    const { facility_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price } = req.body;
     
     if (!facility_id || !booking_date || !time_slots || !manual_notes) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -999,6 +999,7 @@ app.post('/api/host/block-time', (req, res) => {
     const typeToUse = booking_type === 'public_session' ? 'public_session' : 'manual';
     const capToUse = typeToUse === 'public_session' ? parseInt(capacity, 10) || 0 : 0;
     const priceToUse = typeToUse === 'public_session' ? parseFloat(participant_price) || 0.0 : 0.0;
+    const kidPriceToUse = typeToUse === 'public_session' ? parseFloat(participant_kid_price) || 0.0 : 0.0;
 
     // Verify this facility belongs to the logged-in host
     db.get("SELECT id FROM facilities WHERE id = ? AND host_id = ?", [facility_id, req.session.userId], (err, facility) => {
@@ -1034,12 +1035,12 @@ app.post('/api/host/block-time', (req, res) => {
         }
         
         const sql = `
-            INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price)
-            VALUES (?, ?, ?, 0, 'confirmed', ?, ?, ?, ?, ?)
+            INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price)
+            VALUES (?, ?, ?, 0, 'confirmed', ?, ?, ?, ?, ?, ?)
         `;
         
         const insertBooking = (dateObj) => new Promise((resolve, reject) => {
-            db.run(sql, [facility_id, dateObj, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse], function(err) {
+            db.run(sql, [facility_id, dateObj, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse, kidPriceToUse], function(err) {
                 if (err) reject(err);
                 else resolve();
             });
@@ -1063,11 +1064,17 @@ app.put('/api/host/bookings/:id', (req, res) => {
     }
 
     const bookingId = req.params.id;
-    const { booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days } = req.body;
+    const { booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price } = req.body;
 
     if (!booking_date || !time_slots) {
         return res.status(400).json({ error: "Missing required fields" });
     }
+    
+    // Process public session fields securely
+    const isPublic = booking_type === 'public_session';
+    const numCap = isPublic ? (parseInt(capacity, 10) || 0) : 0;
+    const numPrice = isPublic ? (parseFloat(participant_price) || 0.0) : 0.0;
+    const numKidPrice = isPublic ? (parseFloat(participant_kid_price) || 0.0) : 0.0;
 
     // Verify ownership via facilities table
     db.get(
@@ -1108,20 +1115,22 @@ app.put('/api/host/bookings/:id', (req, res) => {
 
             const sql = `
                 UPDATE bookings 
-                SET booking_date = ?, time_slots = ?, manual_notes = COALESCE(?, manual_notes), recurring_group_id = COALESCE(?, recurring_group_id)
+                SET booking_date = ?, time_slots = ?, manual_notes = COALESCE(?, manual_notes), recurring_group_id = COALESCE(?, recurring_group_id),
+                    capacity = COALESCE(?, capacity), participant_price = COALESCE(?, participant_price), participant_kid_price = COALESCE(?, participant_kid_price)
                 WHERE id = ?
             `;
 
-            db.run(sql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, bookingId], function(err) {
+            db.run(sql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, bookingId], function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 
                 if (datesToBook.length > 0) {
+                    const bTypeStr = isPublic ? 'public_session' : 'manual';
                     const insertSql = `
-                        INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id)
-                        VALUES (?, ?, ?, 0, 'confirmed', 'manual', ?, ?)
+                        INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price)
+                        VALUES (?, ?, ?, 0, 'confirmed', ?, ?, ?, ?, ?, ?)
                     `;
                     const insertBooking = (dateStr) => new Promise((resolve, reject) => {
-                        db.run(insertSql, [row.facility_id, dateStr, JSON.stringify(time_slots), manual_notes, recurringGroupId], function(insertErr) {
+                        db.run(insertSql, [row.facility_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice], function(insertErr) {
                             if (insertErr) reject(insertErr);
                             else resolve();
                         });
@@ -1234,13 +1243,19 @@ app.post('/api/public_sessions/join', async (req, res) => {
     db.get(query, [booking_id], async (err, session) => {
         if (err || !session) return res.status(404).json({ error: "Session not found." });
 
-        const reqQuantity = parseInt(req.body.quantity, 10) || 1;
-        if (reqQuantity < 1 || reqQuantity > 6) {
-            return res.status(400).json({ error: "Invalid quantity. You can book between 1 and 6 spots." });
+        const reqAdultQty = parseInt(req.body.adultQuantity, 10) || parseInt(req.body.quantity, 10) || 0;
+        const reqKidQty = parseInt(req.body.kidQuantity, 10) || 0;
+        const reqTotalQty = reqAdultQty + reqKidQty;
+
+        if (reqTotalQty < 1 || reqTotalQty > 100) {
+            return res.status(400).json({ error: "Invalid quantity. You must book at least 1 spot." });
         }
 
-        if (session.joined_count + reqQuantity > session.capacity) {
-            return res.status(400).json({ error: `Not enough spots remaining in this session. (${session.capacity - session.joined_count} left)` });
+        const joinedCountNum = parseInt(session.joined_count, 10) || 0;
+        const capacityNum = parseInt(session.capacity, 10) || 0;
+
+        if (joinedCountNum + reqTotalQty > capacityNum) {
+            return res.status(400).json({ error: `Not enough spots remaining in this session. (${capacityNum - joinedCountNum} left)` });
         }
         
         // Also check if user already joined
@@ -1253,41 +1268,62 @@ app.post('/api/public_sessions/join', async (req, res) => {
             try {
                 // Determine application fee (e.g. 10%)
                 const feePercentage = 0.10;
-                let unitAmount = Math.round(session.participant_price * 100);
+                let unitAmountAdult = Math.round(session.participant_price * 100);
+                let unitAmountKid = Math.round((session.participant_kid_price || 0) * 100);
                 
-                // Host receives the rest unless no stripe_account_id
+                const totalAmount = (unitAmountAdult * reqAdultQty) + (unitAmountKid * reqKidQty);
                 
+                let line_items = [];
+                if (reqAdultQty > 0) {
+                    line_items.push({
+                        price_data: {
+                            currency: 'cad',
+                            product_data: {
+                                name: `Public Session (Adult): ${session.manual_notes || 'Open Session'}`,
+                                description: `${session.facility_name} - ${session.booking_date}`,
+                            },
+                            unit_amount: unitAmountAdult,
+                        },
+                        quantity: reqAdultQty,
+                    });
+                }
+                if (reqKidQty > 0) {
+                    line_items.push({
+                        price_data: {
+                            currency: 'cad',
+                            product_data: {
+                                name: `Public Session (Kid): ${session.manual_notes || 'Open Session'}`,
+                                description: `${session.facility_name} - ${session.booking_date}`,
+                            },
+                            unit_amount: unitAmountKid,
+                        },
+                        quantity: reqKidQty,
+                    });
+                }
+
                 let sessionParams = {
                     payment_method_types: ['card'],
                     mode: 'payment',
-                    success_url: `${process.env.APP_URL || 'http://localhost:3000'}/player-dashboard.html?session_joined=success`,
+                    success_url: `${process.env.APP_URL || 'http://localhost:3000'}/player-dashboard.html?session_joined=success&session_id={CHECKOUT_SESSION_ID}`,
                     cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}/facility.html?id=${session.facility_id}&session_joined=cancel`,
                     client_reference_id: req.session.userId.toString(),
                     metadata: {
                         booking_id: booking_id.toString(),
                         user_id: req.session.userId.toString(),
                         type: 'public_session_join',
-                        quantity: reqQuantity.toString()
+                        quantity: reqTotalQty.toString(),
+                        quantity_adult: reqAdultQty.toString(),
+                        quantity_kid: reqKidQty.toString()
                     },
-                    line_items: [{
-                        price_data: {
-                            currency: 'cad',
-                            product_data: {
-                                name: `Public Session: ${session.manual_notes || 'Open Session'}`,
-                                description: `${session.facility_name} - ${session.booking_date}`,
-                            },
-                            unit_amount: unitAmount,
-                        },
-                        quantity: reqQuantity,
-                    }]
+                    line_items: line_items
                 };
 
                 // Add transfer data if the host has stripe connected
-                if (session.stripe_account_id && unitAmount > 0) {
-                    const hostAmount = Math.round(unitAmount * (1 - feePercentage));
+                if (session.stripe_account_id && totalAmount > 0) {
+                    const hostAmount = Math.round(totalAmount * (1 - feePercentage));
                     if (hostAmount > 0) {
                         sessionParams.payment_intent_data = {
-                            application_fee_amount: unitAmount - hostAmount,
+                            application_fee_amount: totalAmount - hostAmount,
                             transfer_data: {
                                 destination: session.stripe_account_id,
                             },
@@ -1295,9 +1331,9 @@ app.post('/api/public_sessions/join', async (req, res) => {
                     }
                 }
 
-                // If price is 0, we bypass stripe and just insert them as Paid!
-                if (unitAmount === 0 || session.participant_price === 0) {
-                    db.run("INSERT INTO public_session_participants (booking_id, user_id, payment_status, quantity) VALUES (?, ?, 'paid', ?)", [booking_id, req.session.userId, reqQuantity], function(err) {
+                // If total price is 0, we bypass stripe and just insert them as Paid!
+                if (totalAmount === 0) {
+                    db.run("INSERT INTO public_session_participants (booking_id, user_id, payment_status, quantity, quantity_adult, quantity_kid) VALUES (?, ?, 'paid', ?, ?, ?)", [booking_id, req.session.userId, reqTotalQty, reqAdultQty, reqKidQty], function(err) {
                          if (err) return res.status(500).json({ error: "Failed to join." });
                          return res.json({ freeJoin: true, redirectUrl: `${process.env.APP_URL || 'http://localhost:3000'}/player-dashboard.html?session_joined=success` });
                     });
@@ -1307,8 +1343,8 @@ app.post('/api/public_sessions/join', async (req, res) => {
                 const stripeSession = await stripe.checkout.sessions.create(sessionParams);
 
                 // Create a pending participant record
-                db.run("INSERT INTO public_session_participants (booking_id, user_id, payment_status, stripe_session_id, quantity) VALUES (?, ?, 'pending', ?, ?)", 
-                    [booking_id, req.session.userId, stripeSession.id, reqQuantity], function(err) {
+                db.run("INSERT INTO public_session_participants (booking_id, user_id, payment_status, stripe_session_id, quantity, quantity_adult, quantity_kid) VALUES (?, ?, 'pending', ?, ?, ?, ?)", 
+                    [booking_id, req.session.userId, stripeSession.id, reqTotalQty, reqAdultQty, reqKidQty], function(err) {
                     if (err) {
                         console.error('Participant insert err:', err);
                         return res.status(500).json({ error: "Failed to initialize checkout." });
@@ -1339,7 +1375,7 @@ app.get('/api/public_sessions/:booking_id/participants', (req, res) => {
         if (err || !authRow) return res.status(403).json({ error: "Not authorized" });
         
         const q = `
-            SELECT psp.quantity, psp.created_at, u.name, u.email 
+            SELECT psp.id, psp.quantity, psp.quantity_adult, psp.quantity_kid, psp.created_at, u.name, u.email 
             FROM public_session_participants psp
             JOIN users u ON psp.user_id = u.id
             WHERE psp.booking_id = ? AND psp.payment_status = 'paid'
@@ -1348,6 +1384,51 @@ app.get('/api/public_sessions/:booking_id/participants', (req, res) => {
         db.all(q, [booking_id], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json(rows);
+        });
+    });
+});
+
+app.post('/api/host/public_sessions/:booking_id/participants/:psp_id/cancel', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Not authenticated" });
+    const { booking_id, psp_id } = req.params;
+
+    // Check if the current user is the host of this facility
+    const authQuery = `
+        SELECT b.id 
+        FROM bookings b 
+        JOIN facilities f ON b.facility_id = f.id 
+        WHERE b.id = ? AND f.host_id = ?
+    `;
+    db.get(authQuery, [booking_id, req.session.userId], (err, authRow) => {
+        if (err || !authRow) return res.status(403).json({ error: "Not authorized" });
+        
+        // Fetch participant detail
+        db.get(`SELECT id, payment_status, stripe_session_id FROM public_session_participants WHERE id = ? AND booking_id = ?`, [psp_id, booking_id], async (err, pspRow) => {
+            if (err || !pspRow) return res.status(404).json({ error: "Participant not found." });
+            
+            if (pspRow.payment_status !== 'paid') {
+                return res.status(400).json({ error: "Only paid participants can be removed." });
+            }
+
+            try {
+                // If there's a stripe session ID, attempt refund
+                if (pspRow.stripe_session_id) {
+                    const session = await stripe.checkout.sessions.retrieve(pspRow.stripe_session_id);
+                    if (session && session.payment_intent) {
+                        await stripe.refunds.create({ payment_intent: session.payment_intent });
+                    }
+                }
+
+                // Update participant to refunded
+                db.run("UPDATE public_session_participants SET payment_status = 'refunded' WHERE id = ?", [psp_id], (updateErr) => {
+                    if (updateErr) return res.status(500).json({ error: "Failed to update participant status." });
+                    res.json({ success: true, message: "Participant removed and refunded successfully." });
+                });
+
+            } catch (error) {
+                console.error("Stripe refund error:", error);
+                res.status(500).json({ error: "Failed to issue refund. Please try again." });
+            }
         });
     });
 });
@@ -1366,7 +1447,7 @@ app.get('/api/bookings/receipt/:id', (req, res) => {
                h.name as host_name, h.email as host_email, h.company_name as host_company_name
         FROM bookings b
         JOIN facilities f ON b.facility_id = f.id
-        JOIN users u ON b.user_id = u.id
+        LEFT JOIN users u ON b.user_id = u.id
         LEFT JOIN users h ON f.host_id = h.id
         WHERE b.id = ? 
     `;
@@ -1383,10 +1464,18 @@ app.get('/api/bookings/receipt/:id', (req, res) => {
         
         if (!hasBaseAccess && row.booking_type === 'public_session') {
             // Check if they are a participant
-            db.get("SELECT quantity FROM public_session_participants WHERE booking_id = ? AND user_id = ? AND payment_status = 'paid'", [id, req.session.userId], (err, pspRow) => {
+            db.get("SELECT psp.quantity, psp.quantity_adult, psp.quantity_kid, u2.name as player_name, u2.email as player_email FROM public_session_participants psp JOIN users u2 ON psp.user_id = u2.id WHERE psp.booking_id = ? AND psp.user_id = ? AND psp.payment_status = 'paid'", [id, req.session.userId], (err, pspRow) => {
                 if (err || !pspRow) return res.status(403).json({ error: "Forbidden: You don't have access to this receipt" });
                 // Override receipt data just for them
-                row.total_price = pspRow.quantity * row.participant_price;
+                const costAdults = (pspRow.quantity_adult || 0) * (row.participant_price || 0);
+                const costKids = (pspRow.quantity_kid || 0) * (row.participant_kid_price || 0);
+                row.total_price = costAdults + costKids;
+                row.player_name = pspRow.player_name;
+                row.player_email = pspRow.player_email;
+                row.quantity_adult = pspRow.quantity_adult || 0;
+                row.quantity_kid = pspRow.quantity_kid || 0;
+                row.cost_adults = costAdults;
+                row.cost_kids = costKids;
                 res.json(row);
             });
         } else if (hasBaseAccess) {
@@ -2226,6 +2315,18 @@ app.post('/api/bookings/confirm', async (req, res) => {
                             res.status(500).json({ error: "Payload error" });
                         }
                     });
+                } else if (metadata && metadata.type === 'public_session_join') {
+                    const bookingId = metadata.booking_id;
+                    const userId = metadata.user_id;
+
+                    db.run(
+                        "UPDATE public_session_participants SET payment_status = 'paid' WHERE booking_id = ? AND user_id = ? AND stripe_session_id = ?",
+                        [bookingId, userId, session.id],
+                        function(err) {
+                            if (err) return res.status(500).json({ error: "Failed to confirm public session" });
+                            res.json({ success: true, message: "Public session confirmed" });
+                        }
+                    );
                 } else if (metadata && metadata.facility_id) {
                     // Backward compatibility
                     db.run(

@@ -298,7 +298,7 @@
                             <div class="absolute right-3 top-6 text-slate-400 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                         </div>
 
-                        <div class="p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-b-xl">
+                        <div id="activity-type-container" class="p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-b-xl">
                             <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="activity-type">Activity Type</label>
                             <select id="activity-type" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none pr-6">
                                 <option value="practice">Hockey Practice</option>
@@ -307,6 +307,43 @@
                                 <option value="event">Private Event</option>
                             </select>
                             <div class="absolute right-3 top-6 text-slate-400 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                        </div>
+
+                        <div id="public-session-admission-container" class="hidden p-3 hover:bg-slate-50 transition-custom relative rounded-b-xl">
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer">Select Participants</label>
+                            <div id="ps-admission-trigger" class="w-full text-sm font-medium text-slate-700 bg-transparent cursor-pointer flex justify-between items-center">
+                                <span id="ps-admission-summary">1 Adult</span>
+                                <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+                            </div>
+                            
+                            <!-- Participant Dropdown Popover -->
+                            <div id="ps-admission-popover" class="absolute top-[60px] left-0 mt-2 w-full bg-white border border-slate-200 shadow-2xl rounded-xl z-[60] hidden flex-col p-4 gap-4">
+                                <!-- Adult Row -->
+                                <div class="flex items-center justify-between">
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-dark text-sm">Adults</span>
+                                        <span class="text-xs text-slate-400" id="ps-adult-price-label">$0.00</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 shadow-sm">
+                                        <button id="ps-adult-minus" class="w-6 h-6 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                                        <span class="font-bold text-dark text-sm inline-block w-4 text-center" id="ps-adult-count">1</span>
+                                        <button id="ps-adult-plus" class="w-6 h-6 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                                    </div>
+                                </div>
+                                <hr class="border-slate-100">
+                                <!-- Kid Row -->
+                                <div class="flex items-center justify-between">
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-dark text-sm">Kids</span>
+                                        <span class="text-xs text-slate-400" id="ps-kid-price-label">$0.00</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 shadow-sm">
+                                        <button id="ps-kid-minus" class="w-6 h-6 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                                        <span class="font-bold text-dark text-sm inline-block w-4 text-center" id="ps-kid-count">0</span>
+                                        <button id="ps-kid-plus" class="w-6 h-6 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1063,10 +1100,24 @@
 
             trigger.addEventListener('click', toggleDropdown);
             
-            // Close dropdown when clicking outside
+            const psTrigger = document.getElementById('ps-admission-trigger');
+            const psPopover = document.getElementById('ps-admission-popover');
+            if (psTrigger) {
+                psTrigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    psPopover.classList.toggle('hidden');
+                    psPopover.classList.toggle('flex');
+                });
+            }
+
+            // Close dropdowns when clicking outside
             document.addEventListener('click', (e) => {
                 if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
                     dropdown.classList.add('hidden');
+                }
+                if (psTrigger && psPopover && !psTrigger.contains(e.target) && !psPopover.contains(e.target)) {
+                    psPopover.classList.add('hidden');
+                    psPopover.classList.remove('flex');
                 }
             });
 
@@ -1091,7 +1142,11 @@
                     const response = await fetch(`${API_BASE_URL}/api/public_sessions/join`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ booking_id: bookingId, quantity: window.publicSessionQuantity }),
+                        body: JSON.stringify({ 
+                            booking_id: bookingId, 
+                            adultQuantity: window.publicSessionAdults || 1,
+                            kidQuantity: window.publicSessionKids || 0
+                        }),
                         credentials: 'include'
                     });
                     
@@ -1521,44 +1576,56 @@
 
                 // Calculate pricing
                 const isPublicSessionCheckout = count > 0 && window.publicSessionSlots && window.publicSessionSlots.has(Array.from(selectedSlotIds)[0]);
-                
+                const activityContainer = document.getElementById('activity-type-container');
+                const pSessAdmissionContainer = document.getElementById('public-session-admission-container');
+
                 if (isPublicSessionCheckout) {
+                    if (activityContainer) activityContainer.classList.add('hidden');
+                    if (pSessAdmissionContainer) pSessAdmissionContainer.classList.remove('hidden');
+
                     const pubSess = window.publicSessionSlots.get(Array.from(selectedSlotIds)[0]);
-                    const price = parseFloat(pubSess.participant_price || 0);
-                    currentTotal = price;
+                    const adultPrice = parseFloat(pubSess.participant_price || 0);
+                    const kidPrice = parseFloat(pubSess.participant_kid_price || 0);
                     
-                    const maxSpots = Math.min(6, pubSess.capacity - (pubSess.joined_count || 0));
-                    if (window.publicSessionQuantity > maxSpots) window.publicSessionQuantity = maxSpots;
-                    if (window.publicSessionQuantity < 1) window.publicSessionQuantity = 1;
+                    const maxSpots = Math.min(10, pubSess.capacity - (pubSess.joined_count || 0));
+                    if (window.publicSessionAdults === undefined) window.publicSessionAdults = 1;
+                    if (window.publicSessionKids === undefined) window.publicSessionKids = 0;
+                    
+                    if (window.publicSessionAdults + window.publicSessionKids > maxSpots) {
+                        window.publicSessionAdults = 1;
+                        window.publicSessionKids = 0;
+                    }
+                    if (window.publicSessionAdults + window.publicSessionKids < 1) window.publicSessionAdults = 1;
 
-                    priceCalcEl.innerHTML = `
-                        <div class="flex items-center justify-between w-full">
-                            <span class="flex items-center text-indigo-700 bg-indigo-50 px-2 pl-1 py-0.5 rounded border border-indigo-100">
-                                <i class="fa-solid fa-users text-[10px] mr-1.5 ml-0.5 text-indigo-500"></i> Admission
-                            </span>
-                            <div class="flex items-center space-x-2 bg-white border border-slate-200 rounded-lg px-2 py-0.5 shadow-sm">
-                                <button id="qty-minus" class="w-5 h-5 rounded-md bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-minus text-[8px]"></i></button>
-                                <span class="font-bold text-dark text-xs inline-block w-3 text-center">${window.publicSessionQuantity}</span>
-                                <button id="qty-plus" class="w-5 h-5 rounded-md bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-plus text-[8px]"></i></button>
-                            </div>
-                        </div>
-                    `;
+                    // Update Labels
+                    document.getElementById('ps-adult-price-label').textContent = `$${adultPrice.toFixed(2)}`;
+                    document.getElementById('ps-kid-price-label').textContent = `$${kidPrice.toFixed(2)}`;
+                    document.getElementById('ps-adult-count').textContent = window.publicSessionAdults;
+                    document.getElementById('ps-kid-count').textContent = window.publicSessionKids;
+                    
+                    let summaryTxt = [];
+                    if (window.publicSessionAdults > 0) summaryTxt.push(`${window.publicSessionAdults} Adult${window.publicSessionAdults > 1 ? 's' : ''}`);
+                    if (window.publicSessionKids > 0) summaryTxt.push(`${window.publicSessionKids} Kid${window.publicSessionKids > 1 ? 's' : ''}`);
+                    document.getElementById('ps-admission-summary').textContent = summaryTxt.join(', ');
 
+                    // Setup logic inside set timeouts so they don't break sync DOM
                     setTimeout(() => {
-                        const qMinus = document.getElementById('qty-minus');
-                        const qPlus = document.getElementById('qty-plus');
-                        if (qMinus) {
-                            qMinus.disabled = window.publicSessionQuantity <= 1;
-                            qMinus.onclick = (e) => { e.stopPropagation(); if (window.publicSessionQuantity > 1) { window.publicSessionQuantity--; render(); } };
-                        }
-                        if (qPlus) {
-                            qPlus.disabled = window.publicSessionQuantity >= maxSpots;
-                            qPlus.onclick = (e) => { e.stopPropagation(); if (window.publicSessionQuantity < maxSpots) { window.publicSessionQuantity++; render(); } };
-                        }
+                        const am = document.getElementById('ps-adult-minus');
+                        const ap = document.getElementById('ps-adult-plus');
+                        const km = document.getElementById('ps-kid-minus');
+                        const kp = document.getElementById('ps-kid-plus');
+                        
+                        let totalQty = window.publicSessionAdults + window.publicSessionKids;
+                        
+                        if (am) { am.disabled = window.publicSessionAdults <= (window.publicSessionKids > 0 ? 0 : 1); am.onclick = (e) => { e.stopPropagation(); if(window.publicSessionAdults > 0) { window.publicSessionAdults--; render(); } }; }
+                        if (ap) { ap.disabled = totalQty >= maxSpots; ap.onclick = (e) => { e.stopPropagation(); if(totalQty < maxSpots) { window.publicSessionAdults++; render(); } }; }
+                        if (km) { km.disabled = window.publicSessionKids <= 0; km.onclick = (e) => { e.stopPropagation(); if(window.publicSessionKids > 0) { window.publicSessionKids--; render(); } }; }
+                        if (kp) { kp.disabled = totalQty >= maxSpots; kp.onclick = (e) => { e.stopPropagation(); if(totalQty < maxSpots) { window.publicSessionKids++; render(); } }; }
                     }, 0);
 
-                    const totalPrice = price * window.publicSessionQuantity;
+                    const totalPrice = (adultPrice * window.publicSessionAdults) + (kidPrice * window.publicSessionKids);
                     currentTotal = totalPrice;
+                    priceCalcEl.innerHTML = `Public Session Ticket${window.publicSessionAdults+window.publicSessionKids>1?'s':''}`;
                     subtotalEl.textContent = `$${totalPrice.toFixed(2)}`;
                     taxEl.textContent = `$0.00`;
                     totalEl.textContent = `$${totalPrice.toFixed(2)}`;

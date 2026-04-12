@@ -109,6 +109,7 @@
                 <!-- Totals -->
                 <div class="flex justify-end">
                     <div class="w-full sm:w-1/2">
+                        <div id="receipt-breakdown"></div>
                         <div class="flex justify-between items-center py-3 border-b border-slate-100">
                             <span class="text-slate-600 font-medium">Subtotal</span>
                             <span class="text-dark font-medium" id="subtotal-amt">-</span>
@@ -260,6 +261,39 @@
                 document.getElementById('booking-status').textContent = booking.status;
 
                 const total = booking.total_price || 0;
+                
+                let breakdownHTML = '';
+                if (booking.booking_type === 'public_session') {
+                    if (booking.quantity_adult > 0) {
+                        breakdownHTML += `
+                        <div class="flex justify-between items-center py-3 border-b border-slate-100">
+                            <span class="text-slate-600 font-medium">${booking.quantity_adult}x Adult Ticket</span>
+                            <span class="text-dark font-medium">$${(booking.cost_adults || 0).toFixed(2)}</span>
+                        </div>
+                        `;
+                    }
+                    if (booking.quantity_kid > 0) {
+                        breakdownHTML += `
+                        <div class="flex justify-between items-center py-3 border-b border-slate-100">
+                            <span class="text-slate-600 font-medium">${booking.quantity_kid}x Kid Ticket</span>
+                            <span class="text-dark font-medium">$${(booking.cost_kids || 0).toFixed(2)}</span>
+                        </div>
+                        `;
+                    }
+                } else if (parsedSlots.length > 0) {
+                    breakdownHTML += `
+                    <div class="flex justify-between items-center py-3 border-b border-slate-100">
+                        <span class="text-slate-600 font-medium">Facility Booking (${parsedSlots.length} slots)</span>
+                        <span class="text-dark font-medium">$${total.toFixed(2)}</span>
+                    </div>
+                    `;
+                }
+                
+                const breakdownContainer = document.getElementById('receipt-breakdown');
+                if (breakdownContainer) {
+                    breakdownContainer.innerHTML = breakdownHTML;
+                }
+
                 document.getElementById('subtotal-amt').textContent = `$${total.toFixed(2)}`;
                 document.getElementById('total-amt').textContent = `$${total.toFixed(2)}`;
 

@@ -639,7 +639,7 @@
                 const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 
                 const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('success') === 'true' && urlParams.get('session_id')) {
+                if ((urlParams.get('success') === 'true' || urlParams.get('session_joined') === 'success') && urlParams.get('session_id')) {
                     try {
                         await fetch(`${API_BASE_URL}/api/bookings/confirm`, {
                             method: 'POST',

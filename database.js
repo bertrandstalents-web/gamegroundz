@@ -221,7 +221,9 @@ async function initDatabase() {
         try {
             await client.query(`ALTER TABLE bookings ADD COLUMN capacity INTEGER DEFAULT 0`);
             await client.query(`ALTER TABLE bookings ADD COLUMN participant_price REAL DEFAULT 0.0`);
+            await client.query(`ALTER TABLE bookings ADD COLUMN participant_kid_price REAL DEFAULT 0.0`);
         } catch(e) {}
+
 
         // Public Session Participants Table
         await client.query(`CREATE TABLE IF NOT EXISTS public_session_participants (
@@ -230,9 +232,16 @@ async function initDatabase() {
             user_id INTEGER REFERENCES users(id),
             payment_status TEXT DEFAULT 'pending',
             stripe_session_id TEXT,
+            quantity_adult INTEGER DEFAULT 1,
+            quantity_kid INTEGER DEFAULT 0,
             quantity INTEGER DEFAULT 1,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
+
+        try {
+            await client.query(`ALTER TABLE public_session_participants ADD COLUMN quantity_adult INTEGER DEFAULT 1`);
+            await client.query(`ALTER TABLE public_session_participants ADD COLUMN quantity_kid INTEGER DEFAULT 0`);
+        } catch(e) {}
 
         // Reviews Table
         await client.query(`CREATE TABLE IF NOT EXISTS reviews (
