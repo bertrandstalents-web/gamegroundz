@@ -476,9 +476,11 @@ app.put('/api/users/profile', async (req, res) => {
 });
 
 
-// GET all facilities (with optional filtering)
-app.get('/api/facilities', (req, res) => {
-    const { type, types, environment, maxPrice, limit, offset } = req.query;
+// GET and POST all facilities (with optional filtering)
+app.all('/api/facilities', (req, res) => {
+    const paramsSource = req.method === 'POST' ? { ...req.query, ...req.body } : req.query;
+    const { type, types, environment, maxPrice, limit, offset, search } = paramsSource;
+    
     let query = "SELECT * FROM facilities WHERE listing_status = 'approved'";
     const params = [];
 

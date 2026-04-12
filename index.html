@@ -771,11 +771,14 @@
                 const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 // Fetch all to sort dynamically based on user location
                 const response = await fetch(`${API_BASE_URL}/api/facilities`, { 
+                    method: 'POST',
                     credentials: 'include',
                     headers: {
                         'Accept': 'application/json',
+                        'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
-                    }
+                    },
+                    body: JSON.stringify({})
                 });
                 if (!response.ok) throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                 
