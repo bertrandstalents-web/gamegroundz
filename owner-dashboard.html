@@ -195,9 +195,14 @@
 
     <!-- Main Content -->
     <main class="flex-1 max-w-[1600px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 md:py-10">
-        <div class="mb-4 md:mb-8">
-            <h1 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight mb-1 md:mb-2" id="dashboard-title">Host Dashboard</h1>
-            <p class="text-slate-500 text-sm md:text-lg">Manage your facilities and upcoming reservations.</p>
+        <div class="mb-4 md:mb-8 flex justify-between items-start md:items-center">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight mb-1 md:mb-2" id="dashboard-title">Host Dashboard</h1>
+                <p class="text-slate-500 text-sm md:text-lg">Manage your facilities and upcoming reservations.</p>
+            </div>
+            <a href="dispatch.html" target="_blank" class="hidden md:flex items-center bg-dark hover:bg-slate-800 text-white px-4 py-2 rounded-xl font-bold transition-custom shadow-sm text-sm">
+                <i class="fa-solid fa-tv mr-2"></i> Launch Dispatch TV
+            </a>
         </div>
 
         <!-- Auth Guard Message (Hidden by default) -->
@@ -237,7 +242,7 @@
                 <div class="col-span-2 lg:flex-1 min-w-0 contents lg:block">
 
                     <!-- Live Revenue Dashboard -->
-                    <div class="col-span-1 lg:col-span-none lg:mb-8 flex flex-col h-full w-full lg:block lg:h-auto">
+                    <div id="live-revenue-dashboard" class="col-span-1 lg:col-span-none lg:mb-8 flex flex-col h-full w-full lg:block lg:h-auto">
                         <h2 class="hidden lg:block text-lg md:text-2xl font-bold text-dark mb-3 md:mb-4">Live Revenue Dashboard</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 flex-1 h-full lg:flex-none lg:h-auto">
                             <!-- Today's Revenue -->
@@ -392,7 +397,7 @@
 
                     <!-- Add Event Modal Overlay (AllBooked Style) -->
                     <div id="event-modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-                        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-100">
+                        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden transform transition-all border border-slate-100">
                             
                             <!-- Green Header like Allbooked -->
                             <div class="bg-primary p-6 flex justify-between items-center text-white">
@@ -405,7 +410,7 @@
                                 </button>
                             </div>
                             
-                            <form id="block-time-interactive-form" class="p-4 md:p-8 space-y-6">
+                            <form id="block-time-interactive-form" class="p-4 md:p-8 space-y-6 overflow-y-auto">
                                 
                                 <input type="hidden" id="modal-facility-id">
                                 <input type="hidden" id="modal-date-val">
@@ -488,6 +493,10 @@
                                     <div>
                                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Booking Title<span class="text-red-500">*</span></label>
                                         <input type="text" id="modal-block-notes" required placeholder="e.g. Private Lesson or Open Hockey" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Locker Room <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top">OPTIONAL</span></label>
+                                        <input type="text" id="modal-locker-room" placeholder="e.g. Room 4 or Vestiaire 5" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
                                     </div>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
@@ -607,8 +616,9 @@
 
                     <!-- Add Discount Modal -->
                     <!-- Add Discount Modal -->
+                    <!-- Add Discount Modal -->
                     <div id="discount-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-custom">
-                        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-100 animate-slide-up relative">
+                        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden transform transition-all border border-slate-100 animate-slide-up relative">
                             <!-- Close Button -->
                             <button type="button" onclick="closeDiscountModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-custom w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center z-10">
                                 <i class="fa-solid fa-xmark text-lg"></i>
@@ -624,7 +634,7 @@
                             </div>
                             
                             <!-- Form -->
-                            <form id="create-discount-form" class="px-8 pb-8 space-y-5">
+                            <form id="create-discount-form" class="px-8 pb-8 space-y-5 overflow-y-auto">
                                 <input type="hidden" id="disc-edit-id" value="">
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
@@ -1622,7 +1632,17 @@
                 resFacFilter.innerHTML = '<option value="all">All Facilities</option>';
             }
 
+            const advTabs = ['tab-btn-analytics', 'tab-btn-reservations', 'tab-btn-calendar', 'tab-btn-discounts', 'tab-btn-wallet'];
+            const revDash = document.getElementById('live-revenue-dashboard');
+            
             if (facilities.length === 0) {
+                // Hide advanced host tools for users with no facilities
+                if (revDash) revDash.classList.add('hidden');
+                advTabs.forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn && btn.parentElement) btn.parentElement.classList.add('hidden');
+                });
+                
                 container.innerHTML = `
                     <div class="text-center py-12 text-slate-500 col-span-full bg-slate-50 rounded-2xl border border-slate-200">
                         <i class="fa-solid fa-house-chimney text-4xl mb-4 text-slate-300"></i>
@@ -1630,6 +1650,13 @@
                         <button onclick="switchTab('add-new')" class="mt-4 text-primary font-bold hover:underline">Create your first listing</button>
                     </div>`;
                 return;
+            } else {
+                // Show advanced host tools
+                if (revDash) revDash.classList.remove('hidden');
+                advTabs.forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn && btn.parentElement) btn.parentElement.classList.remove('hidden');
+                });
             }
 
             const isMunicipality = facilities.some(f => f.facility_type === 'Municipality / City');
@@ -2372,6 +2399,11 @@
                     
                     let unreadBadgeHtml = (booking.is_read === 0) ? `<span class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm z-10 reservation-unread-badge" title="New Reservation">1</span>` : '';
 
+                    let assignLockerHtml = '';
+                    if (!isPastOrArchived && !booking.is_archived) {
+                        assignLockerHtml = `<button onclick="event.stopPropagation(); window.openAssignLockerModal(${booking.id}, '${(booking.locker_room_assignment || '').replace(/'/g, "\\'")}')" class="text-primary hover:text-primaryHover bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Assign Locker Room"><i class="fa-solid fa-door-open mr-1"></i>Locker</button>`;
+                    }
+
                     let actionHtml = '';
                     if (isPastOrArchived && !isManual) {
                         if (!booking.is_archived) {
@@ -2408,6 +2440,7 @@
                                     <span class="${statusColor} text-xs px-2 py-0.5 rounded-full font-bold capitalize">
                                         ${isManual ? 'Offline' : booking.status}
                                     </span>
+                                    ${assignLockerHtml}
                                     ${actionHtml}
                                 </div>
                             </div>
@@ -2618,6 +2651,7 @@
                         isPublicSession: b.booking_type === 'public_session',
                         status: b.status,
                         originalNotes: b.manual_notes,
+                        lockerRoom: b.locker_room_assignment,
                         recurringGroupId: b.recurring_group_id,
                         playerName: b.player_name || 'Guest',
                         playerEmail: b.player_email || 'N/A',
@@ -3089,6 +3123,7 @@
             editDiscountField.value = '';
 
             document.getElementById('modal-block-notes').value = '';
+            if(document.getElementById('modal-locker-room')) document.getElementById('modal-locker-room').value = '';
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-regular fa-calendar-plus mr-3 text-xl"></i>New Booking';
             document.getElementById('modal-cancel-btn').textContent = 'Cancel booking';
             document.getElementById('modal-price-display').parentElement.classList.remove('hidden');
@@ -3166,6 +3201,7 @@
             editRecGroupField.value = eventObj.extendedProps.recurringGroupId || '';
 
             document.getElementById('modal-block-notes').value = eventObj.extendedProps.originalNotes || '';
+            if(document.getElementById('modal-locker-room')) document.getElementById('modal-locker-room').value = eventObj.extendedProps.lockerRoom || '';
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-solid fa-pen mr-3 text-xl"></i>Edit Booking';
             document.getElementById('modal-cancel-btn').textContent = 'Cancel';
             document.getElementById('modal-price-display').parentElement.classList.remove('hidden');
@@ -3519,6 +3555,7 @@
                 booking_date: document.getElementById('modal-date-val').value,
                 time_slots: slots,
                 manual_notes: document.getElementById('modal-block-notes').value,
+                locker_room_assignment: document.getElementById('modal-locker-room') ? document.getElementById('modal-locker-room').value : '',
                 repeat_option: repeatOptEl ? repeatOptEl.value : 'none',
                 repeat_until: (repeatOptEl && repeatOptEl.value !== 'none' && repeatUntilEl) ? repeatUntilEl.value : null,
                 repeat_days: repeatDays,
@@ -5576,12 +5613,16 @@
                     let actions = '';
                     if (app.residency_status === 'pending') {
                         actions = `
-                            <button onclick="approveResidency(${app.id})" class="bg-primary hover:bg-primaryHover text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-custom mr-2 shadow-sm"><i class="fa-solid fa-check mr-1"></i> Approve</button>
-                            <button onclick="rejectResidency(${app.id})" class="bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-custom"><i class="fa-solid fa-xmark mr-1"></i> Reject</button>
+                            <button onclick="approveResidency(${app.player_id})" class="bg-primary hover:bg-primaryHover text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-custom mr-2 shadow-sm"><i class="fa-solid fa-check mr-1"></i> Approve</button>
+                            <button onclick="rejectResidency(${app.player_id})" class="bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-custom"><i class="fa-solid fa-xmark mr-1"></i> Reject</button>
                         `;
                     } else if (app.residency_status === 'rejected') {
                         actions = `
-                            <button onclick="approveResidency(${app.id})" class="bg-primary hover:bg-primaryHover text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-custom shadow-sm"><i class="fa-solid fa-check mr-1"></i> Approve</button>
+                            <button onclick="approveResidency(${app.player_id})" class="bg-primary hover:bg-primaryHover text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-custom shadow-sm"><i class="fa-solid fa-check mr-1"></i> Approve</button>
+                        `;
+                    } else if (app.residency_status === 'verified') {
+                        actions = `
+                            <button onclick="removeResidency(${app.player_id})" class="bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-custom"><i class="fa-solid fa-trash mr-1"></i> Remove</button>
                         `;
                     }
                     
@@ -5589,7 +5630,7 @@
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition-custom border-b border-slate-50 last:border-0">
-                            <td class="px-6 py-4 font-bold text-dark whitespace-nowrap">${app.first_name || ''} ${app.last_name || ''}</td>
+                            <td class="px-6 py-4 font-bold text-dark whitespace-nowrap">${app.player_name || 'N/A'}</td>
                             <td class="px-6 py-4 text-slate-600 text-xs">${app.email}</td>
                             <td class="px-6 py-4 flex items-center md:items-start md:flex-col gap-1.5 whitespace-nowrap">${statusBadge} ${docBtn}</td>
                             <td class="px-6 py-4 text-slate-400 text-xs font-medium">${appliedAt}</td>
@@ -5623,12 +5664,52 @@
         }
         
         async function approveResidency(userId) {
-            if (!confirm('Are you sure you want to approve this resident?')) return;
+            let isConfirmed = false;
+            if (typeof window.showConfirmModal === 'function') {
+                isConfirmed = await window.showConfirmModal(
+                    'Approve Resident', 
+                    'Are you sure you want to approve this resident?', 
+                    'Approve', 
+                    'Cancel'
+                );
+            } else {
+                isConfirmed = confirm('Are you sure you want to approve this resident?');
+            }
+            if (!isConfirmed) return;
             await updateResidencyStatus(userId, 'approve');
         }
         async function rejectResidency(userId) {
-            if (!confirm('Are you sure you want to reject this resident?')) return;
+            let isConfirmed = false;
+            if (typeof window.showConfirmModal === 'function') {
+                isConfirmed = await window.showConfirmModal(
+                    'Reject Resident', 
+                    'Are you sure you want to reject this resident?', 
+                    'Reject', 
+                    'Cancel',
+                    true
+                );
+            } else {
+                isConfirmed = confirm('Are you sure you want to reject this resident?');
+            }
+            if (!isConfirmed) return;
             await updateResidencyStatus(userId, 'reject');
+        }
+        
+        async function removeResidency(userId) {
+            let isConfirmed = false;
+            if (typeof window.showConfirmModal === 'function') {
+                isConfirmed = await window.showConfirmModal(
+                    'Remove Resident', 
+                    'Are you sure you want to remove this resident? They will lose access to any resident-only features.', 
+                    'Remove', 
+                    'Cancel',
+                    true
+                );
+            } else {
+                isConfirmed = confirm('Are you sure you want to remove this resident?');
+            }
+            if (!isConfirmed) return;
+            await updateResidencyStatus(userId, 'remove');
         }
         async function updateResidencyStatus(userId, action) {
             const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
@@ -5637,13 +5718,99 @@
                     method: 'POST',
                     credentials: 'include'
                 });
-                if (!res.ok) throw new Error("Failed to update status");
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.error || "Failed to update status");
+                }
+                
+                if (typeof window.showAlertModal === 'function') {
+                    window.showAlertModal('Success', `Resident successfully ${action}d.`);
+                } else {
+                    alert(`Resident successfully ${action}d.`);
+                }
+                
                 loadOurPeople();
             } catch (err) {
-                alert("Error scheduling residency update: " + err.message);
+                if (typeof window.showAlertModal === 'function') {
+                    window.showAlertModal('Error', "Error scheduling residency update: " + err.message);
+                } else {
+                    alert("Error scheduling residency update: " + err.message);
+                }
             }
         }
 
+        // --- Locker Room Assignment Flow ---
+        window.openAssignLockerModal = function(bookingId, currentAssignment) {
+            document.getElementById('assign-locker-booking-id').value = bookingId;
+            document.getElementById('assign-locker-input').value = currentAssignment || '';
+            document.getElementById('assign-locker-modal').classList.remove('hidden');
+        };
+
+        window.closeAssignLockerModal = function() {
+            document.getElementById('assign-locker-modal').classList.add('hidden');
+        };
+
+        document.getElementById('assign-locker-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const bookingId = document.getElementById('assign-locker-booking-id').value;
+            const assignment = document.getElementById('assign-locker-input').value;
+            const btn = document.getElementById('assign-locker-submit-btn');
+            
+            btn.disabled = true;
+            const origHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Saving...';
+
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/host/bookings/${bookingId}/locker-room`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ locker_room_assignment: assignment }),
+                    credentials: 'include'
+                });
+                
+                if(!res.ok) throw new Error('Failed to assign locker room');
+
+                // Update cache locally so it renders immediately
+                const booking = allBookingsCache.find(b => b.id == bookingId);
+                if (booking) {
+                    booking.locker_room_assignment = assignment;
+                }
+                
+                closeAssignLockerModal();
+                applyReservationFilters(); // refresh table
+                
+            } catch(e) {
+                console.error(e);
+                alert('Error updating locker room.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = origHTML;
+            }
+        });
     </script>
+    
+    <!-- Assign Locker Modal -->
+    <div id="assign-locker-modal" class="hidden fixed inset-0 z-[110] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-slide-up">
+            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="text-lg font-extrabold text-slate-800">Assign Locker Room</h3>
+                <button type="button" onclick="closeAssignLockerModal()" class="text-slate-400 hover:text-slate-600 transition-custom w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form id="assign-locker-form" class="p-6 space-y-4">
+                <input type="hidden" id="assign-locker-booking-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Locker Room Name / #</label>
+                    <input type="text" id="assign-locker-input" placeholder="e.g. Room 4 or Vestiaire 5" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium">
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeAssignLockerModal()" class="px-4 py-2 text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl font-bold transition-custom shadow-sm text-sm">Cancel</button>
+                    <button type="submit" id="assign-locker-submit-btn" class="px-5 py-2 text-white bg-primary hover:bg-primaryHover rounded-xl font-bold transition-custom shadow-md text-sm">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

@@ -218,11 +218,9 @@ async function initDatabase() {
             await client.query(`ALTER TABLE bookings ADD COLUMN is_archived INTEGER DEFAULT 0`);
         } catch(e) {}
 
-        try {
-            await client.query(`ALTER TABLE bookings ADD COLUMN capacity INTEGER DEFAULT 0`);
-            await client.query(`ALTER TABLE bookings ADD COLUMN participant_price REAL DEFAULT 0.0`);
-            await client.query(`ALTER TABLE bookings ADD COLUMN participant_kid_price REAL DEFAULT 0.0`);
-        } catch(e) {}
+        try { await client.query(`ALTER TABLE bookings ADD COLUMN capacity INTEGER DEFAULT 0`); } catch(e) {}
+        try { await client.query(`ALTER TABLE bookings ADD COLUMN participant_price REAL DEFAULT 0.0`); } catch(e) {}
+        try { await client.query(`ALTER TABLE bookings ADD COLUMN participant_kid_price REAL DEFAULT 0.0`); } catch(e) {}
 
 
         // Public Session Participants Table
@@ -238,10 +236,8 @@ async function initDatabase() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        try {
-            await client.query(`ALTER TABLE public_session_participants ADD COLUMN quantity_adult INTEGER DEFAULT 1`);
-            await client.query(`ALTER TABLE public_session_participants ADD COLUMN quantity_kid INTEGER DEFAULT 0`);
-        } catch(e) {}
+        try { await client.query(`ALTER TABLE public_session_participants ADD COLUMN quantity_adult INTEGER DEFAULT 1`); } catch(e) {}
+        try { await client.query(`ALTER TABLE public_session_participants ADD COLUMN quantity_kid INTEGER DEFAULT 0`); } catch(e) {}
 
         try {
             await client.query(`ALTER TABLE users ADD COLUMN municipality_id INTEGER REFERENCES facilities(id)`);
@@ -256,6 +252,10 @@ async function initDatabase() {
 
         try {
             await client.query(`ALTER TABLE bookings ADD COLUMN residents_only INTEGER DEFAULT 0`);
+        } catch(e) {}
+
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN locker_room_assignment TEXT DEFAULT ''`);
         } catch(e) {}
 
         // Reviews Table

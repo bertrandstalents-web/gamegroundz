@@ -483,6 +483,16 @@ app.get('/api/auth/me', (req, res) => {
 });
 
 // Update User Profile
+// POST remove player's own residency
+app.post('/api/users/residency/remove', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+    
+    db.run("UPDATE users SET municipality_id = NULL, residency_status = NULL, residency_document_url = NULL, residency_applied_at = NULL WHERE id = ?", [req.session.userId], (err) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: "Residency removed successfully." });
+    });
+});
+
 app.put('/api/users/profile', async (req, res) => {
     if (!req.session.userId) {
         return res.status(401).json({ error: "Not authenticated" });
@@ -1023,7 +1033,20 @@ app.post('/api/host/residency-applications/:player_id/reject', (req, res) => {
         
         db.run("UPDATE users SET residency_status = 'rejected' WHERE id = ?", [playerId], (updateErr) => {
             if (updateErr) return res.status(500).json({ error: "Database error" });
-            res.json({ message: "Player residency rejected." });
+        });
+    });
+});
+
+// POST remove residency (completely disconnects the user from municipality)
+app.post('/api/host/residency-applications/:player_id/remove', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+    const playerId = req.params.player_id;
+    db.get("SELECT u.id FROM users u JOIN facilities f ON u.municipality_id = f.id WHERE u.id = ? AND f.host_id = ?", [playerId, req.session.userId], (err, row) => {
+        if (err || !row) return res.status(403).json({ error: "Not authorized" });
+        
+        db.run("UPDATE users SET municipality_id = NULL, residency_status = NULL, residency_document_url = NULL, residency_applied_at = NULL WHERE id = ?", [playerId], (updateErr) => {
+            if (updateErr) return res.status(500).json({ error: "Database error" });
+            res.json({ message: "Player residency completely removed." });
         });
     });
 });
@@ -1126,13 +1149,45 @@ app.get('/api/host/bookings', (req, res) => {
     });
 });
 
+// GET today's dispatch data for the logged-in host
+app.get('/api/host/dispatch-data', (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    const targetDate = req.query.date || new Date().toISOString().split('T')[0];
+    
+    const query = `
+        SELECT b.id, b.facility_id, b.booking_date, b.time_slots, b.booking_type, b.manual_notes, b.locker_room_assignment, f.name as facility_name
+        FROM bookings b
+        JOIN facilities f ON b.facility_id = f.id
+        WHERE (f.host_id = ? OR f.co_host_emails LIKE ?) AND b.booking_date = ? AND b.status != 'cancelled'
+        ORDER BY f.sort_order ASC, f.id DESC, b.time_slots ASC
+    `;
+    
+    db.all(query, [req.session.userId, `%"${req.session.email}"%`, targetDate], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        // Group by facility
+        const dispatchData = {};
+        rows.forEach(b => {
+            if (!dispatchData[b.facility_name]) {
+                dispatchData[b.facility_name] = [];
+            }
+            dispatchData[b.facility_name].push(b);
+        });
+        
+        res.json(dispatchData);
+    });
+});
+
 // POST a manual time block (offline reservation)
 app.post('/api/host/block-time', (req, res) => {
     if (!req.session.userId) {
         return res.status(401).json({ error: "Unauthorized" });
     }
     
-    const { facility_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only } = req.body;
+    const { facility_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment } = req.body;
     
     if (!facility_id || !booking_date || !time_slots || !manual_notes) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -1178,12 +1233,12 @@ app.post('/api/host/block-time', (req, res) => {
         }
         
         const sql = `
-            INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only)
-            VALUES (?, ?, ?, 0, 'confirmed', ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment)
+            VALUES (?, ?, ?, 0, 'confirmed', ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         
         const insertBooking = (dateObj) => new Promise((resolve, reject) => {
-            db.run(sql, [facility_id, dateObj, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse, kidPriceToUse, resOnlyToUse], function(err) {
+            db.run(sql, [facility_id, dateObj, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse, kidPriceToUse, resOnlyToUse, locker_room_assignment || ''], function(err) {
                 if (err) reject(err);
                 else resolve();
             });
@@ -1207,7 +1262,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
     }
 
     const bookingId = req.params.id;
-    const { booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only } = req.body;
+    const { booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment } = req.body;
 
     if (!booking_date || !time_slots) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -1260,21 +1315,21 @@ app.put('/api/host/bookings/:id', (req, res) => {
             const sql = `
                 UPDATE bookings 
                 SET booking_date = ?, time_slots = ?, manual_notes = COALESCE(?, manual_notes), recurring_group_id = COALESCE(?, recurring_group_id),
-                    capacity = COALESCE(?, capacity), participant_price = COALESCE(?, participant_price), participant_kid_price = COALESCE(?, participant_kid_price), residents_only = COALESCE(?, residents_only)
+                    capacity = COALESCE(?, capacity), participant_price = COALESCE(?, participant_price), participant_kid_price = COALESCE(?, participant_kid_price), residents_only = COALESCE(?, residents_only), locker_room_assignment = COALESCE(?, locker_room_assignment)
                 WHERE id = ?
             `;
 
-            db.run(sql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, bookingId], function(err) {
+            db.run(sql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, bookingId], function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 
                 if (datesToBook.length > 0) {
                     const bTypeStr = isPublic ? 'public_session' : 'manual';
                     const insertSql = `
-                        INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only)
-                        VALUES (?, ?, ?, 0, 'confirmed', ?, ?, ?, ?, ?, ?, ?)
+                        INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment)
+                        VALUES (?, ?, ?, 0, 'confirmed', ?, ?, ?, ?, ?, ?, ?, ?)
                     `;
                     const insertBooking = (dateStr) => new Promise((resolve, reject) => {
-                        db.run(insertSql, [row.facility_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly], function(insertErr) {
+                        db.run(insertSql, [row.facility_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment || ''], function(insertErr) {
                             if (insertErr) reject(insertErr);
                             else resolve();
                         });
@@ -1289,6 +1344,27 @@ app.put('/api/host/bookings/:id', (req, res) => {
                 } else {
                     res.status(200).json({ message: "Booking updated successfully" });
                 }
+            });
+        }
+    );
+});
+
+// PATCH (Edit Locker Room) a booking
+app.patch('/api/host/bookings/:id/locker-room', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+    const bookingId = req.params.id;
+    const { locker_room_assignment } = req.body;
+
+    db.get(
+        `SELECT b.id FROM bookings b 
+         JOIN facilities f ON b.facility_id = f.id 
+         WHERE b.id = ? AND (f.host_id = ? OR f.co_host_emails LIKE ?)`,
+        [bookingId, req.session.userId, `%"${req.session.email}"%`],
+        (err, row) => {
+            if (err || !row) return res.status(403).json({ error: "Access denied" });
+            db.run("UPDATE bookings SET locker_room_assignment = ? WHERE id = ?", [locker_room_assignment || '', bookingId], function(err) {
+                if (err) return res.status(500).json({ error: err.message });
+                res.status(200).json({ message: "Locker room assigned successfully" });
             });
         }
     );

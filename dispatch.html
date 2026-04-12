@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispatch - GameGroundz</title>
+    <link href="/css/output.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@500;700;800&display=swap');
+
+        :root {
+            --gg-primary: #10b981;
+            --gg-dark: #0f172a;
+            --gg-gray: #1e293b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--gg-dark);
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* TV Screen Specific Styles */
+        .dispatch-header {
+            background: linear-gradient(90deg, rgba(15,23,42,1) 0%, rgba(30,41,59,1) 100%);
+            padding: 2rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--gg-primary);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .header-brand img {
+            height: 60px;
+        }
+
+        .header-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.05em;
+        }
+
+        .header-time-container {
+            text-align: right;
+        }
+
+        .header-date {
+            font-size: 1.5rem;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .header-time {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1;
+            color: #fff;
+        }
+
+        .dispatch-content {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            gap: 2rem;
+            width: 100%;
+            box-sizing: border-box;
+            align-items: flex-start;
+        }
+
+        .facility-column {
+            flex: 1;
+            background-color: var(--gg-gray);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            min-height: 50vh;
+        }
+
+        .facility-header {
+            background-color: var(--gg-primary);
+            padding: 1.5rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .columns-header {
+            display: flex;
+            background-color: rgba(255,255,255,0.1);
+            padding: 1rem 1.5rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #cbd5e1;
+            border-bottom: 2px solid rgba(255,255,255,0.05);
+            text-transform: uppercase;
+        }
+
+        .col-time { width: 25%; }
+        .col-activity { width: 55%; }
+        .col-locker { width: 20%; text-align: right; }
+
+        .booking-row {
+            display: flex;
+            padding: 1.5rem;
+            font-size: 1.75rem;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            align-items: center;
+        }
+
+        /* Alternate row styling */
+        .booking-row:nth-child(even) {
+            background-color: rgba(255,255,255,0.02);
+        }
+
+        /* Currently active event */
+        .booking-row.active {
+            background-color: rgba(16, 185, 129, 0.15);
+            border-left: 8px solid var(--gg-primary);
+            padding-left: calc(1.5rem - 8px);
+        }
+
+        .booking-row.active .col-time {
+            color: #34d399;
+        }
+        
+        /* Past event fading */
+        .booking-row.past {
+            opacity: 0.4;
+        }
+
+        .empty-state {
+            padding: 4rem;
+            text-align: center;
+            font-size: 1.5rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Scroller at the bottom if needed */
+        .dispatch-footer {
+            background-color: #020617;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="dispatch-header">
+        <div class="header-brand">
+            <div style="display:flex; align-items:center;">
+                <i class="fa-solid fa-layer-group" style="color: var(--gg-primary); font-size: 3rem; margin-right: 0.75rem;"></i>
+                <span class="notranslate" style="font-weight: 800; font-size: 2.25rem; font-family: 'Outfit', sans-serif; letter-spacing: -1px; color: #fff; line-height: 1;">Game<span style="color: var(--gg-primary);">Groundz</span></span>
+            </div>
+            <h1 class="header-title" style="margin-left: 1.5rem; padding-left: 1.5rem; border-left: 2px solid rgba(255,255,255,0.2);">DISPATCH</h1>
+        </div>
+        <div class="header-time-container">
+            <div class="header-date" id="current-date">--</div>
+            <div class="header-time" id="current-time">--:--</div>
+        </div>
+    </header>
+
+    <main class="dispatch-content" id="dispatch-container">
+        <!-- Columns will be injected here via JS -->
+        <div class="empty-state" style="width: 100%;">
+            Loading schedule data...
+        </div>
+    </main>
+    
+    <footer class="dispatch-footer" id="ticker">
+        <span style="font-weight: 700; color: #94a3b8; font-size: 0.9rem; letter-spacing: 0.05em;">POWERED BY</span>
+        <div class="notranslate" style="display:flex; align-items:center;">
+            <i class="fa-solid fa-layer-group" style="color: var(--gg-primary); font-size: 1.25rem; margin-right: 0.25rem;"></i>
+            <span style="font-weight: 800; font-size: 1.15rem; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; color: #fff;">Game<span style="color: var(--gg-primary);">Groundz</span></span>
+        </div>
+    </footer>
+
+    <script>
+        // Set Theme dynamically if needed, but defaults to dark TV theme
+        function updateClock() {
+            const now = new Date();
+            
+            // Format time HH:MM
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('current-time').textContent = `${hours}:${minutes}`;
+            
+            // Format date e.g., "Vendredi 10 Avril 2026" or "Friday, April 10, 2026"
+            // For now using local locale, default English (but can be changed)
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = now.toLocaleDateString(undefined, options);
+        }
+
+        // Run clock every second
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function isCurrentOrPast(timeslotArray) {
+            if (!timeslotArray || timeslotArray.length === 0) return { isPast: false, isActive: false };
+            
+            // Assuming time_slots are strings like "16:00" or objects {"start": "16:00", "end": "17:00"}
+            // GameGroundz typically stores array of "HH:MM" start times. 
+            // We'll calculate based on the first slot and assume each slot is 30 mins or 1 hour.
+            // Let's find the start and end of the booking block.
+            let startStr = typeof timeslotArray[0] === 'string' ? timeslotArray[0] : timeslotArray[0].start || "00:00";
+            let endStr = typeof timeslotArray[timeslotArray.length - 1] === 'string' 
+                            ? timeslotArray[timeslotArray.length - 1] 
+                            : timeslotArray[timeslotArray.length - 1].start || "23:59";
+            
+            // Add 1 hour to endStr to conservatively represent the end of the last slot
+            let [endH, endM] = endStr.split(':').map(Number);
+            endH += 1; // Assuming 1 hour max slot length logic
+            const endFullStr = `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`;
+
+            const now = new Date();
+            const currentH = now.getHours();
+            const currentM = now.getMinutes();
+            const currentTotalM = currentH * 60 + currentM;
+
+            const [sH, sM] = startStr.split(':').map(Number);
+            const startTotalM = sH * 60 + sM;
+
+            const [eH, eM] = endFullStr.split(':').map(Number);
+            const endTotalM = eH * 60 + eM;
+
+            return {
+                isPast: currentTotalM > endTotalM,
+                isActive: currentTotalM >= startTotalM && currentTotalM <= endTotalM
+            };
+        }
+
+        function formatTimeRange(timeslotArray) {
+            if (!timeslotArray || timeslotArray.length === 0) return "--:--";
+            let start = timeslotArray[0];
+            let end = timeslotArray[timeslotArray.length - 1]; // We really want the end of the last slot.
+            
+            // Temporary simple render, assuming '16:00' format strings. 
+            if (typeof start === 'object') start = start.start;
+            if (typeof end === 'object') end = end.start; // In GG, we might just have start times.
+            
+            // Try to extract an end time. If it's a 1-hour slot, add 1h.
+            try {
+                let [eh, em] = end.split(':').map(Number);
+                eh += 1;
+                end = `${String(eh).padStart(2,'0')}:${String(em).padStart(2,'0')}`;
+            } catch(e) {}
+
+            return `${start} / ${end}`;
+        }
+
+        async function fetchDispatchData() {
+            try {
+                // Get today's local date string YYYY-MM-DD
+                const d = new Date();
+                const dStr = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                
+                const res = await fetch(`/api/host/dispatch-data?date=${dStr}`);
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        document.getElementById('dispatch-container').innerHTML = '<div class="empty-state" style="width:100%;">Please log in to your Host account to view Dispatch. <a href="/login.html" style="color:var(--gg-blue);text-decoration:underline;">Log in</a></div>';
+                        return;
+                    }
+                    throw new Error('Failed to fetch data');
+                }
+                const data = await res.json();
+                renderDispatch(data);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('dispatch-container').innerHTML = '<div class="empty-state" style="width:100%;">Failed to load dispatch data. Retrying...</div>';
+            }
+        }
+
+        function renderDispatch(data) {
+            const container = document.getElementById('dispatch-container');
+            container.innerHTML = ''; // clear
+
+            const facilities = Object.keys(data);
+            if (facilities.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="width:100%;">No activities scheduled for today.</div>';
+                return;
+            }
+
+            facilities.forEach(facilityName => {
+                const bookings = data[facilityName];
+                
+                // Build Column
+                const col = document.createElement('div');
+                col.className = 'facility-column';
+
+                const header = document.createElement('div');
+                header.className = 'facility-header';
+                header.textContent = facilityName;
+                col.appendChild(header);
+
+                const colHeadings = document.createElement('div');
+                colHeadings.className = 'columns-header';
+                colHeadings.innerHTML = `
+                    <div class="col-time">TIME / HEURE</div>
+                    <div class="col-activity">ACTIVITY</div>
+                    <div class="col-locker">VESTIAIRE</div>
+                `;
+                col.appendChild(colHeadings);
+
+                bookings.forEach(b => {
+                    let slots = [];
+                    try { slots = JSON.parse(b.time_slots || '[]'); } catch(e){}
+                    
+                    const timing = isCurrentOrPast(slots);
+                    const timeStr = formatTimeRange(slots);
+                    
+                    // Display activity name or notes
+                    const activityName = b.booking_type === 'public_session' ? (b.manual_notes ? `Public Session - ${b.manual_notes}` : 'Public Session') : (b.manual_notes || 'Private Booking');
+                    const locker = b.locker_room_assignment || '-';
+
+                    const row = document.createElement('div');
+                    row.className = `booking-row ${timing.isActive ? 'active' : ''} ${timing.isPast && !timing.isActive ? 'past' : ''}`;
+                    row.innerHTML = `
+                        <div class="col-time">${timeStr}</div>
+                        <div class="col-activity">${activityName}</div>
+                        <div class="col-locker">${locker}</div>
+                    `;
+                    col.appendChild(row);
+                });
+
+                container.appendChild(col);
+            });
+        }
+
+        // Fetch immediately and every 2 minutes
+        fetchDispatchData();
+        setInterval(fetchDispatchData, 2 * 60 * 1000); 
+
+    </script>
+</body>
+</html>

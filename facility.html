@@ -560,8 +560,24 @@
     </div>
 
     <script>
-        // Booking Widget Logic
+        // Profile Puck Logic
         document.addEventListener('DOMContentLoaded', async () => {
+            const puckBtn = document.getElementById('profile-puck-btn');
+            const puckDropdown = document.getElementById('puck-dropdown');
+            if (puckBtn && puckDropdown) {
+                puckBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    puckDropdown.classList.toggle('hidden');
+                });
+                document.addEventListener('click', (e) => {
+                    if (!puckDropdown.contains(e.target) && e.target !== puckBtn && !puckBtn.contains(e.target)) {
+                        puckDropdown.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Booking Widget Logic
             let hourlyRate = 197;
             let pricingRules = [];
             let processingFee = 15;

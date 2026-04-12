@@ -37,17 +37,31 @@
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='index.html'">
-                    <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
-                    <span class="font-bold text-2xl tracking-tight text-dark notranslate">Game<span class="text-primary">Groundz</span></span>
+                    <!-- Desktop Logo -->
+                    <div class="hidden md:flex items-center">
+                        <i class="fa-solid fa-layer-group text-primary text-2xl md:text-3xl mr-2"></i>
+                        <span class="font-bold text-xl md:text-2xl tracking-tight text-dark notranslate">Game<span class="text-primary">Groundz</span></span>
+                    </div>
+                    <!-- Mobile Stacked Logo -->
+                    <div class="flex md:hidden flex-col items-center justify-center mr-2">
+                        <i class="fa-solid fa-layer-group text-primary text-[1.75rem]"></i>
+                        <div class="flex flex-col items-center leading-none mt-[3px]">
+                            <span class="font-extrabold text-[11px] tracking-tight text-dark notranslate leading-none">Game</span>
+                            <span class="font-extrabold text-[11px] tracking-tight text-primary notranslate leading-none">Groundz</span>
+                        </div>
+                    </div>
+                    <span class="ml-2 pl-2 md:ml-4 md:pl-4 border-l border-slate-300 font-medium text-slate-500 text-xs md:text-base whitespace-nowrap sm:whitespace-normal">Profile Dashboard</span>
                 </div>
-                <div class="hidden md:flex items-center space-x-6">
-                    <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
+                
+                <div class="flex flex-1 max-w-xl mx-2 md:mx-8 relative"></div>
+                
+                <div class="flex items-center space-x-3 md:space-x-6">
+                    <a href="search.html" class="text-slate-600 hover:text-dark font-medium transition-custom text-sm hidden md:flex items-center">
+                        <span>Find a Surface</span>
+                    </a>
                     
                     <div class="h-6 w-px bg-slate-300"></div>
                     
-                </div>
-                
-                <div class="flex items-center space-x-3 md:space-x-4 ml-4 md:ml-6">
                     <!-- Profile Puck -->
                     <div class="relative flex items-center">
                         <button id="profile-puck-btn" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-custom shadow-sm overflow-hidden focus:outline-none z-10">
@@ -637,12 +651,12 @@
                 if (u.residency_status === 'verified') {
                     badge.textContent = 'Verified';
                     badge.className = 'px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-100 text-green-700';
-                    msg.innerHTML = '<i class="fa-solid fa-circle-check text-green-500 mr-1"></i> You are a verified resident.';
+                    msg.innerHTML = '<i class="fa-solid fa-circle-check text-green-500 mr-1"></i> You are a verified resident.<div class="mt-3 pt-3 border-t border-slate-200"><button type="button" onclick="removePlayerResidency()" class="text-sm font-bold text-red-500 hover:text-red-700 transition-custom"><i class="fa-solid fa-trash mr-1"></i> Change Municipality / Remove Residency</button></div>';
                     uploadSec.classList.add('hidden');
                 } else if (u.residency_status === 'pending') {
                     badge.textContent = 'Pending Review';
                     badge.className = 'px-3 py-1 rounded-full text-xs font-bold uppercase bg-yellow-100 text-yellow-700';
-                    msg.innerHTML = '<i class="fa-solid fa-clock text-yellow-500 mr-1"></i> Your residency application is pending review. You can upload a different document if needed.';
+                    msg.innerHTML = '<i class="fa-solid fa-clock text-yellow-500 mr-1"></i> Your residency application is pending review. You can upload a different document if needed.<div class="mt-3 pt-3 border-t border-slate-200"><button type="button" onclick="removePlayerResidency()" class="text-sm font-bold text-red-500 hover:text-red-700 transition-custom"><i class="fa-solid fa-xmark mr-1"></i> Cancel Application</button></div>';
                 } else if (u.residency_status === 'rejected') {
                     badge.textContent = 'Rejected';
                     badge.className = 'px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-100 text-red-700';
@@ -655,6 +669,38 @@
 
             } catch (error) {
                 console.error("Error loading profile:", error);
+            }
+        }
+        
+        async function removePlayerResidency() {
+            let isConfirmed = false;
+            if (typeof window.showConfirmModal === 'function') {
+                isConfirmed = await window.showConfirmModal('Remove Residency', 'Are you sure you want to remove your residency status? You will lose access to any residents-only features for that municipality.', 'Remove', 'Cancel', true);
+            } else {
+                isConfirmed = confirm('Are you sure you want to remove your residency status? You will lose access to any residents-only features for that municipality.');
+            }
+            if (!isConfirmed) return;
+            
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/users/residency/remove`, { method: 'POST', credentials: 'include' });
+                if (res.ok) {
+                    if (typeof window.showAlertModal === 'function') {
+                        await window.showAlertModal('Success', 'Residency removed successfully.');
+                    } else {
+                        alert('Residency removed successfully.');
+                    }
+                    loadProfile(); // Reload the profile to clear form and unhide dropdown
+                } else {
+                    const data = await res.json();
+                    throw new Error(data.error || 'Failed to remove residency');
+                }
+            } catch (err) {
+                if (typeof window.showAlertModal === 'function') {
+                    await window.showAlertModal('Error', err.message);
+                } else {
+                    alert('Error: ' + err.message);
+                }
             }
         }
 
