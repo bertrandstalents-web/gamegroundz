@@ -101,6 +101,7 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), (req, r
                     if (err) console.error("Error updating public session join:", err);
                     else {
                         console.log("Public session joined via Stripe! Booking ID:", bookingId);
+                        sendPublicSessionJoinEmails(bookingId, userId);
                     }
                 }
             );
@@ -137,23 +138,83 @@ app.get('/api/config/maps', (req, res) => {
 // Helper to send emails
 function sendBookingEmails(bookingId) {
     const query = `
-        SELECT b.id as booking_id, b.booking_date, b.time_slots, b.total_price, 
-               f.name as facility_name, f.location as facility_location, f.host_id,
-               u.name as player_name, u.email as player_email,
-               h.name as host_name, h.email as host_email, h.company_name as host_company_name
+        SELECT b.*, f.name as facility_name, f.location as facility_location, f.host_id,
+               u.email as player_email, u.name as player_name,
+               h.email as host_email, h.name as host_name
         FROM bookings b
         JOIN facilities f ON b.facility_id = f.id
         JOIN users u ON b.user_id = u.id
         LEFT JOIN users h ON f.host_id = h.id
-        WHERE b.id = ? 
+        WHERE b.id = ?
     `;
     db.get(query, [bookingId], (err, row) => {
-        if (err || !row) {
-            console.error("Error fetching booking details for email:", err);
-            return;
-        }
+        if (err || !row) return;
         emailService.sendPlayerConfirmation(row);
         emailService.sendHostConfirmation(row);
+    });
+}
+
+function sendPublicSessionJoinEmails(bookingId, userId) {
+    const q = `
+        SELECT psp.quantity_adult, psp.quantity_kid, psp.booking_id,
+               b.booking_date, b.time_slots, b.participant_price, b.participant_kid_price,
+               f.name as facility_name, f.location as facility_location,
+               u_host.name as host_name, u_host.email as host_email,
+               u_player.name as player_name, u_player.email as player_email
+        FROM public_session_participants psp
+        JOIN bookings b ON psp.booking_id = b.id
+        JOIN facilities f ON b.facility_id = f.id
+        JOIN users u_host ON f.host_id = u_host.id
+        JOIN users u_player ON psp.user_id = u_player.id
+        WHERE psp.booking_id = ? AND psp.user_id = ? AND psp.payment_status = 'paid'
+    `;
+    db.get(q, [bookingId, userId], (err, row) => {
+        if (err || !row) return;
+        const total = (row.quantity_adult * (row.participant_price || 0)) + (row.quantity_kid * (row.participant_kid_price || 0));
+        const emailDetails = {
+            player_email: row.player_email,
+            player_name: row.player_name,
+            host_email: row.host_email,
+            host_name: row.host_name,
+            facility_name: row.facility_name,
+            facility_location: row.facility_location,
+            booking_date: row.booking_date,
+            time_slots: row.time_slots,
+            total_price: total,
+            booking_id: row.booking_id
+        };
+        emailService.sendPlayerConfirmation(emailDetails);
+        emailService.sendHostConfirmation(emailDetails);
+    });
+}
+
+function sendPublicSessionCancelEmails(psp_id, cancelledBy) {
+    const q = `
+        SELECT psp.booking_id,
+               b.booking_date, b.time_slots,
+               f.name as facility_name,
+               u_host.name as host_name, u_host.email as host_email,
+               u_player.name as player_name, u_player.email as player_email
+        FROM public_session_participants psp
+        JOIN bookings b ON psp.booking_id = b.id
+        JOIN facilities f ON b.facility_id = f.id
+        JOIN users u_host ON f.host_id = u_host.id
+        JOIN users u_player ON psp.user_id = u_player.id
+        WHERE psp.id = ?
+    `;
+    db.get(q, [psp_id], (err, row) => {
+        if (err || !row) return;
+        const emailDetails = {
+            player_email: row.player_email,
+            player_name: row.player_name,
+            host_email: row.host_email,
+            host_name: row.host_name,
+            facility_name: row.facility_name,
+            booking_date: row.booking_date,
+            time_slots: row.time_slots,
+            booking_id: row.booking_id
+        };
+        emailService.sendCancellationEmail(emailDetails, cancelledBy);
     });
 }
 
@@ -1422,6 +1483,7 @@ app.post('/api/host/public_sessions/:booking_id/participants/:psp_id/cancel', as
                 // Update participant to refunded
                 db.run("UPDATE public_session_participants SET payment_status = 'refunded' WHERE id = ?", [psp_id], (updateErr) => {
                     if (updateErr) return res.status(500).json({ error: "Failed to update participant status." });
+                    sendPublicSessionCancelEmails(psp_id, 'host');
                     res.json({ success: true, message: "Participant removed and refunded successfully." });
                 });
 
@@ -2324,6 +2386,7 @@ app.post('/api/bookings/confirm', async (req, res) => {
                         [bookingId, userId, session.id],
                         function(err) {
                             if (err) return res.status(500).json({ error: "Failed to confirm public session" });
+                            sendPublicSessionJoinEmails(bookingId, userId);
                             res.json({ success: true, message: "Public session confirmed" });
                         }
                     );
