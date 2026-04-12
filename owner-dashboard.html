@@ -2510,7 +2510,7 @@
 
                 if (b.booking_type === 'public_session') {
                     evTitle = `👥 Public Session: ${b.manual_notes} (${b.joined_count || 0}/${b.capacity})`;
-                    evClass = 'g-event-public-session bg-indigo-50 border-l-4 border-indigo-500 text-indigo-700 font-semibold shadow-sm rounded overflow-hidden';
+                    evClass = 'g-event-public-session bg-indigo-600 border border-indigo-700 text-white font-semibold shadow-sm rounded overflow-hidden';
                     isEditable = true; // allow dragging if we want, but let's say true like manual
                 } else if (b.booking_type === 'manual') {
                     evTitle = b.manual_notes;

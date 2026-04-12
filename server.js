@@ -14,18 +14,8 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.set('trust proxy', true);
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',')
-    : ['http://localhost:3000', 'https://gamegroundz.com', 'https://www.gamegroundz.com', 'http://gamegroundz.com', 'http://www.gamegroundz.com', 'https://gamegroundz.onrender.com'];
-
 app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: true, // Dynamically allow the requesting origin to prevent corporate VPNs/proxies from breaking the app
     credentials: true
 }));
 
