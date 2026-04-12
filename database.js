@@ -243,6 +243,21 @@ async function initDatabase() {
             await client.query(`ALTER TABLE public_session_participants ADD COLUMN quantity_kid INTEGER DEFAULT 0`);
         } catch(e) {}
 
+        try {
+            await client.query(`ALTER TABLE users ADD COLUMN municipality_id INTEGER REFERENCES facilities(id)`);
+            await client.query(`ALTER TABLE users ADD COLUMN residency_document_url TEXT`);
+            await client.query(`ALTER TABLE users ADD COLUMN residency_status TEXT DEFAULT 'none'`);
+            await client.query(`ALTER TABLE users ADD COLUMN residency_applied_at TIMESTAMP`);
+        } catch(e) {}
+
+        try {
+            await client.query(`ALTER TABLE facilities ADD COLUMN facility_type TEXT DEFAULT 'Other'`);
+        } catch(e) {}
+
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN residents_only INTEGER DEFAULT 0`);
+        } catch(e) {}
+
         // Reviews Table
         await client.query(`CREATE TABLE IF NOT EXISTS reviews (
             id SERIAL PRIMARY KEY,

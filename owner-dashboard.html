@@ -228,6 +228,7 @@
                             <li><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 mr-2 md:mr-3"></i> Wallet & Payouts</button></li>
                             <li><button id="tab-btn-profile" onclick="switchTab('profile')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-user w-6 mr-2 md:mr-3"></i> Profile</button></li>
                             <li><button id="tab-btn-add-new" onclick="switchTab('add-new')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-plus w-6 mr-2 md:mr-3"></i> Add New Facility</button></li>
+                            <li id="nav-item-our-people" class="hidden"><button id="tab-btn-our-people" onclick="switchTab('our-people')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-users w-6 mr-2 md:mr-3"></i> Our People</button></li>
                         </ul>
                     </div>
                 </div>
@@ -476,6 +477,12 @@
                                                 <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Kids Price</label>
                                                 <input type="number" id="modal-public-kid-price" min="0" step="0.50" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm" placeholder="e.g. 5.00">
                                             </div>
+                                        </div>
+                                        <div id="modal-public-residents-only-container" class="hidden">
+                                            <label class="flex items-center cursor-pointer mt-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                                <input type="checkbox" id="modal-public-residents-only" class="w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded">
+                                                <span class="ml-2 text-sm font-semibold text-slate-700">Residents Only</span>
+                                            </label>
                                         </div>
                                     </div>
                                     <div>
@@ -729,6 +736,55 @@
                         <button id="btn-dashboard" onclick="openStripeDashboard()" class="bg-dark hover:bg-darker text-white px-8 py-4 rounded-xl font-bold transition-custom shadow-md flex items-center justify-center mx-auto text-lg">
                             <i class="fa-solid fa-chart-line mr-2"></i> View your Stripe Dashboard
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Our People -->
+            <div id="tab-our-people" class="col-span-2 lg:col-span-none hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-dark">Our People (Residency Verification)</h2>
+                    </div>
+                    
+                    <div id="our-people-loading" class="text-center py-8 text-slate-500">
+                        <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+                        <p>Loading applications...</p>
+                    </div>
+
+                    <div id="our-people-content" class="hidden">
+                        <!-- Stats overview -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" id="our-people-stats">
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 border-l-4 border-l-yellow-400">
+                                <div class="text-xs font-bold text-slate-500 uppercase">Pending</div>
+                                <div class="text-xl font-extrabold text-dark" id="stat-pending-residency">0</div>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 border-l-4 border-l-green-500">
+                                <div class="text-xs font-bold text-slate-500 uppercase">Verified</div>
+                                <div class="text-xl font-extrabold text-dark" id="stat-verified-residency">0</div>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 border-l-4 border-l-red-500">
+                                <div class="text-xs font-bold text-slate-500 uppercase">Rejected</div>
+                                <div class="text-xl font-extrabold text-dark" id="stat-rejected-residency">0</div>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs font-bold">
+                                    <tr>
+                                        <th class="px-6 py-4">Player Name</th>
+                                        <th class="px-6 py-4">Email</th>
+                                        <th class="px-6 py-4">Status</th>
+                                        <th class="px-6 py-4">Applied At</th>
+                                        <th class="px-6 py-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="residency-table-body" class="divide-y divide-slate-100 text-slate-700 bg-white">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -993,6 +1049,14 @@
                             <input type="text" id="fac-name" required class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="e.g. Aréna Rosemère">
                         </div>
                         
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Facility Environment Entity Type</label>
+                            <select id="fac-host-type" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white" required>
+                                <option value="Other">Standard / Private Facility</option>
+                                <option value="Municipality / City">Municipality / City</option>
+                            </select>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Surface Type</label>
@@ -1465,12 +1529,18 @@
             if(walletTab) walletTab.classList.add('hidden');
             const profTab = document.getElementById('tab-profile');
             if(profTab) profTab.classList.add('hidden');
+            const ourPeopleTabHtml = document.getElementById('tab-our-people');
+            if(ourPeopleTabHtml) ourPeopleTabHtml.classList.add('hidden');
             
             // Show selected tab
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            
+            if (tabId === 'our-people') {
+                loadOurPeople();
+            }
 
             // Reset tab button styles
-            const btns = ['facilities', 'analytics', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile'];
+            const btns = ['facilities', 'analytics', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile', 'our-people'];
             btns.forEach(btn => {
                 const el = document.getElementById(`tab-btn-${btn}`);
                 if(el) el.className = 'w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
@@ -1560,6 +1630,13 @@
                         <button onclick="switchTab('add-new')" class="mt-4 text-primary font-bold hover:underline">Create your first listing</button>
                     </div>`;
                 return;
+            }
+
+            const isMunicipality = facilities.some(f => f.facility_type === 'Municipality / City');
+            const navOurPeople = document.getElementById('nav-item-our-people');
+            if (navOurPeople) {
+                if (isMunicipality) navOurPeople.classList.remove('hidden');
+                else navOurPeople.classList.add('hidden');
             }
 
             facilities.forEach(fac => {
@@ -1817,6 +1894,8 @@
             document.getElementById('fac-size').value = facility.size_info || '';
             document.getElementById('fac-type').value = facility.type || 'ice';
             document.getElementById('fac-env').value = facility.environment || 'indoor';
+            const hostTypeField = document.getElementById('fac-host-type');
+            if (hostTypeField) hostTypeField.value = facility.facility_type || 'Other';
             document.getElementById('fac-location').value = facility.location || '';
             document.getElementById('fac-lat').value = facility.lat || '';
             document.getElementById('fac-lng').value = facility.lng || '';
@@ -2860,6 +2939,18 @@
 
                 const discValue = document.getElementById('modal-disc-value');
                 if(discValue) discValue.required = false;
+
+                const facId = document.getElementById('modal-facility-id').value;
+                const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == facId) : null;
+                const residentsContainer = document.getElementById('modal-public-residents-only-container');
+                if (residentsContainer) {
+                    if (facility && facility.facility_type === 'Municipality / City') {
+                        residentsContainer.classList.remove('hidden');
+                    } else {
+                        residentsContainer.classList.add('hidden');
+                    }
+                }
+
                 if(submitBtn) submitBtn.innerHTML = isEditMode ? 'Save Changes' : 'Create Public Session';
             } else {
                 if(offlineFields) offlineFields.classList.remove('hidden');
@@ -2873,6 +2964,9 @@
 
                 const discValue = document.getElementById('modal-disc-value');
                 if(discValue) discValue.required = false;
+                const residentsContainer = document.getElementById('modal-public-residents-only-container');
+                if (residentsContainer) residentsContainer.classList.add('hidden');
+                
                 if(submitBtn) submitBtn.innerHTML = isEditMode ? 'Save Changes' : 'Confirm booking';
             }
             calculateModalPrice();
@@ -3431,7 +3525,8 @@
                 booking_type: blockType,
                 capacity: blockType === 'public_session' ? parseInt(document.getElementById('modal-public-capacity').value, 10) : 0,
                 participant_price: blockType === 'public_session' ? parseFloat(document.getElementById('modal-public-price').value || 0) : 0,
-                participant_kid_price: blockType === 'public_session' ? parseFloat(document.getElementById('modal-public-kid-price').value || 0) : 0
+                participant_kid_price: blockType === 'public_session' ? parseFloat(document.getElementById('modal-public-kid-price').value || 0) : 0,
+                residents_only: blockType === 'public_session' && document.getElementById('modal-public-residents-only') && document.getElementById('modal-public-residents-only').checked ? 1 : 0
             };
 
             const editId = document.getElementById('modal-edit-booking-id') ? document.getElementById('modal-edit-booking-id').value : '';
@@ -4454,6 +4549,7 @@
                 size_info: document.getElementById('fac-size').value,
                 amenities: Array.from(document.querySelectorAll('.amenity-card.border-slate-800')).map(el => el.dataset.amenity),
                 type: document.getElementById('fac-type').value,
+                facility_type: document.getElementById('fac-host-type') ? document.getElementById('fac-host-type').value : 'Other',
                 environment: document.getElementById('fac-env').value,
                 location: document.getElementById('fac-location').value,
                 lat: document.getElementById('fac-lat').value ? parseFloat(document.getElementById('fac-lat').value) : null,
@@ -5441,6 +5537,112 @@
         
         // Initial calculator run if exists
         setTimeout(() => { if(window.calculateProfitability) window.calculateProfitability(); }, 500);
+        // --- "OUR PEOPLE" RESIDENCY MANAGEMENT ---
+        async function loadOurPeople() {
+            const loading = document.getElementById('our-people-loading');
+            const content = document.getElementById('our-people-content');
+            const tbody = document.getElementById('residency-table-body');
+            
+            loading.classList.remove('hidden');
+            content.classList.add('hidden');
+            
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/host/residency-applications`, { credentials: 'include' });
+                if (!res.ok) throw new Error("Failed to load residency applications");
+                const apps = await res.json();
+                
+                loading.classList.add('hidden');
+                content.classList.remove('hidden');
+                
+                let stats = { pending: 0, verified: 0, rejected: 0, 'none': 0 };
+                tbody.innerHTML = '';
+                
+                if (apps.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500 font-medium">No residency applications found.</td></tr>';
+                }
+                
+                apps.forEach(app => {
+                    stats[app.residency_status] = (stats[app.residency_status] || 0) + 1;
+                    
+                    let statusBadge = '';
+                    if (app.residency_status === 'verified') statusBadge = '<span class="bg-green-100 text-green-700 font-bold px-2 py-1 rounded text-[10px] uppercase tracking-wider">Verified</span>';
+                    else if (app.residency_status === 'pending') statusBadge = '<span class="bg-yellow-100 text-yellow-700 font-bold px-2 py-1 rounded text-[10px] uppercase tracking-wider">Pending</span>';
+                    else if (app.residency_status === 'rejected') statusBadge = '<span class="bg-red-100 text-red-700 font-bold px-2 py-1 rounded text-[10px] uppercase tracking-wider">Rejected</span>';
+                    else statusBadge = '<span class="bg-slate-100 text-slate-600 font-bold px-2 py-1 rounded text-[10px] uppercase tracking-wider">None</span>';
+                    
+                    const appliedAt = app.residency_applied_at ? new Date(app.residency_applied_at).toLocaleDateString() : 'N/A';
+                    
+                    let actions = '';
+                    if (app.residency_status === 'pending') {
+                        actions = `
+                            <button onclick="approveResidency(${app.id})" class="bg-primary hover:bg-primaryHover text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-custom mr-2 shadow-sm"><i class="fa-solid fa-check mr-1"></i> Approve</button>
+                            <button onclick="rejectResidency(${app.id})" class="bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-custom"><i class="fa-solid fa-xmark mr-1"></i> Reject</button>
+                        `;
+                    } else if (app.residency_status === 'rejected') {
+                        actions = `
+                            <button onclick="approveResidency(${app.id})" class="bg-primary hover:bg-primaryHover text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-custom shadow-sm"><i class="fa-solid fa-check mr-1"></i> Approve</button>
+                        `;
+                    }
+                    
+                    const docBtn = app.residency_document_url ? `<button onclick="viewOurPeopleDoc('${app.residency_document_url}')" class="text-primary hover:underline font-bold text-xs whitespace-nowrap ml-2"><i class="fa-solid fa-id-card flex-shrink-0 mr-1"></i> View Doc</button>` : '';
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition-custom border-b border-slate-50 last:border-0">
+                            <td class="px-6 py-4 font-bold text-dark whitespace-nowrap">${app.first_name || ''} ${app.last_name || ''}</td>
+                            <td class="px-6 py-4 text-slate-600 text-xs">${app.email}</td>
+                            <td class="px-6 py-4 flex items-center md:items-start md:flex-col gap-1.5 whitespace-nowrap">${statusBadge} ${docBtn}</td>
+                            <td class="px-6 py-4 text-slate-400 text-xs font-medium">${appliedAt}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${actions}</td>
+                        </tr>
+                    `;
+                });
+                
+                document.getElementById('stat-pending-residency').textContent = stats.pending || 0;
+                document.getElementById('stat-verified-residency').textContent = stats.verified || 0;
+                document.getElementById('stat-rejected-residency').textContent = stats.rejected || 0;
+                
+            } catch (err) {
+                console.error(err);
+                loading.classList.remove('hidden');
+                loading.innerHTML = `<div class="text-red-500 bg-red-50 p-4 rounded-xl border border-red-200 text-sm font-medium"><i class="fa-solid fa-circle-exclamation mr-2"></i> Error loading applications: ${err.message}</div>`;
+            }
+        }
+        
+        function viewOurPeopleDoc(url) {
+            const win = window.open();
+            if (win) {
+                if(url.startsWith('data:image/')) {
+                    win.document.write(`<html><body style="margin:0;display:flex;justify-content:center;align-items:center;background:#1e293b;height:100vh;"><img src="${url}" style="max-width:100%; max-height:100vh;" /></body></html>`);
+                } else if(url.startsWith('data:application/pdf')) {
+                    win.document.write(`<iframe src="${url}" style="width:100%; height:100vh; border:none;"></iframe>`);
+                } else {
+                    win.location.href = url;
+                }
+            }
+        }
+        
+        async function approveResidency(userId) {
+            if (!confirm('Are you sure you want to approve this resident?')) return;
+            await updateResidencyStatus(userId, 'approve');
+        }
+        async function rejectResidency(userId) {
+            if (!confirm('Are you sure you want to reject this resident?')) return;
+            await updateResidencyStatus(userId, 'reject');
+        }
+        async function updateResidencyStatus(userId, action) {
+            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/host/residency-applications/${userId}/${action}`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                if (!res.ok) throw new Error("Failed to update status");
+                loadOurPeople();
+            } catch (err) {
+                alert("Error scheduling residency update: " + err.message);
+            }
+        }
 
     </script>
 </body>

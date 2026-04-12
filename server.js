@@ -295,7 +295,7 @@ setInterval(() => {
 // User Registration
 app.post('/api/users/signup', async (req, res) => {
     try {
-        let { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture } = req.body;
+        let { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture, municipality_id, residency_document_url } = req.body;
         
         if (!first_name || !last_name || !phone_number || !email || !password) {
             return res.status(400).json({ error: "All fields are required" });
@@ -330,9 +330,17 @@ app.post('/api/users/signup', async (req, res) => {
                     userRole = 'admin';
                 }
 
+                // Residency default status
+                let residency_status = 'none';
+                let residency_applied_at = null;
+                if (municipality_id && residency_document_url) {
+                    residency_status = 'pending';
+                    residency_applied_at = new Date().toISOString();
+                }
+
                 // Insert new user
-                db.run("INSERT INTO users (name, email, password, role, company_name, first_name, last_name, phone_number, profile_picture) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-                    [name, email, hashedPassword, userRole, company_name, first_name.trim(), last_name.trim(), phone_number, profile_picture], 
+                db.run("INSERT INTO users (name, email, password, role, company_name, first_name, last_name, phone_number, profile_picture, municipality_id, residency_document_url, residency_status, residency_applied_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+                    [name, email, hashedPassword, userRole, company_name, first_name.trim(), last_name.trim(), phone_number, profile_picture, municipality_id || null, residency_document_url || null, residency_status, residency_applied_at], 
                     function(err) {
                         if (err) return res.status(500).json({ error: "Could not create user" });
                         
@@ -346,7 +354,7 @@ app.post('/api/users/signup', async (req, res) => {
                         
                         res.status(201).json({ 
                             message: "User registered successfully", 
-                            user: { id: this.lastID, name: name, email: email, role: userRole, profile_picture: profile_picture } 
+                            user: { id: this.lastID, name: name, email: email, role: userRole, profile_picture: profile_picture, municipality_id, residency_status } 
                         });
                     }
                 );
@@ -467,7 +475,7 @@ app.get('/api/auth/me', (req, res) => {
         return res.status(401).json({ error: "Not authenticated" });
     }
     
-    db.get("SELECT id, name, first_name, last_name, email, phone_number, company_name, profile_picture, role, stripe_account_id, stripe_onboarding_complete, terms_accepted, terms_accepted_at FROM users WHERE id = ?", [req.session.userId], (err, user) => {
+    db.get("SELECT id, name, first_name, last_name, email, phone_number, company_name, profile_picture, role, stripe_account_id, stripe_onboarding_complete, terms_accepted, terms_accepted_at, municipality_id, residency_document_url, residency_status FROM users WHERE id = ?", [req.session.userId], (err, user) => {
         if (err) return res.status(500).json({ error: "Database error" });
         if (!user) return res.status(404).json({ error: "User not found" });
         res.json({ user });
@@ -480,7 +488,7 @@ app.put('/api/users/profile', async (req, res) => {
         return res.status(401).json({ error: "Not authenticated" });
     }
 
-    let { first_name, last_name, email, phone_number, company_name, profile_picture, old_password, new_password } = req.body;
+    let { first_name, last_name, email, phone_number, company_name, profile_picture, old_password, new_password, municipality_id, residency_document_url } = req.body;
     
     if (!first_name || !last_name || !email || !phone_number) {
         return res.status(400).json({ error: "Missing required basic fields." });
@@ -517,10 +525,28 @@ app.put('/api/users/profile', async (req, res) => {
                     finalPassword = await bcrypt.hash(new_password, salt);
                 }
 
+                let finalMunicipalityId = currentUser.municipality_id;
+                let finalResidencyUrl = currentUser.residency_document_url;
+                let finalResidencyStatus = currentUser.residency_status;
+                let finalResidencyAppliedAt = currentUser.residency_applied_at;
+
+                if (municipality_id !== undefined) {
+                    finalMunicipalityId = municipality_id || null;
+                    if (residency_document_url) {
+                        finalResidencyUrl = residency_document_url;
+                        finalResidencyStatus = 'pending';
+                        finalResidencyAppliedAt = new Date().toISOString();
+                    } else if (!municipality_id) {
+                        finalResidencyUrl = null;
+                        finalResidencyStatus = 'none';
+                        finalResidencyAppliedAt = null;
+                    }
+                }
+
                 // Update the user
                 db.run(
-                    "UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, phone_number = ?, company_name = ?, profile_picture = ?, password = ? WHERE id = ?",
-                    [name, first_name.trim(), last_name.trim(), email, phone_number.trim(), company_name ? company_name.trim() : null, profile_picture || null, finalPassword, req.session.userId],
+                    "UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, phone_number = ?, company_name = ?, profile_picture = ?, password = ?, municipality_id = ?, residency_document_url = ?, residency_status = ?, residency_applied_at = ? WHERE id = ?",
+                    [name, first_name.trim(), last_name.trim(), email, phone_number.trim(), company_name ? company_name.trim() : null, profile_picture || null, finalPassword, finalMunicipalityId, finalResidencyUrl, finalResidencyStatus, finalResidencyAppliedAt, req.session.userId],
                     function(err) {
                         if (err) return res.status(500).json({ error: "Failed to update profile" });
                         
@@ -536,6 +562,16 @@ app.put('/api/users/profile', async (req, res) => {
     }
 });
 
+
+// GET all municipalities for residency verification
+app.get('/api/municipalities', (req, res) => {
+    db.all("SELECT id, name, location FROM facilities WHERE facility_type = 'Municipality / City' AND listing_status = 'approved' ORDER BY name ASC", [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: "Failed to fetch municipalities" });
+        }
+        res.json(rows);
+    });
+});
 
 // GET and POST all facilities (with optional filtering)
 app.all('/api/facilities', (req, res) => {
@@ -772,7 +808,7 @@ app.post('/api/facilities', (req, res) => {
         return res.status(401).json({ error: "Unauthorized: You must be logged in to list a facility." });
     }
 
-    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount, connected_facilities } = req.body;
+    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, facility_type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount, connected_facilities } = req.body;
     
     if (!name || !type || !environment || !base_price || !location || !image_url) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -804,9 +840,9 @@ app.post('/api/facilities', (req, res) => {
 
     db.run(
         `INSERT INTO facilities 
-         (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, host_id, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount, connected_facilities) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, req.session.userId, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00, connectedFacilitiesStr],
+         (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, facility_type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, host_id, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount, connected_facilities) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, facility_type || 'Other', environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, req.session.userId, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00, connectedFacilitiesStr],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
@@ -831,7 +867,7 @@ app.put('/api/host/facilities/:id', (req, res) => {
     }
 
     const facilityId = req.params.id;
-    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount, connected_facilities } = req.body;
+    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, facility_type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount, connected_facilities } = req.body;
     
     if (!name || !type || !environment || !base_price || !location || !image_url) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -865,11 +901,11 @@ app.put('/api/host/facilities/:id', (req, res) => {
     db.run(
         `UPDATE facilities SET 
             name = ?, subtitle = ?, description = ?, features = ?, locker_rooms = ?, 
-            capacity = ?, size_info = ?, amenities = ?, type = ?, environment = ?, 
+            capacity = ?, size_info = ?, amenities = ?, type = ?, facility_type = ?, environment = ?, 
             base_price = ?, pricing_rules = ?, location = ?, lat = COALESCE(?, lat), lng = COALESCE(?, lng), image_url = ?, 
             is_instant_book = ?, operating_hours = ?, listing_status = ?, advance_booking_days = ?, has_processing_fee = ?, processing_fee_amount = ?, connected_facilities = ? 
          WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)`,
-        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00, connectedFacilitiesStr, facilityId, req.session.userId, `%"${req.session.email}"%` ],
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, facility_type || 'Other', environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00, connectedFacilitiesStr, facilityId, req.session.userId, `%"${req.session.email}"%` ],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
@@ -943,6 +979,51 @@ app.delete('/api/host/facilities/:id/co-hosts/:email', (req, res) => {
         db.run("UPDATE facilities SET co_host_emails = ? WHERE id = ?", [JSON.stringify(emails), facilityId], (updateErr) => {
             if (updateErr) return res.status(500).json({ error: "Could not remove co-host" });
             res.json({ message: "Co-host removed", emails });
+        });
+    });
+});
+
+// GET residency applications for host's municipalities
+app.get('/api/host/residency-applications', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const query = `
+        SELECT u.id as player_id, u.name as player_name, u.email, u.phone_number, u.residency_document_url, u.residency_status, u.residency_applied_at, f.name as facility_name
+        FROM users u
+        JOIN facilities f ON u.municipality_id = f.id
+        WHERE f.host_id = ? AND f.facility_type = 'Municipality / City'
+        ORDER BY u.residency_applied_at DESC
+    `;
+    db.all(query, [req.session.userId], (err, rows) => {
+        if (err) return res.status(500).json({ error: "Database error" });
+        res.json(rows);
+    });
+});
+
+// POST approve residency
+app.post('/api/host/residency-applications/:player_id/approve', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+    const playerId = req.params.player_id;
+    db.get("SELECT u.id FROM users u JOIN facilities f ON u.municipality_id = f.id WHERE u.id = ? AND f.host_id = ?", [playerId, req.session.userId], (err, row) => {
+        if (err || !row) return res.status(403).json({ error: "Not authorized" });
+        
+        db.run("UPDATE users SET residency_status = 'verified' WHERE id = ?", [playerId], (updateErr) => {
+            if (updateErr) return res.status(500).json({ error: "Database error" });
+            res.json({ message: "Player residency verified." });
+        });
+    });
+});
+
+// POST reject residency
+app.post('/api/host/residency-applications/:player_id/reject', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+    const playerId = req.params.player_id;
+    db.get("SELECT u.id FROM users u JOIN facilities f ON u.municipality_id = f.id WHERE u.id = ? AND f.host_id = ?", [playerId, req.session.userId], (err, row) => {
+        if (err || !row) return res.status(403).json({ error: "Not authorized" });
+        
+        db.run("UPDATE users SET residency_status = 'rejected' WHERE id = ?", [playerId], (updateErr) => {
+            if (updateErr) return res.status(500).json({ error: "Database error" });
+            res.json({ message: "Player residency rejected." });
         });
     });
 });
@@ -1051,7 +1132,7 @@ app.post('/api/host/block-time', (req, res) => {
         return res.status(401).json({ error: "Unauthorized" });
     }
     
-    const { facility_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price } = req.body;
+    const { facility_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only } = req.body;
     
     if (!facility_id || !booking_date || !time_slots || !manual_notes) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -1061,6 +1142,7 @@ app.post('/api/host/block-time', (req, res) => {
     const capToUse = typeToUse === 'public_session' ? parseInt(capacity, 10) || 0 : 0;
     const priceToUse = typeToUse === 'public_session' ? parseFloat(participant_price) || 0.0 : 0.0;
     const kidPriceToUse = typeToUse === 'public_session' ? parseFloat(participant_kid_price) || 0.0 : 0.0;
+    const resOnlyToUse = typeToUse === 'public_session' ? (residents_only ? 1 : 0) : 0;
 
     // Verify this facility belongs to the logged-in host
     db.get("SELECT id FROM facilities WHERE id = ? AND host_id = ?", [facility_id, req.session.userId], (err, facility) => {
@@ -1096,12 +1178,12 @@ app.post('/api/host/block-time', (req, res) => {
         }
         
         const sql = `
-            INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price)
-            VALUES (?, ?, ?, 0, 'confirmed', ?, ?, ?, ?, ?, ?)
+            INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only)
+            VALUES (?, ?, ?, 0, 'confirmed', ?, ?, ?, ?, ?, ?, ?)
         `;
         
         const insertBooking = (dateObj) => new Promise((resolve, reject) => {
-            db.run(sql, [facility_id, dateObj, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse, kidPriceToUse], function(err) {
+            db.run(sql, [facility_id, dateObj, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse, kidPriceToUse, resOnlyToUse], function(err) {
                 if (err) reject(err);
                 else resolve();
             });
@@ -1125,7 +1207,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
     }
 
     const bookingId = req.params.id;
-    const { booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price } = req.body;
+    const { booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only } = req.body;
 
     if (!booking_date || !time_slots) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -1136,6 +1218,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
     const numCap = isPublic ? (parseInt(capacity, 10) || 0) : 0;
     const numPrice = isPublic ? (parseFloat(participant_price) || 0.0) : 0.0;
     const numKidPrice = isPublic ? (parseFloat(participant_kid_price) || 0.0) : 0.0;
+    const reqResOnly = isPublic ? (residents_only ? 1 : 0) : 0;
 
     // Verify ownership via facilities table
     db.get(
@@ -1177,21 +1260,21 @@ app.put('/api/host/bookings/:id', (req, res) => {
             const sql = `
                 UPDATE bookings 
                 SET booking_date = ?, time_slots = ?, manual_notes = COALESCE(?, manual_notes), recurring_group_id = COALESCE(?, recurring_group_id),
-                    capacity = COALESCE(?, capacity), participant_price = COALESCE(?, participant_price), participant_kid_price = COALESCE(?, participant_kid_price)
+                    capacity = COALESCE(?, capacity), participant_price = COALESCE(?, participant_price), participant_kid_price = COALESCE(?, participant_kid_price), residents_only = COALESCE(?, residents_only)
                 WHERE id = ?
             `;
 
-            db.run(sql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, bookingId], function(err) {
+            db.run(sql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, bookingId], function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 
                 if (datesToBook.length > 0) {
                     const bTypeStr = isPublic ? 'public_session' : 'manual';
                     const insertSql = `
-                        INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price)
-                        VALUES (?, ?, ?, 0, 'confirmed', ?, ?, ?, ?, ?, ?)
+                        INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only)
+                        VALUES (?, ?, ?, 0, 'confirmed', ?, ?, ?, ?, ?, ?, ?)
                     `;
                     const insertBooking = (dateStr) => new Promise((resolve, reject) => {
-                        db.run(insertSql, [row.facility_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice], function(insertErr) {
+                        db.run(insertSql, [row.facility_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly], function(insertErr) {
                             if (insertErr) reject(insertErr);
                             else resolve();
                         });
@@ -1303,6 +1386,15 @@ app.post('/api/public_sessions/join', async (req, res) => {
 
     db.get(query, [booking_id], async (err, session) => {
         if (err || !session) return res.status(404).json({ error: "Session not found." });
+
+        if (session.residents_only) {
+            const user = await new Promise((resolve) => {
+                db.get("SELECT municipality_id, residency_status FROM users WHERE id = ?", [req.session.userId], (err, row) => resolve(row));
+            });
+            if (!user || user.municipality_id !== session.facility_id || user.residency_status !== 'verified') {
+                return res.status(403).json({ error: "This session is reserved for verified residents of this municipality." });
+            }
+        }
 
         const reqAdultQty = parseInt(req.body.adultQuantity, 10) || parseInt(req.body.quantity, 10) || 0;
         const reqKidQty = parseInt(req.body.kidQuantity, 10) || 0;

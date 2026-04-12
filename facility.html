@@ -1455,12 +1455,17 @@
                     if (pubSess) {
                         const priceText = pubSess.participant_price > 0 ? `$${pubSess.participant_price.toFixed(2)}/pp` : `Free`;
                         div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg cursor-pointer flex justify-between items-center mb-1 transition-custom border ${isSelected ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300'}`;
+                        const resOnlyTag = pubSess.residents_only === 1 || pubSess.residents_only === true ? `<span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-600'} flex items-center shrink-0"><i class="fa-solid fa-house-user mr-1"></i>Residents Only</span>` : '';
                         div.innerHTML = `
-                            <div class="flex flex-col">
-                                <span class="flex items-center">${slot.time} <span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-indigo-500 text-white border-indigo-400' : 'bg-white text-indigo-600 border-indigo-100'} border">Public Session</span></span>
-                                <span class="text-xs font-medium ${isSelected ? 'text-indigo-200' : 'text-indigo-500'} mt-0.5">${pubSess.manual_notes || 'Open Session'} • ${pubSess.joined_count || 0}/${pubSess.capacity} joined • ${priceText}</span>
+                            <div class="flex flex-col w-full pr-2">
+                                <span class="flex items-center flex-wrap gap-y-1">
+                                    <span class="shrink-0">${slot.time}</span> 
+                                    <span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-indigo-500 text-white border-indigo-400' : 'bg-white text-indigo-600 border-indigo-100'} border shrink-0">Public Session</span>
+                                    ${resOnlyTag}
+                                </span>
+                                <span class="text-xs font-medium ${isSelected ? 'text-indigo-200' : 'text-indigo-500'} mt-0.5 truncate">${pubSess.manual_notes || 'Open Session'} • ${pubSess.joined_count || 0}/${pubSess.capacity} joined • ${priceText}</span>
                             </div>
-                            ${isSelected ? '<i class="fa-solid fa-check text-sm"></i>' : ''}
+                            ${isSelected ? '<i class="fa-solid fa-check text-sm shrink-0"></i>' : ''}
                         `;
                         div.onclick = (e) => {
                             e.stopPropagation();
@@ -2079,10 +2084,10 @@
                         } else if (pubSess) {
                             if (isSelected) {
                                 inner.className += "bg-indigo-600 text-white font-bold shadow-sm shadow-indigo-600/30";
-                                inner.innerHTML = `<i class="fa-solid fa-users text-[10px]"></i>`;
+                                inner.innerHTML = (pubSess.residents_only === 1 || pubSess.residents_only === true) ? `<i class="fa-solid fa-house-user text-[10px]"></i>` : `<i class="fa-solid fa-users text-[10px]"></i>`;
                             } else {
                                 inner.className += "bg-indigo-50 border border-indigo-200/80 text-indigo-700/80 hover:bg-indigo-100/80 transition-colors";
-                                inner.innerHTML = `<i class="fa-solid fa-users text-[10px]"></i>`;
+                                inner.innerHTML = (pubSess.residents_only === 1 || pubSess.residents_only === true) ? `<i class="fa-solid fa-house-user text-orange-500 text-[10px]"></i>` : `<i class="fa-solid fa-users text-[10px]"></i>`;
                             }
                         } else if (isSelected) {
                             inner.className += "bg-primary text-white font-bold shadow-sm shadow-primary/30";
@@ -2179,10 +2184,12 @@
                     } else if (pubSess) {
                          if (isSelected) {
                              row.className += "bg-indigo-600 border-indigo-700 shadow-sm shadow-indigo-600/30 text-white";
-                             row.innerHTML = `<span class="font-bold text-white">${slot.time.split(' - ')[0]} - Public Session</span> <div class="w-6 h-6 rounded-full bg-white text-indigo-600 flex items-center justify-center shadow-sm"><i class="fa-solid fa-users text-xs"></i></div>`;
+                             const resOnlyBadgeSel = (pubSess.residents_only === 1 || pubSess.residents_only === true) ? `<span class="ml-2 text-[10px] uppercase font-bold text-white px-1.5 py-0.5 rounded-md bg-orange-500"><i class="fa-solid fa-house-user mr-1"></i>Residents Only</span>` : '';
+                             row.innerHTML = `<span class="font-bold text-white flex flex-wrap items-center">${slot.time.split(' - ')[0]} - Public Session ${resOnlyBadgeSel}</span> <div class="w-6 h-6 rounded-full bg-white text-indigo-600 flex items-center justify-center shadow-sm shrink-0"><i class="fa-solid fa-users text-xs"></i></div>`;
                          } else {
                              row.className += "bg-indigo-50 border-indigo-200 hover:border-indigo-400 hover:shadow-sm";
-                             row.innerHTML = `<span class="font-bold text-indigo-700">${slot.time.split(' - ')[0]} - ${pubSess.manual_notes || 'Public Session'}</span> <span class="text-xs font-bold text-indigo-600 bg-white px-2 rounded-full border border-indigo-100 shadow-sm">${pubSess.joined_count || 0}/${pubSess.capacity} joined</span>`;
+                             const resOnlyBadge = (pubSess.residents_only === 1 || pubSess.residents_only === true) ? `<span class="ml-2 text-[10px] uppercase font-bold text-orange-600 px-1.5 py-0.5 rounded-md bg-orange-100"><i class="fa-solid fa-house-user mr-1"></i>Residents Only</span>` : '';
+                             row.innerHTML = `<span class="font-bold text-indigo-700 flex flex-wrap items-center">${slot.time.split(' - ')[0]} - ${pubSess.manual_notes || 'Public Session'} ${resOnlyBadge}</span> <span class="text-xs font-bold text-indigo-600 bg-white px-2 rounded-full border border-indigo-100 shadow-sm shrink-0">${pubSess.joined_count || 0}/${pubSess.capacity} joined</span>`;
                          }
                     } else if (isSelected) {
                          row.className += "bg-primary/10 border-primary/30 shadow-sm shadow-primary/10";
