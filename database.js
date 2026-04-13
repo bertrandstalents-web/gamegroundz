@@ -239,13 +239,11 @@ async function initDatabase() {
         try { await client.query(`ALTER TABLE public_session_participants ADD COLUMN quantity_adult INTEGER DEFAULT 1`); } catch(e) {}
         try { await client.query(`ALTER TABLE public_session_participants ADD COLUMN quantity_kid INTEGER DEFAULT 0`); } catch(e) {}
 
-        try {
-            await client.query(`ALTER TABLE users ADD COLUMN municipality_id INTEGER REFERENCES facilities(id)`);
-            await client.query(`ALTER TABLE users ADD COLUMN residency_city TEXT`);
-            await client.query(`ALTER TABLE users ADD COLUMN residency_document_url TEXT`);
-            await client.query(`ALTER TABLE users ADD COLUMN residency_status TEXT DEFAULT 'none'`);
-            await client.query(`ALTER TABLE users ADD COLUMN residency_applied_at TIMESTAMP`);
-        } catch(e) {}
+        try { await client.query(`ALTER TABLE users ADD COLUMN municipality_id INTEGER REFERENCES facilities(id)`); } catch(e) {}
+        try { await client.query(`ALTER TABLE users ADD COLUMN residency_city TEXT`); } catch(e) {}
+        try { await client.query(`ALTER TABLE users ADD COLUMN residency_document_url TEXT`); } catch(e) {}
+        try { await client.query(`ALTER TABLE users ADD COLUMN residency_status TEXT DEFAULT 'none'`); } catch(e) {}
+        try { await client.query(`ALTER TABLE users ADD COLUMN residency_applied_at TIMESTAMP`); } catch(e) {}
 
         try {
             await client.query(`ALTER TABLE facilities ADD COLUMN facility_type TEXT DEFAULT 'Other'`);
