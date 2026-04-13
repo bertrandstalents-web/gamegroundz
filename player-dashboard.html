@@ -206,9 +206,7 @@
                                 
                                 <div id="prof-residency-upload-section">
                                     <label class="block text-sm font-semibold text-slate-700 mb-2" id="prof-residency-action-label">Apply for Residency / Update Application</label>
-                                    <select id="prof-municipality-id" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white mb-3">
-                                        <option value="">Select your Municipality / City...</option>
-                                    </select>
+                                    <input type="text" id="prof-residency-city" placeholder="Type your city/town..." class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white mb-3" autocomplete="off">
                                     
                                     <div id="prof-residency-doc-area" class="hidden">
                                         <label class="block text-[0.8rem] font-bold text-slate-500 mb-2">Proof of Residency Document (JPG, PNG, PDF)</label>
@@ -272,30 +270,45 @@
     <style> .hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } </style>
 
     <script>
-        // Init fetch municipalities
-        async function fetchMunicipalities() {
+        // Init Places Map for Autocomplete
+        async function initPlacesMap() {
             try {
-                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
-                const res = await fetch(`${API_BASE_URL}/api/municipalities`);
-                if(res.ok) {
+                const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+                const res = await fetch(`${API_BASE_URL}/api/keys/maps`);
+                if (res.ok) {
                     const data = await res.json();
-                    const sel = document.getElementById('prof-municipality-id');
-                    if(sel) {
-                        data.forEach(m => {
-                            const opt = document.createElement('option');
-                            opt.value = m.id;
-                            opt.textContent = m.name + ' (' + m.location + ')';
-                            sel.appendChild(opt);
-                        });
-                    }
+                    if (!data.apiKey) return;
+                    const script = document.createElement('script');
+                    script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&libraries=places`;
+                    script.async = true;
+                    script.defer = true;
+                    script.onload = () => {
+                        const input = document.getElementById('prof-residency-city');
+                        if (input) {
+                            const autocomplete = new google.maps.places.Autocomplete(input, { types: ['(cities)'], fields: ['formatted_address'] });
+                            autocomplete.addListener('place_changed', function() {
+                                const place = autocomplete.getPlace();
+                                if (place.formatted_address) {
+                                    input.value = place.formatted_address;
+                                    input.dispatchEvent(new Event('input'));
+                                }
+                            });
+                            input.addEventListener('keydown', (e) => {
+                                if (e.key === 'Enter') e.preventDefault();
+                            });
+                        }
+                    };
+                    document.head.appendChild(script);
                 }
-            } catch(e) { console.error('Error fetching municipalities', e); }
+            } catch (err) {
+                console.error('Map key fetch failed', err);
+            }
         }
-        fetchMunicipalities();
+        initPlacesMap();
 
-        document.getElementById('prof-municipality-id').addEventListener('change', (e) => {
+        document.getElementById('prof-residency-city').addEventListener('input', (e) => {
             const docArea = document.getElementById('prof-residency-doc-area');
-            if (e.target.value) {
+            if (e.target.value.trim() !== '') {
                 docArea.classList.remove('hidden');
             } else {
                 docArea.classList.add('hidden');
@@ -639,12 +652,12 @@
                 const badge = document.getElementById('prof-residency-badge');
                 const msg = document.getElementById('prof-residency-msg');
                 const uploadSec = document.getElementById('prof-residency-upload-section');
-                const muniSelect = document.getElementById('prof-municipality-id');
+                const muniSelect = document.getElementById('prof-residency-city');
                 const actionLabel = document.getElementById('prof-residency-action-label');
                 const docArea = document.getElementById('prof-residency-doc-area');
                 
-                if (muniSelect && u.municipality_id) {
-                    muniSelect.value = u.municipality_id;
+                if (muniSelect && u.residency_city) {
+                    muniSelect.value = u.residency_city;
                     docArea.classList.remove('hidden');
                 }
 
@@ -737,13 +750,13 @@
                 new_password: document.getElementById('prof-new-pass').value
             };
             
-            const muniSelect = document.getElementById('prof-municipality-id');
+            const muniSelect = document.getElementById('prof-residency-city');
             const docInput = document.getElementById('prof-residency-doc');
             
-            if (muniSelect && muniSelect.value !== "") {
-                payload.municipality_id = muniSelect.value;
-            } else if (muniSelect && muniSelect.value === "") {
-                payload.municipality_id = null; // Unlink feature not strictly required, but passing null if set to none
+            if (muniSelect && muniSelect.value.trim() !== "") {
+                payload.residency_city = muniSelect.value.trim();
+            } else if (muniSelect && muniSelect.value.trim() === "") {
+                payload.residency_city = null; // Unlink feature not strictly required, but passing null if set to none
             }
 
             if (docInput && docInput.files.length > 0) {
@@ -762,7 +775,7 @@
                     btn.disabled = false;
                     return;
                 }
-            } else if (payload.municipality_id && document.getElementById('prof-residency-badge').textContent === 'None') {
+            } else if (payload.residency_city && document.getElementById('prof-residency-badge').textContent === 'None') {
                 msgDiv.textContent = 'Please provide a proof of residency document.';
                 msgDiv.classList.add('bg-red-50', 'text-red-700', 'border-red-200');
                 msgDiv.classList.remove('hidden');

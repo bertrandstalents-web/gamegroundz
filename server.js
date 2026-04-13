@@ -295,7 +295,7 @@ setInterval(() => {
 // User Registration
 app.post('/api/users/signup', async (req, res) => {
     try {
-        let { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture, municipality_id, residency_document_url } = req.body;
+        let { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture, residency_city, residency_document_url } = req.body;
         
         if (!first_name || !last_name || !phone_number || !email || !password) {
             return res.status(400).json({ error: "All fields are required" });
@@ -333,14 +333,14 @@ app.post('/api/users/signup', async (req, res) => {
                 // Residency default status
                 let residency_status = 'none';
                 let residency_applied_at = null;
-                if (municipality_id && residency_document_url) {
+                if (residency_city && residency_document_url) {
                     residency_status = 'pending';
                     residency_applied_at = new Date().toISOString();
                 }
 
                 // Insert new user
-                db.run("INSERT INTO users (name, email, password, role, company_name, first_name, last_name, phone_number, profile_picture, municipality_id, residency_document_url, residency_status, residency_applied_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-                    [name, email, hashedPassword, userRole, company_name, first_name.trim(), last_name.trim(), phone_number, profile_picture, municipality_id || null, residency_document_url || null, residency_status, residency_applied_at], 
+                db.run("INSERT INTO users (name, email, password, role, company_name, first_name, last_name, phone_number, profile_picture, residency_city, residency_document_url, residency_status, residency_applied_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+                    [name, email, hashedPassword, userRole, company_name, first_name.trim(), last_name.trim(), phone_number, profile_picture, residency_city || null, residency_document_url || null, residency_status, residency_applied_at], 
                     function(err) {
                         if (err) return res.status(500).json({ error: "Could not create user" });
                         
@@ -354,7 +354,7 @@ app.post('/api/users/signup', async (req, res) => {
                         
                         res.status(201).json({ 
                             message: "User registered successfully", 
-                            user: { id: this.lastID, name: name, email: email, role: userRole, profile_picture: profile_picture, municipality_id, residency_status } 
+                            user: { id: this.lastID, name: name, email: email, role: userRole, profile_picture: profile_picture, residency_city, residency_status } 
                         });
                     }
                 );
@@ -475,7 +475,7 @@ app.get('/api/auth/me', (req, res) => {
         return res.status(401).json({ error: "Not authenticated" });
     }
     
-    db.get("SELECT id, name, first_name, last_name, email, phone_number, company_name, profile_picture, role, stripe_account_id, stripe_onboarding_complete, terms_accepted, terms_accepted_at, municipality_id, residency_document_url, residency_status FROM users WHERE id = ?", [req.session.userId], (err, user) => {
+    db.get("SELECT id, name, first_name, last_name, email, phone_number, company_name, profile_picture, role, stripe_account_id, stripe_onboarding_complete, terms_accepted, terms_accepted_at, residency_city, residency_document_url, residency_status FROM users WHERE id = ?", [req.session.userId], (err, user) => {
         if (err) return res.status(500).json({ error: "Database error" });
         if (!user) return res.status(404).json({ error: "User not found" });
         res.json({ user });
@@ -487,7 +487,7 @@ app.get('/api/auth/me', (req, res) => {
 app.post('/api/users/residency/remove', (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
     
-    db.run("UPDATE users SET municipality_id = NULL, residency_status = NULL, residency_document_url = NULL, residency_applied_at = NULL WHERE id = ?", [req.session.userId], (err) => {
+    db.run("UPDATE users SET residency_city = NULL, residency_status = NULL, residency_document_url = NULL, residency_applied_at = NULL WHERE id = ?", [req.session.userId], (err) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ message: "Residency removed successfully." });
     });
@@ -498,7 +498,7 @@ app.put('/api/users/profile', async (req, res) => {
         return res.status(401).json({ error: "Not authenticated" });
     }
 
-    let { first_name, last_name, email, phone_number, company_name, profile_picture, old_password, new_password, municipality_id, residency_document_url } = req.body;
+    let { first_name, last_name, email, phone_number, company_name, profile_picture, old_password, new_password, residency_city, residency_document_url } = req.body;
     
     if (!first_name || !last_name || !email || !phone_number) {
         return res.status(400).json({ error: "Missing required basic fields." });
@@ -535,18 +535,18 @@ app.put('/api/users/profile', async (req, res) => {
                     finalPassword = await bcrypt.hash(new_password, salt);
                 }
 
-                let finalMunicipalityId = currentUser.municipality_id;
+                let finalResidencyCity = currentUser.residency_city;
                 let finalResidencyUrl = currentUser.residency_document_url;
                 let finalResidencyStatus = currentUser.residency_status;
                 let finalResidencyAppliedAt = currentUser.residency_applied_at;
 
-                if (municipality_id !== undefined) {
-                    finalMunicipalityId = municipality_id || null;
+                if (residency_city !== undefined) {
+                    finalResidencyCity = residency_city || null;
                     if (residency_document_url) {
                         finalResidencyUrl = residency_document_url;
                         finalResidencyStatus = 'pending';
                         finalResidencyAppliedAt = new Date().toISOString();
-                    } else if (!municipality_id) {
+                    } else if (!residency_city) {
                         finalResidencyUrl = null;
                         finalResidencyStatus = 'none';
                         finalResidencyAppliedAt = null;
@@ -555,8 +555,8 @@ app.put('/api/users/profile', async (req, res) => {
 
                 // Update the user
                 db.run(
-                    "UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, phone_number = ?, company_name = ?, profile_picture = ?, password = ?, municipality_id = ?, residency_document_url = ?, residency_status = ?, residency_applied_at = ? WHERE id = ?",
-                    [name, first_name.trim(), last_name.trim(), email, phone_number.trim(), company_name ? company_name.trim() : null, profile_picture || null, finalPassword, finalMunicipalityId, finalResidencyUrl, finalResidencyStatus, finalResidencyAppliedAt, req.session.userId],
+                    "UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, phone_number = ?, company_name = ?, profile_picture = ?, password = ?, residency_city = ?, residency_document_url = ?, residency_status = ?, residency_applied_at = ? WHERE id = ?",
+                    [name, first_name.trim(), last_name.trim(), email, phone_number.trim(), company_name ? company_name.trim() : null, profile_picture || null, finalPassword, finalResidencyCity, finalResidencyUrl, finalResidencyStatus, finalResidencyAppliedAt, req.session.userId],
                     function(err) {
                         if (err) return res.status(500).json({ error: "Failed to update profile" });
                         
@@ -1000,7 +1000,7 @@ app.get('/api/host/residency-applications', (req, res) => {
     const query = `
         SELECT u.id as player_id, u.name as player_name, u.email, u.phone_number, u.residency_document_url, u.residency_status, u.residency_applied_at, f.name as facility_name
         FROM users u
-        JOIN facilities f ON u.municipality_id = f.id
+        JOIN facilities f ON u.residency_city = f.location
         WHERE f.host_id = ? AND f.facility_type = 'Municipality / City'
         ORDER BY u.residency_applied_at DESC
     `;
@@ -1014,7 +1014,7 @@ app.get('/api/host/residency-applications', (req, res) => {
 app.post('/api/host/residency-applications/:player_id/approve', (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
     const playerId = req.params.player_id;
-    db.get("SELECT u.id FROM users u JOIN facilities f ON u.municipality_id = f.id WHERE u.id = ? AND f.host_id = ?", [playerId, req.session.userId], (err, row) => {
+    db.get("SELECT u.id FROM users u JOIN facilities f ON u.residency_city = f.location WHERE u.id = ? AND f.host_id = ?", [playerId, req.session.userId], (err, row) => {
         if (err || !row) return res.status(403).json({ error: "Not authorized" });
         
         db.run("UPDATE users SET residency_status = 'verified' WHERE id = ?", [playerId], (updateErr) => {
@@ -1028,7 +1028,7 @@ app.post('/api/host/residency-applications/:player_id/approve', (req, res) => {
 app.post('/api/host/residency-applications/:player_id/reject', (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
     const playerId = req.params.player_id;
-    db.get("SELECT u.id FROM users u JOIN facilities f ON u.municipality_id = f.id WHERE u.id = ? AND f.host_id = ?", [playerId, req.session.userId], (err, row) => {
+    db.get("SELECT u.id FROM users u JOIN facilities f ON u.residency_city = f.location WHERE u.id = ? AND f.host_id = ?", [playerId, req.session.userId], (err, row) => {
         if (err || !row) return res.status(403).json({ error: "Not authorized" });
         
         db.run("UPDATE users SET residency_status = 'rejected' WHERE id = ?", [playerId], (updateErr) => {
@@ -1041,10 +1041,10 @@ app.post('/api/host/residency-applications/:player_id/reject', (req, res) => {
 app.post('/api/host/residency-applications/:player_id/remove', (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
     const playerId = req.params.player_id;
-    db.get("SELECT u.id FROM users u JOIN facilities f ON u.municipality_id = f.id WHERE u.id = ? AND f.host_id = ?", [playerId, req.session.userId], (err, row) => {
+    db.get("SELECT u.id FROM users u JOIN facilities f ON u.residency_city = f.location WHERE u.id = ? AND f.host_id = ?", [playerId, req.session.userId], (err, row) => {
         if (err || !row) return res.status(403).json({ error: "Not authorized" });
         
-        db.run("UPDATE users SET municipality_id = NULL, residency_status = NULL, residency_document_url = NULL, residency_applied_at = NULL WHERE id = ?", [playerId], (updateErr) => {
+        db.run("UPDATE users SET residency_city = NULL, residency_status = NULL, residency_document_url = NULL, residency_applied_at = NULL WHERE id = ?", [playerId], (updateErr) => {
             if (updateErr) return res.status(500).json({ error: "Database error" });
             res.json({ message: "Player residency completely removed." });
         });
@@ -1452,7 +1452,7 @@ app.post('/api/public_sessions/join', async (req, res) => {
 
     // Validate the session exists and has capacity
     const query = `
-        SELECT b.*, f.name as facility_name, f.image_url, u.stripe_account_id,
+        SELECT b.*, f.name as facility_name, f.location as facility_location, f.image_url, u.stripe_account_id,
         (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
         FROM bookings b
         JOIN facilities f ON b.facility_id = f.id
@@ -1465,9 +1465,9 @@ app.post('/api/public_sessions/join', async (req, res) => {
 
         if (session.residents_only) {
             const user = await new Promise((resolve) => {
-                db.get("SELECT municipality_id, residency_status FROM users WHERE id = ?", [req.session.userId], (err, row) => resolve(row));
+                db.get("SELECT residency_city, residency_status FROM users WHERE id = ?", [req.session.userId], (err, row) => resolve(row));
             });
-            if (!user || user.municipality_id !== session.facility_id || user.residency_status !== 'verified') {
+            if (!user || !user.residency_city || user.residency_city.trim().toLowerCase() !== session.facility_location.trim().toLowerCase() || user.residency_status !== 'verified') {
                 return res.status(403).json({ error: "This session is reserved for verified residents of this municipality." });
             }
         }

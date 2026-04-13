@@ -241,6 +241,7 @@ async function initDatabase() {
 
         try {
             await client.query(`ALTER TABLE users ADD COLUMN municipality_id INTEGER REFERENCES facilities(id)`);
+            await client.query(`ALTER TABLE users ADD COLUMN residency_city TEXT`);
             await client.query(`ALTER TABLE users ADD COLUMN residency_document_url TEXT`);
             await client.query(`ALTER TABLE users ADD COLUMN residency_status TEXT DEFAULT 'none'`);
             await client.query(`ALTER TABLE users ADD COLUMN residency_applied_at TIMESTAMP`);
