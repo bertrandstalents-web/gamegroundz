@@ -1248,6 +1248,17 @@
             }
         }
         
+        const authMunicipalitySearch = document.getElementById('auth-municipality-search');
+        const authResidencyDocUpload = document.getElementById('auth-residency-doc-upload');
+
+        function updateResidencyDocVisibility(idValue) {
+            if (idValue) {
+                authResidencyDocUpload.classList.remove('hidden');
+            } else {
+                authResidencyDocUpload.classList.add('hidden');
+            }
+        }
+
         // We initialize Google Maps Autocomplete for this input in initMap() or globally if loaded.
         // The residency file upload reveals whenever there is text in the municipality field.
         if (authMunicipalitySearch) {
