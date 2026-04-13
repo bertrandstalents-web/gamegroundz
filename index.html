@@ -560,7 +560,7 @@
             <div class="p-6 overflow-y-auto">
                 <h4 class="text-2xl font-extrabold text-dark mb-6">Welcome to <span class="notranslate"><span class="notranslate">GameGroundz</span></span></h4>
                 
-                <form id="auth-form" class="space-y-4">
+                <form id="auth-form" class="space-y-4" onsubmit="handleAuth(event)">
                     <div id="name-field-container" class="hidden space-y-4">
                         <div class="mb-2">
                             <label class="block text-sm font-bold text-slate-700 mb-2">Account Type</label>
@@ -667,7 +667,7 @@
                     <div id="forgot-password-container" class="text-right mt-1 mb-2">
                         <a href="forgot-password.html" class="text-sm font-semibold text-primary hover:text-dark transition-custom">Forgot your password?</a>
                     </div>
-                    <button type="button" id="auth-submit-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-lg transition-custom shadow-glow mt-2">
+                    <button type="submit" id="auth-submit-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-lg transition-custom shadow-glow mt-2">
                         Continue
                     </button>
                     <div id="auth-error" class="hidden text-red-500 text-sm font-medium mt-2 text-center"></div>
@@ -1428,7 +1428,7 @@
             }
         }
 
-        if (authSubmitBtn) authSubmitBtn.addEventListener('click', handleAuth);
+
 
         async function checkAuthState() {
             // First check local storage for quick render
