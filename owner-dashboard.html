@@ -1136,7 +1136,7 @@
                         <div>
                             <label class="block text-xl font-bold text-dark mb-4">Size</label>
                             <input type="text" id="fac-size" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="Enter size (e.g. 10,000 sq ft, 200x85 ft)">
-                            <div class="mt-3 flex flex-wrap gap-2">
+                            <div class="mt-3 flex flex-wrap gap-2" id="size-suggestions-container">
                                 <span class="text-sm text-slate-500 font-medium py-1.5 pr-2">Suggestions:</span>
                                 <button type="button" onclick="const input = document.getElementById('fac-size'); input.value = 'NHL size (standard)'; document.querySelectorAll('.size-pill').forEach(el=>el.classList.remove('bg-slate-200','border-slate-800')); this.classList.add('bg-slate-200','border-slate-800');" class="size-pill px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:border-slate-800 transition-custom bg-white">NHL size (standard)</button>
                                 <button type="button" onclick="const input = document.getElementById('fac-size'); input.value = '3vs3 size (mini)'; document.querySelectorAll('.size-pill').forEach(el=>el.classList.remove('bg-slate-200','border-slate-800')); this.classList.add('bg-slate-200','border-slate-800');" class="size-pill px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:border-slate-800 transition-custom bg-white">3vs3 size (mini)</button>
@@ -1191,19 +1191,200 @@
                             <span class="font-semibold text-slate-700">Pro Shop</span>
                         </div>
                         <!-- Beer -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="beer">
+                        <div id="amenity-beer" class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="beer">
                             <i class="fa-solid fa-beer-mug-empty text-3xl text-dark"></i>
                             <span class="font-semibold text-slate-700">Beer</span>
                         </div>
                         <!-- LiveBarn -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="livebarn">
+                        <div id="amenity-livebarn" class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="livebarn">
                             <i class="fa-solid fa-video text-3xl text-dark"></i>
                             <span class="font-semibold text-slate-700">LiveBarn</span>
+                        </div>
+                        <!-- Scoreboard -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="scoreboard">
+                            <i class="fa-solid fa-star text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Scoreboard</span>
+                        </div>
+                        <!-- Showers / Changerooms -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="showers">
+                            <i class="fa-solid fa-shower text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Showers / Changerooms</span>
+                        </div>
+                        <!-- Sound System -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="sound_system">
+                            <i class="fa-solid fa-volume-high text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Sound System</span>
+                        </div>
+                        <!-- Spectator Seating -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="spectator_seating">
+                            <i class="fa-solid fa-chair text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Spectator Seating</span>
+                        </div>
+                        <!-- Equipment Rental -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="equipment_rental">
+                            <i class="fa-solid fa-bag-shopping text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Equipment Rental</span>
                         </div>
                     </div>
                 </div>
 
                 <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const facType = document.getElementById('fac-type');
+                        const facEnv = document.getElementById('fac-env');
+                        const facName = document.getElementById('fac-name');
+                        const facSubtitle = document.getElementById('fac-subtitle');
+                        const sizeContainer = document.getElementById('size-suggestions-container');
+                        
+                        const liveBarn = document.getElementById('amenity-livebarn');
+                        const beer = document.getElementById('amenity-beer');
+
+                        const sportConfigs = {
+                            'ice': {
+                                env: 'indoor',
+                                placeholderName: 'e.g. Aréna Rosemère',
+                                placeholderSubtitle: 'e.g. Professional NHL-sized Ice Rink',
+                                sizes: ['NHL size (standard)', '3vs3 size (mini)', 'Olympic size'],
+                                showIceAmenities: true
+                            },
+                            'soccer': {
+                                env: 'outdoor',
+                                placeholderName: 'e.g. Terrain de soccer synthétique de Laval',
+                                placeholderSubtitle: 'e.g. Regulation Soccer Field with Artificial Turf',
+                                sizes: ['FIFA standard', '7v7 field', '5v5 mini'],
+                                showIceAmenities: false
+                            },
+                            'basketball': {
+                                env: 'indoor',
+                                placeholderName: 'e.g. Centre Multisport Basketball Court',
+                                placeholderSubtitle: 'e.g. Hardwood Full Basketball Court',
+                                sizes: ['Full court', 'Half court'],
+                                showIceAmenities: false
+                            },
+                            'tennis': {
+                                env: 'outdoor',
+                                placeholderName: 'e.g. Club de Tennis de Montreal',
+                                placeholderSubtitle: 'e.g. Professional Clay Tennis Court',
+                                sizes: ['Single court', 'Double court'],
+                                showIceAmenities: false
+                            },
+                            'pickleball': {
+                                env: 'indoor',
+                                placeholderName: 'e.g. Indoor Pickleball Complex',
+                                placeholderSubtitle: 'e.g. Premium Pickleball Court',
+                                sizes: ['Single court', 'Double court'],
+                                showIceAmenities: false
+                            },
+                            'pool': {
+                                env: 'indoor',
+                                placeholderName: 'e.g. Complexe aquatique de Blainville',
+                                placeholderSubtitle: 'e.g. Olympic-size 50m Swimming Pool',
+                                sizes: ['25m', '50m Olympic', 'Leisure/Recreational'],
+                                showIceAmenities: false
+                            },
+                            'football': {
+                                env: 'outdoor',
+                                placeholderName: 'e.g. Complexe Sportif Football Field',
+                                placeholderSubtitle: 'e.g. Premium Synthetic Turf Field',
+                                sizes: ['CFL/NFL standard', 'Youth'],
+                                showIceAmenities: false
+                            },
+                            'gym': {
+                                env: 'indoor',
+                                placeholderName: 'e.g. Peak Performance Gym',
+                                placeholderSubtitle: 'e.g. Fully Equipped Fitness Center',
+                                sizes: [],
+                                showIceAmenities: false
+                            }
+                        };
+
+                        function updateFormForSport() {
+                            if (!facType) return;
+                            const sport = facType.value;
+                            const config = sportConfigs[sport];
+                            if (!config) return;
+
+                            if (facEnv) facEnv.value = config.env;
+                            if (facName) facName.placeholder = config.placeholderName;
+                            if (facSubtitle) facSubtitle.placeholder = config.placeholderSubtitle;
+                            
+                            if (liveBarn) {
+                                liveBarn.style.display = config.showIceAmenities ? 'flex' : 'none';
+                                if (!config.showIceAmenities) {
+                                    liveBarn.classList.remove('border-slate-800', 'bg-slate-50');
+                                    liveBarn.classList.add('border-slate-200');
+                                }
+                            }
+                            if (beer) {
+                                beer.style.display = config.showIceAmenities ? 'flex' : 'none';
+                                if (!config.showIceAmenities) {
+                                    beer.classList.remove('border-slate-800', 'bg-slate-50');
+                                    beer.classList.add('border-slate-200');
+                                }
+                            }
+
+                            if (sizeContainer) {
+                                sizeContainer.innerHTML = '<span class="text-sm text-slate-500 font-medium py-1.5 pr-2">Suggestions:</span>';
+                                if (config.sizes.length === 0) {
+                                    sizeContainer.innerHTML += '<span class="text-sm text-slate-400 italic py-1.5">No standard presets for this sport.</span>';
+                                } else {
+                                    config.sizes.forEach(sizeStr => {
+                                        const btn = document.createElement('button');
+                                        btn.type = 'button';
+                                        btn.className = 'size-pill px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:border-slate-800 transition-custom bg-white';
+                                        btn.innerText = sizeStr;
+                                        btn.onclick = function() {
+                                            const sizeInput = document.getElementById('fac-size');
+                                            if(sizeInput) sizeInput.value = sizeStr;
+                                            document.querySelectorAll('.size-pill').forEach(el=>el.classList.remove('bg-slate-200','border-slate-800'));
+                                            this.classList.add('bg-slate-200','border-slate-800');
+                                        };
+                                        sizeContainer.appendChild(btn);
+                                    });
+                                }
+                            }
+                        }
+
+                        if (facType) facType.addEventListener('change', updateFormForSport);
+                        
+                        // Fire on load if fac-type exists
+                        if (facType && facType.value) {
+                            // Don't auto-override environment on initial load, let existing be.
+                            // But do update UI for amenities and size pills
+                            // For simplicity, we just rebuild pills and display hooks.
+                            const sport = facType.value;
+                            const config = sportConfigs[sport];
+                            if (config) {
+                                if (liveBarn) {
+                                    liveBarn.style.display = config.showIceAmenities ? 'flex' : 'none';
+                                }
+                                if (beer) {
+                                    beer.style.display = config.showIceAmenities ? 'flex' : 'none';
+                                }
+                                if (sizeContainer) {
+                                    sizeContainer.innerHTML = '<span class="text-sm text-slate-500 font-medium py-1.5 pr-2">Suggestions:</span>';
+                                    if (config.sizes.length === 0) {
+                                        sizeContainer.innerHTML += '<span class="text-sm text-slate-400 italic py-1.5">No standard presets for this sport.</span>';
+                                    } else {
+                                        config.sizes.forEach(sizeStr => {
+                                            const btn = document.createElement('button');
+                                            btn.type = 'button';
+                                            btn.className = 'size-pill px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:border-slate-800 transition-custom bg-white';
+                                            btn.innerText = sizeStr;
+                                            btn.onclick = function() {
+                                                const sizeInput = document.getElementById('fac-size');
+                                                if(sizeInput) sizeInput.value = sizeStr;
+                                                document.querySelectorAll('.size-pill').forEach(el=>el.classList.remove('bg-slate-200','border-slate-800'));
+                                                this.classList.add('bg-slate-200','border-slate-800');
+                                            };
+                                            sizeContainer.appendChild(btn);
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    });
+
                     // Add click listeners to amenity cards immediately after rendering
                     document.querySelectorAll('.amenity-card').forEach(card => {
                         card.addEventListener('click', function() {
@@ -1308,6 +1489,15 @@
                 <!-- Pricing & Booking -->
                 <div>
                     <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">6. Pricing & Booking</h2>
+                    
+                    <div class="mb-5">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Unit</label>
+                        <select id="fac-pricing-unit" class="w-full md:w-1/2 px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
+                            <option value="hour">Per Hour</option>
+                            <option value="half_day">Per Half-Day</option>
+                            <option value="full_day">Per Full Day</option>
+                        </select>
+                    </div>
                     
                     <div class="mb-4">
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Rules</label>
@@ -1928,6 +2118,9 @@
             document.getElementById('fac-location').value = facility.location || '';
             document.getElementById('fac-lat').value = facility.lat || '';
             document.getElementById('fac-lng').value = facility.lng || '';
+            
+            const pricingUnitEl = document.getElementById('fac-pricing-unit');
+            if (pricingUnitEl) pricingUnitEl.value = facility.pricing_unit || 'hour';
 
             document.getElementById('fac-instant').checked = facility.is_instant_book == 1;
             document.getElementById('fac-advance-booking').value = facility.advance_booking_days || 180;
@@ -4594,6 +4787,7 @@
                 lat: document.getElementById('fac-lat').value ? parseFloat(document.getElementById('fac-lat').value) : null,
                 lng: document.getElementById('fac-lng').value ? parseFloat(document.getElementById('fac-lng').value) : null,
                 base_price: basePrice,
+                pricing_unit: document.getElementById('fac-pricing-unit') ? document.getElementById('fac-pricing-unit').value : 'hour',
                 pricing_rules: pricingRules,
                 image_url: JSON.stringify(window.localImagesArray),
                 connected_facilities: Array.from(document.querySelectorAll('input[name="connected_fac"]:checked')).map(cb => parseInt(cb.value, 10)),

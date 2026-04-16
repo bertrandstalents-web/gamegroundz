@@ -165,6 +165,10 @@ async function initDatabase() {
             await client.query(`ALTER TABLE facilities ADD COLUMN sort_order INTEGER DEFAULT 0`);
         } catch(e) {}
 
+        try {
+            await client.query(`ALTER TABLE facilities ADD COLUMN pricing_unit TEXT DEFAULT 'hour'`);
+        } catch(e) {}
+
         // Discounts Table
         await client.query(`CREATE TABLE IF NOT EXISTS discounts (
             id SERIAL PRIMARY KEY,

@@ -600,12 +600,12 @@
 
                         <div id="company-name-container" class="hidden space-y-3">
                             <select id="auth-host-type" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700 bg-white">
-                                <option value="private">Private Arena / Facility</option>
+                                <option value="private">Sports Facility / Venue</option>
                                 <option value="public">Public / Municipal</option>
                             </select>
                             
                             <div id="private-fields">
-                                <input type="text" id="auth-company-name" placeholder="Company / Private Arena Name" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
+                                <input type="text" id="auth-company-name" placeholder="Company / Facility Owner Name" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
                             </div>
                             
                             <div id="public-fields" class="hidden space-y-3">
@@ -1447,7 +1447,7 @@
                     } else {
                         company_name = document.getElementById('auth-company-name') ? document.getElementById('auth-company-name').value : '';
                         if (!company_name.trim()) {
-                            authError.textContent = "Company / Private Arena name is required for facility owners.";
+                            authError.textContent = "Company / Facility Owner Name is required for facility owners.";
                             authError.classList.remove('hidden');
                             return;
                         }

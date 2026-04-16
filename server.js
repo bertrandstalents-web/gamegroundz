@@ -829,7 +829,7 @@ app.post('/api/facilities', (req, res) => {
         return res.status(401).json({ error: "Unauthorized: You must be logged in to list a facility." });
     }
 
-    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, facility_type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount, connected_facilities } = req.body;
+    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, facility_type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount, connected_facilities, pricing_unit } = req.body;
     
     if (!name || !type || !environment || !base_price || !location || !image_url) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -861,9 +861,9 @@ app.post('/api/facilities', (req, res) => {
 
     db.run(
         `INSERT INTO facilities 
-         (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, facility_type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, host_id, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount, connected_facilities) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, facility_type || 'Other', environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, req.session.userId, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00, connectedFacilitiesStr],
+         (name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, facility_type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, host_id, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount, connected_facilities, pricing_unit) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, facility_type || 'Other', environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, req.session.userId, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00, connectedFacilitiesStr, pricing_unit || 'hour'],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
@@ -888,7 +888,7 @@ app.put('/api/host/facilities/:id', (req, res) => {
     }
 
     const facilityId = req.params.id;
-    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, facility_type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount, connected_facilities } = req.body;
+    const { name, subtitle, description, features, locker_rooms, capacity, size_info, amenities, type, facility_type, environment, base_price, pricing_rules, location, lat, lng, image_url, is_instant_book, operating_hours, listing_status, advance_booking_days, has_processing_fee, processing_fee_amount, connected_facilities, pricing_unit } = req.body;
     
     if (!name || !type || !environment || !base_price || !location || !image_url) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -924,9 +924,9 @@ app.put('/api/host/facilities/:id', (req, res) => {
             name = ?, subtitle = ?, description = ?, features = ?, locker_rooms = ?, 
             capacity = ?, size_info = ?, amenities = ?, type = ?, facility_type = ?, environment = ?, 
             base_price = ?, pricing_rules = ?, location = ?, lat = COALESCE(?, lat), lng = COALESCE(?, lng), image_url = ?, 
-            is_instant_book = ?, operating_hours = ?, listing_status = ?, advance_booking_days = ?, has_processing_fee = ?, processing_fee_amount = ?, connected_facilities = ? 
+            is_instant_book = ?, operating_hours = ?, listing_status = ?, advance_booking_days = ?, has_processing_fee = ?, processing_fee_amount = ?, connected_facilities = ?, pricing_unit = ? 
          WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)`,
-        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, facility_type || 'Other', environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00, connectedFacilitiesStr, facilityId, req.session.userId, `%"${req.session.email}"%` ],
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, facility_type || 'Other', environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00, connectedFacilitiesStr, pricing_unit || 'hour', facilityId, req.session.userId, `%"${req.session.email}"%` ],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });

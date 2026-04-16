@@ -160,6 +160,18 @@
                             <input type="checkbox" value="pool" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
                             <span class="ml-3 text-slate-600 group-hover:text-dark">Swimming Pool</span>
                         </label>
+                        <label class="flex items-center group cursor-pointer">
+                            <input type="checkbox" value="tennis" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                            <span class="ml-3 text-slate-600 group-hover:text-dark">Tennis Court</span>
+                        </label>
+                        <label class="flex items-center group cursor-pointer">
+                            <input type="checkbox" value="football" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                            <span class="ml-3 text-slate-600 group-hover:text-dark">Football Field</span>
+                        </label>
+                        <label class="flex items-center group cursor-pointer">
+                            <input type="checkbox" value="gym" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                            <span class="ml-3 text-slate-600 group-hover:text-dark">Gymnasium</span>
+                        </label>
                     </div>
                 </div>
 
@@ -502,7 +514,7 @@
                     <div class="p-5">
                         <div class="flex justify-between items-start mb-1">
                             <h3 class="text-lg font-bold text-dark group-hover:text-primary transition-custom truncate pr-4">${facility.name}</h3>
-                            <span class="font-bold text-dark whitespace-nowrap">From $${facility.base_price}<span class="text-xs font-normal text-slate-500">/hr</span></span>
+                            <span class="font-bold text-dark whitespace-nowrap">From $${facility.base_price}<span class="text-xs font-normal text-slate-500">${facility.pricing_unit === 'half_day' ? '/ half-day' : (facility.pricing_unit === 'full_day' ? '/ day' : '/hr')}</span></span>
                         </div>
                         <p class="text-slate-500 text-xs mb-3 flex items-center">
                             <i class="fa-solid fa-location-dot mr-1"></i> ${facility.location}
@@ -590,7 +602,7 @@
                         <div class="w-48 cursor-pointer ${group.items.length > 1 ? 'border-b border-slate-100 pb-3 last:border-0 last:pb-0' : ''}" onclick="window.location.href='facility.html?id=${f.id}'">
                             <img src="${getPrimaryImageUrl(f.image_url)}" class="w-full h-24 object-cover rounded-lg mb-2">
                             <div class="font-bold text-sm truncate hover:text-primary transition-custom">${f.name}</div>
-                            <div class="font-bold text-primary">From $${f.base_price}<span class="text-xs text-slate-500 font-normal">/hr</span></div>
+                            <div class="font-bold text-primary">From $${f.base_price}<span class="text-xs text-slate-500 font-normal">${f.pricing_unit === 'half_day' ? '/ half-day' : (f.pricing_unit === 'full_day' ? '/ day' : '/hr')}</span></div>
                         </div>
                     `;
                 });

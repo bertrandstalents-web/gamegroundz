@@ -579,6 +579,8 @@
             
             // Booking Widget Logic
             let hourlyRate = 197;
+            let pricingUnitLabel = '/ hour';
+            let pricingUnitLabelShort = '/hr';
             let pricingRules = [];
             let processingFee = 15;
             const taxRate = 0.14975; // ~15% tax in Quebec
@@ -755,6 +757,10 @@
                     }
                     
                     // Update global state
+                    window.pricingUnit = facility.pricing_unit || 'hour';
+                    pricingUnitLabel = window.pricingUnit === 'half_day' ? '/ half-day' : (window.pricingUnit === 'full_day' ? '/ day' : '/ hour');
+                    pricingUnitLabelShort = window.pricingUnit === 'half_day' ? '/ half-day' : (window.pricingUnit === 'full_day' ? '/ day' : '/hr');
+                    
                     hourlyRate = facility.base_price || facility.price || 197;
                     let hasProcessingFee = (facility.has_processing_fee == 1 || facility.has_processing_fee === true || facility.has_processing_fee === '1' || facility.has_processing_fee === undefined);
                     processingFee = hasProcessingFee ? (facility.processing_fee_amount !== undefined ? Number(facility.processing_fee_amount) : 15.00) : 0;
@@ -983,7 +989,7 @@
                     // Price Focus & Widget Rating
                     const priceEl = document.querySelector('.sticky.top-28 .text-2xl.font-bold.text-dark');
                     if(priceEl && priceEl.parentElement) {
-                        priceEl.parentElement.innerHTML = `<span class="text-2xl font-bold text-dark">From $${hourlyRate}</span><span class="text-slate-500 font-medium"> / hour</span>`;
+                        priceEl.parentElement.innerHTML = `<span class="text-2xl font-bold text-dark">From $${hourlyRate}</span><span class="text-slate-500 font-medium"> ${pricingUnitLabel}</span>`;
                     }
                     
                     const widgetRatingEl = document.querySelector('.sticky.top-28 .flex.flex-col.items-end');
@@ -1096,7 +1102,7 @@
                     // Mobile Footer Price
                     const mobilePriceContainer = document.querySelector('.fixed.bottom-0 .text-lg.font-bold.text-dark');
                     if (mobilePriceContainer) {
-                        mobilePriceContainer.innerHTML = `From $${hourlyRate} <span class="text-sm font-normal text-slate-500">/ hour</span>`;
+                        mobilePriceContainer.innerHTML = `From $${hourlyRate} <span class="text-sm font-normal text-slate-500">${pricingUnitLabel}</span>`;
                     }
 
                     // Re-render pricing calculation to use new hourly rate
@@ -1515,7 +1521,7 @@
 
                         const hourlyPriceForSlot = getPriceForTimeSlot(slot.time, hourlyRate, pricingRules, isWeekend);
                         const formattedPrice = hourlyPriceForSlot % 1 === 0 ? hourlyPriceForSlot : hourlyPriceForSlot.toFixed(2);
-                        const priceBadge = `<span class="ml-2 text-[11px] font-medium text-slate-500 bg-slate-200/60 px-1.5 py-0.5 rounded-md">$${formattedPrice}/hr</span>`;
+                        const priceBadge = `<span class="ml-2 text-[11px] font-medium text-slate-500 bg-slate-200/60 px-1.5 py-0.5 rounded-md">$${formattedPrice}${pricingUnitLabelShort}</span>`;
                         
                         if (isUnavailable) {
                              div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg flex justify-between items-center mb-1 text-slate-400 bg-slate-100 cursor-not-allowed opacity-50 border border-transparent`;
@@ -1756,7 +1762,7 @@
                     if (hours === 1) {
                         priceCalcEl.innerHTML = `$${subtotal.toFixed(0)} x 1 hour`;
                     } else {
-                        priceCalcEl.innerHTML = `Multiple slots (avg $${(subtotal/hours).toFixed(0)}/hr)`;
+                        priceCalcEl.innerHTML = `Multiple slots (avg $${(subtotal/hours).toFixed(0)}${pricingUnitLabelShort})`;
                     }
 
                     // Insert Discount UI element into the list if it exists
