@@ -2,7 +2,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#10b981',
+                        primary: '#10b981', // Emerald
                         primaryHover: '#059669',
                         dark: '#0f172a',
                         darker: '#020617',
@@ -18,1657 +18,1008 @@
                 }
             }
         }
-        // Booking Widget Logic
-        document.addEventListener('DOMContentLoaded', async () => {
-            let hourlyRate = 197;
-            let pricingRules = [];
-            let processingFee = 15;
-            const taxRate = 0.14975; // ~15% tax in Quebec
-
-            function getPriceForTimeSlot(timeStr, basePrice, rules, isWeekend) {
-                if (!rules || rules.length === 0) return parseFloat(basePrice);
-                const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
-                if (!match) return parseFloat(basePrice);
-                
-                let h = parseInt(match[1]);
-                const isPM = match[3].toUpperCase() === 'PM';
-                if (isPM && h !== 12) h += 12;
-                if (!isPM && h === 12) h = 0;
-                
-                const time24 = `${h.toString().padStart(2, '0')}:${match[2]}`;
-                for (let i = 0; i < rules.length; i++) {
-                    const rule = rules[i];
-                    
-                    if (rule.days === 'weekdays' && isWeekend) continue;
-                    if (rule.days === 'weekends' && !isWeekend) continue;
-
-                    if (time24 >= rule.start && time24 < rule.end) {
-                        return parseFloat(rule.price);
-                    }
-                }
-                return parseFloat(basePrice);
+        // Navbar blur and sticky behavior
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 20) {
+                nav.classList.add('shadow-md');
+                nav.classList.replace('border-slate-200', 'border-slate-200/50');
+            } else {
+                nav.classList.remove('shadow-md');
+                nav.classList.replace('border-slate-200/50', 'border-slate-200');
             }
-            
-            // Dynamically generated slots based on operating hours
-            let availableSlots = [];
-            let facilityOperatingHours = { open: "06:00", close: "23:00" };
+        });
 
-            function formatTime12(h, m) {
-                let period = 'AM';
-                let h12 = h;
-                if (h12 >= 12) {
-                    period = 'PM';
-                    if (h12 > 12) h12 -= 12;
-                }
-                if (h12 === 0) h12 = 12;
-                return `${h12}:${m.toString().padStart(2, '0')} ${period}`;
-            }
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
 
-            function generateDailySlots(opHours) {
-                const slots = [];
-                let [openH, openM] = opHours.open.split(':').map(Number);
-                let [closeH, closeM] = opHours.close.split(':').map(Number);
-                
-                // Allow rolling over to midnight (24:00)
-                if (closeH === 0 && closeM === 0) closeH = 24;
-
-                let currentMins = openH * 60 + openM;
-                const endMins = closeH * 60 + closeM;
-
-                while (currentMins + 30 <= endMins) {
-                    const h1 = Math.floor(currentMins / 60);
-                    const m1 = currentMins % 60;
-                    const h2 = Math.floor((currentMins + 30) / 60);
-                    const m2 = (currentMins + 30) % 60;
-
-                    const time12Str1 = formatTime12(h1, m1);
-                    const time12Str2 = h2 >= 24 ? "12:00 AM" : formatTime12(h2, m2);
-                    
-                    const time24Str = `${h1.toString().padStart(2, '0')}:${m1.toString().padStart(2, '0')}`;
-
-                    // ID is now the canonical HH:MM start time string
-                    slots.push({ id: time24Str, time: `${time12Str1} - ${time12Str2}` });
-                    currentMins += 30; // 30-min slots
-                }
-                return slots;
-            }
-            
-            let selectedSlotIds = new Set(); // Start with no slots selected
-
-            const trigger = document.getElementById('time-slot-trigger');
-            const dropdown = document.getElementById('time-slot-dropdown');
-            const slotsList = document.getElementById('available-slots-list');
-            const slotsSummary = document.getElementById('slots-summary');
-            const selectedContainer = document.getElementById('selected-slots-container');
-            const reserveBtn = document.getElementById('reserve-btn');
-
-            window.publicSessionSlots = new Map(); // "YYYY-MM-DD|HH:MM" -> public_session object
-
-            let bookedSlotIds = new Set(); // Stores IDs of private slots AND fully loaded public sessions
-
-            async function fetchBookedSlots() {
-                if (!currentFacilityId) return new Set();
-                try {
-                    const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
-                    // Fetch all without date param
-                    const response = await fetch(`${API_BASE_URL}/api/bookings/${currentFacilityId}`);
-                    if (response.ok) {
-                        const bookings = await response.json();
-                        let bookedIds = new Set();
-                        window.publicSessionSlots.clear();
-                        
-                        bookings.forEach(b => {
-                            if (b.time_slots && b.booking_date) {
-                                const dStr = b.booking_date.split('T')[0];
-                                const isPublic = b.booking_type === 'public_session';
-                                const isFull = isPublic && b.joined_count >= b.capacity;
-                                
-                                try {
-                                    const slotsArr = JSON.parse(b.time_slots);
-                                    if(Array.isArray(slotsArr)) {
-                                        slotsArr.forEach(id => {
-                                            const key = `${dStr}|${String(id)}`;
-                                            if (isPublic) {
-                                                window.publicSessionSlots.set(key, b);
-                                                if (isFull) bookedIds.add(key);
-                                            } else {
-                                                bookedIds.add(key);
-                                            }
-                                        });
-                                    } else {
-                                        b.time_slots.split(',').forEach(id => {
-                                            const key = `${dStr}|${String(id).trim()}`;
-                                            if (isPublic) {
-                                                window.publicSessionSlots.set(key, b);
-                                                if (isFull) bookedIds.add(key);
-                                            } else bookedIds.add(key);
-                                        });
-                                    }
-                                } catch(e) {
-                                    b.time_slots.split(',').forEach(id => {
-                                        const key = `${dStr}|${String(id).trim()}`;
-                                        if (isPublic) {
-                                            window.publicSessionSlots.set(key, b);
-                                            if (isFull) bookedIds.add(key);
-                                        } else bookedIds.add(key);
-                                    });
-                                }
-                            }
-                        });
-                        return bookedIds;
-                    }
-                } catch (err) {
-                    console.error("Failed to fetch booked slots:", err);
-                }
-                return new Set();
-            }
-
-            const priceCalcEl = document.getElementById('price-calculation');
-            const subtotalEl = document.getElementById('subtotal-amount');
-            const taxEl = document.getElementById('tax-amount');
-            const totalEl = document.getElementById('total-amount');
-
-
-            const mobileReserveBtn = document.getElementById('mobile-reserve-btn');
-            
-            let currentTotal = 0;
-            let currentFacilityName = "Loading Facility..."; // Default
-            let currentFacilityId = null;
-
-            // --- FETCH FACILITY DATA ---
-            const urlParams = new URLSearchParams(window.location.search);
-            const facilityIdParam = urlParams.get('id');
-
-            if (facilityIdParam) {
-                try {
-                    const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
-                    const response = await fetch(`${API_BASE_URL}/api/facilities/${facilityIdParam}`);
-                    if (!response.ok) throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-                    
-                    const text = await response.text();
-                    if (!text) throw new Error("Server returned an empty response.");
-                    
-                    let facility;
-                    try {
-                        facility = JSON.parse(text);
-                    } catch (e) {
-                        throw new Error("Invalid format received from server.");
-                    }
-                    
-                    // Update global state
-                    hourlyRate = facility.base_price || facility.price || 197;
-                    let hasProcessingFee = (facility.has_processing_fee == 1 || facility.has_processing_fee === true || facility.has_processing_fee === '1' || facility.has_processing_fee === undefined);
-                    processingFee = hasProcessingFee ? (facility.processing_fee_amount !== undefined ? Number(facility.processing_fee_amount) : 15.00) : 0;
-                    try {
-                        pricingRules = JSON.parse(facility.pricing_rules || '[]');
-                    } catch (e) {
-                        pricingRules = [];
-                    }
-                    try {
-                        facilityOperatingHours = JSON.parse(facility.operating_hours || '{"open": "06:00", "close": "23:00"}');
-                    } catch (e) {
-                        facilityOperatingHours = { open: "06:00", close: "23:00" };
-                    }
-                    // Generate slots for the booking widget
-                    availableSlots = generateDailySlots(facilityOperatingHours);
-
-                    currentFacilityName = facility.name;
-                    currentFacilityId = facility.id;
-                    const facilityDiscounts = facility.discounts || [];
-                    
-                    // Handle Connected Facilities Switcher
-                    const connectedContainer = document.getElementById('connected-facilities-switcher-container');
-                    const connectedSelect = document.getElementById('connected-facility-select');
-                    
-                    if (facility.connected_facilities_data && facility.connected_facilities_data.length > 0) {
-                        connectedContainer.classList.remove('hidden');
-                        
-                        let optionsHtml = `<option value="${facility.id}" selected>${facility.name} (Current)</option>`;
-                        facility.connected_facilities_data.forEach(f => {
-                            optionsHtml += `<option value="${f.id}">${f.name}</option>`;
-                        });
-                        
-                        connectedSelect.innerHTML = optionsHtml;
-                        
-                        // Listen for switch
-                        connectedSelect.addEventListener('change', (e) => {
-                            if (e.target.value != facility.id) {
-                                window.location.href = `facility.html?id=${e.target.value}`;
-                            }
-                        });
-                    }
-
-                    // Expose it globally for render
-                    window.facilityDiscounts = facilityDiscounts;
-
-                    // Update UI elements
-                    document.title = `${facility.name} | GameGroundz`;
-                    
-                    // Image Gallery Logic
-                    const galleryContainer = document.getElementById('facility-gallery');
-                    let images = [];
-
-                    try {
-                        const parsed = JSON.parse(facility.image_url);
-                        if (Array.isArray(parsed) && parsed.length > 0) {
-                            images = parsed;
-                        } else if (facility.image_url) {
-                            images = [facility.image_url];
-                        }
-                    } catch (e) {
-                        if (facility.image_url) images = [facility.image_url];
-                    }
-
-                    // Fallback neutral image if none exist
-                    if (images.length === 0) {
-                        images = ['https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80'];
-                    }
-
-                    // Dynamically build the gallery
-                    galleryContainer.innerHTML = '';
-                    const baseClass = "flex overflow-x-auto snap-x snap-mandatory hide-scrollbar md:grid gap-2 h-64 md:h-[450px] mb-8 md:mb-12 md:rounded-2xl md:overflow-hidden cursor-pointer group w-[100vw] -ml-4 sm:-ml-6 lg:ml-0 lg:w-full px-4 sm:px-6 lg:px-0";
-                    const mobileImgClass = "w-[85vw] md:w-full h-full flex-shrink-0 snap-center rounded-xl md:rounded-none overflow-hidden relative bg-slate-100 flex items-center justify-center";
-                    
-                    if (images.length === 1) {
-                        galleryContainer.className = `${baseClass} md:grid-cols-1 w-full mt-4 md:mt-0`;
-                        galleryContainer.innerHTML = `
-                            <div class="${mobileImgClass} w-full pr-4 md:pr-0">
-                                <img src="${images[0]}" class="w-full h-full object-cover transition duration-500">
-                            </div>
-                        `;
-                    } else if (images.length === 2) {
-                        galleryContainer.className = `${baseClass} md:grid-cols-2 mt-4 md:mt-0`;
-                        galleryContainer.innerHTML = `
-                            <div class="${mobileImgClass}">
-                                <img src="${images[0]}" class="w-full h-full object-cover transition duration-500">
-                            </div>
-                            <div class="${mobileImgClass} pr-4 md:pr-0">
-                                <img src="${images[1]}" class="w-full h-full object-cover transition duration-500">
-                            </div>
-                        `;
-                    } else if (images.length === 3) {
-                        galleryContainer.className = `${baseClass} md:grid-cols-3 mt-4 md:mt-0`;
-                        galleryContainer.innerHTML = `
-                            <div class="${mobileImgClass} md:col-span-2">
-                                <img src="${images[0]}" class="w-full h-full object-cover transition duration-500">
-                            </div>
-                            <div class="hidden md:flex flex-col gap-2 h-full w-[85vw] md:w-auto flex-shrink-0 snap-center">
-                                <div class="relative flex-1 overflow-hidden bg-slate-100 block">
-                                    <img src="${images[1]}" class="w-full h-full object-cover transition duration-500">
-                                </div>
-                                <div class="relative flex-1 overflow-hidden bg-slate-100 block">
-                                    <img src="${images[2]}" class="w-full h-full object-cover transition duration-500">
-                                </div>
-                            </div>
-                            <div class="md:hidden ${mobileImgClass}"><img src="${images[1]}" class="w-full h-full object-cover transition duration-500"></div>
-                            <div class="md:hidden ${mobileImgClass} pr-4 md:pr-0"><img src="${images[2]}" class="w-full h-full object-cover transition duration-500"></div>
-                        `;
-                    } else if (images.length >= 4) {
-                        galleryContainer.className = `${baseClass} md:grid-cols-4 mt-4 md:mt-0`;
-                        
-                        let html = `
-                            <div class="${mobileImgClass} md:col-span-2 md:row-span-2">
-                                <img src="${images[0]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
-                            </div>
-                            <div class="${mobileImgClass}">
-                                <img src="${images[1]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
-                            </div>
-                            <div class="${mobileImgClass}">
-                                <img src="${images[2]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
-                            </div>
-                            <div class="${mobileImgClass} md:block">
-                                <img src="${images[3]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
-                            </div>
-                        `;
-                        
-                        if (images.length >= 5) {
-                            html += `
-                                <div class="${mobileImgClass} md:block ${images.length === 5 ? 'pr-4 md:pr-0' : ''}">
-                                    <img src="${images[4]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
-                                    ${images.length > 5 ? `
-                                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center transition-custom hover:bg-black/50">
-                                        <button class="bg-white/90 backdrop-blur text-dark px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-white transition-custom text-sm flex items-center transform hover:scale-105">
-                                            <i class="fa-solid fa-images mr-2"></i> Showcase All
-                                        </button>
-                                    </div>
-                                    ` : ''}
-                                </div>
-                            `;
-                            for (let i = 5; i < images.length; i++) {
-                                html += `<div class="${mobileImgClass} md:hidden ${i === images.length - 1 ? 'pr-4' : ''}">
-                                            <img src="${images[i]}" class="w-full h-full object-cover">
-                                         </div>`;
-                            }
-                        }
-
-                        galleryContainer.innerHTML = html;
-                    }
-
-                    // Dynamic Description
-                    const descContainer = document.getElementById('facility-description-container');
-                    if(descContainer) {
-                        if (facility.description && facility.description.trim() !== '') {
-                            // If owner provided a custom description, display it. Replace newlines with <br>
-                            descContainer.innerHTML = `<p>${facility.description.replace(/\n/g, '<br>')}</p>`;
-                        } else {
-                            // Fallback to generic description
-                            const facilityTypeLabel = facility.type === 'ice' ? 'ice hockey' : 
-                                                      facility.type === 'turf' ? 'synthetic turf' : 
-                                                      facility.type === 'court' ? 'hardwood court' : facility.type;
-                            
-                            descContainer.innerHTML = `
-                                <p><strong>${facility.name}</strong> is a premier ${facilityTypeLabel} facility located in the heart of ${facility.location.split(',')[0]}. Our state-of-the-art playing surface features excellent lighting and amenities for practices or games.</p>
-                                <p>Perfect for team practices, adult leagues, private coaching sessions, or corporate events.</p>
-                                <p class="font-medium text-dark mt-4">Included in your rental:</p>
-                                <ul class="list-disc pl-5 space-y-1 text-base text-slate-600">
-                                    <li>Standard playing surface time</li>
-                                    <li>Use of standard equipment (nets/hoops)</li>
-                                    <li>Scoreboard access and controller</li>
-                                    <li>Dressing rooms and showers</li>
-                                </ul>
-                            `;
-                        }
-                    }
-
-                    // Header Section
-                    const titleEl = document.querySelector('h1.text-3xl.font-extrabold');
-                    if(titleEl) titleEl.textContent = facility.name;
-                    titleEl.classList.add('notranslate');
-                    
-                    const operatorEl = document.getElementById('operator-name');
-                    if (operatorEl) {
-                        operatorEl.textContent = facility.company_name || facility.host_name || 'GameGroundz Host';
-                    }
-                    
-                    const hostPicEl = document.getElementById('host-profile-picture');
-                    if (hostPicEl && facility.host_profile_picture) {
-                        hostPicEl.src = facility.host_profile_picture;
-                    }
-                    
-                    const subtitleEl = document.getElementById('header-subtitle');
-                    if(subtitleEl) {
-                        if (facility.subtitle && facility.subtitle.trim() !== '') {
-                            subtitleEl.textContent = facility.subtitle;
-                        } else {
-                            const subtitleText = facility.type === 'ice' ? 'Professional NHL-sized Ice Rink' :
-                                                 facility.type === 'turf' ? 'Premium Synthetic Turf Field' :
-                                                 facility.type === 'court' ? 'Professional Hardwood Court' :
-                                                 facility.type === 'gym' ? 'Fully Equipped Fitness Center' : 'Premium Sports Facility';
-                            subtitleEl.textContent = subtitleText;
-                        }
-                    }
-
-                    // Dynamic Basics
-                    const basicsContainer = document.getElementById('header-basics');
-                    if (basicsContainer) {
-                        let basicsArr = [];
-                        if (facility.size_info) basicsArr.push(`<span>${facility.size_info}</span>`);
-                        basicsArr.push(`<span>${facility.environment.charAt(0).toUpperCase() + facility.environment.slice(1)}</span>`);
-                        if (facility.capacity > 0) basicsArr.push(`<span>Max ${facility.capacity} players</span>`);
-                        if (facility.locker_rooms > 0) basicsArr.push(`<span>${facility.locker_rooms} Locker Rooms</span>`);
-                        
-                        basicsContainer.innerHTML = basicsArr.join('<span class="text-slate-300">•</span>');
-                    }
-
-                    const headerStats = document.querySelector('div.flex.items-center.text-sm.font-medium.text-slate-600');
-                    if(headerStats) {
-                        headerStats.innerHTML = `
-                            <span class="flex items-center"><i class="fa-solid fa-star text-yellow-400 mr-1.5 text-base"></i> ${facility.rating || '4.9'} <span class="text-slate-400 font-normal underline ml-1 cursor-pointer hover:text-dark" onclick="document.getElementById('reviews-section').scrollIntoView({behavior: 'smooth'})">(${facility.reviews_count || 0} reviews)</span></span>
-                            <span class="mx-3 text-slate-300">•</span>
-                            <span class="flex items-center text-slate-500"><i class="fa-solid fa-medal text-primary mr-1.5"></i> Superhost Facility</span>
-                            <span class="mx-3 text-slate-300">•</span>
-                            <span class="flex items-center underline cursor-pointer hover:text-dark"><i class="fa-solid fa-location-dot mr-1.5"></i> ${facility.location}</span>
-                        `;
-                    }
-
-                    // Price Focus & Widget Rating
-                    const priceEl = document.querySelector('.sticky.top-28 .text-2xl.font-bold.text-dark');
-                    if(priceEl && priceEl.parentElement) {
-                        priceEl.parentElement.innerHTML = `<span class="text-2xl font-bold text-dark">From $${hourlyRate}</span><span class="text-slate-500 font-medium"> / hour</span>`;
-                    }
-                    
-                    const widgetRatingEl = document.querySelector('.sticky.top-28 .flex.flex-col.items-end');
-                    if (widgetRatingEl) {
-                        widgetRatingEl.innerHTML = `
-                            <span class="flex items-center font-bold text-sm"><i class="fa-solid fa-star text-yellow-400 text-xs mr-1"></i> ${facility.rating || '4.9'}</span>
-                            <span class="text-xs text-slate-400 underline cursor-pointer hover:text-dark" onclick="document.getElementById('reviews-section').scrollIntoView({behavior: 'smooth'})">${facility.reviews_count || 0} reviews</span>
-                        `;
-                    }
-
-                    // Tags
-                    const typeDisplay = facility.type.charAt(0).toUpperCase() + facility.type.slice(1);
-                    const envDisplay = facility.environment.charAt(0).toUpperCase() + facility.environment.slice(1);
-                    const tagContainer = document.querySelector('.flex.flex-wrap.gap-2.mb-6');
-                    if(tagContainer) {
-                        tagContainer.innerHTML = `
-                            <span class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-semibold">${typeDisplay}</span>
-                            <span class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-semibold">${envDisplay}</span>
-                        `;
-                    }
-                    
-                    // Features
-                    const featuresContainer = document.getElementById('facility-features-container');
-                    if (featuresContainer) {
-                        let featuresHtml = '';
-                        let parsedFeatures = [];
-                        
-                        try {
-                            if (facility.features) {
-                                parsedFeatures = JSON.parse(facility.features);
-                            }
-                        } catch(e) {}
-                        
-                        if (parsedFeatures && parsedFeatures.length > 0) {
-                            parsedFeatures.forEach(feature => {
-                                featuresHtml += `
-                                    <div class="flex items-start">
-                                        <i class="fa-solid fa-check text-2xl text-primary mt-1 mr-4 w-6 text-center"></i>
-                                        <div>
-                                            <h3 class="font-bold text-dark mb-1">${feature.title}</h3>
-                                            <p class="text-slate-500 text-sm leading-relaxed">${feature.description}</p>
-                                        </div>
-                                    </div>
-                                `;
-                            });
-                        } else {
-                            // Default generic features based on instant book
-                            let instantBookHtml = facility.is_instant_book === 1 ? `
-                                <div class="flex items-start">
-                                    <i class="fa-solid fa-bolt text-2xl text-primary mt-1 mr-4 w-6 text-center"></i>
-                                    <div>
-                                        <h3 class="font-bold text-dark mb-1">Instant Booking Ready</h3>
-                                        <p class="text-slate-500 text-sm leading-relaxed">No waiting for approval. Pick your slot, pay, and your booking is confirmed immediately.</p>
-                                    </div>
-                                </div>
-                            ` : '';
-                            
-                            featuresHtml = `
-                                <div class="flex items-start">
-                                    <i class="fa-solid fa-stopwatch text-2xl text-slate-700 mt-1 mr-4 w-6 text-center"></i>
-                                    <div>
-                                        <h3 class="font-bold text-dark mb-1">Standard Rental Block</h3>
-                                        <p class="text-slate-500 text-sm leading-relaxed">Access to the facility for your selected time slots.</p>
-                                    </div>
-                                </div>
-                                ${instantBookHtml}
-                            `;
-                        }
-                        
-                        featuresContainer.innerHTML = featuresHtml;
-                    }
-                    
-                    // Standard Amenities
-                    const amenitiesContainer = document.getElementById('standard-amenities-container');
-                    if (amenitiesContainer) {
-                        let amenitiesHtml = '';
-                        let parsedAmenities = [];
-                        try {
-                            if (facility.amenities) {
-                                parsedAmenities = JSON.parse(facility.amenities);
-                            }
-                        } catch(e) {}
-
-                        const amenityMeta = {
-                            "wifi": { icon: "fa-wifi", text: "Wifi" },
-                            "parking": { icon: "fa-square-parking", text: "Free parking" },
-                            "tv": { icon: "fa-tv", text: "TV" },
-                            "first_aid": { icon: "fa-truck-medical", text: "First Aid Kit" },
-                            "accessibility": { icon: "fa-wheelchair", text: "Wheelchair accessible" },
-                            "concessions": { icon: "fa-utensils", text: "Concessions" },
-                            "locker_rooms": { icon: "fa-door-open", text: "Locker Rooms" },
-                            "showers": { icon: "fa-shower", text: "Showers" },
-                            "pro_shop": { icon: "fa-shop", text: "Pro Shop" },
-                            "beer": { icon: "fa-beer-mug-empty", text: "Beer" },
-                            "livebarn": { icon: "fa-video", text: "LiveBarn" }
-                        };
-
-                        if (parsedAmenities && parsedAmenities.length > 0) {
-                            parsedAmenities.forEach(am => {
-                                const meta = amenityMeta[am] || { icon: "fa-check", text: am };
-                                amenitiesHtml += `<div class="flex items-center"><i class="fa-solid ${meta.icon} w-8 text-xl text-slate-400"></i> ${meta.text}</div>`;
-                            });
-                        } else {
-                            amenitiesHtml = '<div class="col-span-2 text-slate-400 italic">No standard amenities listed.</div>';
-                        }
-                        amenitiesContainer.innerHTML = amenitiesHtml;
-                    }
-
-
-                    // Mobile Footer Price
-                    const mobilePriceContainer = document.querySelector('.fixed.bottom-0 .text-lg.font-bold.text-dark');
-                    if (mobilePriceContainer) {
-                        mobilePriceContainer.innerHTML = `From $${hourlyRate} <span class="text-sm font-normal text-slate-500">/ hour</span>`;
-                    }
-
-                    // Re-render pricing calculation to use new hourly rate
-                    render();
-
-                } catch (error) {
-                    console.error("Error fetching facility details:", error);
-                    // Could redirect to a 404 or show an error banner
-                }
-            }
-
-
-            function toggleDropdown(e) {
-                dropdown.classList.toggle('hidden');
+        // Profile Puck Logic
+        const puckBtn = document.getElementById('profile-puck-btn');
+        const puckDropdown = document.getElementById('puck-dropdown');
+        if (puckBtn && puckDropdown) {
+            puckBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 e.stopPropagation();
-            }
-
-            trigger.addEventListener('click', toggleDropdown);
-            
-            // Close dropdown when clicking outside
+                puckDropdown.classList.toggle('hidden');
+            });
             document.addEventListener('click', (e) => {
-                if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
-                    dropdown.classList.add('hidden');
+                if (!puckDropdown.contains(e.target) && e.target !== puckBtn && !puckBtn.contains(e.target)) {
+                    puckDropdown.classList.add('hidden');
                 }
             });
+        }
+        const puckLogout = document.getElementById('puck-logout');
+        if (puckLogout) puckLogout.addEventListener('click', handleLogout);
 
-            window.joinPublicSession = async function(bookingId) {
-                const btn = document.getElementById('reserve-btn');
-                const mobileBtn = document.getElementById('mobile-reserve-btn');
-                const originalText = btn ? btn.innerHTML : '';
-                const mobileOriginalText = mobileBtn ? mobileBtn.innerHTML : '';
+        // Autocomplete for Location Search via Google Places API
+        const searchInput = document.getElementById('locationSearch');
+
+        async function initGoogleMaps() {
+            try {
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                const response = await fetch(`${API_BASE_URL}/api/config/maps`);
+                if (!response.ok) return;
                 
-                try {
-                    if (btn) {
-                        btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin mr-2'></i> Joining...";
-                        btn.disabled = true;
-                        btn.classList.add('opacity-80', 'cursor-not-allowed');
-                    }
-                    if (mobileBtn) {
-                        mobileBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i>";
-                        mobileBtn.disabled = true;
-                    }
+                const data = await response.json();
+                if (data.apiKey) {
+                    const script = document.createElement('script');
+                    script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&libraries=places`;
+                    script.async = true;
+                    script.defer = true;
+                    script.onload = () => {
+                        const options = {
+                            componentRestrictions: { country: ["us", "ca"] },
+                            fields: ["formatted_address"]
+                        };
+                        const autocomplete = new google.maps.places.Autocomplete(searchInput, options);
+                        autocomplete.addListener('place_changed', function() {
+                            const place = autocomplete.getPlace();
+                            if (place.formatted_address) {
+                                searchInput.value = place.formatted_address;
+                            }
+                        });
+                        
+                        // Prevent the Enter key from submitting a form if they press enter on a result
+                        searchInput.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                            }
+                        });
 
-                    const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
-                    const response = await fetch(`${API_BASE_URL}/api/public_sessions/join`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ booking_id: bookingId }),
-                        credentials: 'include'
-                    });
-                    
-                    const data = await response.json();
-                    if (!response.ok) {
-                        await showAlertModal('Join Error', data.error || 'Failed to join session', 'OK', true);
-                        if(btn) {
-                            btn.innerHTML = originalText;
-                            btn.disabled = false;
-                            btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                        // Also attach to signup modal municipality input
+                        const authMunicipalitySearch = document.getElementById('auth-municipality-search');
+                        if (authMunicipalitySearch) {
+                            const authAutocomplete = new google.maps.places.Autocomplete(authMunicipalitySearch, { types: ['(regions)'], fields: ['formatted_address'] });
+                            authAutocomplete.addListener('place_changed', function() {
+                                const place = authAutocomplete.getPlace();
+                                if (place.formatted_address) {
+                                    authMunicipalitySearch.value = place.formatted_address;
+                                    // Trigger input event to show upload box
+                                    authMunicipalitySearch.dispatchEvent(new Event('input'));
+                                }
+                            });
+                            authMunicipalitySearch.addEventListener('keydown', (e) => {
+                                if (e.key === 'Enter') e.preventDefault();
+                            });
                         }
-                        if(mobileBtn) {
-                            mobileBtn.innerHTML = mobileOriginalText;
-                            mobileBtn.disabled = false;
+                        
+                        // Also attach to host public municipality field
+                        const authHostCity = document.getElementById('auth-host-city');
+                        if (authHostCity) {
+                            const hostAutocomplete = new google.maps.places.Autocomplete(authHostCity, { types: ['(regions)'], fields: ['formatted_address'] });
+                            hostAutocomplete.addListener('place_changed', function() {
+                                const place = hostAutocomplete.getPlace();
+                                if (place.formatted_address) {
+                                    authHostCity.value = place.formatted_address;
+                                }
+                            });
+                            authHostCity.addEventListener('keydown', (e) => {
+                                if (e.key === 'Enter') e.preventDefault();
+                            });
                         }
-                        return;
+                    };
+                    document.head.appendChild(script);
+                }
+            } catch (err) {
+                console.error("Failed to load Google Maps API", err);
+            }
+        }
+        initGoogleMaps();
+
+        function getDistance(lat1, lon1, lat2, lon2) {
+            if(!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
+            const R = 6371; // Radius of the earth in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2); 
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            return R * c; 
+        }
+
+        const getUserLocationSilently = async () => {
+            try {
+                if (navigator.permissions && window.isSecureContext) {
+                    const perm = await navigator.permissions.query({name: 'geolocation'});
+                    if (perm.state === 'granted') {
+                        return new Promise((resolve) => {
+                            navigator.geolocation.getCurrentPosition(
+                                (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                                () => resolve(null),
+                                { timeout: 3000, maximumAge: 600000 }
+                            );
+                        });
                     }
-                    
-                    if (data.url) {
-                        window.location.href = data.url;
-                    } else if (data.redirectUrl) {
-                        alert("You've successfully joined the public session!");
-                        window.location.href = data.redirectUrl;
-                    }
+                }
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                if (data && data.latitude && data.longitude) {
+                    return { lat: data.latitude, lng: data.longitude };
+                }
+                return null;
+            } catch (e) {
+                return null;
+            }
+        };
+
+        // Fetch Featured Facilities
+        async function fetchFeaturedFacilities(retryCount = 0) {
+            const grid = document.getElementById('featured-facilities-grid');
+            if (!grid) return;
+
+            // Only show spinner on first load
+            if (retryCount === 0) {
+                grid.innerHTML = '<div class="col-span-full flex justify-center py-12"><i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i></div>';
+            }
+
+            try {
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                // Fetch all to sort dynamically based on user location
+                const response = await fetch(`${API_BASE_URL}/api/facilities`, { 
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({})
+                });
+                if (!response.ok) throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                
+                const text = await response.text();
+                if (!text) throw new Error("Server returned an empty response.");
+                
+                let facilities;
+                try {
+                    facilities = JSON.parse(text);
                 } catch(e) {
-                    console.error("Join error:", e);
-                    await showAlertModal('Error', 'An error occurred trying to join. Please try again.', 'OK', true);
-                    if(btn) {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                        btn.classList.remove('opacity-80', 'cursor-not-allowed');
-                    }
-                    if(mobileBtn) {
-                        mobileBtn.innerHTML = mobileOriginalText;
-                        mobileBtn.disabled = false;
-                    }
+                    console.error("Payload that failed to parse:", text.substring(0, 500));
+                    throw new Error("Invalid format received from server.");
                 }
-            };
-
-            async function initiateCheckout() {
-                // Check if user is logged in
-                const storedUser = localStorage.getItem('gg_user');
-                if (!storedUser) {
-                    // Save state and redirect to login
-                    sessionStorage.setItem('pending_booking_slots', JSON.stringify(Array.from(selectedSlotIds)));
-                    sessionStorage.setItem('pending_booking_date', selectedDateStr);
-                    sessionStorage.setItem('auto_reserve', 'true');
-                    
-                    window.location.href = `index.html?login=true&redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
-                    return;
-                }
-
-                try {
-                    const parsedUser = JSON.parse(storedUser);
-                    if (parsedUser.role === 'host') {
-                        await showAlertModal('Booking Restricted', 'Hosts are not allowed to book facilities. Please log in as a Player to make a booking.', 'OK', true);
-                        return;
-                    }
-                } catch (e) {}
-
-                if (selectedSlotIds.size === 0) return;
-
-                // Hijack for public session join
-                const isPublicSessionCheckout = selectedSlotIds.size === 1 && window.publicSessionSlots && window.publicSessionSlots.has(Array.from(selectedSlotIds)[0]);
-                if (isPublicSessionCheckout) {
-                    const bookingId = window.publicSessionSlots.get(Array.from(selectedSlotIds)[0]).id;
-                    window.joinPublicSession(bookingId);
-                    return;
-                }
-
-                if (selectedSlotIds.size < 2) {
-                    await showAlertModal('Minimum Duration', 'Please select at least two time slots (1 hour minimum).', 'OK', true);
-                    return;
-                }
+                grid.innerHTML = ''; // clear loading state
                 
-                // Check for slots within 48 hours
-                let hasSlotUnder48h = false;
-                const now = new Date();
-                const fortyEightHoursInMs = 48 * 60 * 60 * 1000;
+                // Fetch user location without aggressive prompting
+                const loc = await getUserLocationSilently();
+                const userLat = loc ? loc.lat : null;
+                const userLng = loc ? loc.lng : null;
 
-                for (const slotKey of selectedSlotIds) {
-                    const [dStr, tId] = slotKey.split('|');
-                    const [h, m] = tId.split(':');
-                    const slotDate = new Date(`${dStr}T00:00:00`);
-                    slotDate.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0);
+                // Compute distances
+                facilities.forEach(f => {
+                    f.distance = getDistance(userLat, userLng, f.lat, f.lng);
+                });
 
-                    const timeDiff = slotDate.getTime() - now.getTime();
-                    if (timeDiff > 0 && timeDiff < fortyEightHoursInMs) {
-                        hasSlotUnder48h = true;
-                        break;
+                // Sort facilities based on business rules
+                facilities.sort((a, b) => {
+                    if (userLat && userLng) {
+                        // Priority 1: Distance grouped into 10km radius buckets
+                        const bucketA = Math.floor(a.distance / 10);
+                        const bucketB = Math.floor(b.distance / 10);
+                        if (bucketA !== bucketB) {
+                            return bucketA - bucketB;
+                        }
                     }
+
+                    // Priority 2: Has a discount
+                    const aDiscount = a.active_promotions ? 1 : 0;
+                    const bDiscount = b.active_promotions ? 1 : 0;
+                    if (aDiscount !== bDiscount) {
+                        return bDiscount - aDiscount; 
+                    }
+
+                    // Priority 3: Base price (cheapest first)
+                    return a.base_price - b.base_price;
+                });
+                
+                // Get exactly 3 or fewer dynamically ordered listings
+                const featured = facilities.slice(0, 3);
+                
+                featured.forEach(facility => {
+                    const isInstantBook = facility.is_instant_book === 1;
+                    
+                    let topBadges = '<div class="absolute top-4 right-4 flex gap-2 z-20">';
+                    if (facility.active_promotions) {
+                        topBadges += `<div class="bg-red-500/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-white shadow-sm flex items-center"><i class="fa-solid fa-tag mr-1"></i> Promo</div>`;
+                    }
+                    if (isInstantBook) {
+                        topBadges += `<div class="bg-primary/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-white shadow-sm">Instant Book</div>`;
+                    }
+                    topBadges += '</div>';
+
+                    const typeDisplay = facility.type.charAt(0).toUpperCase() + facility.type.slice(1);
+                    const envDisplay = facility.environment.charAt(0).toUpperCase() + facility.environment.slice(1);
+
+                    function getPrimaryImageUrl(urlStr) {
+                        try {
+                            const parsed = JSON.parse(urlStr);
+                            if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+                        } catch (e) {
+                            // not json, return string directly
+                        }
+                        return urlStr || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+                    }
+
+                    const card = `
+                        <!-- Facility Card -->
+                        <div class="bg-white rounded-3xl overflow-hidden shadow-soft border border-slate-100 group cursor-pointer" onclick="window.location.href='facility.html?id=${facility.id}'">
+                            <div class="relative h-64 hover-zoom-img-container">
+                                <img src="${getPrimaryImageUrl(facility.image_url)}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
+                                <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-slate-800 shadow-sm z-20">
+                                    <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating} (${facility.reviews_count})
+                                </div>
+                                ${topBadges}
+                                <button class="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md text-slate-400 hover:text-red-500 hover:scale-110 transition-custom z-10">
+                                    <i class="fa-regular fa-heart"></i>
+                                </button>
+                            </div>
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="text-xl font-bold text-dark group-hover:text-primary transition-custom notranslate">${facility.name}</h3>
+                                    <span class="font-bold text-lg text-dark">From $${facility.base_price}<span class="text-sm font-normal text-slate-500">/hr</span></span>
+                                </div>
+                                <p class="text-slate-500 mb-4 flex items-center text-sm">
+                                    <i class="fa-solid fa-location-dot mr-2 text-slate-400"></i> ${facility.location}
+                                </p>
+                                <div class="flex flex-wrap gap-2 mb-6">
+                                    <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">${typeDisplay}</span>
+                                    <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">${envDisplay}</span>
+                                </div>
+                                <div class="flex items-center justify-between border-t border-slate-100 pt-4">
+                                    <div class="flex gap-2">
+                                        ${facility.display_slots_today && facility.display_slots_today.length > 0 ? facility.display_slots_today.map(slot => `
+                                            <div class="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold ${slot.discount ? 'text-red-600 bg-red-50 border-red-200' : 'text-slate-600'}">
+                                                ${slot.time}${slot.discount ? '<i class="fa-solid fa-tag text-[10px] ml-1"></i>' : ''}
+                                            </div>
+                                        `).join('') : `
+                                            <div class="text-xs font-medium text-slate-400">Fully booked for today</div>
+                                        `}
+                                    </div>
+                                    ${facility.display_slots_today && facility.display_slots_today.length > 0 ? `
+                                        <span class="text-sm font-semibold ${isInstantBook ? 'text-primary' : 'text-slate-500'}">Available Today</span>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    grid.innerHTML += card;
+                });
+
+            } catch (error) {
+                console.error(`Failed to load featured facilities (Attempt ${retryCount + 1}):`, error);
+                
+                const MAX_RETRIES = 3;
+                if (retryCount < MAX_RETRIES) {
+                    const delay = (retryCount + 1) * 2000; // 2s, 4s, 6s
+                    console.log(`Retrying in ${delay/1000}s...`);
+                    // Create subtle loading pulse while retrying silently
+                    if (retryCount === 0) {
+                        grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center py-12 text-slate-400"><i class="fa-solid fa-cloud-arrow-down animate-bounce text-xl mb-3"></i><p class="text-sm font-medium">Waking up server...</p></div>';
+                    }
+                    setTimeout(() => fetchFeaturedFacilities(retryCount + 1), delay);
+                    return;
                 }
 
-                if (hasSlotUnder48h) {
-                    if (typeof window.showConfirmModal === 'function') {
-                        const confirmed = await window.showConfirmModal(
-                            "Short Notice Booking", 
-                            "You are booking a slot less than 48 hours away. Please note that a refund will not be possible for this transaction if you proceed due to the facility's short notice cancellation policy.", 
-                            "I Understand, Proceed", 
-                            "Cancel", 
-                            true
-                        );
-                        if (!confirmed) {
-                            return; // User cancelled
+                 grid.innerHTML = `
+                    <div class="col-span-full bg-slate-50 border border-slate-100 text-slate-500 p-8 rounded-2xl text-center">
+                        <i class="fa-solid fa-calendar-xmark text-4xl mb-3 text-slate-300"></i>
+                        <h3 class="text-xl font-bold text-dark mb-2">Temporarily Unavailable</h3>
+                        <p>We're having trouble connecting to the database right now (server timeout or network policy).</p>
+                        <button onclick="fetchFeaturedFacilities(0)" class="mt-4 px-6 py-2 bg-white border border-slate-200 rounded-lg font-semibold hover:bg-slate-50 transition-custom shadow-sm text-sm">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize features
+        fetchFeaturedFacilities();
+
+        // Homepage Search Submission Logic
+        const homeSearchBtn = document.getElementById('homeSearchBtn');
+        if (homeSearchBtn) {
+            homeSearchBtn.addEventListener('click', () => {
+                const searchInputVal = document.getElementById('locationSearch').value;
+                const typeSelect = document.querySelector('select').value;
+                const dateVal = document.getElementById('homeDateSearch').value;
+                
+                const params = new URLSearchParams();
+                if (searchInputVal) params.append('location', searchInputVal);
+                if (typeSelect) params.append('type', typeSelect);
+                if (dateVal) params.append('date', dateVal);
+                
+                window.location.href = `search.html?${params.toString()}`;
+            });
+        }
+
+        const homeLocateBtn = document.getElementById('home-locate-me-btn');
+        if (homeLocateBtn) {
+            homeLocateBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const icon = homeLocateBtn.querySelector('i');
+                const searchInput = document.getElementById('locationSearch');
+                
+                if ("geolocation" in navigator && window.isSecureContext) {
+                    icon.className = 'fa-solid fa-spinner fa-spin';
+                    navigator.geolocation.getCurrentPosition(
+                        async (position) => {
+                            try {
+                                const lat = position.coords.latitude;
+                                const lng = position.coords.longitude;
+                                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`);
+                                const data = await res.json();
+                                if (data && data.address) {
+                                    const city = data.address.city || data.address.town || data.address.village || data.address.county || "Current Location";
+                                    searchInput.value = city;
+                                    homeSearchBtn.click();
+                                } else {
+                                    searchInput.value = 'Current Location';
+                                    homeSearchBtn.click();
+                                }
+                            } catch (err) {
+                                searchInput.value = 'Current Location';
+                                homeSearchBtn.click();
+                            } finally {
+                                icon.className = 'fa-solid fa-location-crosshairs';
+                            }
+                        },
+                        (error) => {
+                            alert("Location access denied or unavailable. Please enter your location manually.");
+                            icon.className = 'fa-solid fa-location-crosshairs';
                         }
+                    );
+                } else {
+                    alert("Exact GPS location is blocked by your browser on this connection. Please enter your location manually.");
+                }
+            });
+        }
+
+        // Auth Modal Logic
+        const authModal = document.getElementById('auth-modal');
+        const loginBtn = document.getElementById('login-btn');
+        const mobileLoginBtn = document.getElementById('mobile-login-btn');
+        const closeAuthBtn = document.getElementById('close-auth-btn');
+        const authBackdrop = document.getElementById('auth-backdrop');
+        const authToggleBtn = document.getElementById('auth-toggle-btn');
+        const authTitle = document.getElementById('auth-title');
+        const authToggleText = document.getElementById('auth-toggle-text');
+        const nameFieldContainer = document.getElementById('name-field-container');
+        const reqs = document.getElementById('password-requirements');
+        const confContainer = document.getElementById('confirm-password-container');
+        
+        const firstNameInput = document.getElementById('auth-first-name');
+        const lastNameInput = document.getElementById('auth-last-name');
+        const phoneInput = document.getElementById('auth-phone-number');
+        const confInput = document.getElementById('auth-confirm-password');
+        
+        const forgotPasswordContainer = document.getElementById('forgot-password-container');
+        
+        let isLoginMode = true;
+
+        function toggleAuthMode(e) {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
+            if (isLoginMode) {
+                authTitle.textContent = "Log in or sign up";
+                authToggleText.textContent = "Don't have an account?";
+                authToggleBtn.textContent = "Sign up";
+                nameFieldContainer.classList.add('hidden');
+                reqs.classList.add('hidden');
+                confContainer.classList.add('hidden');
+                document.getElementById('auth-residency-container').classList.add('hidden');
+                if(forgotPasswordContainer) forgotPasswordContainer.classList.remove('hidden');
+                firstNameInput.required = false;
+                lastNameInput.required = false;
+                phoneInput.required = false;
+                confInput.required = false;
+            } else {
+                authTitle.textContent = "Sign up";
+                authToggleText.textContent = "Already have an account?";
+                authToggleBtn.textContent = "Log in";
+                nameFieldContainer.classList.remove('hidden');
+                reqs.classList.remove('hidden');
+                confContainer.classList.remove('hidden');
+                const selectedRole = document.querySelector('input[name="auth-role"]:checked');
+                if (selectedRole && selectedRole.value === 'player') {
+                    document.getElementById('auth-residency-container').classList.remove('hidden');
+                } else {
+                    document.getElementById('auth-residency-container').classList.add('hidden');
+                }
+                if(forgotPasswordContainer) forgotPasswordContainer.classList.add('hidden');
+                firstNameInput.required = true;
+                lastNameInput.required = true;
+                phoneInput.required = true;
+                confInput.required = true;
+            }
+        }
+
+        function openAuthModal(e) {
+            e.preventDefault();
+            authModal.classList.remove('hidden');
+            authModal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            
+            // Close mobile menu if open
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) mobileMenu.classList.add('hidden');
+        }
+
+        function closeAuthModal() {
+            authModal.classList.add('hidden');
+            authModal.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        if (loginBtn) loginBtn.addEventListener('click', openAuthModal);
+        if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', openAuthModal);
+        if (closeAuthBtn) closeAuthBtn.addEventListener('click', closeAuthModal);
+        if (authBackdrop) authBackdrop.addEventListener('click', closeAuthModal);
+        if (authToggleBtn) authToggleBtn.addEventListener('click', toggleAuthMode);
+
+        const roleRadios = document.querySelectorAll('input[name="auth-role"]');
+        const companyContainer = document.getElementById('company-name-container');
+        const companyInput = document.getElementById('auth-company-name');
+        
+        roleRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'host') {
+                    companyContainer.classList.remove('hidden');
+                    // Reset required fields validation
+                    const hostType = document.getElementById('auth-host-type');
+                    if (hostType && hostType.value === 'private') {
+                        companyInput.required = true;
+                        document.getElementById('auth-host-city').required = false;
+                    } else if (hostType && hostType.value === 'public') {
+                        companyInput.required = false;
+                        document.getElementById('auth-host-city').required = true;
+                    }
+                    document.getElementById('auth-residency-container').classList.add('hidden');
+                } else {
+                    companyContainer.classList.add('hidden');
+                    companyInput.required = false;
+                    document.getElementById('auth-residency-container').classList.remove('hidden');
+                }
+            });
+        });
+
+        const authHostType = document.getElementById('auth-host-type');
+        if (authHostType) {
+            authHostType.addEventListener('change', (e) => {
+                if (e.target.value === 'public') {
+                    document.getElementById('private-fields').classList.add('hidden');
+                    document.getElementById('public-fields').classList.remove('hidden');
+                    companyInput.required = false;
+                    document.getElementById('auth-host-city').required = true;
+                } else {
+                    document.getElementById('private-fields').classList.remove('hidden');
+                    document.getElementById('public-fields').classList.add('hidden');
+                    companyInput.required = true;
+                    document.getElementById('auth-host-city').required = false;
+                }
+            });
+        }
+
+        const passwordInput = document.getElementById('auth-password');
+        const togglePasswordBtn = document.getElementById('toggle-password-btn');
+        const togglePasswordIcon = document.getElementById('toggle-password-icon');
+
+        if (togglePasswordBtn) {
+            togglePasswordBtn.addEventListener('click', function() {
+                // Toggle the type attribute
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                // Toggle the eye icon
+                if (type === 'password') {
+                    togglePasswordIcon.classList.remove('fa-eye-slash');
+                    togglePasswordIcon.classList.add('fa-eye');
+                } else {
+                    togglePasswordIcon.classList.remove('fa-eye');
+                    togglePasswordIcon.classList.add('fa-eye-slash');
+                }
+            });
+        }
+
+        const confirmPasswordInput = document.getElementById('auth-confirm-password');
+        const toggleConfirmPasswordBtn = document.getElementById('toggle-confirm-password-btn');
+        const toggleConfirmPasswordIcon = document.getElementById('toggle-confirm-password-icon');
+
+        function previewProfilePic(event) {
+            const input = event.target;
+            const preview = document.getElementById('profile-pic-preview');
+            const icon = document.getElementById('profile-pic-icon');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    icon.classList.add('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.src = "";
+                preview.classList.add('hidden');
+                icon.classList.remove('hidden');
+            }
+        }
+
+        function previewResidencyDoc(event) {
+            const input = event.target;
+            const nameDisplay = document.getElementById('auth-residency-doc-name');
+            const btn = document.getElementById('auth-residency-doc-btn');
+            
+            if (input.files && input.files[0]) {
+                nameDisplay.textContent = input.files[0].name;
+                btn.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-300');
+                btn.classList.remove('bg-primary/10', 'text-primary');
+                btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Selected';
+            } else {
+                nameDisplay.textContent = '';
+                btn.classList.remove('bg-green-100', 'text-green-700', 'border', 'border-green-300');
+                btn.classList.add('bg-primary/10', 'text-primary');
+                btn.innerHTML = '<i class="fa-solid fa-file-arrow-up mr-2"></i> Upload Document';
+            }
+        }
+        
+        const authMunicipalitySearch = document.getElementById('auth-municipality-search');
+        const authResidencyDocUpload = document.getElementById('auth-residency-doc-upload');
+
+        function updateResidencyDocVisibility(idValue) {
+            if (idValue) {
+                authResidencyDocUpload.classList.remove('hidden');
+            } else {
+                authResidencyDocUpload.classList.add('hidden');
+            }
+        }
+
+        // We initialize Google Maps Autocomplete for this input in initMap() or globally if loaded.
+        // The residency file upload reveals whenever there is text in the municipality field.
+        if (authMunicipalitySearch) {
+            authMunicipalitySearch.addEventListener('input', (e) => {
+                updateResidencyDocVisibility(e.target.value.trim());
+            });
+            // Initial check
+            updateResidencyDocVisibility(authMunicipalitySearch.value.trim());
+        }
+
+        if (toggleConfirmPasswordBtn) {
+            toggleConfirmPasswordBtn.addEventListener('click', function() {
+                const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                confirmPasswordInput.setAttribute('type', type);
+                
+                if (type === 'password') {
+                    toggleConfirmPasswordIcon.classList.remove('fa-eye-slash');
+                    toggleConfirmPasswordIcon.classList.add('fa-eye');
+                } else {
+                    toggleConfirmPasswordIcon.classList.remove('fa-eye');
+                    toggleConfirmPasswordIcon.classList.add('fa-eye-slash');
+                }
+            });
+        }
+
+        const authForm = document.getElementById('auth-form');
+        const authError = document.getElementById('auth-error');
+        const authSubmitBtn = document.getElementById('auth-submit-btn');
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            
+            const first_name = document.getElementById('auth-first-name') ? document.getElementById('auth-first-name').value : '';
+            const last_name = document.getElementById('auth-last-name') ? document.getElementById('auth-last-name').value : '';
+            const phone_number = document.getElementById('auth-phone-number') ? document.getElementById('auth-phone-number').value : '';
+            const confirm_password = document.getElementById('auth-confirm-password') ? document.getElementById('auth-confirm-password').value : '';
+
+            authError.classList.add('hidden');
+
+            let role_choice = 'player';
+            let company_name = '';
+            let profile_picture = null;
+            let municipality_id = null;
+            let residency_document_url = null;
+
+            if (!isLoginMode) {
+                const selectedRole = document.querySelector('input[name="auth-role"]:checked');
+                if (selectedRole) role_choice = selectedRole.value;
+                company_name = document.getElementById('auth-company-name') ? document.getElementById('auth-company-name').value : '';
+
+                if (role_choice === 'host') {
+                    const hostType = document.getElementById('auth-host-type');
+                    if (hostType && hostType.value === 'public') {
+                        const cityVal = document.getElementById('auth-host-city') ? document.getElementById('auth-host-city').value : '';
+                        const adminChecked = document.getElementById('auth-host-admin-check') ? document.getElementById('auth-host-admin-check').checked : false;
+                        
+                        if (!cityVal.trim() || !adminChecked) {
+                            authError.textContent = "Please select a municipality and confirm you are the main administrator.";
+                            authError.classList.remove('hidden');
+                            return;
+                        }
+                        company_name = cityVal.trim();
                     } else {
-                        // Fallback if modal is not available for some reason
-                        const confirmed = confirm("You are booking a slot less than 48 hours away. Please note that a refund will not be possible for this transaction if you proceed.\n\nDo you want to proceed?");
-                        if (!confirmed) {
+                        company_name = document.getElementById('auth-company-name') ? document.getElementById('auth-company-name').value : '';
+                        if (!company_name.trim()) {
+                            authError.textContent = "Company / Private Arena name is required for facility owners.";
+                            authError.classList.remove('hidden');
                             return;
                         }
                     }
                 }
-                
-                const originalText = reserveBtn.innerHTML;
-                reserveBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin mr-2'></i> Redirecting to Stripe...";
-                reserveBtn.disabled = true;
-                reserveBtn.classList.add('opacity-80', 'cursor-not-allowed');
 
-                if (mobileReserveBtn) {
-                    mobileReserveBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i>";
-                    mobileReserveBtn.disabled = true;
+                if (password !== confirm_password) {
+                    authError.textContent = "Passwords do not match.";
+                    authError.classList.remove('hidden');
+                    return;
+                }
+                const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+                if (!passwordRegex.test(password)) {
+                    authError.textContent = "Password must be at least 8 characters long, and contain at least 1 number and 1 uppercase letter.";
+                    authError.classList.remove('hidden');
+                    return;
                 }
 
-                try {
-                     // Group array into multi-day format
-                     const multiDayPayload = {};
-                     Array.from(selectedSlotIds).forEach(slotKey => {
-                         const [dStr, tId] = slotKey.split('|');
-                         if(!multiDayPayload[dStr]) multiDayPayload[dStr] = [];
-                         multiDayPayload[dStr].push(tId);
-                     });
-
-                     const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
-                     const bookingResponse = await fetch(`${API_BASE_URL}/api/create-checkout-session`, {
-                        method: 'POST',
-                        credentials: 'include',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            facility_id: currentFacilityId || 1,
-                            multi_day_slots: multiDayPayload,
-                            // Send booking_date for single-day fallback compatibility if needed anywhere
-                            booking_date: selectedDateStr,
-                            time_slots: []
-                        })
-                     });
-
-                     if(!bookingResponse.ok) {
-                         if (bookingResponse.status === 401) {
-                             localStorage.removeItem('gg_user');
-                             window.location.href = `index.html?login=true&redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
-                             return;
-                         }
-                         let errMsg = "Failed to initialize checkout";
-                         try {
-                             const errData = await bookingResponse.json();
-                             if(errData.error) errMsg = errData.error;
-                         } catch(e) {}
-                         throw new Error(errMsg);
-                     }
-                     
-                     const data = await bookingResponse.json();
-                     if (data.url) {
-                         window.location.href = data.url; // Redirect to Stripe
-                     } else {
-                         throw new Error("No Stripe checkout URL returned");
-                     }
-
-                } catch (error) {
-                    console.error("Booking Error", error);
-                    await showAlertModal('Error', 'There was an error processing your booking: ' + error.message, 'OK', true);
-                    reserveBtn.innerHTML = originalText;
-                    reserveBtn.disabled = false;
-                    reserveBtn.classList.remove('opacity-80', 'cursor-not-allowed');
-                    if (mobileReserveBtn) {
-                        mobileReserveBtn.innerHTML = "Reserve";
-                        mobileReserveBtn.disabled = false;
+                const profilePicInput = document.getElementById('auth-profile-pic');
+                if (profilePicInput && profilePicInput.files.length > 0) {
+                    try {
+                        profile_picture = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(profilePicInput.files[0]);
+                        });
+                    } catch (e) {
+                         authError.textContent = "Error reading profile picture.";
+                         authError.classList.remove('hidden');
+                         return;
+                    }
+                }
+                
+                if (role_choice === 'player' && authMunicipalitySearch && authMunicipalitySearch.value.trim() !== '') {
+                    const docInput = document.getElementById('auth-residency-doc');
+                    if (!docInput || docInput.files.length === 0) {
+                        authError.textContent = "Please upload a proof of residency document.";
+                        authError.classList.remove('hidden');
+                        return;
+                    }
+                    try {
+                        residency_document_url = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(docInput.files[0]);
+                        });
+                    } catch (e) {
+                         authError.textContent = "Error reading residency document.";
+                         authError.classList.remove('hidden');
+                         return;
                     }
                 }
             }
 
-            // Handle reserve button clicks
-            reserveBtn.addEventListener('click', initiateCheckout);
-            // mobileReserveBtn handles opening the booking sheet instead (bound at bottom of document)
+            const originalText = authSubmitBtn.textContent;
+            authSubmitBtn.textContent = 'Processing...';
+            authSubmitBtn.disabled = true;
 
-            // Handle browser back button (bfcache) restoring the disabled button state
-            window.addEventListener('pageshow', (event) => {
-                if (event.persisted) {
-                    if (reserveBtn) {
-                        reserveBtn.innerHTML = "Reserve Now";
-                        reserveBtn.disabled = false;
-                        reserveBtn.classList.remove('opacity-80', 'cursor-not-allowed');
-                    }
-                    if (mobileReserveBtn) {
-                        mobileReserveBtn.innerHTML = "Reserve";
-                        mobileReserveBtn.disabled = false;
-                    }
-                }
-            });
-            function render() {
-                // Determine weekend status based on selectedDateStr
-                const dateObj = new Date(selectedDateStr + 'T12:00:00');
-                const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-                const isWeekend = dayOfWeek === 'Saturday' || dayOfWeek === 'Sunday';
+            try {
+                const endpoint = isLoginMode ? '/api/auth/login' : '/api/users/signup';
+                const body = isLoginMode ? { email, password } : { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture, residency_city: authMunicipalitySearch ? authMunicipalitySearch.value.trim() : null, residency_document_url };
 
-                // Regenerate availableSlots based on weekend vs weekday
-                let opHours = { open: facilityOperatingHours.open, close: facilityOperatingHours.close };
-                if (isWeekend && facilityOperatingHours.weekend_open) {
-                     opHours.open = facilityOperatingHours.weekend_open;
-                     opHours.close = facilityOperatingHours.weekend_close || facilityOperatingHours.close;
-                }
-                availableSlots = generateDailySlots(opHours);
-
-                // Update selected slots header date
-                const headerEl = document.getElementById('selected-slots-header');
-                if (headerEl) {
-                    const d = new Date(selectedDateStr + 'T00:00:00'); 
-                    if (!isNaN(d.getTime())) {
-                        const month = d.toLocaleString('en-US', { month: 'short' });
-                        headerEl.textContent = `Selected Slots (${month} ${d.getDate()})`;
-                    }
-                }
-
-                const discounts = window.facilityDiscounts || [];
-                const bookingDate = new Date(selectedDateStr + 'T00:00:00');
-                const now = new Date();
-
-                const validDiscounts = discounts.filter(d => {
-                    if (!d.is_active) return false;
-                    
-                    // Fix timezone mismatch: extract just the YYYY-MM-DD part before parsing
-                    if (d.start_date) {
-                        const sDate = d.start_date.split('T')[0];
-                        if (new Date(sDate + 'T00:00:00') > bookingDate) return false;
-                    }
-                    if (d.end_date) {
-                        const eDate = d.end_date.split('T')[0];
-                        if (new Date(eDate + 'T23:59:59') < bookingDate) return false;
-                    }
-                    
-                    if (d.recurring_day !== null && d.recurring_day !== undefined && d.recurring_day !== '') {
-                        const daysMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                        if (daysMap[parseInt(d.recurring_day, 10)] !== dayOfWeek) return false;
-                    }
-
-                    return true;
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                
+                const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                    credentials: 'include' // Changed from same-origin to establish secure session across ports
                 });
 
-                function getBestDiscountForSlot(slotId, validDiscounts) {
-                    let bestD = null;
-                    let maxVal = 0;
-                    validDiscounts.forEach(d => {
-                        if (d.is_last_minute) {
-                            const [slotH, slotM] = slotId.split(':');
-                            const exactSlotTime = new Date(selectedDateStr + 'T00:00:00');
-                            exactSlotTime.setHours(parseInt(slotH, 10), parseInt(slotM, 10));
-                            
-                            const msDiff = exactSlotTime.getTime() - now.getTime();
-                            if (msDiff > 86400000 || msDiff < 0) {
-                                return; // Not within precisely 24 hours, or in the past
-                            }
-                        }
+                const data = await res.json();
 
-                        if (d.start_time && d.end_time) {
-                            if (slotId < d.start_time || slotId >= d.end_time) return;
-                        }
-                        let valEquivalent = d.discount_type === 'percentage' ? d.value : (d.value / hourlyRate * 100); 
-                        if (valEquivalent > maxVal) {
-                            maxVal = valEquivalent;
-                            bestD = d;
-                        }
-                    });
-                    return bestD;
+                if (!res.ok) {
+                    throw new Error(data.error || 'Authentication failed');
                 }
 
-                // Update dropdown list
-                slotsList.innerHTML = '';
+                // Success - Since we might be on file://, we also save user in localStorage
+                (function(){ const _u = {...data.user}; delete _u.profile_picture; localStorage.setItem('gg_user', JSON.stringify(_u)); })();
                 
-                const currentHour = now.getHours();
-                const currentMinute = now.getMinutes();
-                const currentTime24 = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
-                
-                const mmYear = now.getFullYear();
-                const mmMonth = String(now.getMonth() + 1).padStart(2, '0');
-                const mmDay = String(now.getDate()).padStart(2, '0');
-                const todayStr = `${mmYear}-${mmMonth}-${mmDay}`;
-                const isToday = selectedDateStr === todayStr;
-
-                availableSlots.forEach(slot => {
-                    const isPast = isToday && slot.id < currentTime24;
-                    const slotKey = `${selectedDateStr}|${slot.id}`;
-                    const isBooked = bookedSlotIds.has(slotKey);
-                    const pubSess = window.publicSessionSlots ? window.publicSessionSlots.get(slotKey) : null;
-                    const isUnavailable = isBooked || isPast;
-                    
-                    // Always unselect past or newly booked slots
-                    if ((isPast || isBooked) && selectedSlotIds.has(slotKey)) {
-                        selectedSlotIds.delete(slotKey);
-                    }
-                    
-                    const isSelected = selectedSlotIds.has(slotKey);
-                    const div = document.createElement('div');
-                    
-                    if (pubSess) {
-                        const priceText = pubSess.participant_price > 0 ? `$${pubSess.participant_price.toFixed(2)}/pp` : `Free`;
-                        div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg cursor-pointer flex justify-between items-center mb-1 transition-custom border ${isSelected ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300'}`;
-                        div.innerHTML = `
-                            <div class="flex flex-col">
-                                <span class="flex items-center">${slot.time} <span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-indigo-500 text-white border-indigo-400' : 'bg-white text-indigo-600 border-indigo-100'} border">Public Session</span></span>
-                                <span class="text-xs font-medium ${isSelected ? 'text-indigo-200' : 'text-indigo-500'} mt-0.5">${pubSess.manual_notes || 'Open Session'} • ${pubSess.joined_count}/${pubSess.capacity} joined • ${priceText}</span>
-                            </div>
-                            ${isSelected ? '<i class="fa-solid fa-check text-sm"></i>' : ''}
-                        `;
-                        div.onclick = (e) => {
-                            e.stopPropagation();
-                            const hadOthers = Array.from(selectedSlotIds).some(s => window.publicSessionSlots && !window.publicSessionSlots.has(s) || s !== slotKey);
-                            if (!isSelected && hadOthers) {
-                                // Clear everything else and just select this one. Join is 1-to-1 event.
-                                selectedSlotIds.clear();
-                                selectedSlotIds.add(slotKey);
-                            } else {
-                                toggleTimeSlot(selectedDateStr, slot);
-                            }
-                            render();
-                            renderDailyCalendar();
-                            renderWeeklyCalendar();
-                        };
-                    } else {
-                        const slotDiscount = getBestDiscountForSlot(slot.id, validDiscounts);
-                        let discountBadge = '';
-                        if (slotDiscount) {
-                            const amountText = slotDiscount.discount_type === 'percentage' ? `${slotDiscount.value}%` : `$${slotDiscount.value}`;
-                            discountBadge = `<span class="ml-2 text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded-md flex items-center shadow-sm whitespace-nowrap"><i class="fa-solid fa-fire text-red-500 mr-1 text-[10px]"></i> ${amountText} OFF</span>`;
-                        }
-
-                        const hourlyPriceForSlot = getPriceForTimeSlot(slot.time, hourlyRate, pricingRules, isWeekend);
-                        const formattedPrice = hourlyPriceForSlot % 1 === 0 ? hourlyPriceForSlot : hourlyPriceForSlot.toFixed(2);
-                        const priceBadge = `<span class="ml-2 text-[11px] font-medium text-slate-500 bg-slate-200/60 px-1.5 py-0.5 rounded-md">$${formattedPrice}/hr</span>`;
-                        
-                        if (isUnavailable) {
-                             div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg flex justify-between items-center mb-1 text-slate-400 bg-slate-100 cursor-not-allowed opacity-50 border border-transparent`;
-                             const reason = isPast ? "Passed" : "Unavailable";
-                             div.innerHTML = `<span class="flex items-center">${slot.time} ${priceBadge} ${discountBadge} <span class="text-[10px] ml-2 uppercase bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">${reason}</span></span>`;
-                        } else {
-                             div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg cursor-pointer flex justify-between items-center mb-1 transition-custom ${isSelected ? 'bg-primary/10 text-primary border border-primary/20' : 'hover:bg-slate-100 text-slate-700 border border-transparent'}`;
-                             div.innerHTML = `
-                                <span class="flex items-center">${slot.time} ${priceBadge} ${discountBadge}</span>
-                                ${isSelected ? '<i class="fa-solid fa-check text-sm"></i>' : ''}
-                            `;
-                            div.onclick = (e) => {
-                                e.stopPropagation();
-                                
-                                // Prevent mixing private standard blocks with public sessions
-                                const currentHasPub = Array.from(selectedSlotIds).some(s => window.publicSessionSlots && window.publicSessionSlots.has(s));
-                                if (!isSelected && currentHasPub) {
-                                    selectedSlotIds.clear();
-                                }
-                                
-                                toggleTimeSlot(selectedDateStr, slot);
-                                render();
-                                renderDailyCalendar();
-                                renderWeeklyCalendar();
-                            };
-                        }
-                    }
-                    slotsList.appendChild(div);
-                });
-
-                // Update summary text
-                const count = selectedSlotIds.size;
-                slotsSummary.textContent = count === 0 ? "Select Times" : `${count} Slot${count > 1 ? 's' : ''} Selected`;
-
-                // Update chips (Group by Date)
-                selectedContainer.innerHTML = '';
-                if (count === 0) {
-                    selectedContainer.innerHTML = '<span class="text-sm text-slate-400 italic">No slots selected</span>';
-                } else {
-                    const groupedSlots = {};
-                    selectedSlotIds.forEach(slotKey => {
-                        const [dStr, tId] = slotKey.split('|');
-                        if (!groupedSlots[dStr]) groupedSlots[dStr] = [];
-                        groupedSlots[dStr].push(tId);
-                    });
-
-                    Object.keys(groupedSlots).sort().forEach(dStr => {
-                        const dObj = new Date(dStr + 'T00:00:00');
-                        const dayLabel = dObj.toLocaleString('en-US', { month: 'short', day: 'numeric' });
-                        
-                        const groupDiv = document.createElement('div');
-                        groupDiv.className = 'w-full mb-2 last:mb-0';
-                        groupDiv.innerHTML = `<div class="text-xs font-bold text-slate-500 mb-1 pl-1 border-l-2 border-primary">${dayLabel}</div><div class="flex flex-wrap gap-2" id="chips-${dStr}"></div>`;
-                        selectedContainer.appendChild(groupDiv);
-
-                        const chipsDiv = groupDiv.querySelector(`#chips-${dStr}`);
-                        const sortedTimes = groupedSlots[dStr].sort();
-                        
-                        sortedTimes.forEach(tId => {
-                            let ampm = 'AM';
-                            let [h, m] = tId.split(':');
-                            h = parseInt(h);
-                            if (h >= 12) { ampm = 'PM'; if (h > 12) h -= 12; }
-                            if (h === 0) h = 12;
-                            const tLabel = `${h}:${m} ${ampm}`;
-
-                            const span = document.createElement('span');
-                            span.className = 'px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-sm font-semibold flex items-center shadow-sm';
-                            span.innerHTML = `${tLabel} <i class="fa-solid fa-xmark ml-2 text-xs opacity-60 hover:opacity-100 cursor-pointer"></i>`;
-                            span.querySelector('i').onclick = (e) => {
-                                e.stopPropagation();
-                                selectedSlotIds.delete(`${dStr}|${tId}`);
-                                render();
-                            };
-                            chipsDiv.appendChild(span);
-                        });
-                    });
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectUrl = urlParams.get('redirect');
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                    return;
                 }
-
-                // Calculate pricing
-                const isPublicSessionCheckout = count === 1 && window.publicSessionSlots && window.publicSessionSlots.has(Array.from(selectedSlotIds)[0]);
                 
-                if (isPublicSessionCheckout) {
-                    const pubSess = window.publicSessionSlots.get(Array.from(selectedSlotIds)[0]);
-                    const price = parseFloat(pubSess.participant_price || 0);
-                    currentTotal = price;
-                    
-                    priceCalcEl.innerHTML = `<span class="flex items-center text-indigo-700 bg-indigo-50 px-2 pl-1 py-0.5 rounded border border-indigo-100"><i class="fa-solid fa-users text-xs mr-2 ml-1 text-indigo-500"></i> Public Session Admission</span>`;
-                    subtotalEl.textContent = `$${price.toFixed(2)}`;
-                    taxEl.textContent = `$0.00`;
-                    totalEl.textContent = `$${price.toFixed(2)}`;
-                    
-                    const discountDiv = document.getElementById('discount-amount');
-                    if (discountDiv) discountDiv.remove();
-                    subtotalEl.classList.remove('line-through', 'text-slate-400');
-                    
-                    const processingFeeRow = document.getElementById('processing-fee-row');
-                    if (processingFeeRow) {
-                        processingFeeRow.style.display = 'none';
-                        processingFeeRow.classList.add('hidden');
-                    }
-                    
-                    if (reserveBtn) reserveBtn.textContent = 'Join Session';
-                    if (mobileReserveBtn) mobileReserveBtn.textContent = 'Join Session';
-                } else {
-                    if (reserveBtn) reserveBtn.textContent = 'Reserve Now';
-                    if (mobileReserveBtn) mobileReserveBtn.textContent = 'Reserve Now';
-                    
-                    const hours = count / 2; // 1 slot = 0.5 hour
-                    if (hours > 0) {
-                        let subtotal = 0;
-                        let bestDiscountValue = 0;
-
-                    // Group slots by date first to apply discounts accurately day-by-day or globally
-                    const groupedForPricing = {};
-                    selectedSlotIds.forEach(slotKey => {
-                        const [dStr, tId] = slotKey.split('|');
-                        if(!groupedForPricing[dStr]) groupedForPricing[dStr] = [];
-                        groupedForPricing[dStr].push(tId);
-                    });
-
-                    for (const [dStr, tIds] of Object.entries(groupedForPricing)) {
-                        const dateObj = new Date(dStr + 'T12:00:00');
-                        const dayOfWeekGroup = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-                        const isWeekendGroup = dayOfWeekGroup === 'Saturday' || dayOfWeekGroup === 'Sunday';
-                        
-                        let groupSubtotal = 0;
-                        tIds.forEach(tId => {
-                            // We need formatted AM/PM time for getPriceForTimeSlot
-                            let ampm = 'AM';
-                            let h = parseInt(tId.split(':')[0]);
-                            const m = tId.split(':')[1];
-                            if(h >= 12) { ampm = 'PM'; if(h > 12) h -= 12; }
-                            if(h === 0) h = 12;
-                            const formattedTime = `${h}:${m} ${ampm}`;
-
-                            groupSubtotal += getPriceForTimeSlot(formattedTime, hourlyRate, pricingRules, isWeekendGroup) / 2;
-                        });
-                        subtotal += groupSubtotal;
-
-                        // Calculate discount for this group (date) exactly as the backend does
-                        let bestGroupDiscount = 0;
-                        discounts.forEach(d => {
-                            if (!d.is_active) return;
-                            const dStart = d.start_date ? new Date(d.start_date.split('T')[0] + 'T00:00:00') : null;
-                            const dEnd = d.end_date ? new Date(d.end_date.split('T')[0] + 'T23:59:59') : null;
-                            const pDate = new Date(dStr + 'T00:00:00');
-                            
-                            if (dStart && pDate < dStart) return;
-                            if (dEnd && pDate > dEnd) return;
-                            if (d.recurring_day !== null && d.recurring_day !== undefined && d.recurring_day !== '') {
-                                const daysMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                                if (daysMap[parseInt(d.recurring_day, 10)] !== dayOfWeekGroup) return;
-                            }
-
-                            if (d.is_last_minute) {
-                                // Simplified for frontend (accurate calc done on backend anyway)
-                            }
-                            
-                            let applicableSlotsSubtotal = 0;
-                            tIds.forEach(tId => {
-                                let applies = true;
-                                if (d.start_time && d.end_time) {
-                                    if (tId < d.start_time || tId >= d.end_time) applies = false;
-                                }
-                                if (applies) {
-                                    let ampm = 'AM', h = parseInt(tId.split(':')[0]), m = tId.split(':')[1];
-                                    if(h >= 12) { ampm = 'PM'; if(h>12) h-=12; }
-                                    if(h===0) h=12;
-                                    applicableSlotsSubtotal += getPriceForTimeSlot(`${h}:${m} ${ampm}`, hourlyRate, pricingRules, isWeekendGroup) / 2;
-                                }
-                            });
-
-                            if (applicableSlotsSubtotal > 0) {
-                                let discountVal = 0;
-                                if (d.discount_type === 'percentage') {
-                                    discountVal = applicableSlotsSubtotal * (d.value / 100);
-                                } else if (d.discount_type === 'fixed_amount') {
-                                    discountVal = d.value;
-                                }
-                                if (discountVal > bestGroupDiscount) bestGroupDiscount = discountVal;
-                            }
-                        });
-                        bestDiscountValue += bestGroupDiscount;
-                    }
-                    
-
-
-
-                    const discountedSubtotal = Math.max(0, subtotal - bestDiscountValue);
-
-                    const tax = discountedSubtotal * taxRate;
-                    currentTotal = discountedSubtotal + processingFee + tax; // update global total
-
-                    if (hours === 1) {
-                        priceCalcEl.innerHTML = `$${subtotal.toFixed(0)} x 1 hour`;
-                    } else {
-                        priceCalcEl.innerHTML = `Multiple slots (avg $${(subtotal/hours).toFixed(0)}/hr)`;
-                    }
-
-                    // Insert Discount UI element into the list if it exists
-                    const discountElId = 'discount-amount';
-                    let discountDiv = document.getElementById(discountElId);
-                    if (bestDiscountValue > 0) {
-                        if(!discountDiv) {
-                            discountDiv = document.createElement('div');
-                            discountDiv.id = discountElId;
-                            discountDiv.className = 'flex justify-between text-base text-green-600 font-bold mb-3';
-                            // insert before processing fee
-                            priceCalcEl.parentElement.parentElement.insertBefore(discountDiv, priceCalcEl.parentElement.nextSibling);
-                        }
-                        discountDiv.innerHTML = `<span>Discount applied</span><span>-$${bestDiscountValue.toFixed(2)}</span>`;
-                        subtotalEl.classList.add('line-through', 'text-slate-400');
-                    } else {
-                        if(discountDiv) discountDiv.remove();
-                        subtotalEl.classList.remove('line-through', 'text-slate-400');
-                    }
-                    subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-                    
-                    const processingFeeRow = document.getElementById('processing-fee-row');
-                    const processingFeeAmountEl = document.getElementById('processing-fee-amount');
-                    if (processingFee > 0) {
-                        if (processingFeeRow) {
-                            processingFeeRow.style.display = '';
-                            processingFeeRow.classList.remove('hidden');
-                        }
-                        if (processingFeeAmountEl) processingFeeAmountEl.textContent = `$${processingFee.toFixed(2)}`;
-                    } else {
-                        if (processingFeeRow) {
-                            processingFeeRow.style.display = 'none';
-                            processingFeeRow.classList.add('hidden');
-                        }
-                    }
-                    
-                    taxEl.textContent = `$${tax.toFixed(2)}`;
-                    totalEl.textContent = `$${currentTotal.toFixed(2)}`;
-                } else {
-                    currentTotal = 0;
-                    priceCalcEl.textContent = `$${hourlyRate} x 0 hours`;
-                    subtotalEl.textContent = `$0.00`;
-
-                    const discountDiv = document.getElementById('discount-amount');
-                    if (discountDiv) discountDiv.remove();
-                    subtotalEl.classList.remove('line-through', 'text-slate-400');
-                    
-                    const processingFeeRow = document.getElementById('processing-fee-row');
-                    if (processingFeeRow) {
-                        if (processingFee === 0) {
-                            processingFeeRow.style.display = 'none';
-                            processingFeeRow.classList.add('hidden');
-                        } else {
-                            processingFeeRow.style.display = '';
-                            processingFeeRow.classList.remove('hidden');
-                            const amtEl = document.getElementById('processing-fee-amount');
-                            if (amtEl) amtEl.textContent = `$${processingFee.toFixed(2)}`;
-                        }
-                    }
-                    
-                    taxEl.textContent = `$0.00`;
-                    totalEl.textContent = `$0.00`;
-                } // End of private session calc block
-            } // End of render function
-
-            // --- CALENDAR LOGIC ---
-            const today = new Date();
-            let currentDate = new Date(today.getFullYear(), today.getMonth(), 1); 
-            
-            const calYear = today.getFullYear();
-            const calMonth = String(today.getMonth() + 1).padStart(2, '0');
-            const calDay = String(today.getDate()).padStart(2, '0');
-            
-            let selectedDateStr = `${calYear}-${calMonth}-${calDay}`; 
-            const bookingDateInput = document.getElementById('booking-date');
-
-            // Restore pending state if any (e.g. after login redirect)
-            const pendingDate = sessionStorage.getItem('pending_booking_date');
-            if (pendingDate) {
-                selectedDateStr = pendingDate;
-                const pd = new Date(selectedDateStr + 'T00:00:00');
-                if (!isNaN(pd.getTime())) {
-                    currentDate = new Date(pd.getFullYear(), pd.getMonth(), 1);
-                }
-                sessionStorage.removeItem('pending_booking_date');
+                closeAuthModal();
+                updateUserUI(data.user);
+                
+            } catch (err) {
+                authError.textContent = err.message;
+                authError.classList.remove('hidden');
+            } finally {
+                authSubmitBtn.textContent = originalText;
+                authSubmitBtn.disabled = false;
             }
+        }
 
-            const pendingSlots = sessionStorage.getItem('pending_booking_slots');
-            if (pendingSlots) {
+        if (authSubmitBtn) authSubmitBtn.addEventListener('click', handleAuth);
+
+        async function checkAuthState() {
+            // First check local storage for quick render
+            const storedUser = localStorage.getItem('gg_user');
+            if (storedUser) {
                 try {
-                    const parsedSlots = JSON.parse(pendingSlots);
-                    if (Array.isArray(parsedSlots)) {
-                        parsedSlots.forEach(id => selectedSlotIds.add(String(id)));
+                    updateUserUI(JSON.parse(storedUser));
+                } catch(e){}
+            }
+            
+            // Then optionally verify with backend if we wanted to
+            try {
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    updateUserUI(data.user);
+                    (function(){ const _u = {...data.user}; delete _u.profile_picture; localStorage.setItem('gg_user', JSON.stringify(_u)); })();
+                } else if (res.status === 401) {
+                    localStorage.removeItem('gg_user');
+                    localStorage.removeItem('user');
+                    updateUserUI(null);
+                }
+            } catch (e) {
+                // Ignore
+            }
+        }
+
+        async function checkHostNotifications(btnElement) {
+            try {
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                const res = await fetch(`${API_BASE_URL}/api/host/notifications/unread-count`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.unread_count > 0) {
+                        let badge = btnElement.querySelector('.host-notification-badge');
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'host-notification-badge absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm';
+                            btnElement.appendChild(badge);
+                        }
+                        badge.textContent = data.unread_count;
+                    } else {
+                        const badge = btnElement.querySelector('.host-notification-badge');
+                        if (badge) badge.remove();
+                    }
+                }
+            } catch (e) { }
+        }
+
+        function updateUserUI(user) {
+            const listBtn = document.getElementById('list-facility-btn');
+            const mobileListBtn = document.getElementById('mobile-list-facility-btn');
+
+            if (user) {
+                if (loginBtn) {
+                    loginBtn.innerHTML = `Hi, ${user.name} <span class="text-xs text-slate-400 ml-1 cursor-pointer hover:text-red-500" id="logout-btn">(Log out)</span>`;
+                    loginBtn.removeEventListener('click', openAuthModal);
+                    const logoutBtn = document.getElementById('logout-btn');
+                    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+                }
+                if (mobileLoginBtn) {
+                    mobileLoginBtn.textContent = `Hi, ${user.name}`;
+                    mobileLoginBtn.removeEventListener('click', openAuthModal);
+                }
+                if (listBtn) {
+                    if (user.role === 'admin') {
+                        listBtn.textContent = "Admin Dashboard";
+                        listBtn.href = "admin-dashboard.html";
+                    } else if (user.role === 'host') {
+                        listBtn.textContent = "Host Dashboard";
+                        listBtn.href = "owner-dashboard.html";
+                        listBtn.classList.add('relative');
+                        checkHostNotifications(listBtn);
+                    } else {
+                        listBtn.textContent = "My Bookings";
+                        listBtn.href = "player-dashboard.html";
+                    }
+                }
+                if (mobileListBtn) {
+                    if (user.role === 'admin') {
+                        mobileListBtn.textContent = "Admin Dashboard";
+                        mobileListBtn.href = "admin-dashboard.html";
+                    } else if (user.role === 'host') {
+                        mobileListBtn.textContent = "Host Dashboard";
+                        mobileListBtn.href = "owner-dashboard.html";
+                        mobileListBtn.classList.add('relative');
+                        checkHostNotifications(mobileListBtn);
+                    } else {
+                        mobileListBtn.textContent = "My Bookings";
+                        mobileListBtn.href = "player-dashboard.html";
+                    }
+                }
+                
+                const mobileProfileBtn = document.getElementById('mobile-bottom-profile-btn');
+                if (mobileProfileBtn) {
+                    const profileHref = user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'host' ? 'owner-dashboard.html' : 'player-dashboard.html');
+                    mobileProfileBtn.onclick = null;
+                    mobileProfileBtn.href = profileHref;
+                    mobileProfileBtn.innerHTML = `
+                        <i class="fa-solid fa-user-check text-xl mb-1 pb-0.5 text-primary"></i>
+                        <span class="text-[10px] font-medium text-primary">Profile</span>
+                    `;
+                }
+                
+                // Update puck UI for logged in user
+                const puckIcon = document.getElementById('puck-icon');
+                const puckInitials = document.getElementById('puck-initials');
+                const puckImg = document.getElementById('puck-img');
+                const puckLoggedOut = document.getElementById('puck-logged-out');
+                const puckLoggedIn = document.getElementById('puck-logged-in');
+                const puckName = document.getElementById('puck-name');
+                const puckEmail = document.getElementById('puck-email');
+                const puckDashboard = document.getElementById('puck-dashboard');
+                
+                if (puckIcon) puckIcon.classList.add('hidden');
+                
+                if (user.profile_picture) {
+                    if (puckImg) {
+                        puckImg.src = user.profile_picture;
+                        puckImg.classList.remove('hidden');
+                    }
+                    if (puckInitials) puckInitials.classList.add('hidden');
+                } else {
+                    if (puckImg) puckImg.classList.add('hidden');
+                    if (puckInitials) {
+                        const initials = (user.name || user.first_name || 'U').substring(0, 2);
+                        puckInitials.textContent = initials;
+                        puckInitials.classList.remove('hidden');
+                    }
+                }
+                
+                if (puckLoggedOut) puckLoggedOut.classList.add('hidden');
+                if (puckLoggedIn) {
+                    puckLoggedIn.classList.remove('hidden');
+                    if (puckName) puckName.textContent = user.name || user.first_name || 'User';
+                    if (puckEmail) puckEmail.textContent = user.email || '';
+                    if (puckDashboard) {
+                        if (user.role === 'admin') puckDashboard.href = 'admin-dashboard.html';
+                        else if (user.role === 'host') puckDashboard.href = 'owner-dashboard.html';
+                        else puckDashboard.href = 'player-dashboard.html';
+                    }
+                }
+
+            } else {
+                if (loginBtn) {
+                    loginBtn.textContent = "Log in";
+                    loginBtn.addEventListener('click', openAuthModal);
+                }
+                if (mobileLoginBtn) {
+                    mobileLoginBtn.textContent = "Log in";
+                    mobileLoginBtn.addEventListener('click', openAuthModal);
+                }
+                if (listBtn) listBtn.textContent = "List Your Facility";
+                if (mobileListBtn) mobileListBtn.textContent = "List Your Facility";
+                
+                const mobileProfileBtn = document.getElementById('mobile-bottom-profile-btn');
+                if (mobileProfileBtn) {
+                    mobileProfileBtn.onclick = function(e){ e.preventDefault(); window.location.href='index.html?login=true'; };
+                    mobileProfileBtn.href = "#";
+                    mobileProfileBtn.innerHTML = `
+                        <i class="fa-regular fa-user text-xl mb-1 pb-0.5"></i>
+                        <span class="text-[10px] font-medium">Log in</span>
+                    `;
+                }
+
+                // Update puck UI for logged out user
+                const puckIcon = document.getElementById('puck-icon');
+                const puckInitials = document.getElementById('puck-initials');
+                const puckImg = document.getElementById('puck-img');
+                const puckLoggedOut = document.getElementById('puck-logged-out');
+                const puckLoggedIn = document.getElementById('puck-logged-in');
+
+                if (puckIcon) puckIcon.classList.remove('hidden');
+                if (puckInitials) puckInitials.classList.add('hidden');
+                if (puckImg) puckImg.classList.add('hidden');
+                if (puckLoggedOut) puckLoggedOut.classList.remove('hidden');
+                if (puckLoggedIn) puckLoggedIn.classList.add('hidden');
+            }
+        }
+
+        async function handleLogout(e) {
+            if (e) e.preventDefault();
+            try {
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+            } catch(e) {}
+            localStorage.removeItem('gg_user');
+            updateUserUI(null);
+            window.location.reload();
+        }
+
+        checkAuthState();
+
+        const globalUrlParams = new URLSearchParams(window.location.search);
+        if (globalUrlParams.get('login') === 'true') {
+            if (globalUrlParams.get('signup') === 'true') {
+                toggleAuthMode({ preventDefault: () => {} });
+            }
+            openAuthModal({ preventDefault: () => {} });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const u = JSON.parse(userStr);
+                    const puckDashboard = document.getElementById('puck-dashboard');
+                    const puckProfile = document.getElementById('puck-profile');
+                    if (u.role === 'host') {
+                        if (puckDashboard) puckDashboard.href = 'owner-dashboard.html';
+                        if (puckProfile) {
+                            puckProfile.href = 'owner-dashboard.html#profile';
+                            puckProfile.removeAttribute('onclick');
+                        }
+                    } else if (u.role === 'admin') {
+                        if (puckDashboard) puckDashboard.href = 'admin-dashboard.html';
+                        if (puckProfile) {
+                            puckProfile.href = 'admin-dashboard.html';
+                            puckProfile.removeAttribute('onclick');
+                        }
+                    } else {
+                        if (puckDashboard) puckDashboard.href = 'player-dashboard.html';
+                        if (puckProfile) puckProfile.href = 'player-dashboard.html';
                     }
                 } catch(e) {}
-                sessionStorage.removeItem('pending_booking_slots');
             }
-
-            
-            // Sync initial state if bookingDateInput exists
-            if (bookingDateInput) {
-                // Remove hardcoded HTML value and set to today
-                bookingDateInput.value = selectedDateStr;
-            }
-            
-            const calendarGrid = document.getElementById('calendar-grid');
-            const monthDisplay = document.getElementById('current-period-display');
-            const prevMonthBtn = document.getElementById('prev-month-btn');
-            const nextMonthBtn = document.getElementById('next-month-btn');
-
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            
-            const dayNamesHTML = [
-                '<span class="lang-en-only">Sun</span><span class="lang-fr-only">DIM</span>',
-                '<span class="lang-en-only">Mon</span><span class="lang-fr-only">LUN</span>',
-                '<span class="lang-en-only">Tue</span><span class="lang-fr-only">MAR</span>',
-                '<span class="lang-en-only">Wed</span><span class="lang-fr-only">MER</span>',
-                '<span class="lang-en-only">Thu</span><span class="lang-fr-only">JEU</span>',
-                '<span class="lang-en-only">Fri</span><span class="lang-fr-only">VEN</span>',
-                '<span class="lang-en-only">Sat</span><span class="lang-fr-only">SAM</span>'
-            ];
-
-            function toggleTimeSlot(dateStr, slotObj) {
-                const slotKey = `${dateStr}|${slotObj.id}`;
-                const isSelected = selectedSlotIds.has(slotKey);
-                
-                if (isSelected) {
-                    selectedSlotIds.delete(slotKey);
-                } else {
-                    selectedSlotIds.add(slotKey);
-                    
-                    let daySlotsCount = 0;
-                    selectedSlotIds.forEach(k => { if(k.startsWith(dateStr)) daySlotsCount++; });
-                    
-                    if (daySlotsCount === 1) {
-                        let opHours = { open: facilityOperatingHours.open || "06:00", close: facilityOperatingHours.close || "23:00" };
-                        let slots = generateDailySlots(opHours);
-                        const currentIndex = slots.findIndex(s => s.id === slotObj.id);
-                        if (currentIndex !== -1 && currentIndex + 1 < slots.length) {
-                            const nextSlot = slots[currentIndex + 1];
-                            if (!bookedSlotIds.has(`${dateStr}|${nextSlot.id}`)) {
-                                selectedSlotIds.add(`${dateStr}|${nextSlot.id}`);
-                            }
+        });
+        document.addEventListener('DOMContentLoaded', () => {
+            const userStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const u = JSON.parse(userStr);
+                    const puckDashboard = document.getElementById('puck-dashboard');
+                    const puckProfile = document.getElementById('puck-profile');
+                    if (u.role === 'host') {
+                        if (puckDashboard) puckDashboard.href = 'owner-dashboard.html';
+                        if (puckProfile) {
+                            puckProfile.href = 'owner-dashboard.html#profile';
+                            puckProfile.removeAttribute('onclick');
                         }
-                    }
-                }
-            }
-
-            function renderCalendar() {
-                if (!calendarGrid || !monthDisplay) return;
-                calendarGrid.innerHTML = '';
-                
-                monthDisplay.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-                
-                // Add Headers
-                dayNamesHTML.forEach(dayHtml => {
-                    const header = document.createElement('div');
-                    header.className = "text-xs font-semibold text-slate-400 uppercase py-2 notranslate";
-                    header.innerHTML = dayHtml;
-                    calendarGrid.appendChild(header);
-                });
-
-                const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
-                const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-
-                // Add empty tiles for days before the 1st
-                for (let i = 0; i < firstDay; i++) {
-                    const emptyTile = document.createElement('div');
-                    calendarGrid.appendChild(emptyTile);
-                }
-
-                // Add day tiles
-                const maxBookingDays = (typeof facility !== 'undefined' && facility.advance_booking_days) ? parseInt(facility.advance_booking_days, 10) : 180;
-                const maxDate = new Date();
-                maxDate.setHours(0,0,0,0);
-                maxDate.setDate(maxDate.getDate() + maxBookingDays);
-
-                const todayForCal = new Date();
-                todayForCal.setHours(0,0,0,0);
-
-                // We'll mock out some days as booked (e.g. 4th) or past.
-                for (let i = 1; i <= daysInMonth; i++) {
-                    const dayTile = document.createElement('div');
-                    
-                    const m = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-                    const d = i.toString().padStart(2, '0');
-                    const dateStr = `${currentDate.getFullYear()}-${m}-${d}`;
-
-                    let status = "available";
-
-                    const tileDate = new Date(`${dateStr}T00:00:00`);
-                    if (tileDate < todayForCal || tileDate > maxDate) {
-                        status = "past";
-                    }
-
-                    if (i < 4 && currentDate.getMonth() === 10 && currentDate.getFullYear() === 2026) status = "past";
-                    if (i === 4 && currentDate.getMonth() === 10 && currentDate.getFullYear() === 2026) status = "booked";
-                    
-                    if (status !== "past" && status !== "booked" && dateStr === selectedDateStr) {
-                        status = "selected";
-                    }
-
-                    if (status === "past") {
-                        dayTile.className = "aspect-square flex flex-col items-center justify-center rounded-xl text-slate-300 font-medium";
-                        dayTile.innerHTML = `<span>${i}</span>`;
-                    } else if (status === "booked") {
-                        dayTile.className = "aspect-square flex flex-col items-center justify-center rounded-xl bg-red-50 text-slate-400 font-medium cursor-not-allowed border border-red-100/50 relative overflow-hidden group";
-                        dayTile.innerHTML = `<span class="z-10 relative">${i}</span><div class="w-full h-1 bg-red-200 absolute bottom-0 rounded-b-xl"></div>`;
-                    } else if (status === "selected") {
-                        dayTile.className = "aspect-square flex flex-col items-center justify-center rounded-xl bg-primary text-white font-bold border-2 border-primary shadow-glow cursor-pointer transition-custom";
-                        dayTile.innerHTML = `<span class="z-10 relative">${i}</span>`;
-                        // Can still click to unselect or just keep it selected
+                    } else if (u.role === 'admin') {
+                        if (puckDashboard) puckDashboard.href = 'admin-dashboard.html';
+                        if (puckProfile) {
+                            puckProfile.href = 'admin-dashboard.html';
+                            puckProfile.removeAttribute('onclick');
+                        }
                     } else {
-                        // available
-                        dayTile.className = "aspect-square flex flex-col items-center justify-center rounded-xl bg-slate-50 text-dark font-medium border border-slate-200 hover:border-primary hover:text-primary cursor-pointer transition-custom shadow-sm";
-                        dayTile.innerHTML = `<span class="z-10 relative">${i}</span>`;
-                        
-                        dayTile.onclick = async () => {
-                            selectedDateStr = dateStr;
-                            if (bookingDateInput) {
-                                bookingDateInput.value = dateStr;
-                            }
-                            // Do NOT clear selected slots to preserve multi-day selection
-                            
-                            // Highlight time slots as if they reloaded (visual cue)
-                            const slotsSummary = document.getElementById('slots-summary');
-                            if (slotsSummary) slotsSummary.textContent = "Loading slots...";
-                            
-                            bookedSlotIds = await fetchBookedSlots();
-                            if (slotsSummary) slotsSummary.textContent = "Select Times";
-                            render(); // update widget pricing
-                            renderCalendar(); // redraw monthly calendar blocks
-                        };
-                    }
-
-                    calendarGrid.appendChild(dayTile);
-                }
-            }
-
-            let currentView = 'monthly'; // 'monthly', 'weekly', 'daily'
-            
-            function updatePeriodDisplay() {
-                if (currentView === 'monthly') {
-                    renderCalendar();
-                } else if (currentView === 'weekly') {
-                    renderWeeklyCalendar();
-                } else if (currentView === 'daily') {
-                    renderDailyCalendar();
-                }
-            }
-
-            function renderWeeklyCalendar() {
-                const weeklyGrid = document.getElementById('weekly-grid');
-                const periodDisplay = document.getElementById('current-period-display');
-                if (!weeklyGrid || !periodDisplay) return;
-                weeklyGrid.innerHTML = '';
-                
-                const selectedD = new Date(selectedDateStr + 'T12:00:00');
-                const startOfWeek = new Date(selectedD);
-                startOfWeek.setDate(selectedD.getDate() - selectedD.getDay());
-                
-                const endOfWeek = new Date(startOfWeek);
-                endOfWeek.setDate(startOfWeek.getDate() + 6);
-                periodDisplay.textContent = `${monthNames[startOfWeek.getMonth()]} ${startOfWeek.getDate()} - ${monthNames[endOfWeek.getMonth()]} ${endOfWeek.getDate()}, ${startOfWeek.getFullYear()}`;
-
-                let opHours = { open: facilityOperatingHours.open || "06:00", close: facilityOperatingHours.close || "23:00" };
-                let slots = generateDailySlots(opHours);
-
-                const timeCol = document.createElement('div');
-                timeCol.className = "flex flex-col flex-shrink-0 w-16 mr-2 mt-[1px]";
-
-                const emptyHeader = document.createElement('div');
-                emptyHeader.className = "py-2 text-[11px] font-bold uppercase tracking-wider border-b border-transparent opacity-0 text-center";
-                emptyHeader.innerHTML = `<div>W</div><div class="text-base sm:text-lg mt-0.5">00</div>`;
-                timeCol.appendChild(emptyHeader);
-
-                const timeSlotsWrapper = document.createElement('div');
-                timeSlotsWrapper.className = "flex-1 relative pt-4";
-
-                slots.forEach(s => {
-                    const cellWrap = document.createElement('div');
-                    cellWrap.className = "h-10 relative flex items-start justify-end pr-2 border-r border-slate-100/50";
-                    if (s.id.endsWith(':00')) {
-                        const label = document.createElement('div');
-                        label.className = "text-[10px] font-semibold text-slate-400 absolute -top-2 right-1 lg:right-2 bg-white px-1 leading-none";
-                        label.textContent = s.time.split(' - ')[0];
-                        cellWrap.appendChild(label);
-                    }
-                    timeSlotsWrapper.appendChild(cellWrap);
-                });
-                
-                timeCol.appendChild(timeSlotsWrapper);
-                weeklyGrid.appendChild(timeCol);
-
-                const daysWrapper = document.createElement('div');
-                daysWrapper.className = "flex flex-1 rounded-xl overflow-hidden shadow-sm border border-slate-100";
-                
-                const todayForCal = new Date(); todayForCal.setHours(0,0,0,0);
-                const td = new Date();
-                const currentTime24 = `${td.getHours().toString().padStart(2, '0')}:${td.getMinutes().toString().padStart(2, '0')}`;
-                const todayStr = `${td.getFullYear()}-${String(td.getMonth() + 1).padStart(2, '0')}-${String(td.getDate()).padStart(2, '0')}`;
-
-                for (let i = 0; i < 7; i++) {
-                    const dayDate = new Date(startOfWeek);
-                    dayDate.setDate(dayDate.getDate() + i);
-                    const y = dayDate.getFullYear(), m = String(dayDate.getMonth() + 1).padStart(2, '0'), d = String(dayDate.getDate()).padStart(2, '0');
-                    const dateStr = `${y}-${m}-${d}`;
-                    
-                    const col = document.createElement('div');
-                    col.className = "flex-1 flex flex-col border-r border-slate-100 last:border-r-0 bg-white";
-                    
-                    const header = document.createElement('div');
-                    header.className = `py-2 text-center text-[11px] font-bold uppercase tracking-wider border-b border-slate-100 notranslate ${dateStr === todayStr ? 'bg-primary/10 text-primary' : 'bg-slate-50 text-slate-500'}`;
-                    header.innerHTML = `<div>${dayNamesHTML[i]}</div><div class="text-base sm:text-lg mt-0.5">${d}</div>`;
-                    col.appendChild(header);
-                    
-                    const slotsWrapper = document.createElement('div');
-                    slotsWrapper.className = "flex-1 relative pt-4";
-
-                    const isPastDay = dayDate < todayForCal;
-                    
-                    slots.forEach(slot => {
-                        const isToday = dateStr === todayStr;
-                        const isPast = isPastDay || (isToday && slot.id < currentTime24);
-                        const slotKey = `${dateStr}|${slot.id}`;
-                        const isBooked = bookedSlotIds.has(slotKey);
-                        const isSelected = selectedSlotIds.has(slotKey);
-                        
-                        const pubSess = window.publicSessionSlots ? window.publicSessionSlots.get(slotKey) : null;
-                        
-                        const cell = document.createElement('div');
-                        cell.className = "h-10 border-b border-slate-50 px-0.5 sm:px-1 py-1 group transition-custom cursor-pointer relative";
-                        
-                        const inner = document.createElement('div');
-                        inner.className = "w-full h-full rounded sm:rounded-md flex items-center justify-center transition-custom ";
-                        
-                        if (isPast || isBooked) {
-                            inner.className += isBooked ? "bg-red-100/60 border border-red-200/50 cursor-not-allowed text-transparent" : "bg-slate-50 cursor-not-allowed";
-                            cell.onclick = (e) => e.stopPropagation();
-                        } else if (pubSess) {
-                            if (isSelected) {
-                                inner.className += "bg-indigo-600 text-white font-bold shadow-sm shadow-indigo-600/30";
-                                inner.innerHTML = `<i class="fa-solid fa-users text-[10px]"></i>`;
-                            } else {
-                                inner.className += "bg-indigo-50 border border-indigo-200/80 text-indigo-700/80 hover:bg-indigo-100/80 transition-colors";
-                                inner.innerHTML = `<i class="fa-solid fa-users text-[10px]"></i>`;
-                            }
-                        } else if (isSelected) {
-                            inner.className += "bg-primary text-white font-bold shadow-sm shadow-primary/30";
-                            inner.innerHTML = `<i class="fa-solid fa-check text-[10px]"></i>`;
-                        } else {
-                            inner.className += "bg-emerald-50/50 border border-emerald-100/50 opacity-0 group-hover:opacity-100 group-hover:bg-primary/20";
+                        if (puckDashboard) puckDashboard.href = 'player-dashboard.html';
+                        if (puckProfile) {
+                            puckProfile.href = 'player-dashboard.html';
+                            puckProfile.removeAttribute('onclick');
                         }
-                        
-                        if (!isPast && !isBooked) {
-                            cell.onclick = (e) => {
-                                e.stopPropagation();
-                                toggleTimeSlot(dateStr, slot);
-                                
-                                if(bookingDateInput) {
-                                   selectedDateStr = dateStr;
-                                   bookingDateInput.value = dateStr;
-                                }
-                                
-                                render();
-                            };
-                        }
-                        
-                        cell.appendChild(inner);
-                        slotsWrapper.appendChild(cell);
-                    });
-                    
-                    col.appendChild(slotsWrapper);
-                    daysWrapper.appendChild(col);
-                }
-                weeklyGrid.appendChild(daysWrapper);
-            }
-
-            function renderDailyCalendar() {
-                const dailyGrid = document.getElementById('daily-grid');
-                const periodDisplay = document.getElementById('current-period-display');
-                if (!dailyGrid || !periodDisplay) return;
-                dailyGrid.innerHTML = '';
-                
-                const selectedD = new Date(selectedDateStr + 'T12:00:00');
-                
-                // For the period display, we use a span for the day name to avoid translating the abbreviation incorrectly
-                periodDisplay.innerHTML = `<span class="notranslate">${dayNamesHTML[selectedD.getDay()]}</span>, ${monthNames[selectedD.getMonth()]} ${selectedD.getDate()}, ${selectedD.getFullYear()}`;
-
-                let opHours = { open: facilityOperatingHours.open || "06:00", close: facilityOperatingHours.close || "23:00" };
-                let slots = generateDailySlots(opHours);
-                
-                const todayForCal = new Date(); todayForCal.setHours(0,0,0,0);
-                const dayDate = new Date(selectedDateStr + 'T00:00:00');
-                const isPastDay = dayDate < todayForCal;
-                const td = new Date();
-                const isToday = selectedDateStr === `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
-                const currentTime24 = `${td.getHours().toString().padStart(2, '0')}:${td.getMinutes().toString().padStart(2, '0')}`;
-
-                slots.forEach(slot => {
-                    const isPast = isPastDay || (isToday && slot.id < currentTime24);
-                    const slotKey = `${selectedDateStr}|${slot.id}`;
-                    const isBooked = bookedSlotIds.has(slotKey);
-                    const isSelected = selectedSlotIds.has(slotKey);
-                    
-                    const pubSess = window.publicSessionSlots ? window.publicSessionSlots.get(slotKey) : null;
-                    
-                    const row = document.createElement('div');
-                    row.className = "flex items-center justify-between p-3 rounded-xl border transition-custom cursor-pointer ";
-                    
-                    if (isPast || isBooked) {
-                         row.className += isBooked ? "bg-red-50 border-red-100/50 cursor-not-allowed opacity-70" : "bg-slate-50 border-slate-100 cursor-not-allowed opacity-50";
-                         const reason = isPast ? "Passed" : "Fully Booked";
-                         const badgeClass = isBooked ? "bg-red-100 text-red-600" : "bg-slate-200 text-slate-500";
-                         row.innerHTML = `<span class="font-bold text-slate-500">${slot.time.split(' - ')[0]}</span> <span class="text-[10px] uppercase font-bold px-2 py-1 rounded-md ${badgeClass}">${reason}</span>`;
-                         row.onclick = (e) => e.stopPropagation();
-                    } else if (pubSess) {
-                         if (isSelected) {
-                             row.className += "bg-indigo-600 border-indigo-700 shadow-sm shadow-indigo-600/30 text-white";
-                             row.innerHTML = `<span class="font-bold text-white">${slot.time.split(' - ')[0]} - Public Session</span> <div class="w-6 h-6 rounded-full bg-white text-indigo-600 flex items-center justify-center shadow-sm"><i class="fa-solid fa-users text-xs"></i></div>`;
-                         } else {
-                             row.className += "bg-indigo-50 border-indigo-200 hover:border-indigo-400 hover:shadow-sm";
-                             row.innerHTML = `<span class="font-bold text-indigo-700">${slot.time.split(' - ')[0]} - ${pubSess.manual_notes || 'Public Session'}</span> <span class="text-xs font-bold text-indigo-600 bg-white px-2 rounded-full border border-indigo-100 shadow-sm">${pubSess.joined_count}/${pubSess.capacity} joined</span>`;
-                         }
-                    } else if (isSelected) {
-                         row.className += "bg-primary/10 border-primary/30 shadow-sm shadow-primary/10";
-                         row.innerHTML = `<span class="font-bold text-primary">${slot.time.split(' - ')[0]}</span> <div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center shadow-sm"><i class="fa-solid fa-check text-xs"></i></div>`;
-                    } else {
-                         row.className += "bg-white border-slate-200 hover:border-primary hover:shadow-sm";
-                         row.innerHTML = `<span class="font-bold text-dark">${slot.time.split(' - ')[0]}</span> <div class="w-6 h-6 rounded-full border border-slate-300 group-hover:border-primary flex items-center justify-center text-transparent hover:bg-slate-50"><i class="fa-solid fa-plus text-xs"></i></div>`;
                     }
-
-                    if (!isPast && !isBooked) {
-                        row.onclick = (e) => {
-                            e.stopPropagation();
-                            toggleTimeSlot(selectedDateStr, slot);
-                            render();
-                            renderDailyCalendar();
-                        };
-                    }
-                    
-                    dailyGrid.appendChild(row);
-                });
-            }
-
-            const viewMonthlyBtn = document.getElementById('view-monthly-btn');
-            const viewWeeklyBtn = document.getElementById('view-weekly-btn');
-            const viewDailyBtn = document.getElementById('view-daily-btn');
-            const monthlyContainer = document.getElementById('monthly-view-container');
-            const weeklyContainer = document.getElementById('weekly-view-container');
-            const dailyContainer = document.getElementById('daily-view-container');
-
-            function switchView(view) {
-                currentView = view;
-                if(viewMonthlyBtn) viewMonthlyBtn.className = view === 'monthly' ? "px-4 py-2 rounded-lg bg-white shadow-sm text-primary transition-custom ring-1 ring-slate-200" : "px-4 py-2 rounded-lg hover:text-dark transition-custom text-slate-500 bg-transparent";
-                if(viewWeeklyBtn) viewWeeklyBtn.className = view === 'weekly' ? "px-4 py-2 rounded-lg bg-white shadow-sm text-primary transition-custom ring-1 ring-slate-200" : "px-4 py-2 rounded-lg hover:text-dark transition-custom text-slate-500 bg-transparent";
-                if(viewDailyBtn) viewDailyBtn.className = view === 'daily' ? "px-4 py-2 rounded-lg bg-white shadow-sm text-primary transition-custom ring-1 ring-slate-200" : "px-4 py-2 rounded-lg hover:text-dark transition-custom text-slate-500 bg-transparent";
-                
-                if(monthlyContainer) monthlyContainer.classList.toggle('hidden', view !== 'monthly');
-                if(weeklyContainer) weeklyContainer.classList.toggle('hidden', view !== 'weekly');
-                if(dailyContainer) dailyContainer.classList.toggle('hidden', view !== 'daily');
-                
-                updatePeriodDisplay();
-            }
-
-            if(viewMonthlyBtn) viewMonthlyBtn.addEventListener('click', () => switchView('monthly'));
-            if(viewWeeklyBtn) viewWeeklyBtn.addEventListener('click', () => switchView('weekly'));
-            if(viewDailyBtn) viewDailyBtn.addEventListener('click', () => switchView('daily'));
-
-            const prevPeriodBtn = document.getElementById('prev-period-btn');
-            const nextPeriodBtn = document.getElementById('next-period-btn');
-
-            if (prevPeriodBtn) {
-                prevPeriodBtn.onclick = () => {
-                    if (currentView === 'monthly') {
-                        currentDate.setMonth(currentDate.getMonth() - 1);
-                    } else if (currentView === 'weekly') {
-                        const d = new Date(selectedDateStr + 'T12:00:00');
-                        d.setDate(d.getDate() - 7);
-                        selectedDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                        if(bookingDateInput) bookingDateInput.value = selectedDateStr;
-                    } else if (currentView === 'daily') {
-                        const d = new Date(selectedDateStr + 'T12:00:00');
-                        d.setDate(d.getDate() - 1);
-                        selectedDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                        if(bookingDateInput) bookingDateInput.value = selectedDateStr;
-                    }
-                    updatePeriodDisplay();
-                };
-            }
-            if (nextPeriodBtn) {
-                nextPeriodBtn.onclick = () => {
-                    if (currentView === 'monthly') {
-                        currentDate.setMonth(currentDate.getMonth() + 1);
-                    } else if (currentView === 'weekly') {
-                        const d = new Date(selectedDateStr + 'T12:00:00');
-                        d.setDate(d.getDate() + 7);
-                        selectedDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                        if(bookingDateInput) bookingDateInput.value = selectedDateStr;
-                    } else if (currentView === 'daily') {
-                        const d = new Date(selectedDateStr + 'T12:00:00');
-                        d.setDate(d.getDate() + 1);
-                        selectedDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                        if(bookingDateInput) bookingDateInput.value = selectedDateStr;
-                    }
-                    updatePeriodDisplay();
-                };
-            }
-            
-            if (bookingDateInput) {
-                bookingDateInput.addEventListener('change', async (e) => {
-                    selectedDateStr = e.target.value;
-                    const newDate = new Date(selectedDateStr + 'T00:00:00');
-                    if (!isNaN(newDate.getTime())) {
-                        currentDate = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
-                    }
-                    renderCalendar();
-
-                    const slotsSummary = document.getElementById('slots-summary');
-                    if (slotsSummary) slotsSummary.textContent = "Loading slots...";
-                    
-                    bookedSlotIds = await fetchBookedSlots();
-                    if (slotsSummary) slotsSummary.textContent = "Select Times";
-                    render();
-                    updatePeriodDisplay();
-                });
-            }
-
-            // Sync initial calendar render
-            updatePeriodDisplay();
-
-            // Initial render call for booking widget
-            if (currentFacilityId) {
-
-                fetchBookedSlots().then(booked => {
-                    bookedSlotIds = booked;
-                    render();
-                    updatePeriodDisplay(); // ensure calendar shows booked
-                    
-                    if (sessionStorage.getItem('auto_reserve')) {
-                        sessionStorage.removeItem('auto_reserve');
-                        setTimeout(initiateCheckout, 300); // slight delay to let UI settle
-                    }
-                });
-            } else {
-                render();
+                } catch(e) {}
             }
         });

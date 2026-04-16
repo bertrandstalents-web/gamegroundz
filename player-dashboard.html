@@ -246,6 +246,71 @@
                             </div>
                         </div>
 
+                        <!-- Interested Surfaces Section -->
+                        <div class="pt-4 border-t border-slate-100">
+                            <h3 class="text-lg font-bold text-dark mb-4">Interested Surfaces</h3>
+                            <p class="text-sm text-slate-500 mb-4">Select the types of surfaces you are interested in engaging with.</p>
+                            <input type="hidden" id="prof-interested-surfaces" value="[]">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="prof-surfaces-container">
+                                <!-- Box 1 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="ice">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-snowflake text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Ice Rinks</span>
+                                </div>
+                                <!-- Box 2 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="soccer">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-futbol text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Soccer Fields</span>
+                                </div>
+                                <!-- Box 3 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="basketball">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-basketball text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Basketball<br>Courts</span>
+                                </div>
+                                <!-- Box 4 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="tennis">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-baseball outline-none text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Tennis<br>Courts</span>
+                                </div>
+                                <!-- Box 5 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="football">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-football text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Football<br>Fields</span>
+                                </div>
+                                <!-- Box 6 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="gym">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-dumbbell text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Training<br>Gyms</span>
+                                </div>
+                                <!-- Box 7 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="pickleball">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-table-tennis-paddle-ball text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Pickleball<br>Courts</span>
+                                </div>
+                                <!-- Box 8 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="pool">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-person-swimming text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Swimming<br>Pools</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="pt-4 border-t border-slate-100">
                             <h3 class="text-lg font-bold text-dark mb-4">Change Password</h3>
                             <div class="space-y-4">
@@ -756,6 +821,28 @@
                     badge.className = 'px-3 py-1 rounded-full text-xs font-bold uppercase bg-slate-200 text-slate-600';
                 }
 
+                if (u.interested_surfaces) {
+                    let selected = [];
+                    if (typeof u.interested_surfaces === 'string') {
+                        try { selected = JSON.parse(u.interested_surfaces); } catch(e) {}
+                    } else if (Array.isArray(u.interested_surfaces)) {
+                        selected = u.interested_surfaces;
+                    }
+                    
+                    document.getElementById('prof-interested-surfaces').value = JSON.stringify(selected);
+                    
+                    document.querySelectorAll('#prof-surfaces-container .surface-box').forEach(box => {
+                        const surface = box.dataset.surface;
+                        if (selected.includes(surface)) {
+                            box.classList.remove('border-slate-200', 'bg-slate-50');
+                            box.classList.add('border-primary', 'bg-primary/5', 'ring-2', 'ring-primary/20');
+                            const iconWrap = box.querySelector('div');
+                            iconWrap.classList.remove('bg-white', 'text-slate-700');
+                            iconWrap.classList.add('bg-primary', 'text-white');
+                        }
+                    });
+                }
+
             } catch (error) {
                 console.error("Error loading profile:", error);
             }
@@ -826,6 +913,13 @@
                 new_password: document.getElementById('prof-new-pass').value,
                 profile_picture: typeof currentProfilePicBase64 !== 'undefined' ? currentProfilePicBase64 : null
             };
+            
+            try {
+                const surfacesVal = document.getElementById('prof-interested-surfaces').value;
+                payload.interestedSurfaces = JSON.parse(surfacesVal);
+            } catch (e) {
+                payload.interestedSurfaces = [];
+            }
             
             const muniSelect = document.getElementById('prof-residency-city');
             const docInput = document.getElementById('prof-residency-doc');
@@ -1295,6 +1389,36 @@
                     }
                 } catch(e) {}
             }
+        });
+        
+        // Interested Surfaces Logic
+        const profileSurfaceBoxes = document.querySelectorAll('#prof-surfaces-container .surface-box');
+        const profInterestedHidden = document.getElementById('prof-interested-surfaces');
+
+        profileSurfaceBoxes.forEach(box => {
+            box.addEventListener('click', () => {
+                const surface = box.dataset.surface;
+                let selectedStr = profInterestedHidden.value;
+                let selected = [];
+                try { selected = JSON.parse(selectedStr); } catch(e) { selected = []; }
+                
+                if (selected.includes(surface)) {
+                    selected = selected.filter(s => s !== surface);
+                    box.classList.remove('border-primary', 'bg-primary/5', 'ring-2', 'ring-primary/20');
+                    box.classList.add('border-slate-200', 'bg-slate-50');
+                    const iconWrap = box.querySelector('div');
+                    iconWrap.classList.remove('bg-primary', 'text-white');
+                    iconWrap.classList.add('bg-white', 'text-slate-700');
+                } else {
+                    selected.push(surface);
+                    box.classList.remove('border-slate-200', 'bg-slate-50');
+                    box.classList.add('border-primary', 'bg-primary/5', 'ring-2', 'ring-primary/20');
+                    const iconWrap = box.querySelector('div');
+                    iconWrap.classList.remove('bg-white', 'text-slate-700');
+                    iconWrap.classList.add('bg-primary', 'text-white');
+                }
+                profInterestedHidden.value = JSON.stringify(selected);
+            });
         });
     </script>
 </body>

@@ -1,4 +1,3 @@
-    <script>
         tailwind.config = {
             theme: {
                 extend: {
@@ -19,8 +18,6 @@
                 }
             }
         }
-    </script>
-<script>
         // Navbar blur and sticky behavior
         window.addEventListener('scroll', () => {
             const nav = document.getElementById('navbar');
@@ -448,8 +445,10 @@
                 const selectedRole = document.querySelector('input[name="auth-role"]:checked');
                 if (selectedRole && selectedRole.value === 'player') {
                     document.getElementById('auth-residency-container').classList.remove('hidden');
+                    document.getElementById('auth-surfaces-container').classList.remove('hidden');
                 } else {
                     document.getElementById('auth-residency-container').classList.add('hidden');
+                    document.getElementById('auth-surfaces-container').classList.add('hidden');
                 }
                 if(forgotPasswordContainer) forgotPasswordContainer.classList.add('hidden');
                 firstNameInput.required = true;
@@ -500,10 +499,12 @@
                         document.getElementById('auth-host-city').required = true;
                     }
                     document.getElementById('auth-residency-container').classList.add('hidden');
+                    document.getElementById('auth-surfaces-container').classList.add('hidden');
                 } else {
                     companyContainer.classList.add('hidden');
                     companyInput.required = false;
                     document.getElementById('auth-residency-container').classList.remove('hidden');
+                    document.getElementById('auth-surfaces-container').classList.remove('hidden');
                 }
             });
         });
@@ -608,6 +609,35 @@
             // Initial check
             updateResidencyDocVisibility(authMunicipalitySearch.value.trim());
         }
+
+        // Interested Surfaces select logic
+        const surfaceBoxes = document.querySelectorAll('.surface-box');
+        const interestedSurfacesInput = document.getElementById('auth-interested-surfaces');
+        
+        surfaceBoxes.forEach(box => {
+            box.addEventListener('click', () => {
+                box.classList.toggle('ring-2');
+                box.classList.toggle('ring-primary');
+                box.classList.toggle('bg-primary/5');
+                
+                const iconContainer = box.querySelector('div.bg-white');
+                if (iconContainer) {
+                    iconContainer.classList.toggle('text-primary');
+                }
+                
+                let selected = [];
+                try { selected = JSON.parse(interestedSurfacesInput.value); } catch(e){}
+                
+                const surfaceType = box.getAttribute('data-surface');
+                if (box.classList.contains('ring-primary')) {
+                    if (!selected.includes(surfaceType)) selected.push(surfaceType);
+                } else {
+                    selected = selected.filter(s => s !== surfaceType);
+                }
+                
+                interestedSurfacesInput.value = JSON.stringify(selected);
+            });
+        });
 
         if (toggleConfirmPasswordBtn) {
             toggleConfirmPasswordBtn.addEventListener('click', function() {
@@ -729,7 +759,13 @@
 
             try {
                 const endpoint = isLoginMode ? '/api/auth/login' : '/api/users/signup';
-                const body = isLoginMode ? { email, password } : { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture, residency_city: authMunicipalitySearch ? authMunicipalitySearch.value.trim() : null, residency_document_url };
+                let interestedSurfaces = [];
+                const surfacesInput = document.getElementById('auth-interested-surfaces');
+                if (surfacesInput) {
+                    try { interestedSurfaces = JSON.parse(surfacesInput.value); } catch(e){}
+                }
+
+                const body = isLoginMode ? { email, password } : { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture, residency_city: authMunicipalitySearch ? authMunicipalitySearch.value.trim() : null, residency_document_url, interestedSurfaces };
 
                 const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 
@@ -768,7 +804,7 @@
             }
         }
 
-        if (authSubmitBtn) authSubmitBtn.addEventListener('click', handleAuth);
+
 
         async function checkAuthState() {
             // First check local storage for quick render
@@ -971,8 +1007,6 @@
             openAuthModal({ preventDefault: () => {} });
         }
 
-    </script>
-    <script>
         document.addEventListener('DOMContentLoaded', () => {
             const userStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
             if (userStr) {
@@ -999,8 +1033,6 @@
                 } catch(e) {}
             }
         });
-    </script>
-    <script>
         document.addEventListener('DOMContentLoaded', () => {
             const userStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
             if (userStr) {
@@ -1030,4 +1062,3 @@
                 } catch(e) {}
             }
         });
-    </script>

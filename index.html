@@ -169,6 +169,8 @@
                             <option value="soccer" class="text-slate-800">Soccer Field</option>
                             <option value="basketball" class="text-slate-800">Basketball Court</option>
                             <option value="tennis" class="text-slate-800">Tennis Court</option>
+                            <option value="pickleball" class="text-slate-800">Pickleball Court</option>
+                            <option value="pool" class="text-slate-800">Swimming Pool</option>
                         </select>
                     </div>
                     <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom relative cursor-pointer" onclick="const d = document.getElementById('homeDateSearch'); d.focus(); if(d.showPicker) d.showPicker();">
@@ -196,7 +198,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-3xl font-bold text-dark mb-10 text-center">Browse by Surface Type</h2>
             
-            <div class="flex overflow-x-auto md:grid md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 pb-6 md:pb-0 snap-x snap-mandatory" style="scrollbar-width: none;">
+            <div class="flex overflow-x-auto md:grid md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-6 pb-6 md:pb-0 snap-x snap-mandatory" style="scrollbar-width: none;">
                 <!-- Category 1 -->
                 <a href="search.html?type=ice" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
                     <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
@@ -243,6 +245,22 @@
                         <i class="fa-solid fa-dumbbell text-2xl"></i>
                     </div>
                     <span class="font-semibold text-slate-800 group-hover:text-primary transition-custom text-center">Training Gyms</span>
+                </a>
+
+                <!-- Category 7 -->
+                <a href="search.html?type=pickleball" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
+                        <i class="fa-solid fa-table-tennis-paddle-ball text-2xl"></i>
+                    </div>
+                    <span class="font-semibold text-slate-800 group-hover:text-primary transition-custom text-center">Pickleball Courts</span>
+                </a>
+
+                <!-- Category 8 -->
+                <a href="search.html?type=pool" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
+                        <i class="fa-solid fa-person-swimming text-2xl"></i>
+                    </div>
+                    <span class="font-semibold text-slate-800 group-hover:text-primary transition-custom text-center">Swimming Pools</span>
                 </a>
             </div>
             
@@ -560,7 +578,7 @@
             <div class="p-6 overflow-y-auto">
                 <h4 class="text-2xl font-extrabold text-dark mb-6">Welcome to <span class="notranslate"><span class="notranslate">GameGroundz</span></span></h4>
                 
-                <form id="auth-form" class="space-y-4" onsubmit="handleAuth(event)">
+                <form id="auth-form" class="space-y-4" novalidate onsubmit="handleAuth(event)">
                     <div id="name-field-container" class="hidden space-y-4">
                         <div class="mb-2">
                             <label class="block text-sm font-bold text-slate-700 mb-2">Account Type</label>
@@ -644,6 +662,70 @@
                                 </div>
                                 <input type="file" id="auth-residency-doc" accept="image/jpeg,image/png,image/jpg,application/pdf" class="hidden">
                                 <p class="text-xs text-slate-500 mt-2 text-center" id="auth-residency-doc-name"></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Interested Surfaces (Customer only) -->
+                        <div id="auth-surfaces-container" class="mt-4 border-t border-slate-100 pt-4 hidden">
+                            <label class="block text-[0.8rem] font-bold text-slate-500 mb-3">What kind of surfaces are you interested in?</label>
+                            <input type="hidden" id="auth-interested-surfaces" value="[]">
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                <!-- Box 1 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="ice">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-snowflake text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Ice Rinks</span>
+                                </div>
+                                <!-- Box 2 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="soccer">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-futbol text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Soccer Fields</span>
+                                </div>
+                                <!-- Box 3 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="basketball">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-basketball text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Basketball<br>Courts</span>
+                                </div>
+                                <!-- Box 4 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="tennis">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-baseball text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Tennis<br>Courts</span>
+                                </div>
+                                <!-- Box 5 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="football">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-football text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Football<br>Fields</span>
+                                </div>
+                                <!-- Box 6 -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="gym">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-dumbbell text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Training<br>Gyms</span>
+                                </div>
+                                <!-- Box 7 (New) -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="pickleball">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-table-tennis-paddle-ball text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Pickleball<br>Courts</span>
+                                </div>
+                                <!-- Box 8 (New) -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="pool">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-person-swimming text-lg"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Swimming<br>Pools</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1108,8 +1190,10 @@
                 const selectedRole = document.querySelector('input[name="auth-role"]:checked');
                 if (selectedRole && selectedRole.value === 'player') {
                     document.getElementById('auth-residency-container').classList.remove('hidden');
+                    document.getElementById('auth-surfaces-container').classList.remove('hidden');
                 } else {
                     document.getElementById('auth-residency-container').classList.add('hidden');
+                    document.getElementById('auth-surfaces-container').classList.add('hidden');
                 }
                 if(forgotPasswordContainer) forgotPasswordContainer.classList.add('hidden');
                 firstNameInput.required = true;
@@ -1160,10 +1244,12 @@
                         document.getElementById('auth-host-city').required = true;
                     }
                     document.getElementById('auth-residency-container').classList.add('hidden');
+                    document.getElementById('auth-surfaces-container').classList.add('hidden');
                 } else {
                     companyContainer.classList.add('hidden');
                     companyInput.required = false;
                     document.getElementById('auth-residency-container').classList.remove('hidden');
+                    document.getElementById('auth-surfaces-container').classList.remove('hidden');
                 }
             });
         });
@@ -1269,6 +1355,35 @@
             updateResidencyDocVisibility(authMunicipalitySearch.value.trim());
         }
 
+        // Interested Surfaces select logic
+        const surfaceBoxes = document.querySelectorAll('.surface-box');
+        const interestedSurfacesInput = document.getElementById('auth-interested-surfaces');
+        
+        surfaceBoxes.forEach(box => {
+            box.addEventListener('click', () => {
+                box.classList.toggle('ring-2');
+                box.classList.toggle('ring-primary');
+                box.classList.toggle('bg-primary/5');
+                
+                const iconContainer = box.querySelector('div.bg-white');
+                if (iconContainer) {
+                    iconContainer.classList.toggle('text-primary');
+                }
+                
+                let selected = [];
+                try { selected = JSON.parse(interestedSurfacesInput.value); } catch(e){}
+                
+                const surfaceType = box.getAttribute('data-surface');
+                if (box.classList.contains('ring-primary')) {
+                    if (!selected.includes(surfaceType)) selected.push(surfaceType);
+                } else {
+                    selected = selected.filter(s => s !== surfaceType);
+                }
+                
+                interestedSurfacesInput.value = JSON.stringify(selected);
+            });
+        });
+
         if (toggleConfirmPasswordBtn) {
             toggleConfirmPasswordBtn.addEventListener('click', function() {
                 const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -1299,6 +1414,12 @@
             const confirm_password = document.getElementById('auth-confirm-password') ? document.getElementById('auth-confirm-password').value : '';
 
             authError.classList.add('hidden');
+            
+            if (!email.trim() || !password.trim()) {
+                authError.textContent = "Please enter both email and password.";
+                authError.classList.remove('hidden');
+                return;
+            }
 
             let role_choice = 'player';
             let company_name = '';
@@ -1389,7 +1510,13 @@
 
             try {
                 const endpoint = isLoginMode ? '/api/auth/login' : '/api/users/signup';
-                const body = isLoginMode ? { email, password } : { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture, residency_city: authMunicipalitySearch ? authMunicipalitySearch.value.trim() : null, residency_document_url };
+                let interestedSurfaces = [];
+                const surfacesInput = document.getElementById('auth-interested-surfaces');
+                if (surfacesInput) {
+                    try { interestedSurfaces = JSON.parse(surfacesInput.value); } catch(e){}
+                }
+
+                const body = isLoginMode ? { email, password } : { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture, residency_city: authMunicipalitySearch ? authMunicipalitySearch.value.trim() : null, residency_document_url, interestedSurfaces };
 
                 const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 

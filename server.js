@@ -295,7 +295,7 @@ setInterval(() => {
 // User Registration
 app.post('/api/users/signup', async (req, res) => {
     try {
-        let { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture, residency_city, residency_document_url } = req.body;
+        let { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture, residency_city, residency_document_url, interestedSurfaces } = req.body;
         
         if (!first_name || !last_name || !phone_number || !email || !password) {
             return res.status(400).json({ error: "All fields are required" });
@@ -338,9 +338,15 @@ app.post('/api/users/signup', async (req, res) => {
                     residency_applied_at = new Date().toISOString();
                 }
 
+                // Handle interestedSurfaces
+                let surfacesJSON = '[]';
+                if (interestedSurfaces && Array.isArray(interestedSurfaces)) {
+                    surfacesJSON = JSON.stringify(interestedSurfaces);
+                }
+
                 // Insert new user
-                db.run("INSERT INTO users (name, email, password, role, company_name, first_name, last_name, phone_number, profile_picture, residency_city, residency_document_url, residency_status, residency_applied_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-                    [name, email, hashedPassword, userRole, company_name, first_name.trim(), last_name.trim(), phone_number, profile_picture, residency_city || null, residency_document_url || null, residency_status, residency_applied_at], 
+                db.run("INSERT INTO users (name, email, password, role, company_name, first_name, last_name, phone_number, profile_picture, residency_city, residency_document_url, residency_status, residency_applied_at, interested_surfaces) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+                    [name, email, hashedPassword, userRole, company_name, first_name.trim(), last_name.trim(), phone_number, profile_picture, residency_city || null, residency_document_url || null, residency_status, residency_applied_at, surfacesJSON], 
                     function(err) {
                         if (err) return res.status(500).json({ error: "Could not create user" });
                         
@@ -498,7 +504,7 @@ app.put('/api/users/profile', async (req, res) => {
         return res.status(401).json({ error: "Not authenticated" });
     }
 
-    let { first_name, last_name, email, phone_number, company_name, profile_picture, old_password, new_password, residency_city, residency_document_url } = req.body;
+    let { first_name, last_name, email, phone_number, company_name, profile_picture, old_password, new_password, residency_city, residency_document_url, interestedSurfaces } = req.body;
     
     if (!first_name || !last_name || !email || !phone_number) {
         return res.status(400).json({ error: "Missing required basic fields." });
@@ -553,10 +559,15 @@ app.put('/api/users/profile', async (req, res) => {
                     }
                 }
 
+                let finalInterestedSurfaces = currentUser.interested_surfaces;
+                if (interestedSurfaces !== undefined) {
+                    finalInterestedSurfaces = Array.isArray(interestedSurfaces) ? JSON.stringify(interestedSurfaces) : currentUser.interested_surfaces;
+                }
+
                 // Update the user
                 db.run(
-                    "UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, phone_number = ?, company_name = ?, profile_picture = ?, password = ?, residency_city = ?, residency_document_url = ?, residency_status = ?, residency_applied_at = ? WHERE id = ?",
-                    [name, first_name.trim(), last_name.trim(), email, phone_number.trim(), company_name ? company_name.trim() : null, profile_picture || null, finalPassword, finalResidencyCity, finalResidencyUrl, finalResidencyStatus, finalResidencyAppliedAt, req.session.userId],
+                    "UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, phone_number = ?, company_name = ?, profile_picture = ?, password = ?, residency_city = ?, residency_document_url = ?, residency_status = ?, residency_applied_at = ?, interested_surfaces = ? WHERE id = ?",
+                    [name, first_name.trim(), last_name.trim(), email, phone_number.trim(), company_name ? company_name.trim() : null, profile_picture || null, finalPassword, finalResidencyCity, finalResidencyUrl, finalResidencyStatus, finalResidencyAppliedAt, finalInterestedSurfaces, req.session.userId],
                     function(err) {
                         if (err) return res.status(500).json({ error: "Failed to update profile" });
                         
