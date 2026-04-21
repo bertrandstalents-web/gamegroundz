@@ -275,11 +275,24 @@
             <!-- Tab: My Facilities -->
             <div id="tab-facilities" class="col-span-2 lg:col-span-none block">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-dark">My Facilities</h2>
-                        <button onclick="switchTab('add-new')" class="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg font-bold transition-custom text-sm">
-                            <i class="fa-solid fa-plus mr-1"></i> Add Facility
-                        </button>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                        <h2 class="text-2xl font-bold text-dark whitespace-nowrap">My Facilities</h2>
+                        <div class="flex flex-col sm:flex-row items-center gap-2 md:gap-4 w-full md:w-auto">
+                            <select id="facility-surface-filter" onchange="renderFacilities(ownerFacilities)" class="w-full sm:w-auto px-4 py-2 border-2 border-slate-200 bg-slate-50 text-slate-700 hover:border-primary transition-custom font-bold rounded-xl focus:outline-none cursor-pointer text-sm">
+                                <option value="all">All Surfaces</option>
+                                <option value="ice">Ice Rink</option>
+                                <option value="soccer">Soccer Field (Turf)</option>
+                                <option value="basketball">Basketball Court</option>
+                                <option value="tennis">Tennis Court</option>
+                                <option value="pickleball">Pickleball Court</option>
+                                <option value="pool">Swimming Pool</option>
+                                <option value="football">Football Field</option>
+                                <option value="gym">Training Gym</option>
+                            </select>
+                            <button onclick="switchTab('add-new')" class="w-full sm:w-auto bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl font-bold transition-custom text-sm flex items-center justify-center">
+                                <i class="fa-solid fa-plus mr-1"></i> Add Facility
+                            </button>
+                        </div>
                     </div>
                     <div id="host-facilities-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="text-center py-8 text-slate-500 col-span-full">
@@ -1858,6 +1871,9 @@
                 else navOurPeople.classList.add('hidden');
             }
 
+            const surfaceFilter = document.getElementById('facility-surface-filter');
+            const surfaceVal = surfaceFilter ? surfaceFilter.value : 'all';
+
             facilities.forEach(fac => {
                 let displayImage = 'https://placehold.co/600x400/f8fafc/64748b?text=No+Image'; // Safe fallback
                 if (fac.image_url) {
@@ -1878,9 +1894,13 @@
                 if (resFacFilter) {
                     resFacFilter.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
                 }
+                
+                if (surfaceVal !== 'all' && fac.type !== surfaceVal) return;
+                
+                const dragClasses = surfaceVal === 'all' ? 'cursor-grab active:cursor-grabbing' : '';
 
                 container.innerHTML += `
-                    <div data-id="${fac.id}" class="flex flex-col border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-custom bg-white cursor-grab active:cursor-grabbing">
+                    <div data-id="${fac.id}" class="flex flex-col border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-custom bg-white ${dragClasses}">
                         <div class="h-40 w-full overflow-hidden relative">
                             <img src="${displayImage}" alt="${fac.name}" class="w-full h-full object-cover">
                             ${fac.is_instant_book ? '<span class="absolute top-3 left-3 bg-white text-primary text-xs font-bold px-2 py-1 rounded-md shadow-sm"><i class="fa-solid fa-bolt text-yellow-500 mr-1"></i> Instant Book</span>' : ''}
@@ -1923,9 +1943,14 @@
 
             // Initialize Sortable on the facilities container
             if (window.Sortable) {
-                Sortable.create(container, {
-                    animation: 150,
-                    ghostClass: 'opacity-50',
+                if (container.sortableInstance) {
+                    try { container.sortableInstance.destroy(); } catch(e) {}
+                }
+                
+                if (surfaceVal === 'all') {
+                    container.sortableInstance = Sortable.create(container, {
+                        animation: 150,
+                        ghostClass: 'opacity-50',
                     onEnd: function (evt) {
                         const orderIds = Array.from(container.children).map(child => child.getAttribute('data-id'));
                         
@@ -1976,6 +2001,7 @@
                         }).catch(e => console.error('Error reordering facilities:', e));
                     }
                 });
+                }
             }
 
             // Initialize calendar if not already initialized
