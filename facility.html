@@ -786,21 +786,25 @@
                     const connectedSelect = document.getElementById('connected-facility-select');
                     
                     if (facility.connected_facilities_data && facility.connected_facilities_data.length > 0) {
-                        connectedContainer.classList.remove('hidden');
+                        const filteredConnected = facility.connected_facilities_data.filter(f => f.type === facility.type);
                         
-                        let optionsHtml = `<option value="${facility.id}" selected>${facility.name} (Current)</option>`;
-                        facility.connected_facilities_data.forEach(f => {
-                            optionsHtml += `<option value="${f.id}">${f.name}</option>`;
-                        });
-                        
-                        connectedSelect.innerHTML = optionsHtml;
-                        
-                        // Listen for switch
-                        connectedSelect.addEventListener('change', (e) => {
-                            if (e.target.value != facility.id) {
-                                window.location.href = `facility.html?id=${e.target.value}`;
-                            }
-                        });
+                        if (filteredConnected.length > 0) {
+                            connectedContainer.classList.remove('hidden');
+                            
+                            let optionsHtml = `<option value="${facility.id}" selected>${facility.name} (Current)</option>`;
+                            filteredConnected.forEach(f => {
+                                optionsHtml += `<option value="${f.id}">${f.name}</option>`;
+                            });
+                            
+                            connectedSelect.innerHTML = optionsHtml;
+                            
+                            // Listen for switch
+                            connectedSelect.addEventListener('change', (e) => {
+                                if (e.target.value != facility.id) {
+                                    window.location.href = `facility.html?id=${e.target.value}`;
+                                }
+                            });
+                        }
                     }
 
                     // Expose it globally for render
