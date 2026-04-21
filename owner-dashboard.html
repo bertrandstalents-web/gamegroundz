@@ -2802,21 +2802,9 @@
             facilityBookings.forEach(b => {
                 const slots = JSON.parse(b.time_slots);
                 
-                // Group contiguous slots (e.g. 18:00, 18:30, 19:00 -> start 18:00, end 19:30)
                 if(slots.length === 0) return;
                 slots.sort(); // ensure chronological
                 
-                const startTime = slots[0];
-                // End time is 30 mins after the last slot
-                const lastSlotParts = slots[slots.length - 1].split(':');
-                let endH = parseInt(lastSlotParts[0]);
-                let endM = parseInt(lastSlotParts[1]) + 30;
-                if(endM >= 60) {
-                    endH += 1;
-                    endM -= 60;
-                }
-                const endTimeStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
-
                 let evTitle = '';
                 let evClass = '';
                 let isEditable = false;
@@ -2834,27 +2822,59 @@
                     evClass = 'g-event-online';
                 }
 
-                calendarEvents.push({
-                    id: b.id,
-                    title: evTitle,
-                    start: `${b.booking_date}T${startTime}:00`,
-                    end: `${b.booking_date}T${endTimeStr}:00`,
-                    className: evClass,
-                    editable: isEditable,
-                    extendedProps: {
-                        isManual: b.booking_type === 'manual',
-                        isPublicSession: b.booking_type === 'public_session',
-                        status: b.status,
-                        originalNotes: b.manual_notes,
-                        lockerRoom: b.locker_room_assignment,
-                        recurringGroupId: b.recurring_group_id,
-                        playerName: b.player_name || 'Guest',
-                        playerEmail: b.player_email || 'N/A',
-                        playerPhone: b.player_phone_number || 'N/A',
-                        capacity: b.capacity || 0,
-                        participant_price: b.participant_price || 0,
-                        joined_count: b.joined_count || 0
+                // Group contiguous slots (e.g. 18:00, 18:30 with gap to 20:00 -> two separate events)
+                let groups = [];
+                let currentGroup = [slots[0]];
+
+                for (let i = 1; i < slots.length; i++) {
+                    const prevSlot = slots[i-1];
+                    const currSlot = slots[i];
+                    
+                    const [pH, pM] = prevSlot.split(':').map(Number);
+                    const [cH, cM] = currSlot.split(':').map(Number);
+                    
+                    if ((cH * 60 + cM) - (pH * 60 + pM) === 30) {
+                        currentGroup.push(currSlot);
+                    } else {
+                        groups.push(currentGroup);
+                        currentGroup = [currSlot];
                     }
+                }
+                groups.push(currentGroup);
+
+                groups.forEach(group => {
+                    const startTime = group[0];
+                    const lastSlotParts = group[group.length - 1].split(':');
+                    let endH = parseInt(lastSlotParts[0], 10);
+                    let endM = parseInt(lastSlotParts[1], 10) + 30;
+                    if(endM >= 60) {
+                        endH += 1;
+                        endM -= 60;
+                    }
+                    const endTimeStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+
+                    calendarEvents.push({
+                        id: b.id,
+                        title: evTitle,
+                        start: `${b.booking_date}T${startTime}:00`,
+                        end: `${b.booking_date}T${endTimeStr}:00`,
+                        className: evClass,
+                        editable: isEditable,
+                        extendedProps: {
+                            isManual: b.booking_type === 'manual',
+                            isPublicSession: b.booking_type === 'public_session',
+                            status: b.status,
+                            originalNotes: b.manual_notes,
+                            lockerRoom: b.locker_room_assignment,
+                            recurringGroupId: b.recurring_group_id,
+                            playerName: b.player_name || 'Guest',
+                            playerEmail: b.player_email || 'N/A',
+                            playerPhone: b.player_phone_number || 'N/A',
+                            capacity: b.capacity || 0,
+                            participant_price: b.participant_price || 0,
+                            joined_count: b.joined_count || 0
+                        }
+                    });
                 });
             });
 
