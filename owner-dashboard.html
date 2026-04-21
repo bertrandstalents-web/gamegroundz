@@ -2136,8 +2136,14 @@
             document.getElementById('fac-description').value = facility.description || '';
             document.getElementById('fac-locker-rooms').textContent = facility.locker_rooms || 0;
             document.getElementById('fac-capacity').textContent = facility.capacity || 0;
+            
+            const facTypeEl = document.getElementById('fac-type');
+            if (facTypeEl) {
+                facTypeEl.value = facility.type || 'ice';
+                facTypeEl.dispatchEvent(new Event('change'));
+            }
+            
             document.getElementById('fac-size').value = facility.size_info || '';
-            document.getElementById('fac-type').value = facility.type || 'ice';
             document.getElementById('fac-env').value = facility.environment || 'indoor';
             const hostTypeField = document.getElementById('fac-host-type');
             if (hostTypeField) hostTypeField.value = facility.facility_type || 'Other';
