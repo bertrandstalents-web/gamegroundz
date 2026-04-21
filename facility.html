@@ -810,6 +810,59 @@
                     // Expose it globally for render
                     window.facilityDiscounts = facilityDiscounts;
 
+                    // Dynamically populate Activity Type dropdown
+                    const activityTypeSelect = document.getElementById('activity-type');
+                    if (activityTypeSelect) {
+                        let activityOptions = '';
+                        switch(facility.type) {
+                            case 'pool':
+                                activityOptions = `
+                                    <option value="swimming_lane">Swimming Lane</option>
+                                    <option value="open_swim">Open Swim and Diving Board</option>
+                                    <option value="recreational">Recreational and Family Pool</option>
+                                    <option value="event">Private Event</option>
+                                `;
+                                break;
+                            case 'ice':
+                                activityOptions = `
+                                    <option value="practice">Hockey Practice</option>
+                                    <option value="game">Hockey Game (Adult League)</option>
+                                    <option value="skating">Free Skating</option>
+                                    <option value="event">Private Event</option>
+                                `;
+                                break;
+                            case 'soccer':
+                            case 'football':
+                                activityOptions = `
+                                    <option value="practice">Team Practice</option>
+                                    <option value="game">Game / Match</option>
+                                    <option value="training">Private Training</option>
+                                    <option value="event">Private Event</option>
+                                `;
+                                break;
+                            case 'tennis':
+                            case 'pickleball':
+                                activityOptions = `
+                                    <option value="casual">Casual Play</option>
+                                    <option value="match">Competitive Match</option>
+                                    <option value="lesson">Private Lesson</option>
+                                    <option value="event">Private Event</option>
+                                `;
+                                break;
+                            case 'basketball':
+                            case 'gym':
+                            default:
+                                activityOptions = `
+                                    <option value="practice">Practice / Training</option>
+                                    <option value="game">Game / Scrimmage</option>
+                                    <option value="casual">Casual Pickup</option>
+                                    <option value="event">Private Event</option>
+                                `;
+                                break;
+                        }
+                        activityTypeSelect.innerHTML = activityOptions;
+                    }
+
                     // Update UI elements
                     document.title = `${facility.name} | GameGroundz`;
                     
