@@ -117,13 +117,78 @@
                     <button onclick="window.switchLanguage('en')" id="mobile-lang-btn-en" class="px-3 py-1 rounded-full text-sm font-bold bg-slate-200 text-dark shadow-sm transition-all duration-200">EN</button>
                     <button onclick="window.switchLanguage('fr')" id="mobile-lang-btn-fr" class="px-3 py-1 rounded-full text-sm font-bold text-slate-500 bg-slate-50 transition-all duration-200">FR</button>
                 </div>
-
             </div>
+        </div>
+
+        <!-- Horizontal Categories Bar (Sticky with Navbar) -->
+        <div class="w-full bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-sm overflow-x-auto hide-scrollbar z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center gap-8 py-3 min-w-max">
+                    <a href="search.html?type=ice" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-snowflake text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Ice Rinks</span>
+                    </a>
+                    <a href="search.html?type=soccer" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-futbol text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Soccer</span>
+                    </a>
+                    <a href="search.html?type=basketball" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-basketball text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Basketball</span>
+                    </a>
+                    <a href="search.html?type=tennis" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-baseball text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Tennis</span>
+                    </a>
+                    <a href="search.html?type=football" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-football text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Football</span>
+                    </a>
+                    <a href="search.html?type=gym" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-dumbbell text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Gyms</span>
+                    </a>
+                    <a href="search.html?type=pickleball" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-table-tennis-paddle-ball text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Pickleball</span>
+                    </a>
+                    <a href="search.html?type=pool" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-person-swimming text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Pools</span>
+                    </a>
+                    <a href="search.html?type=deck-hockey" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <svg class="w-6 h-6 text-slate-700 group-hover:text-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 3L8 16" />
+                            <path d="M8 16c-1.5 2-4 3-6 3" />
+                            <path d="M2.5 17.5l2 2" />
+                        </svg>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 text-center leading-tight">Deck<br>Hockey</span>
+                    </a>
+                    <a href="search.html?type=squash" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <svg class="w-6 h-6 text-slate-700 group-hover:text-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12.5 11.5L4 20" stroke-width="3"/>
+                            <path d="M3 19L5 21" stroke-width="3"/>
+                            <ellipse cx="16" cy="8" rx="5" ry="7" transform="rotate(45 16 8)" />
+                            <path d="M13.5 5.5L18.5 10.5M12 7L17 12M14.5 4.5L19.5 9.5" stroke-width="1"/>
+                            <path d="M18.5 5.5L13.5 10.5M17 4.5L12 9.5M19.5 7L14.5 12" stroke-width="1"/>
+                        </svg>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Squash</span>
+                    </a>
+                    <a href="search.html?type=badminton" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-feather text-2xl text-slate-700 group-hover:text-dark transform -rotate-45"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Badminton</span>
+                    </a>
+                </div>
+            </div>
+            <style>
+                .hide-scrollbar::-webkit-scrollbar { display: none; }
+                .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            </style>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-darker">
+    <section class="relative pt-44 pb-20 lg:pt-56 lg:pb-32 overflow-hidden bg-darker">
         <!-- Background Elements -->
         <div class="absolute inset-0 z-0 opacity-70">
             <img src="images/colisee_laval_real.jpg" alt="Ice Rink Background" class="w-full h-full object-cover">
@@ -171,6 +236,9 @@
                             <option value="tennis" class="text-slate-800">Tennis Court</option>
                             <option value="pickleball" class="text-slate-800">Pickleball Court</option>
                             <option value="pool" class="text-slate-800">Swimming Pool</option>
+                            <option value="deck-hockey" class="text-slate-800">Deck-Hockey</option>
+                            <option value="squash" class="text-slate-800">Squash</option>
+                            <option value="badminton" class="text-slate-800">Badminton</option>
                         </select>
                     </div>
                     <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom relative cursor-pointer" onclick="const d = document.getElementById('homeDateSearch'); d.focus(); if(d.showPicker) d.showPicker();">
@@ -193,91 +261,8 @@
         </div>
     </section>
 
-    <!-- Categories Section -->
-    <section class="py-20 bg-white border-b border-slate-100 relative -mt-5 rounded-t-3xl z-20 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-dark mb-10 text-center">Browse by Surface Type</h2>
-            
-            <div class="flex overflow-x-auto md:grid md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-6 pb-6 md:pb-0 snap-x snap-mandatory" style="scrollbar-width: none;">
-                <!-- Category 1 -->
-                <a href="search.html?type=ice" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
-                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
-                        <i class="fa-solid fa-snowflake text-2xl"></i>
-                    </div>
-                    <span class="font-semibold text-slate-800 group-hover:text-primary transition-custom text-center">Ice Rinks</span>
-                </a>
-                
-                <!-- Category 2 -->
-                <a href="search.html?type=soccer" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
-                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
-                        <i class="fa-solid fa-futbol text-2xl"></i>
-                    </div>
-                    <span class="font-semibold text-slate-800 group-hover:text-primary transition-custom text-center">Soccer Fields</span>
-                </a>
-
-                <!-- Category 3 -->
-                <a href="search.html?type=basketball" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
-                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
-                        <i class="fa-solid fa-basketball text-2xl"></i>
-                    </div>
-                    <span class="font-semibold text-slate-800 group-hover:text-primary transition-custom text-center">Basketball Courts</span>
-                </a>
-
-                <!-- Category 4 -->
-                <a href="search.html?type=tennis" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
-                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
-                        <i class="fa-solid fa-baseball text-2xl"></i>
-                    </div>
-                    <span class="font-semibold text-slate-800 group-hover:text-primary transition-custom text-center">Tennis Courts</span>
-                </a>
-
-                <!-- Category 5 -->
-                <a href="search.html?type=football" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
-                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
-                        <i class="fa-solid fa-football text-2xl"></i>
-                    </div>
-                    <span class="font-semibold text-slate-800 group-hover:text-primary transition-custom text-center">Football Fields</span>
-                </a>
-
-                <!-- Category 6 -->
-                <a href="search.html?type=gym" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
-                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
-                        <i class="fa-solid fa-dumbbell text-2xl"></i>
-                    </div>
-                    <span class="font-semibold text-slate-800 group-hover:text-primary transition-custom text-center">Training Gyms</span>
-                </a>
-
-                <!-- Category 7 -->
-                <a href="search.html?type=pickleball" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
-                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
-                        <i class="fa-solid fa-table-tennis-paddle-ball text-2xl"></i>
-                    </div>
-                    <span class="font-semibold text-slate-800 group-hover:text-primary transition-custom text-center">Pickleball Courts</span>
-                </a>
-
-                <!-- Category 8 -->
-                <a href="search.html?type=pool" class="snap-center min-w-[150px] md:min-w-0 flex-shrink-0 group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl hover:bg-primary/5 border border-slate-100 hover:border-primary/20 transition-custom">
-                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 group-hover:text-primary group-hover:scale-110 transition-custom mb-4">
-                        <i class="fa-solid fa-person-swimming text-2xl"></i>
-                    </div>
-                    <span class="font-semibold text-slate-800 group-hover:text-primary transition-custom text-center">Swimming Pools</span>
-                </a>
-            </div>
-            
-            <style>
-                .hide-scrollbar::-webkit-scrollbar {
-                    display: none;
-                }
-                .hide-scrollbar {
-                    -ms-overflow-style: none; /* IE and Edge */
-                    scrollbar-width: none; /* Firefox */
-                }
-            </style>
-        </div>
-    </section>
-
-    <!-- Featured Facilities Section -->
-    <section class="py-24 bg-light">
+    <!-- Featured Facilities Section (Now following hero directly) -->
+    <section class="py-24 bg-light shadow-[0_-10px_40px_rgba(0,0,0,0.1)] relative z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-end mb-12">
                 <div>
@@ -725,6 +710,27 @@
                                         <i class="fa-solid fa-person-swimming text-lg"></i>
                                     </div>
                                     <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Swimming<br>Pools</span>
+                                </div>
+                                <!-- Box 9 (Deck Hockey) -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="deck-hockey">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3L8 16" /><path d="M8 16c-1.5 2-4 3-6 3" /><path d="M2.5 17.5l2 2" /></svg>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Deck<br>Hockey</span>
+                                </div>
+                                <!-- Box 10 (Squash) -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="squash">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 11.5L4 20" stroke-width="3"/><path d="M3 19L5 21" stroke-width="3"/><ellipse cx="16" cy="8" rx="5" ry="7" transform="rotate(45 16 8)" /><path d="M13.5 5.5L18.5 10.5M12 7L17 12M14.5 4.5L19.5 9.5" stroke-width="1"/><path d="M18.5 5.5L13.5 10.5M17 4.5L12 9.5M19.5 7L14.5 12" stroke-width="1"/></svg>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Squash</span>
+                                </div>
+                                <!-- Box 11 (Badminton) -->
+                                <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="badminton">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
+                                        <i class="fa-solid fa-feather text-lg transform -rotate-45"></i>
+                                    </div>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Badminton</span>
                                 </div>
                             </div>
                         </div>
