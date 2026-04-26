@@ -9,13 +9,22 @@ const db = require('./database');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const emailService = require('./utils/emailService');
 
+if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error('FATAL: STRIPE_WEBHOOK_SECRET is not set. Exiting.');
+    process.exit(1);
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.set('trust proxy', true);
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000'];
 app.use(cors({
-    origin: true, // Dynamically allow the requesting origin to prevent corporate VPNs/proxies from breaking the app
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+        else callback(new Error('Not allowed by CORS'));
+    },
     credentials: true
 }));
 
@@ -27,15 +36,11 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), (req, r
         event = stripe.webhooks.constructEvent(
             rawBody, 
             req.headers['stripe-signature'], 
-            process.env.STRIPE_WEBHOOK_SECRET || ''
+            process.env.STRIPE_WEBHOOK_SECRET
         );
     } catch (err) {
-        console.warn("Webhook signature verification failed (maybe missing secret?). Parsing body manually for dev mode.");
-        try {
-            event = JSON.parse(rawBody.toString());
-        } catch(e) {
-            return res.status(400).send(`Webhook Error: ${err.message}`);
-        }
+        console.error(`Webhook signature verification failed: ${err.message}`);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
     if (event.type === 'checkout.session.completed') {
@@ -132,6 +137,7 @@ app.use(express.static(path.join(__dirname)));
 
 // API Routes
 app.get('/api/config/maps', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     res.json({ apiKey: process.env.GOOGLE_MAPS_API_KEY });
 });
 
@@ -326,7 +332,8 @@ app.post('/api/users/signup', async (req, res) => {
                 // Assign role based on choice, but preserve admin override based on email
                 let userRole = role_choice === 'host' ? 'host' : 'player';
                 const lowerEmail = email.toLowerCase();
-                if (lowerEmail === 'faucons76.tbertrand@gmail.com' || lowerEmail === 'support@gamegroundz.com') {
+                const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase()) : [];
+                if (adminEmails.includes(lowerEmail)) {
                     userRole = 'admin';
                 }
 
@@ -1687,7 +1694,10 @@ app.post('/api/host/public_sessions/:booking_id/participants/:psp_id/cancel', as
                 if (pspRow.stripe_session_id) {
                     const session = await stripe.checkout.sessions.retrieve(pspRow.stripe_session_id);
                     if (session && session.payment_intent) {
-                        await stripe.refunds.create({ payment_intent: session.payment_intent });
+                        await stripe.refunds.create(
+                            { payment_intent: session.payment_intent },
+                            { idempotencyKey: `refund-psp-${psp_id}` }
+                        );
                     }
                 }
 
@@ -1793,7 +1803,10 @@ app.post('/api/bookings/:id/cancel', async (req, res) => {
             if (booking.stripe_session_id) {
                 const session = await stripe.checkout.sessions.retrieve(booking.stripe_session_id);
                 if (session && session.payment_intent) {
-                    await stripe.refunds.create({ payment_intent: session.payment_intent });
+                    await stripe.refunds.create(
+                        { payment_intent: session.payment_intent },
+                        { idempotencyKey: `refund-booking-${bookingId}` }
+                    );
                 }
             }
 
@@ -1884,7 +1897,10 @@ app.post('/api/host/bookings/:id/cancel', async (req, res) => {
                 const session = await stripe.checkout.sessions.retrieve(booking.stripe_session_id);
                 if (session && session.payment_intent) {
                     // Full refund
-                    await stripe.refunds.create({ payment_intent: session.payment_intent });
+                    await stripe.refunds.create(
+                        { payment_intent: session.payment_intent },
+                        { idempotencyKey: `refund-booking-${bookingId}` }
+                    );
                 }
             }
 
