@@ -83,24 +83,24 @@
                                                 </div>
                                                 
                                                 <div id="puck-logged-out">
-                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); window.location.href='index.html?login=true&redirect=' + encodeURIComponent(window.location.pathname + window.location.search); return false;">Log in</a>
-                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); window.location.href='index.html?login=true&signup=true&redirect=' + encodeURIComponent(window.location.pathname + window.location.search); return false;">Sign up</a>
+                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); window.location.href='index.html?login=true&redirect=' + encodeURIComponent(window.location.pathname + window.location.search); return false;"><span class="lang-en-only">Log in</span><span class="lang-fr-only notranslate">Se connecter</span></a>
+                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); window.location.href='index.html?login=true&signup=true&redirect=' + encodeURIComponent(window.location.pathname + window.location.search); return false;"><span class="lang-en-only">Sign up</span><span class="lang-fr-only notranslate">S'inscrire</span></a>
                                                 </div>
                                                 <div id="puck-logged-in" class="hidden">
                                                     <div class="px-4 py-2 border-b border-slate-100 mb-1">
                                                         <span class="block text-sm font-bold text-slate-800 truncate" id="puck-name">User</span>
                                                         <span class="block text-xs text-slate-500 truncate" id="puck-email">user@example.com</span>
                                                     </div>
-                                                    <a href="#" id="puck-dashboard" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary">Dashboard</a>
-                                                    <a href="player-dashboard.html" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('player-dashboard.html')){ try{ switchNav('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); return false;}catch(e){} }">Profile</a>
-                                                    <button id="puck-logout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom">Log out</button>
+                                                    <a href="#" id="puck-dashboard" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord</span></a>
+                                                    <a href="player-dashboard.html" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('player-dashboard.html')){ try{ switchNav('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); return false;}catch(e){} }"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></a>
+                                                    <button id="puck-logout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom"><span class="lang-en-only">Log out</span><span class="lang-fr-only notranslate">Se déconnecter</span></button>
                                                 </div>
                                             </div>
                                         </div>
                     
                     
 
-                    <a href="owner-dashboard.html" id="list-facility-btn" class="bg-dark hover:bg-slate-800 text-white px-5 py-2 rounded-full font-medium transition-custom shadow-sm text-sm">List Your Facility</a>
+                    <a href="owner-dashboard.html" id="list-facility-btn" class="bg-dark hover:bg-slate-800 text-white px-5 py-2 rounded-full font-medium transition-custom shadow-sm text-sm"><span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span></a>
                 </div>
 
                 <div class="hidden md:hidden items-center">
@@ -1121,10 +1121,10 @@
     <div class="lg:hidden fixed bottom-24 left-0 w-full flex justify-center z-40 pointer-events-none">
         <div class="bg-dark text-white rounded-full flex shadow-xl pointer-events-auto divide-x divide-slate-700">
             <button id="open-filters-btn" class="px-6 py-3 font-bold text-sm flex items-center hover:bg-slate-800 rounded-l-full transition-custom">
-                <i class="fa-solid fa-sliders mr-2"></i> Filters
+                <i class="fa-solid fa-sliders mr-2"></i> <span class="lang-en-only">Filters</span><span class="lang-fr-only notranslate">Filtres</span>
             </button>
             <button id="mobile-map-toggle" class="px-6 py-3 font-bold text-sm flex items-center hover:bg-slate-800 rounded-r-full transition-custom">
-                <i class="fa-regular fa-map mr-2"></i> Map
+                <i class="fa-regular fa-map mr-2"></i> <span class="lang-en-only">Map</span><span class="lang-fr-only notranslate">Carte</span>
             </button>
         </div>
     </div>
@@ -1133,19 +1133,19 @@
     <div class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pt-3 pb-8 px-2 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]" style="padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);">
         <a href="index.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
             <i class="fa-solid fa-compass text-xl mb-1"></i>
-            <span class="text-[10px] font-medium">Explore</span>
+            <span class="text-[10px] font-medium"><span class="lang-en-only">Explore</span><span class="lang-fr-only notranslate">Explorer</span></span>
         </a>
         <a href="search.html" class="flex flex-col items-center p-2 text-primary">
             <i class="fa-solid fa-search text-xl mb-1"></i>
-            <span class="text-[10px] font-bold">Search</span>
+            <span class="text-[10px] font-bold"><span class="lang-en-only">Search</span><span class="lang-fr-only notranslate">Recherche</span></span>
         </a>
         <a href="player-dashboard.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
             <i class="fa-regular fa-calendar-check text-xl mb-1 pt-0.5"></i>
-            <span class="text-[10px] font-medium mt-0.5">Bookings</span>
+            <span class="text-[10px] font-medium mt-0.5"><span class="lang-en-only">Bookings</span><span class="lang-fr-only notranslate">Réservations</span></span>
         </a>
         <a href="#" onclick="window.location.href='index.html?login=true'; return false;" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom" id="mobile-bottom-profile-btn">
             <i class="fa-regular fa-user text-xl mb-1 pb-0.5"></i>
-            <span class="text-[10px] font-medium">Profile</span>
+            <span class="text-[10px] font-medium"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></span>
         </a>
     </div>
 

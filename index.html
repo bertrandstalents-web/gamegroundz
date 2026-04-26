@@ -74,22 +74,22 @@
                                                 </div>
                                                 
                                                 <div id="puck-logged-out">
-                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); openAuthModal(event);">Log in</a>
-                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); toggleAuthMode(event); openAuthModal(event);">Sign up</a>
+                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); openAuthModal(event);"><span class="lang-en-only">Log in</span><span class="lang-fr-only notranslate">Se connecter</span></a>
+                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); toggleAuthMode(event); openAuthModal(event);"><span class="lang-en-only">Sign up</span><span class="lang-fr-only notranslate">S'inscrire</span></a>
                                                 </div>
                                                 <div id="puck-logged-in" class="hidden">
                                                     <div class="px-4 py-2 border-b border-slate-100 mb-1">
                                                         <span class="block text-sm font-bold text-slate-800 truncate" id="puck-name">User</span>
                                                         <span class="block text-xs text-slate-500 truncate" id="puck-email">user@example.com</span>
                                                     </div>
-                                                    <a href="#" id="puck-dashboard" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary">Dashboard</a>
-                                                    <a href="player-dashboard.html" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('player-dashboard.html')){ try{ switchNav('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); return false;}catch(e){} }">Profile</a>
-                                                    <button id="puck-logout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom">Log out</button>
+                                                    <a href="#" id="puck-dashboard" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord</span></a>
+                                                    <a href="player-dashboard.html" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('player-dashboard.html')){ try{ switchNav('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); return false;}catch(e){} }"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></a>
+                                                    <button id="puck-logout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom"><span class="lang-en-only">Log out</span><span class="lang-fr-only notranslate">Se déconnecter</span></button>
                                                 </div>
                                             </div>
                                         </div>
                     
-                    <a href="owner-dashboard.html" id="list-facility-btn" class="hidden md:inline-block bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-full font-medium transition-custom shadow-md hover:shadow-lg">List Your Facility</a>
+                    <a href="owner-dashboard.html" id="list-facility-btn" class="hidden md:inline-block bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-full font-medium transition-custom shadow-md hover:shadow-lg"><span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span></a>
                     
                     <!-- Mobile Menu Button (Hidden in favor of bottom nav) -->
                                     <div class="hidden md:hidden items-center">
@@ -107,10 +107,10 @@
         <!-- Mobile Menu (Hidden by default) -->
         <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-100">
             <div class="px-4 pt-2 pb-6 space-y-2">
-                <a href="search.html" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary">Find a Surface</a>
-                <a href="how-it-works.html" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary">How it Works</a>
-                <a href="#" id="mobile-login-btn" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary">Log in</a>
-                <a href="owner-dashboard.html" id="mobile-list-facility-btn" class="block px-3 py-3 mt-4 text-center rounded-full text-base font-medium bg-dark text-white hover:bg-slate-800">List Your Facility</a>
+                <a href="search.html" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Find a Surface</span><span class="lang-fr-only notranslate">Trouver une surface</span></a>
+                <a href="how-it-works.html" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">How it Works</span><span class="lang-fr-only notranslate">Comment ça fonctionne</span></a>
+                <a href="#" id="mobile-login-btn" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Log in</span><span class="lang-fr-only notranslate">Se connecter</span></a>
+                <a href="owner-dashboard.html" id="mobile-list-facility-btn" class="block px-3 py-3 mt-4 text-center rounded-full text-base font-medium bg-dark text-white hover:bg-slate-800"><span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span></a>
                 <!-- Mobile Language Toggle -->
                 <div class="flex items-center space-x-2 px-3 py-3 border-t border-slate-100 mt-2 pt-4">
                     <span class="text-sm font-medium text-slate-500 mr-2">Language:</span>
@@ -131,35 +131,35 @@
                             <path d="M17 19v-3" />
                             <path d="M18 16H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l3 4h4a3 3 0 0 1 3 3v4Z" />
                         </svg>
-                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Ice Rinks</span>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1"><span class="lang-en-only">Ice Rinks</span><span class="lang-fr-only notranslate">Patinoires</span></span>
                     </a>
                     <a href="search.html?type=soccer" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
                         <i class="fa-solid fa-futbol text-2xl text-slate-700 group-hover:text-dark"></i>
-                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Soccer</span>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1"><span class="lang-en-only">Soccer</span><span class="lang-fr-only notranslate">Soccer</span></span>
                     </a>
                     <a href="search.html?type=basketball" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
                         <i class="fa-solid fa-basketball text-2xl text-slate-700 group-hover:text-dark"></i>
-                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate">Basketball</span>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate"><span class="lang-en-only">Basketball</span><span class="lang-fr-only notranslate">Basketball</span></span>
                     </a>
                     <a href="search.html?type=tennis" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
                         <i class="fa-solid fa-baseball text-2xl text-slate-700 group-hover:text-dark"></i>
-                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Tennis</span>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1"><span class="lang-en-only">Tennis</span><span class="lang-fr-only notranslate">Tennis</span></span>
                     </a>
                     <a href="search.html?type=football" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
                         <i class="fa-solid fa-football text-2xl text-slate-700 group-hover:text-dark"></i>
-                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Football</span>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1"><span class="lang-en-only">Football</span><span class="lang-fr-only notranslate">Football</span></span>
                     </a>
                     <a href="search.html?type=gym" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
                         <i class="fa-solid fa-dumbbell text-2xl text-slate-700 group-hover:text-dark"></i>
-                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Gyms</span>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1"><span class="lang-en-only">Gyms</span><span class="lang-fr-only notranslate">Gymnases</span></span>
                     </a>
                     <a href="search.html?type=pickleball" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
                         <i class="fa-solid fa-table-tennis-paddle-ball text-2xl text-slate-700 group-hover:text-dark"></i>
-                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Pickleball</span>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1"><span class="lang-en-only">Pickleball</span><span class="lang-fr-only notranslate">Pickleball</span></span>
                     </a>
                     <a href="search.html?type=pool" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
                         <i class="fa-solid fa-person-swimming text-2xl text-slate-700 group-hover:text-dark"></i>
-                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Pools</span>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1"><span class="lang-en-only">Pools</span><span class="lang-fr-only notranslate">Piscines</span></span>
                     </a>
                     <a href="search.html?type=deck-hockey" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
                         <svg class="w-6 h-6 text-slate-700 group-hover:text-dark transition-custom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
@@ -167,7 +167,7 @@
                             <path d="M2 18h20" stroke-width="2" />
                             <path d="M3 10h18M3 14h18M7 6v12M12 6v12M17 6v12" stroke-width="1" />
                         </svg>
-                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 text-center leading-tight notranslate">Deck<br>Hockey</span>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 text-center leading-tight notranslate"><span class="lang-en-only">Deck<br>Hockey</span><span class="lang-fr-only notranslate">Deck<br>Hockey</span></span>
                     </a>
                     <a href="search.html?type=squash" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
                         <svg class="w-6 h-6 text-slate-700 group-hover:text-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -212,7 +212,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="text-center w-full max-w-6xl mx-auto">
                 <span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 font-semibold text-sm mb-6 shadow-glow">
-                    <i class="fa-solid fa-bolt mr-1"></i> The New Standard for Sports Booking
+                    <i class="fa-solid fa-bolt mr-1"></i> <span class="lang-en-only">The New Standard for Sports Booking</span><span class="lang-fr-only notranslate">La nouvelle norme en réservation sportive</span>
                 </span>
                 <h1 class="text-4xl md:text-7xl font-extrabold text-white tracking-tight mb-6 md:mb-8 leading-tight">
                     <div class="lang-en-only">
@@ -225,7 +225,8 @@
                     </div>
                 </h1>
                 <p class="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto font-light">
-                    The single destination to discover, compare, and reserve ice rinks, fields, courts, and training spaces.
+                    <span class="lang-en-only">The single destination to discover, compare, and reserve ice rinks, fields, courts, and training spaces.</span>
+                    <span class="lang-fr-only notranslate">L'unique destination pour découvrir, comparer et réserver des patinoires, terrains et espaces d'entraînement.</span>
                 </p>
                 
                 <!-- Search Box -->
@@ -555,19 +556,19 @@
     <div class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pt-3 pb-8 px-2 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]" style="padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);">
         <a href="index.html" class="flex flex-col items-center p-2 text-primary">
             <i class="fa-solid fa-compass text-xl mb-1"></i>
-            <span class="text-[10px] font-bold">Explore</span>
+            <span class="text-[10px] font-bold"><span class="lang-en-only">Explore</span><span class="lang-fr-only notranslate">Explorer</span></span>
         </a>
         <a href="search.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
             <i class="fa-solid fa-search text-xl mb-1"></i>
-            <span class="text-[10px] font-medium">Search</span>
+            <span class="text-[10px] font-medium"><span class="lang-en-only">Search</span><span class="lang-fr-only notranslate">Recherche</span></span>
         </a>
         <a href="player-dashboard.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom">
             <i class="fa-regular fa-calendar-check text-xl mb-1 pt-0.5"></i>
-            <span class="text-[10px] font-medium mt-0.5">Bookings</span>
+            <span class="text-[10px] font-medium mt-0.5"><span class="lang-en-only">Bookings</span><span class="lang-fr-only notranslate">Réservations</span></span>
         </a>
         <a href="#" onclick="window.location.href='index.html?login=true'; return false;" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-800 transition-custom" id="mobile-bottom-profile-btn">
             <i class="fa-regular fa-user text-xl mb-1 pb-0.5"></i>
-            <span class="text-[10px] font-medium">Profile</span>
+            <span class="text-[10px] font-medium"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></span>
         </a>
     </div>
 
