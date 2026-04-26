@@ -1020,15 +1020,13 @@
                 featured.forEach(facility => {
                     const isInstantBook = facility.is_instant_book === 1;
                     
-                    let topBadges = '<div class="absolute top-4 right-4 flex gap-2 z-20">';
+                    let topBadges = '';
                     if (facility.active_promotions) {
-                        topBadges += `<div class="bg-red-500/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-white shadow-sm flex items-center"><i class="fa-solid fa-tag mr-1"></i> Promo</div>`;
+                        topBadges += `<div class="bg-red-500/90 backdrop-blur px-2 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center"><i class="fa-solid fa-tag mr-1"></i> Promo</div>`;
                     }
                     if (isInstantBook) {
-                        topBadges += `<div class="bg-primary/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-white shadow-sm">Instant Book</div>`;
+                        topBadges += `<div class="bg-primary/90 backdrop-blur px-2 py-1 rounded-full text-xs font-bold text-white shadow-sm">Instant Book</div>`;
                     }
-                    topBadges += '</div>';
-
                     const typeDisplay = facility.type.charAt(0).toUpperCase() + facility.type.slice(1);
                     const envDisplay = facility.environment.charAt(0).toUpperCase() + facility.environment.slice(1);
 
@@ -1047,10 +1045,12 @@
                         <div class="bg-white rounded-3xl overflow-hidden shadow-soft border border-slate-100 group cursor-pointer" onclick="window.location.href='facility.html?id=${facility.id}'">
                             <div class="relative h-64 hover-zoom-img-container">
                                 <img src="${getPrimaryImageUrl(facility.image_url)}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
-                                <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-slate-800 shadow-sm z-20">
-                                    <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating} (${facility.reviews_count})
+                                <div class="absolute top-4 left-4 right-4 flex flex-wrap gap-2 z-20 max-w-[calc(100%-2rem)]">
+                                    <div class="bg-white/90 backdrop-blur px-2 py-1 rounded-full text-xs font-bold text-slate-800 shadow-sm">
+                                        <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating} (${facility.reviews_count})
+                                    </div>
+                                    ${topBadges}
                                 </div>
-                                ${topBadges}
                                 <button class="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md text-slate-400 hover:text-red-500 hover:scale-110 transition-custom z-10">
                                     <i class="fa-regular fa-heart"></i>
                                 </button>
@@ -1067,8 +1067,8 @@
                                     <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">${typeDisplay}</span>
                                     <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">${envDisplay}</span>
                                 </div>
-                                <div class="flex items-center justify-between border-t border-slate-100 pt-4">
-                                    <div class="flex gap-2">
+                                <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-4 gap-y-2">
+                                    <div class="flex flex-wrap gap-2">
                                         ${facility.display_slots_today && facility.display_slots_today.length > 0 ? facility.display_slots_today.map(slot => `
                                             <div class="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold ${slot.discount ? 'text-red-600 bg-red-50 border-red-200' : 'text-slate-600'}">
                                                 ${slot.time}${slot.discount ? '<i class="fa-solid fa-tag text-[10px] ml-1"></i>' : ''}
@@ -1078,7 +1078,7 @@
                                         `}
                                     </div>
                                     ${facility.display_slots_today && facility.display_slots_today.length > 0 ? `
-                                        <span class="text-sm font-semibold ${isInstantBook ? 'text-primary' : 'text-slate-500'}">Available Today</span>
+                                        <span class="text-xs font-semibold ${isInstantBook ? 'text-primary' : 'text-slate-500'}">Available Today</span>
                                     ` : ''}
                                 </div>
                             </div>

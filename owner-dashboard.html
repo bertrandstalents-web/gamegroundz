@@ -512,7 +512,8 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Locker Room <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top">OPTIONAL</span></label>
-                                        <input type="text" id="modal-locker-room" placeholder="e.g. Room 4 or Vestiaire 5" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
+                                        <input type="hidden" id="modal-locker-room">
+                                        <div id="modal-locker-boxes" class="flex flex-wrap gap-2"></div>
                                     </div>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
@@ -3022,14 +3023,17 @@
                     ` };
                 },
                 slotLabelContent: function(arg) {
-                    const defaultText = arg.text; 
                     let h = arg.date.getHours();
-                    const mobileFrText = `${h}h`;
-                    
-                    return { html: `
-                        <div class="fc-desktop-label">${defaultText}</div>
-                        <div class="fc-mobile-fr-label notranslate" style="display:none;">${mobileFrText}</div>
-                    ` };
+                    let isFr = localStorage.getItem('gg_language') === 'fr';
+                    let text = '';
+                    if (isFr) {
+                        text = `${h}h`;
+                    } else {
+                        let period = h >= 12 ? 'pm' : 'am';
+                        let h12 = h % 12 || 12;
+                        text = `${h12}${period}`;
+                    }
+                    return { html: `<div class="notranslate">${text}</div>` };
                 },
                 eventMouseEnter: function(info) {
                     if (info.event.extendedProps && info.event.extendedProps.isManual) {
@@ -3314,6 +3318,49 @@
 
 
         // --- CALENDAR MODAL LOGIC ---
+        function renderLockerBoxes(facId, containerId, inputId, currentSelection) {
+            const container = document.getElementById(containerId);
+            const input = document.getElementById(inputId);
+            if (!container || !input) return;
+            
+            container.innerHTML = '';
+            
+            const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == facId) : null;
+            if (!facility || !facility.locker_rooms || facility.locker_rooms <= 0) {
+                container.innerHTML = '<span class="text-sm text-slate-400 italic">No locker rooms available</span>';
+                return;
+            }
+            
+            const selectedSet = new Set((currentSelection || '').split(',').map(s => s.trim()).filter(Boolean));
+            
+            for (let i = 1; i <= facility.locker_rooms; i++) {
+                const roomName = `Locker ${i}`;
+                const isSelected = selectedSet.has(roomName) || selectedSet.has(i.toString()) || selectedSet.has(`Room ${i}`) || selectedSet.has(`Vestiaire ${i}`);
+                
+                // standardize the set if matched differently
+                if (isSelected && !selectedSet.has(roomName)) {
+                    selectedSet.add(roomName);
+                }
+                
+                const box = document.createElement('div');
+                box.className = `px-3 py-1.5 rounded-lg text-sm font-bold border-2 cursor-pointer transition-custom select-none ${isSelected ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-slate-200 text-slate-500 hover:border-primary/50'}`;
+                box.innerHTML = `<i class="fa-solid fa-door-closed mr-1.5"></i>${i}`;
+                
+                box.onclick = function() {
+                    if (selectedSet.has(roomName)) {
+                        selectedSet.delete(roomName);
+                        box.className = 'px-3 py-1.5 rounded-lg text-sm font-bold border-2 cursor-pointer transition-custom select-none bg-white border-slate-200 text-slate-500 hover:border-primary/50';
+                    } else {
+                        selectedSet.add(roomName);
+                        box.className = 'px-3 py-1.5 rounded-lg text-sm font-bold border-2 cursor-pointer transition-custom select-none bg-primary/10 border-primary text-primary';
+                    }
+                    input.value = Array.from(selectedSet).join(', ');
+                };
+                
+                container.appendChild(box);
+            }
+        }
+
         function openEventModal(info) {
             const facId = document.getElementById('calendar-facility-select').value;
             if (!facId) {
@@ -3355,6 +3402,8 @@
             const mMonth = String(startObj.getMonth() + 1).padStart(2, '0');
             const mDay = String(startObj.getDate()).padStart(2, '0');
             document.getElementById('modal-date-val').value = `${mYear}-${mMonth}-${mDay}`;
+            
+            renderLockerBoxes(facId, 'modal-locker-boxes', 'modal-locker-room', '');
 
             // Reset modal mode to 'create' string (we'll implement an edit id field)
             let editField = document.getElementById('modal-edit-booking-id');
@@ -3375,8 +3424,9 @@
             }
             editDiscountField.value = '';
 
-            document.getElementById('modal-block-notes').value = '';
+            if(document.getElementById('modal-block-notes')) document.getElementById('modal-block-notes').value = '';
             if(document.getElementById('modal-locker-room')) document.getElementById('modal-locker-room').value = '';
+            renderLockerBoxes(facId, 'modal-locker-boxes', 'modal-locker-room', '');
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-regular fa-calendar-plus mr-3 text-xl"></i>New Booking';
             document.getElementById('modal-cancel-btn').textContent = 'Cancel booking';
             document.getElementById('modal-price-display').parentElement.classList.remove('hidden');
@@ -3453,8 +3503,10 @@
             }
             editRecGroupField.value = eventObj.extendedProps.recurringGroupId || '';
 
-            document.getElementById('modal-block-notes').value = eventObj.extendedProps.originalNotes || '';
+            if(document.getElementById('modal-block-notes')) document.getElementById('modal-block-notes').value = eventObj.extendedProps.originalNotes || '';
             if(document.getElementById('modal-locker-room')) document.getElementById('modal-locker-room').value = eventObj.extendedProps.lockerRoom || '';
+            
+            renderLockerBoxes(facId, 'modal-locker-boxes', 'modal-locker-room', eventObj.extendedProps.lockerRoom || '');
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-solid fa-pen mr-3 text-xl"></i>Edit Booking';
             document.getElementById('modal-cancel-btn').textContent = 'Cancel';
             document.getElementById('modal-price-display').parentElement.classList.remove('hidden');
@@ -5997,6 +6049,13 @@
         window.openAssignLockerModal = function(bookingId, currentAssignment) {
             document.getElementById('assign-locker-booking-id').value = bookingId;
             document.getElementById('assign-locker-input').value = currentAssignment || '';
+            
+            // Render locker boxes
+            const booking = allBookingsCache.find(b => b.id == bookingId);
+            if (booking) {
+                renderLockerBoxes(booking.facility_id, 'assign-locker-boxes', 'assign-locker-input', currentAssignment || '');
+            }
+            
             document.getElementById('assign-locker-modal').classList.remove('hidden');
         };
 
@@ -6056,8 +6115,9 @@
             <form id="assign-locker-form" class="p-6 space-y-4">
                 <input type="hidden" id="assign-locker-booking-id">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Locker Room Name / #</label>
-                    <input type="text" id="assign-locker-input" placeholder="e.g. Room 4 or Vestiaire 5" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium">
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Locker Room Selection</label>
+                    <input type="hidden" id="assign-locker-input">
+                    <div id="assign-locker-boxes" class="flex flex-wrap gap-2"></div>
                 </div>
                 <div class="flex justify-end gap-3 pt-2">
                     <button type="button" onclick="closeAssignLockerModal()" class="px-4 py-2 text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl font-bold transition-custom shadow-sm text-sm">Cancel</button>
