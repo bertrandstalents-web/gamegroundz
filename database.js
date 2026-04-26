@@ -17,6 +17,7 @@ function adaptQuery(sql, params = []) {
 }
 
 const db = {
+    pool: pool,
     get: function(sql, params, callback) {
         if (typeof params === 'function') { callback = params; params = []; }
         
