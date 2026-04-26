@@ -58,7 +58,7 @@
                                         <div class="relative flex items-center">
                                             <button id="profile-puck-btn" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-custom shadow-sm overflow-hidden focus:outline-none z-10">
                                                 <i class="fa-solid fa-user text-lg text-slate-400" id="puck-icon"></i>
-                                                <span id="puck-initials" class="hidden text-sm font-bold text-slate-700 uppercase"></span>
+                                                <span id="puck-initials" class="hidden text-sm font-bold text-slate-700 uppercase notranslate"></span>
                                                 <img id="puck-img" class="hidden w-full h-full object-cover" src="" alt="Profile">
                                             </button>
                                             
@@ -125,7 +125,12 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center xl:justify-center gap-8 py-3 min-w-max">
                     <a href="search.html?type=ice" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
-                        <i class="fa-solid fa-snowflake text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <svg class="w-7 h-7 text-slate-700 group-hover:text-dark transition-custom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                            <path d="M4 19h16" />
+                            <path d="M7 19v-3" />
+                            <path d="M17 19v-3" />
+                            <path d="M18 16H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l3 4h4a3 3 0 0 1 3 3v4Z" />
+                        </svg>
                         <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Ice Rinks</span>
                     </a>
                     <a href="search.html?type=soccer" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
@@ -134,7 +139,7 @@
                     </a>
                     <a href="search.html?type=basketball" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
                         <i class="fa-solid fa-basketball text-2xl text-slate-700 group-hover:text-dark"></i>
-                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1">Basketball</span>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate">Basketball</span>
                     </a>
                     <a href="search.html?type=tennis" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
                         <i class="fa-solid fa-baseball text-2xl text-slate-700 group-hover:text-dark"></i>
@@ -162,7 +167,7 @@
                             <path d="M2 18h20" stroke-width="2" />
                             <path d="M3 10h18M3 14h18M7 6v12M12 6v12M17 6v12" stroke-width="1" />
                         </svg>
-                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 text-center leading-tight">Deck<br>Hockey</span>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 text-center leading-tight notranslate">Deck<br>Hockey</span>
                     </a>
                     <a href="search.html?type=squash" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
                         <svg class="w-6 h-6 text-slate-700 group-hover:text-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -236,7 +241,7 @@
                     </div>
                     <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom">
                         <i class="fa-solid fa-futbol text-slate-400 mr-3"></i>
-                        <select class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer">
+                        <select id="homeSportSearch" class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer">
                             <option value="" class="text-slate-800">Any Sport</option>
                             <option value="ice" class="text-slate-800">Ice Rink</option>
                             <option value="soccer" class="text-slate-800">Soccer Field</option>
@@ -252,6 +257,15 @@
                     <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom relative cursor-pointer" onclick="const d = document.getElementById('homeDateSearch'); d.focus(); if(d.showPicker) d.showPicker();">
                         <i class="fa-regular fa-calendar text-slate-400 mr-3"></i>
                         <input type="text" id="homeDateSearch" placeholder="Any Date" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'" class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer placeholder-slate-400" style="color-scheme: dark;">
+                    </div>
+                    <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom">
+                        <i class="fa-regular fa-clock text-slate-400 mr-3"></i>
+                        <select id="homeTimeSearch" class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer">
+                            <option value="" class="text-slate-800">Any Time</option>
+                            <option value="morning" class="text-slate-800">Morning (Midnight - 12pm)</option>
+                            <option value="afternoon" class="text-slate-800">Afternoon (12pm - 5pm)</option>
+                            <option value="night" class="text-slate-800">Night (5pm - Midnight)</option>
+                        </select>
                     </div>
                     <button id="homeSearchBtn" class="w-full md:w-auto bg-primary hover:bg-primaryHover text-white px-8 py-3.5 rounded-xl md:rounded-full font-bold text-lg transition-custom shadow-glow flex items-center justify-center">
                         <i class="fa-solid fa-search mr-2"></i> Search
@@ -666,7 +680,12 @@
                                 <!-- Box 1 -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="ice">
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
-                                        <i class="fa-solid fa-snowflake text-lg"></i>
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                            <path d="M4 19h16" />
+                            <path d="M7 19v-3" />
+                            <path d="M17 19v-3" />
+                            <path d="M18 16H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l3 4h4a3 3 0 0 1 3 3v4Z" />
+                        </svg>
                                     </div>
                                     <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Ice Rinks</span>
                                 </div>
@@ -682,7 +701,7 @@
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
                                         <i class="fa-solid fa-basketball text-lg"></i>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Basketball<br>Courts</span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight"><span class="notranslate">Basketball</span><br>Courts</span>
                                 </div>
                                 <!-- Box 4 -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="tennis">
@@ -724,7 +743,7 @@
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
                                         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10" stroke-width="2" /><path d="M2 18h20" stroke-width="2" /><path d="M3 10h18M3 14h18M7 6v12M12 6v12M17 6v12" stroke-width="1" /></svg>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Deck<br>Hockey</span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight notranslate">Deck<br>Hockey</span>
                                 </div>
                                 <!-- Box 10 (Squash) -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="squash">
@@ -1102,13 +1121,15 @@
         if (homeSearchBtn) {
             homeSearchBtn.addEventListener('click', () => {
                 const searchInputVal = document.getElementById('locationSearch').value;
-                const typeSelect = document.querySelector('select').value;
+                const typeSelect = document.getElementById('homeSportSearch') ? document.getElementById('homeSportSearch').value : document.querySelector('select').value;
                 const dateVal = document.getElementById('homeDateSearch').value;
+                const timeVal = document.getElementById('homeTimeSearch') ? document.getElementById('homeTimeSearch').value : '';
                 
                 const params = new URLSearchParams();
                 if (searchInputVal) params.append('location', searchInputVal);
                 if (typeSelect) params.append('type', typeSelect);
                 if (dateVal) params.append('date', dateVal);
+                if (timeVal) params.append('time', timeVal);
                 
                 window.location.href = `search.html?${params.toString()}`;
             });

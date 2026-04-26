@@ -658,14 +658,24 @@ app.all('/api/facilities', (req, res) => {
         const min = String(tzDate.getMinutes()).padStart(2, '0');
         const todayTimeStr = `${h}:${min}`;
 
-        const dayOfWeek = tzDate.toLocaleDateString('en-US', { weekday: 'long' });
+        const targetDateStr = paramsSource.date || todayDateStr;
+        const requestedTime = paramsSource.time || '';
+
+        let dayOfWeek = '';
+        if (targetDateStr === todayDateStr) {
+            dayOfWeek = tzDate.toLocaleDateString('en-US', { weekday: 'long' });
+        } else {
+            const [ty, tm, td] = targetDateStr.split('-');
+            const targetDateObj = new Date(parseInt(ty), parseInt(tm)-1, parseInt(td));
+            dayOfWeek = targetDateObj.toLocaleDateString('en-US', { weekday: 'long' });
+        }
 
         // Fetch active discounts to attach to facilities
         db.all("SELECT * FROM discounts WHERE is_active = 1", [], (err, discounts) => {
             const allDiscounts = discounts || [];
             
-            // Fetch today's bookings
-            db.all("SELECT facility_id, time_slots FROM bookings WHERE booking_date = ? AND status = 'confirmed'", [todayDateStr], (err, bookings) => {
+            // Fetch bookings for the target date
+            db.all("SELECT facility_id, time_slots FROM bookings WHERE booking_date = ? AND status = 'confirmed'", [targetDateStr], (err, bookings) => {
                 const bookedMap = {}; 
                 (bookings || []).forEach(b => {
                     const fid = b.facility_id;
@@ -676,6 +686,8 @@ app.all('/api/facilities', (req, res) => {
                     } catch(e){}
                 });
 
+                let finalRows = [];
+
                 rows.forEach(facility => {
                     // Attach applicable discounts
                     facility.discounts = allDiscounts.filter(dist => dist.facility_id === facility.id || dist.facility_id === null);
@@ -685,18 +697,18 @@ app.all('/api/facilities', (req, res) => {
                         const sdStr = dist.start_date ? (typeof dist.start_date === 'string' ? dist.start_date.split('T')[0] : dist.start_date.toISOString().split('T')[0]) : null;
                         const edStr = dist.end_date ? (typeof dist.end_date === 'string' ? dist.end_date.split('T')[0] : dist.end_date.toISOString().split('T')[0]) : null;
 
-                        if (sdStr && sdStr > todayDateStr) return false;
-                        if (edStr && edStr < todayDateStr) return false;
+                        if (sdStr && sdStr > targetDateStr) return false;
+                        if (edStr && edStr < targetDateStr) return false;
                         if (dist.recurring_day && dist.recurring_day !== dayOfWeek) return false;
                         if (dist.start_time && dist.end_time) {
-                            if (todayTimeStr >= dist.end_time) return false; // Promotion ended for today
+                            if (targetDateStr === todayDateStr && todayTimeStr >= dist.end_time) return false; // Promotion ended for today
                         }
                         return true;
                     });
                     
                     facility.active_promotions = activeDiscounts.length > 0;
 
-                    // Compute available slots today
+                    // Compute available slots
                     const availableSlots = [];
                     let opHours = { open: "06:00", close: "23:00" };
                     try {
@@ -724,25 +736,45 @@ app.all('/api/facilities', (req, res) => {
                         const slot2 = `${strH}:30`;
                         
                         [slot1, slot2].forEach(slot => {
-                            if (slot > todayTimeStr && !bSet.has(slot)) {
-                                let hasDiscount = false;
-                                activeDiscounts.forEach(dist => {
-                                    if (dist.start_time && dist.end_time) {
-                                        if (slot >= dist.start_time && slot < dist.end_time) hasDiscount = true;
-                                    } else {
-                                        hasDiscount = true; // Full day discount
-                                    }
-                                });
-                                availableSlots.push({ time: slot, discount: hasDiscount });
+                            const isPast = (targetDateStr === todayDateStr) ? (slot <= todayTimeStr) : (targetDateStr < todayDateStr);
+                            
+                            if (!isPast && !bSet.has(slot)) {
+                                let inTimeBlock = true;
+                                if (requestedTime === 'morning') {
+                                    inTimeBlock = (slot >= "00:00" && slot < "12:00");
+                                } else if (requestedTime === 'afternoon') {
+                                    inTimeBlock = (slot >= "12:00" && slot < "17:00");
+                                } else if (requestedTime === 'night') {
+                                    inTimeBlock = (slot >= "17:00" && slot <= "23:59");
+                                }
+
+                                if (inTimeBlock) {
+                                    let hasDiscount = false;
+                                    activeDiscounts.forEach(dist => {
+                                        if (dist.start_time && dist.end_time) {
+                                            if (slot >= dist.start_time && slot < dist.end_time) hasDiscount = true;
+                                        } else {
+                                            hasDiscount = true; // Full day discount
+                                        }
+                                    });
+                                    availableSlots.push({ time: slot, discount: hasDiscount });
+                                }
                             }
                         });
                     }
 
+                    // Strict filtering
+                    const isStrictSearch = !!(paramsSource.date || paramsSource.time);
+                    if (isStrictSearch && availableSlots.length === 0) {
+                        return; // Exclude this facility from final results
+                    }
+
                     // Select up to 3 upcoming slots
                     facility.display_slots_today = availableSlots.slice(0, 3);
+                    finalRows.push(facility);
                 });
                 
-                res.json(rows);
+                res.json(finalRows);
             });
         });
     });

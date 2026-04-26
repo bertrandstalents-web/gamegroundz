@@ -67,7 +67,7 @@
                                         <div class="relative flex items-center">
                                             <button id="profile-puck-btn" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-custom shadow-sm overflow-hidden focus:outline-none z-10">
                                                 <i class="fa-solid fa-user text-lg text-slate-400" id="puck-icon"></i>
-                                                <span id="puck-initials" class="hidden text-sm font-bold text-slate-700 uppercase"></span>
+                                                <span id="puck-initials" class="hidden text-sm font-bold text-slate-700 uppercase notranslate"></span>
                                                 <img id="puck-img" class="hidden w-full h-full object-cover" src="" alt="Profile">
                                             </button>
                                             
@@ -150,7 +150,7 @@
                         </label>
                         <label class="flex items-center group cursor-pointer">
                             <input type="checkbox" value="basketball" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark">Basketball Court</span>
+                            <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="notranslate">Basketball</span> Court</span>
                         </label>
                         <label class="flex items-center group cursor-pointer">
                             <input type="checkbox" value="pickleball" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
@@ -174,7 +174,7 @@
                         </label>
                         <label class="flex items-center group cursor-pointer">
                             <input type="checkbox" value="deck-hockey" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark">Deck-Hockey</span>
+                            <span class="ml-3 text-slate-600 group-hover:text-dark notranslate">Deck-Hockey</span>
                         </label>
                         <label class="flex items-center group cursor-pointer">
                             <input type="checkbox" value="squash" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
@@ -212,12 +212,12 @@
                 <!-- Filter: Date & Time -->
                 <div class="mb-6 border-t border-slate-100 pt-6">
                     <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Availability</h4>
-                    <input type="text" placeholder="Any Date" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-3 cursor-pointer" onclick="if(this.showPicker) this.showPicker();">
-                    <select class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary">
-                        <option>Any Time</option>
-                        <option>Morning (6am - 12pm)</option>
-                        <option>Afternoon (12pm - 5pm)</option>
-                        <option>Evening (5pm - 11pm)</option>
+                    <input type="text" id="sidebarDateSearch" placeholder="Any Date" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-3 cursor-pointer" onclick="if(this.showPicker) this.showPicker();">
+                    <select id="sidebarTimeSearch" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                        <option value="">Any Time</option>
+                        <option value="morning">Morning (Midnight - 12pm)</option>
+                        <option value="afternoon">Afternoon (12pm - 5pm)</option>
+                        <option value="night">Night (5pm - Midnight)</option>
                     </select>
                 </div>
 
@@ -700,6 +700,12 @@
                 if (filters.types && filters.types.length > 0) params.append('types', filters.types.join(','));
                 if (filters.search) params.append('search', filters.search);
                 
+                const dateVal = filters.date !== undefined ? filters.date : (document.getElementById('sidebarDateSearch') ? document.getElementById('sidebarDateSearch').value : '');
+                const timeVal = filters.time !== undefined ? filters.time : (document.getElementById('sidebarTimeSearch') ? document.getElementById('sidebarTimeSearch').value : '');
+                
+                if (dateVal) params.append('date', dateVal);
+                if (timeVal) params.append('time', timeVal);
+                
                 params.append('limit', limitPerPage);
                 params.append('offset', (currentPage - 1) * limitPerPage);
                 
@@ -759,11 +765,16 @@
                 }
                 const searchQuery = isLocation ? '' : rawSearchQuery;
 
+                const dateVal = document.getElementById('sidebarDateSearch') ? document.getElementById('sidebarDateSearch').value : '';
+                const timeVal = document.getElementById('sidebarTimeSearch') ? document.getElementById('sidebarTimeSearch').value : '';
+
                 fetchFacilities({ 
                     maxPrice: maxPrice,
                     environment: selectedEnv,
                     types: isAll ? [] : selectedTypes,
-                    search: searchQuery
+                    search: searchQuery,
+                    date: dateVal,
+                    time: timeVal
                 }, true).finally(() => {
                     applyBtn.innerHTML = originalText;
                     applyBtn.disabled = false;
@@ -810,6 +821,17 @@
             const urlParams = new URLSearchParams(window.location.search);
             const explicitLocation = urlParams.get('location');
             const explicitType = urlParams.get('type');
+            const explicitDate = urlParams.get('date');
+            const explicitTime = urlParams.get('time');
+            
+            if (explicitDate) {
+                const dateInput = document.getElementById('sidebarDateSearch');
+                if (dateInput) dateInput.value = explicitDate;
+            }
+            if (explicitTime) {
+                const timeInput = document.getElementById('sidebarTimeSearch');
+                if (timeInput) timeInput.value = explicitTime;
+            }
             
             // Handle pre-selected sport type
             if (explicitType) {
