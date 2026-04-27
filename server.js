@@ -161,6 +161,7 @@ app.use(express.static(path.join(__dirname)));
 
 // API Routes
 app.get('/api/config/maps', (req, res) => {
+    // Note: The Google Maps API key MUST be referrer-restricted to gamegroundz.com in Google Cloud Console.
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     res.json({ apiKey: process.env.GOOGLE_MAPS_API_KEY });
 });
@@ -356,7 +357,8 @@ app.post('/api/users/signup', async (req, res) => {
                 // Assign role based on choice, but preserve admin override based on email
                 let userRole = role_choice === 'host' ? 'host' : 'player';
                 const lowerEmail = email.toLowerCase();
-                const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase()) : [];
+                const adminEmails = (process.env.ADMIN_EMAILS || '')
+                    .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
                 if (adminEmails.includes(lowerEmail)) {
                     userRole = 'admin';
                 }
@@ -1720,7 +1722,7 @@ app.post('/api/host/public_sessions/:booking_id/participants/:psp_id/cancel', as
                     if (session && session.payment_intent) {
                         await stripe.refunds.create(
                             { payment_intent: session.payment_intent },
-                            { idempotencyKey: `refund-psp-${psp_id}` }
+                            { idempotencyKey: `refund-booking-${booking_id}` }
                         );
                     }
                 }
