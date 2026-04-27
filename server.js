@@ -36,7 +36,7 @@ app.use(cors({
 }));
 
 // Stripe webhook needs raw body
-app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), (req, res) => {
+app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (req, res) => {
     const rawBody = req.body;
     let event;
     try {
@@ -54,69 +54,118 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), (req, r
         const session = event.data.object;
         const metadata = session.metadata;
         
-        if (metadata && metadata.checkout_token) {
-            db.get("SELECT payload FROM pending_checkouts WHERE id = ?", [metadata.checkout_token], (err, row) => {
-                if (!err && row) {
-                    try {
-                        const payload = JSON.parse(row.payload);
-                        const { user_id, facility_id, multi_day_slots } = payload;
-                        // For simplicity, we just save the total session amount across the multiple bookings, 
-                        // or divide it? Let's just store total per row or 0. We'll store it on the first one or divide.
-                        // Actually let's just store the total session price.
-                        const price = session.amount_total / 100;
-                        const recurringGroupId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(7);
+        try {
+            if (metadata && metadata.checkout_token) {
+                const row = await new Promise((resolve, reject) => {
+                    db.get("SELECT payload FROM pending_checkouts WHERE id = ?", [metadata.checkout_token], (err, r) => {
+                        if (err) reject(err); else resolve(r);
+                    });
+                });
+
+                if (row) {
+                    const payload = JSON.parse(row.payload);
+                    const { user_id, facility_id, multi_day_slots } = payload;
+                    const price = session.amount_total / 100;
+                    const recurringGroupId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(7);
+
+                    await db.transaction(async (client) => {
+                        await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [facility_id]);
+                        const datesArr = Object.keys(multi_day_slots);
+                        const { rows: existingBookings } = await client.query(
+                            `SELECT booking_date, time_slots FROM bookings WHERE facility_id = $1 AND booking_date = ANY($2::text[]) AND status != 'cancelled' FOR UPDATE`,
+                            [facility_id, datesArr]
+                        );
+
+                        let hasConflict = false;
+                        existingBookings.forEach(booking => {
+                            try {
+                                const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
+                                const newSlotsForDate = multi_day_slots[booking.booking_date] || [];
+                                if (Array.isArray(slots) && newSlotsForDate.some(newSlot => slots.includes(newSlot))) {
+                                    hasConflict = true;
+                                }
+                            } catch (e) {}
+                        });
+
+                        if (hasConflict) {
+                            const err = new Error("Conflict: Time slots already booked.");
+                            err.status = 409;
+                            throw err;
+                        }
 
                         for (const [date, slots] of Object.entries(multi_day_slots)) {
                             const slotsStr = JSON.stringify(slots);
-                            db.run(
-                                "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id) VALUES (?, ?, ?, ?, ?, 'confirmed', 'online', 'paid', ?, ?)",
-                                [user_id, facility_id, date, slotsStr, price, session.id, recurringGroupId],
-                                function(err) {
-                                    if (err) console.error("Error creating multi-day booking from webhook:", err);
-                                    else {
-                                        sendBookingEmails(this.lastID);
-                                    }
-                                }
+                            const result = await client.query(
+                                "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id) VALUES ($1, $2, $3, $4, $5, 'confirmed', 'online', 'paid', $6, $7) RETURNING id",
+                                [user_id, facility_id, date, slotsStr, price, session.id, recurringGroupId]
                             );
+                            sendBookingEmails(result.rows[0].id);
                         }
-                    } catch(e) { console.error("Error parsing checkout payload", e); }
+                    });
                 }
-            });
-        } else if (metadata && metadata.facility_id) {
-            // Confirm single booking
-            const facilityId = metadata.facility_id;
-            const bookingDate = metadata.booking_date;
-            const timeSlotsStr = metadata.time_slots;
-            const userId = metadata.user_id;
-            
-            const price = session.amount_total / 100;
-            
-            db.run(
-                "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id) VALUES (?, ?, ?, ?, ?, 'confirmed', 'online', 'paid', ?)",
-                [userId, facilityId, bookingDate, timeSlotsStr, price, session.id],
-                function(err) {
-                    if (err) console.error("Error creating booking from webhook:", err);
-                    else {
-                        console.log("Booking confirmed via Stripe! ID:", this.lastID);
-                        sendBookingEmails(this.lastID);
+            } else if (metadata && metadata.facility_id) {
+                const facilityId = metadata.facility_id;
+                const bookingDate = metadata.booking_date;
+                const timeSlotsStr = metadata.time_slots;
+                const userId = metadata.user_id;
+                const price = session.amount_total / 100;
+
+                await db.transaction(async (client) => {
+                    await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [facilityId]);
+                    const { rows: existingBookings } = await client.query(
+                        `SELECT time_slots FROM bookings WHERE facility_id = $1 AND booking_date = $2 AND status != 'cancelled' FOR UPDATE`,
+                        [facilityId, bookingDate]
+                    );
+
+                    let hasConflict = false;
+                    const newSlots = typeof timeSlotsStr === 'string' ? JSON.parse(timeSlotsStr) : timeSlotsStr;
+                    existingBookings.forEach(booking => {
+                        try {
+                            const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
+                            if (Array.isArray(slots) && newSlots.some(ns => slots.includes(ns))) {
+                                hasConflict = true;
+                            }
+                        } catch (e) {}
+                    });
+
+                    if (hasConflict) {
+                        const err = new Error("Conflict: Time slots already booked.");
+                        err.status = 409;
+                        throw err;
                     }
-                }
-            );
-        } else if (metadata && metadata.type === 'public_session_join') {
-            const bookingId = metadata.booking_id;
-            const userId = metadata.user_id;
-            
-            db.run(
-                "UPDATE public_session_participants SET payment_status = 'paid' WHERE booking_id = ? AND user_id = ? AND stripe_session_id = ?",
-                [bookingId, userId, session.id],
-                function(err) {
-                    if (err) console.error("Error updating public session join:", err);
-                    else {
-                        console.log("Public session joined via Stripe! Booking ID:", bookingId);
-                        sendPublicSessionJoinEmails(bookingId, userId);
-                    }
-                }
-            );
+
+                    const result = await client.query(
+                        "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id) VALUES ($1, $2, $3, $4, $5, 'confirmed', 'online', 'paid', $6) RETURNING id",
+                        [userId, facilityId, bookingDate, typeof timeSlotsStr === 'string' ? timeSlotsStr : JSON.stringify(timeSlotsStr), price, session.id]
+                    );
+                    console.log("Booking confirmed via Stripe! ID:", result.rows[0].id);
+                    sendBookingEmails(result.rows[0].id);
+                });
+            } else if (metadata && metadata.type === 'public_session_join') {
+                const bookingId = metadata.booking_id;
+                const userId = metadata.user_id;
+                
+                await new Promise((resolve, reject) => {
+                    db.run(
+                        "UPDATE public_session_participants SET payment_status = 'paid' WHERE booking_id = ? AND user_id = ? AND stripe_session_id = ?",
+                        [bookingId, userId, session.id],
+                        function(err) {
+                            if (err) reject(err);
+                            else {
+                                console.log("Public session joined via Stripe! Booking ID:", bookingId);
+                                sendPublicSessionJoinEmails(bookingId, userId);
+                                resolve();
+                            }
+                        }
+                    );
+                });
+            }
+        } catch (e) {
+            console.error("Webhook processing error:", e);
+            if (e.status === 409) {
+                return res.status(409).send("Conflict: Double booking detected.");
+            }
+            return res.status(500).send("Internal Server Error");
         }
     }
     
@@ -714,7 +763,7 @@ app.all('/api/facilities', (req, res) => {
             const allDiscounts = discounts || [];
             
             // Fetch bookings for the target date
-            db.all("SELECT facility_id, time_slots FROM bookings WHERE booking_date = ? AND status = 'confirmed'", [targetDateStr], (err, bookings) => {
+            db.all("SELECT facility_id, time_slots FROM bookings WHERE booking_date = ? AND status != 'cancelled'", [targetDateStr], (err, bookings) => {
                 const bookedMap = {}; 
                 (bookings || []).forEach(b => {
                     const fid = b.facility_id;
@@ -1282,7 +1331,7 @@ app.post('/api/host/block-time', (req, res) => {
     const resOnlyToUse = typeToUse === 'public_session' ? (residents_only ? 1 : 0) : 0;
 
     // Verify this facility belongs to the logged-in host
-    db.get("SELECT id FROM facilities WHERE id = ? AND host_id = ?", [facility_id, req.session.userId], (err, facility) => {
+    db.get("SELECT id FROM facilities WHERE id = ? AND host_id = ?", [facility_id, req.session.userId], async (err, facility) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!facility) return res.status(403).json({ error: "Forbidden: You do not own this facility." });
 
@@ -1316,24 +1365,45 @@ app.post('/api/host/block-time', (req, res) => {
         
         const sql = `
             INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment)
-            VALUES (?, ?, ?, 0, 'confirmed', ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES ($1, $2, $3, 0, 'confirmed', $4, $5, $6, $7, $8, $9, $10, $11)
         `;
         
-        const insertBooking = (dateObj) => new Promise((resolve, reject) => {
-            db.run(sql, [facility_id, dateObj, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse, kidPriceToUse, resOnlyToUse, locker_room_assignment || ''], function(err) {
-                if (err) reject(err);
-                else resolve();
-            });
-        });
+        try {
+            await db.transaction(async (client) => {
+                await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [facility_id]);
+                const { rows: existingBookings } = await client.query(
+                    `SELECT booking_date, time_slots FROM bookings WHERE facility_id = $1 AND booking_date = ANY($2::text[]) AND status != 'cancelled' FOR UPDATE`,
+                    [facility_id, datesToBook]
+                );
 
-        Promise.all(datesToBook.map(dateStr => insertBooking(dateStr)))
-            .then(() => {
-                res.status(201).json({ message: `Successfully created ${datesToBook.length} booking(s)` });
-            })
-            .catch(err => {
-                console.error("Booking insert error:", err);
-                res.status(500).json({ error: "Failed to create some or all bookings" });
+                let hasConflict = false;
+                const newSlots = Array.isArray(time_slots) ? time_slots : [time_slots];
+                existingBookings.forEach(booking => {
+                    try {
+                        const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
+                        if (Array.isArray(slots) && newSlots.some(newSlot => slots.includes(newSlot))) {
+                            hasConflict = true;
+                        }
+                    } catch (e) {}
+                });
+
+                if (hasConflict) {
+                    const err = new Error("Conflict: Time slots already booked.");
+                    err.status = 409;
+                    throw err;
+                }
+
+                for (const dateStr of datesToBook) {
+                    await client.query(sql, [facility_id, dateStr, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse, kidPriceToUse, resOnlyToUse, locker_room_assignment || '']);
+                }
             });
+
+            res.status(201).json({ message: `Successfully created ${datesToBook.length} booking(s)` });
+        } catch (err) {
+            console.error("Booking insert error:", err);
+            if (err.status === 409) return res.status(409).json({ error: err.message });
+            res.status(500).json({ error: "Failed to create some or all bookings" });
+        }
     });
 });
 
@@ -2605,60 +2675,129 @@ app.post('/api/bookings/confirm', async (req, res) => {
         if (session.payment_status === 'paid') {
             const metadata = session.metadata;
             // Check if it already exists (in case webhook actually fired in prod)
-            db.get("SELECT id FROM bookings WHERE stripe_session_id = ?", [session.id], (err, existing) => {
+            db.get("SELECT id FROM bookings WHERE stripe_session_id = ?", [session.id], async (err, existing) => {
                 if (err) return res.status(500).json({ error: "DB Error" });
                 if (existing) {
                     return res.json({ success: true, message: "Booking already confirmed." });
                 }
 
                 if (metadata && metadata.checkout_token) {
-                    db.get("SELECT payload FROM pending_checkouts WHERE id = ?", [metadata.checkout_token], (err, row) => {
-                        if (err || !row) return res.status(500).json({ error: "Missing payload" });
+                    try {
+                        const row = await new Promise((resolve, reject) => {
+                            db.get("SELECT payload FROM pending_checkouts WHERE id = ?", [metadata.checkout_token], (err, r) => {
+                                if (err) reject(err); else resolve(r);
+                            });
+                        });
+                        if (!row) return res.status(500).json({ error: "Missing payload" });
                         
-                        try {
-                            const payload = JSON.parse(row.payload);
-                            const { user_id, facility_id, multi_day_slots } = payload;
-                            const price = session.amount_total / 100;
-                            const recurringGroupId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(7);
+                        const payload = JSON.parse(row.payload);
+                        const { user_id, facility_id, multi_day_slots } = payload;
+                        const price = session.amount_total / 100;
+                        const recurringGroupId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(7);
+
+                        await db.transaction(async (client) => {
+                            await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [facility_id]);
+                            const datesArr = Object.keys(multi_day_slots);
+                            const { rows: existingBookings } = await client.query(
+                                `SELECT booking_date, time_slots FROM bookings WHERE facility_id = $1 AND booking_date = ANY($2::text[]) AND status != 'cancelled' FOR UPDATE`,
+                                [facility_id, datesArr]
+                            );
+
+                            let hasConflict = false;
+                            existingBookings.forEach(booking => {
+                                try {
+                                    const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
+                                    const newSlotsForDate = multi_day_slots[booking.booking_date] || [];
+                                    if (Array.isArray(slots) && newSlotsForDate.some(newSlot => slots.includes(newSlot))) {
+                                        hasConflict = true;
+                                    }
+                                } catch (e) {}
+                            });
+
+                            if (hasConflict) {
+                                const err = new Error("Conflict: Time slots already booked.");
+                                err.status = 409;
+                                throw err;
+                            }
 
                             for (const [date, slots] of Object.entries(multi_day_slots)) {
                                 const slotsStr = JSON.stringify(slots);
-                                db.run(
-                                    "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id) VALUES (?, ?, ?, ?, ?, 'confirmed', 'online', 'paid', ?, ?)",
-                                    [user_id, facility_id, date, slotsStr, price, session.id, recurringGroupId],
-                                    function(err) {
-                                        if (!err) sendBookingEmails(this.lastID);
-                                    }
+                                const result = await client.query(
+                                    "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id) VALUES ($1, $2, $3, $4, $5, 'confirmed', 'online', 'paid', $6, $7) RETURNING id",
+                                    [user_id, facility_id, date, slotsStr, price, session.id, recurringGroupId]
                                 );
+                                sendBookingEmails(result.rows[0].id);
                             }
-                            res.json({ success: true, message: "Bookings confirmed" });
-                        } catch(e) {
-                            res.status(500).json({ error: "Payload error" });
-                        }
-                    });
+                        });
+                        res.json({ success: true, message: "Bookings confirmed" });
+                    } catch(e) {
+                        if (e.status === 409) return res.status(409).json({ error: "Conflict: Double booking detected." });
+                        res.status(500).json({ error: "Payload or processing error" });
+                    }
                 } else if (metadata && metadata.type === 'public_session_join') {
                     const bookingId = metadata.booking_id;
                     const userId = metadata.user_id;
 
-                    db.run(
-                        "UPDATE public_session_participants SET payment_status = 'paid' WHERE booking_id = ? AND user_id = ? AND stripe_session_id = ?",
-                        [bookingId, userId, session.id],
-                        function(err) {
-                            if (err) return res.status(500).json({ error: "Failed to confirm public session" });
-                            sendPublicSessionJoinEmails(bookingId, userId);
-                            res.json({ success: true, message: "Public session confirmed" });
-                        }
-                    );
+                    await new Promise((resolve, reject) => {
+                        db.run(
+                            "UPDATE public_session_participants SET payment_status = 'paid' WHERE booking_id = ? AND user_id = ? AND stripe_session_id = ?",
+                            [bookingId, userId, session.id],
+                            function(err) {
+                                if (err) {
+                                    res.status(500).json({ error: "Failed to confirm public session" });
+                                    reject(err);
+                                } else {
+                                    sendPublicSessionJoinEmails(bookingId, userId);
+                                    res.json({ success: true, message: "Public session confirmed" });
+                                    resolve();
+                                }
+                            }
+                        );
+                    });
                 } else if (metadata && metadata.facility_id) {
                     // Backward compatibility
-                    db.run(
-                        "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id) VALUES (?, ?, ?, ?, ?, 'confirmed', 'online', 'paid', ?)",
-                        [metadata.user_id, metadata.facility_id, metadata.booking_date, metadata.time_slots, session.amount_total / 100, session.id],
-                        function(err) {
-                            if (!err) sendBookingEmails(this.lastID);
-                            res.json({ success: true, booking_id: this.lastID });
-                        }
-                    );
+                    try {
+                        const facilityId = metadata.facility_id;
+                        const bookingDate = metadata.booking_date;
+                        const timeSlotsStr = metadata.time_slots;
+                        const userId = metadata.user_id;
+                        const price = session.amount_total / 100;
+
+                        await db.transaction(async (client) => {
+                            await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [facilityId]);
+                            const { rows: existingBookings } = await client.query(
+                                `SELECT time_slots FROM bookings WHERE facility_id = $1 AND booking_date = $2 AND status != 'cancelled' FOR UPDATE`,
+                                [facilityId, bookingDate]
+                            );
+
+                            let hasConflict = false;
+                            const newSlots = typeof timeSlotsStr === 'string' ? JSON.parse(timeSlotsStr) : timeSlotsStr;
+                            existingBookings.forEach(booking => {
+                                try {
+                                    const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
+                                    if (Array.isArray(slots) && newSlots.some(ns => slots.includes(ns))) {
+                                        hasConflict = true;
+                                    }
+                                } catch (e) {}
+                            });
+
+                            if (hasConflict) {
+                                const err = new Error("Conflict: Time slots already booked.");
+                                err.status = 409;
+                                throw err;
+                            }
+
+                            const result = await client.query(
+                                "INSERT INTO bookings (user_id, facility_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id) VALUES ($1, $2, $3, $4, $5, 'confirmed', 'online', 'paid', $6) RETURNING id",
+                                [userId, facilityId, bookingDate, typeof timeSlotsStr === 'string' ? timeSlotsStr : JSON.stringify(timeSlotsStr), price, session.id]
+                            );
+                            sendBookingEmails(result.rows[0].id);
+                            res.json({ success: true, booking_id: result.rows[0].id });
+                        });
+                    } catch(e) {
+                        if (e.status === 409) return res.status(409).json({ error: "Conflict: Double booking detected." });
+                        res.status(500).json({ error: "Internal server error" });
+                    }
                 }
             });
         } else {
