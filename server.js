@@ -16,6 +16,11 @@ if (!process.env.STRIPE_WEBHOOK_SECRET) {
     process.exit(1);
 }
 
+if (!process.env.SESSION_SECRET) {
+    console.error('FATAL: SESSION_SECRET is not set. Exiting.');
+    process.exit(1);
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -124,18 +129,19 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 10,
-    message: { error: 'Too many attempts. Please try again in 15 minutes.' }
+    message: { error: 'Too many attempts. Try again in 15 minutes.' }
 });
 
 const generalLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000,
-    max: 60,
-    message: { error: 'Too many requests. Please slow down.' }
+    windowMs: 60 * 1000,
+    max: 60
 });
 
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/forgot-password', authLimiter);
 app.use('/api/users/signup', authLimiter);
+app.use('/api/reviews', authLimiter);
+app.use('/api/create-checkout-session', authLimiter);
 app.use('/api', generalLimiter);
 
 // Session Middleware
@@ -145,14 +151,14 @@ app.use(session({
         tableName: 'user_sessions',
         createTableIfMissing: true
     }),
-    secret: process.env.SESSION_SECRET || 'gamegroundz-dev-secret-fallback', // In production, use environment variable
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { 
-        secure: process.env.NODE_ENV === 'production' || process.env.RENDER === 'true', // Set to true if using HTTPS
-        sameSite: (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') ? 'none' : 'lax',
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 // 24 hours
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24 * 7
     }
 }));
 
