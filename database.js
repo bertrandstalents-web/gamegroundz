@@ -238,6 +238,16 @@ async function initDatabase() {
         } catch(e) {}
 
         try { await client.query(`ALTER TABLE bookings ADD COLUMN capacity INTEGER DEFAULT 0`); } catch(e) {}
+        
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN cancelled_at TIMESTAMPTZ`);
+        } catch(e) {}
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN cancelled_by_user_id INTEGER REFERENCES users(id)`);
+        } catch(e) {}
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN cancellation_reason TEXT`);
+        } catch(e) {}
         try { await client.query(`ALTER TABLE bookings ADD COLUMN participant_price REAL DEFAULT 0.0`); } catch(e) {}
         try { await client.query(`ALTER TABLE bookings ADD COLUMN participant_kid_price REAL DEFAULT 0.0`); } catch(e) {}
 

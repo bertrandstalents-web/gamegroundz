@@ -1270,7 +1270,7 @@ app.get('/api/host/bookings', (req, res) => {
         FROM bookings b
         JOIN facilities f ON b.facility_id = f.id
         LEFT JOIN users u ON b.user_id = u.id
-        WHERE (f.host_id = ? OR f.co_host_emails LIKE ?)
+        WHERE (f.host_id = ? OR f.co_host_emails LIKE ?) AND b.status != 'cancelled'
         ORDER BY b.booking_date ASC, b.time_slots ASC
     `;
     
@@ -1578,13 +1578,13 @@ app.get('/api/bookings/my', (req, res) => {
         SELECT b.id, b.user_id, b.facility_id, b.booking_date, b.time_slots, b.total_price, b.status, b.booking_type, b.manual_notes, b.payment_status, b.stripe_session_id, b.review_email_sent, b.recurring_group_id, b.is_read, b.is_archived, b.capacity, b.participant_price, f.name as facility_name, f.image_url, f.location, 1 as quantity
         FROM bookings b
         JOIN facilities f ON b.facility_id = f.id
-        WHERE b.user_id = ? AND b.booking_type != 'public_session'
+        WHERE b.user_id = ? AND b.booking_type != 'public_session' AND b.status != 'cancelled'
         UNION ALL
         SELECT b.id, psp.user_id, b.facility_id, b.booking_date, b.time_slots, (psp.quantity * b.participant_price) as total_price, b.status, b.booking_type, b.manual_notes, psp.payment_status, psp.stripe_session_id, b.review_email_sent, b.recurring_group_id, b.is_read, b.is_archived, b.capacity, b.participant_price, f.name as facility_name, f.image_url, f.location, psp.quantity
         FROM public_session_participants psp
         JOIN bookings b ON psp.booking_id = b.id
         JOIN facilities f ON b.facility_id = f.id
-        WHERE psp.user_id = ? AND psp.payment_status = 'paid'
+        WHERE psp.user_id = ? AND psp.payment_status = 'paid' AND b.status != 'cancelled'
         ORDER BY booking_date DESC
     `;
 
@@ -1962,9 +1962,10 @@ app.post('/api/bookings/:id/cancel', async (req, res) => {
                 if (emailDetails) emailService.sendCancellationEmail(emailDetails, 'player');
             } catch(e) { console.error("Could not send cancel email", e); }
 
-            // Save cancellation to a log/notes or just delete. We delete to free up slots immediately.
-            db.run("DELETE FROM bookings WHERE id = ?", [bookingId], function(err) {
-                if (err) return res.status(500).json({ error: "Failed to delete booking" });
+            // Save cancellation to a log/notes or just soft delete.
+            const cancelSql = `UPDATE bookings SET status = 'cancelled', cancelled_at = NOW(), cancelled_by_user_id = $1, cancellation_reason = 'Cancelled by player' WHERE id = $2`;
+            db.run(cancelSql, [req.session.userId, bookingId], function(err) {
+                if (err) return res.status(500).json({ error: "Failed to cancel booking" });
                 res.json({ message: "Booking canceled and refunded successfully." });
             });
 
@@ -2056,20 +2057,22 @@ app.post('/api/host/bookings/:id/cancel', async (req, res) => {
                 if (emailDetails) emailService.sendCancellationEmail(emailDetails, 'host');
             } catch(e) { console.error("Could not send cancel email", e); }
 
-            // Delete booking to free slots
+            // Soft delete booking to free slots
+            const baseUpdate = `UPDATE bookings SET status = 'cancelled', cancelled_at = NOW(), cancelled_by_user_id = $1, cancellation_reason = 'Cancelled by host'`;
+            
             if (cancel_scope === 'all' && booking.recurring_group_id) {
-                db.run("DELETE FROM bookings WHERE recurring_group_id = ?", [booking.recurring_group_id], function(err) {
-                    if (err) return res.status(500).json({ error: "Failed to delete bookings" });
+                db.run(`${baseUpdate} WHERE recurring_group_id = $2`, [req.session.userId, booking.recurring_group_id], function(err) {
+                    if (err) return res.status(500).json({ error: "Failed to cancel bookings" });
                     res.json({ message: "All recurring bookings canceled successfully." });
                 });
             } else if (cancel_scope === 'following' && booking.recurring_group_id) {
-                db.run("DELETE FROM bookings WHERE recurring_group_id = ? AND booking_date >= ?", [booking.recurring_group_id, booking.booking_date], function(err) {
-                    if (err) return res.status(500).json({ error: "Failed to delete bookings" });
+                db.run(`${baseUpdate} WHERE recurring_group_id = $2 AND booking_date >= $3`, [req.session.userId, booking.recurring_group_id, booking.booking_date], function(err) {
+                    if (err) return res.status(500).json({ error: "Failed to cancel bookings" });
                     res.json({ message: "This and following bookings canceled successfully." });
                 });
             } else {
-                db.run("DELETE FROM bookings WHERE id = ?", [bookingId], function(err) {
-                    if (err) return res.status(500).json({ error: "Failed to delete booking" });
+                db.run(`${baseUpdate} WHERE id = $2`, [req.session.userId, bookingId], function(err) {
+                    if (err) return res.status(500).json({ error: "Failed to cancel booking" });
                     res.json({ message: "Booking canceled and refunded successfully." });
                 });
             }
