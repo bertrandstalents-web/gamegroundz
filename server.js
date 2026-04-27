@@ -111,7 +111,7 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
                 const price = session.amount_total / 100;
 
                 await db.transaction(async (client) => {
-                    await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [facilityId]);
+                    await client.query("SELECT pg_advisory_xact_lock(hashtext($1::text || '|' || $2::text)::bigint)", [facilityId, bookingDate]);
                     const { rows: existingBookings } = await client.query(
                         `SELECT time_slots FROM bookings WHERE facility_id = $1 AND booking_date = $2 AND status != 'cancelled' FOR UPDATE`,
                         [facilityId, bookingDate]
@@ -1370,7 +1370,16 @@ app.post('/api/host/block-time', (req, res) => {
         
         try {
             await db.transaction(async (client) => {
-                await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [facility_id]);
+                const lockKeyQuery = datesToBook.length > 1 
+                    ? "SELECT pg_advisory_xact_lock($1::bigint)" 
+                    : "SELECT pg_advisory_xact_lock(hashtext($1::text || '|' || $2::text)::bigint)";
+                
+                if (datesToBook.length > 1) {
+                    await client.query(lockKeyQuery, [facility_id]);
+                } else {
+                    await client.query(lockKeyQuery, [facility_id, datesToBook[0]]);
+                }
+
                 const { rows: existingBookings } = await client.query(
                     `SELECT booking_date, time_slots FROM bookings WHERE facility_id = $1 AND booking_date = ANY($2::text[]) AND status != 'cancelled' FOR UPDATE`,
                     [facility_id, datesToBook]
@@ -1433,7 +1442,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
          JOIN facilities f ON b.facility_id = f.id 
          WHERE b.id = ? AND (f.host_id = ? OR f.co_host_emails LIKE ?)`,
         [bookingId, req.session.userId, `%"${req.session.email}"%`],
-        (err, row) => {
+        async (err, row) => {
             if (err || !row) return res.status(403).json({ error: "Access denied or booking not found" });
 
             let recurringGroupId = row.recurring_group_id;
@@ -1464,39 +1473,74 @@ app.put('/api/host/bookings/:id', (req, res) => {
                 }
             }
 
-            const sql = `
-                UPDATE bookings 
-                SET booking_date = ?, time_slots = ?, manual_notes = COALESCE(?, manual_notes), recurring_group_id = COALESCE(?, recurring_group_id),
-                    capacity = COALESCE(?, capacity), participant_price = COALESCE(?, participant_price), participant_kid_price = COALESCE(?, participant_kid_price), residents_only = COALESCE(?, residents_only), locker_room_assignment = COALESCE(?, locker_room_assignment)
-                WHERE id = ?
-            `;
+            const allDatesToCheck = [booking_date, ...datesToBook];
+            
+            try {
+                await db.transaction(async (client) => {
+                    const lockKeyQuery = allDatesToCheck.length > 1 
+                        ? "SELECT pg_advisory_xact_lock($1::bigint)" 
+                        : "SELECT pg_advisory_xact_lock(hashtext($1::text || '|' || $2::text)::bigint)";
+                    
+                    if (allDatesToCheck.length > 1) {
+                        await client.query(lockKeyQuery, [row.facility_id]);
+                    } else {
+                        await client.query(lockKeyQuery, [row.facility_id, booking_date]);
+                    }
 
-            db.run(sql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, bookingId], function(err) {
-                if (err) return res.status(500).json({ error: err.message });
-                
-                if (datesToBook.length > 0) {
-                    const bTypeStr = isPublic ? 'public_session' : 'manual';
-                    const insertSql = `
-                        INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment)
-                        VALUES (?, ?, ?, 0, 'confirmed', ?, ?, ?, ?, ?, ?, ?, ?)
-                    `;
-                    const insertBooking = (dateStr) => new Promise((resolve, reject) => {
-                        db.run(insertSql, [row.facility_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment || ''], function(insertErr) {
-                            if (insertErr) reject(insertErr);
-                            else resolve();
-                        });
+                    const { rows: existingBookings } = await client.query(
+                        `SELECT id, booking_date, time_slots FROM bookings WHERE facility_id = $1 AND booking_date = ANY($2::text[]) AND status != 'cancelled' FOR UPDATE`,
+                        [row.facility_id, allDatesToCheck]
+                    );
+
+                    let hasConflict = false;
+                    const newSlots = Array.isArray(time_slots) ? time_slots : [time_slots];
+                    existingBookings.forEach(booking => {
+                        if (booking.id == bookingId) return;
+                        
+                        try {
+                            const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
+                            if (Array.isArray(slots) && newSlots.some(newSlot => slots.includes(newSlot))) {
+                                hasConflict = true;
+                            }
+                        } catch (e) {}
                     });
 
-                    Promise.all(datesToBook.map(d => insertBooking(d)))
-                        .then(() => res.status(200).json({ message: "Booking updated and series extended successfully" }))
-                        .catch(e => {
-                            console.error("Booking insert error:", e);
-                            res.status(500).json({ error: "Failed to create some repeating bookings" });
-                        });
+                    if (hasConflict) {
+                        const err = new Error("Conflict: Time slots already booked.");
+                        err.status = 409;
+                        throw err;
+                    }
+
+                    const updateSql = `
+                        UPDATE bookings 
+                        SET booking_date = $1, time_slots = $2, manual_notes = COALESCE($3, manual_notes), recurring_group_id = COALESCE($4, recurring_group_id),
+                            capacity = COALESCE($5, capacity), participant_price = COALESCE($6, participant_price), participant_kid_price = COALESCE($7, participant_kid_price), residents_only = COALESCE($8, residents_only), locker_room_assignment = COALESCE($9, locker_room_assignment)
+                        WHERE id = $10
+                    `;
+                    await client.query(updateSql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, bookingId]);
+
+                    if (datesToBook.length > 0) {
+                        const bTypeStr = isPublic ? 'public_session' : 'manual';
+                        const insertSql = `
+                            INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment)
+                            VALUES ($1, $2, $3, 0, 'confirmed', $4, $5, $6, $7, $8, $9, $10, $11)
+                        `;
+                        for (const d of datesToBook) {
+                            await client.query(insertSql, [row.facility_id, d, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment || '']);
+                        }
+                    }
+                });
+                
+                if (datesToBook.length > 0) {
+                    res.status(200).json({ message: "Booking updated and series extended successfully" });
                 } else {
                     res.status(200).json({ message: "Booking updated successfully" });
                 }
-            });
+            } catch (err) {
+                console.error("Booking update error:", err);
+                if (err.status === 409) return res.status(409).json({ error: err.message });
+                res.status(500).json({ error: "Failed to update booking" });
+            }
         }
     );
 });
@@ -2764,7 +2808,7 @@ app.post('/api/bookings/confirm', async (req, res) => {
                         const price = session.amount_total / 100;
 
                         await db.transaction(async (client) => {
-                            await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [facilityId]);
+                            await client.query("SELECT pg_advisory_xact_lock(hashtext($1::text || '|' || $2::text)::bigint)", [facilityId, bookingDate]);
                             const { rows: existingBookings } = await client.query(
                                 `SELECT time_slots FROM bookings WHERE facility_id = $1 AND booking_date = $2 AND status != 'cancelled' FOR UPDATE`,
                                 [facilityId, bookingDate]

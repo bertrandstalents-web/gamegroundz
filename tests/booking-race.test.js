@@ -2,6 +2,11 @@ const request = require('supertest');
 const app = require('../server');
 const db = require('../database');
 
+if (!process.env.TEST_DATABASE_URL) {
+    console.error("FATAL: TEST_DATABASE_URL is not set. Refusing to run tests without an explicit test database.");
+    process.exit(1);
+}
+
 describe('Booking Race Condition', () => {
     let agent;
     let facilityId;
