@@ -216,8 +216,8 @@ app.use(express.static(path.join(__dirname)));
 
 // API Routes
 app.get('/api/config/maps', (req, res) => {
-    // Note: The Google Maps API key MUST be referrer-restricted to gamegroundz.com in Google Cloud Console.
-    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    // The Google Maps API key is referrer-restricted to gamegroundz.com origins
+    // in Google Cloud Console, so this endpoint can be safely public.
     res.json({ apiKey: process.env.GOOGLE_MAPS_API_KEY });
 });
 
