@@ -8,6 +8,8 @@ cookie.txt
 fetch_test.txt
 pdfs/
 css/output.css
+
+# Dev / test scripts not for production
 brute.js
 query_db.js
 temp*.js
