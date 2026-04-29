@@ -146,7 +146,7 @@ async function initDatabase() {
             await client.query(`ALTER TABLE users ADD COLUMN terms_accepted_at TEXT`);
         } catch(e) {}
 
-        // Facility Images Table
+        // Facility Images Table (Facility-wide images)
         await client.query(`CREATE TABLE IF NOT EXISTS facility_images (
             id SERIAL PRIMARY KEY,
             facility_id INTEGER REFERENCES facilities(id),
@@ -154,6 +154,39 @@ async function initDatabase() {
             is_primary INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
+
+        // Surfaces Table
+        await client.query(`CREATE TABLE IF NOT EXISTS surfaces (
+            id SERIAL PRIMARY KEY,
+            facility_id INTEGER REFERENCES facilities(id),
+            name TEXT NOT NULL,
+            type TEXT NOT NULL,
+            environment TEXT NOT NULL,
+            size_info TEXT DEFAULT '',
+            capacity INTEGER DEFAULT 0,
+            base_price INTEGER NOT NULL,
+            pricing_rules TEXT DEFAULT '[]',
+            features TEXT DEFAULT '[]',
+            amenities TEXT DEFAULT '[]',
+            is_instant_book INTEGER DEFAULT 0,
+            advance_booking_days INTEGER DEFAULT 180,
+            has_processing_fee INTEGER DEFAULT 1,
+            processing_fee_amount REAL DEFAULT 15.00,
+            pricing_unit TEXT DEFAULT 'hour',
+            locker_rooms INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+
+        // Surface Images Table
+        await client.query(`CREATE TABLE IF NOT EXISTS surface_images (
+            id SERIAL PRIMARY KEY,
+            surface_id INTEGER REFERENCES surfaces(id),
+            image_url TEXT NOT NULL,
+            is_primary INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+
 
         try {
             await client.query(`ALTER TABLE facilities ADD COLUMN advance_booking_days INTEGER DEFAULT 180`);
@@ -188,6 +221,7 @@ async function initDatabase() {
         await client.query(`CREATE TABLE IF NOT EXISTS discounts (
             id SERIAL PRIMARY KEY,
             facility_id INTEGER REFERENCES facilities(id),
+            surface_id INTEGER REFERENCES surfaces(id),
             discount_type TEXT NOT NULL,
             value REAL NOT NULL,
             start_date TIMESTAMP,
@@ -205,6 +239,7 @@ async function initDatabase() {
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(id),
             facility_id INTEGER REFERENCES facilities(id),
+            surface_id INTEGER REFERENCES surfaces(id),
             booking_date TEXT NOT NULL,
             time_slots TEXT,
             total_price REAL,

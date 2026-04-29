@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="List and manage your sports facilities on GameGroundz.">
@@ -34,7 +32,7 @@
     <!-- SortableJS -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <!-- FullCalendar JS and CSS -->
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -226,11 +224,13 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 md:p-4 sticky top-28 h-full lg:h-auto">
                         <ul class="space-y-0.5 md:space-y-1">
                             <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base bg-primary/10 text-primary rounded-xl font-bold transition-custom"><i class="fa-solid fa-list w-6 mr-2 md:mr-3"></i> My Facilities</button></li>
+    <li><button id="tab-btn-surfaces" onclick="switchTab('surfaces')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-layer-group w-6 mr-2 md:mr-3"></i> Surfaces</button></li>
+
                             <li><button id="tab-btn-analytics" onclick="switchTab('analytics')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-chart-pie w-6 mr-2 md:mr-3"></i> Analytics / Statistiques</button></li>
                             <li><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 mr-2 md:mr-3"></i> Reservations</button></li>
                             <li><button id="tab-btn-calendar" onclick="switchTab('calendar')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-regular fa-calendar w-6 mr-2 md:mr-3"></i> Calendar</button></li>
                             <li><button id="tab-btn-discounts" onclick="switchTab('discounts')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tags w-6 mr-2 md:mr-3"></i> Discounts</button></li>
-                            <li><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 mr-2 md:mr-3"></i> Wallet & Payouts</button></li>
+                            <li><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 mr-2 md:mr-3"></i> Wallet &amp; Payouts</button></li>
                             <li><button id="tab-btn-profile" onclick="switchTab('profile')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-user w-6 mr-2 md:mr-3"></i> Profile</button></li>
                             <li><button id="tab-btn-add-new" onclick="switchTab('add-new')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-plus w-6 mr-2 md:mr-3"></i> Add New Facility</button></li>
                             <li id="nav-item-our-people" class="hidden"><button id="tab-btn-our-people" onclick="switchTab('our-people')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-users w-6 mr-2 md:mr-3"></i> Our People</button></li>
@@ -321,15 +321,15 @@
                                 <div id="res-status-dropdown-menu" class="hidden absolute left-0 top-full mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden text-sm">
                                     <div class="p-3 space-y-2 max-h-60 overflow-y-auto">
                                         <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
-                                            <input type="checkbox" value="upcoming" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked onchange="updateStatusBtnText(); applyReservationFilters();" />
+                                            <input type="checkbox" value="upcoming" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked="" onchange="updateStatusBtnText(); applyReservationFilters();">
                                             <span class="font-medium text-slate-700">Upcoming Reservations</span>
                                         </label>
                                         <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
-                                            <input type="checkbox" value="past" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked onchange="updateStatusBtnText(); applyReservationFilters();" />
+                                            <input type="checkbox" value="past" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked="" onchange="updateStatusBtnText(); applyReservationFilters();">
                                             <span class="font-medium text-slate-700">Past Reservations</span>
                                         </label>
                                         <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
-                                            <input type="checkbox" value="archived" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" onchange="updateStatusBtnText(); applyReservationFilters();" />
+                                            <input type="checkbox" value="archived" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" onchange="updateStatusBtnText(); applyReservationFilters();">
                                             <span class="font-medium text-slate-700">Archived Reservations</span>
                                         </label>
                                     </div>
@@ -346,11 +346,11 @@
                                 <div id="res-type-dropdown-menu" class="hidden absolute left-0 top-full mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden text-sm">
                                     <div class="p-3 space-y-2 max-h-60 overflow-y-auto">
                                         <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
-                                            <input type="checkbox" value="online" class="res-type-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked onchange="updateTypeBtnText(); applyReservationFilters();" />
+                                            <input type="checkbox" value="online" class="res-type-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked="" onchange="updateTypeBtnText(); applyReservationFilters();">
                                             <span class="font-medium text-slate-700">Online Bookings</span>
                                         </label>
                                         <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
-                                            <input type="checkbox" value="offline" class="res-type-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked onchange="updateTypeBtnText(); applyReservationFilters();" />
+                                            <input type="checkbox" value="offline" class="res-type-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked="" onchange="updateTypeBtnText(); applyReservationFilters();">
                                             <span class="font-medium text-slate-700">Offline Bookings</span>
                                         </label>
                                     </div>
@@ -359,7 +359,7 @@
                             
                             <select id="res-date-filter" class="px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm" onchange="applyReservationFilters()">
                                 <option value="all">All Dates</option>
-                                <option value="today" selected>Today</option>
+                                <option value="today" selected="">Today</option>
                                 <option value="tomorrow">Tomorrow</option>
                                 <option value="week">This Week</option>
                                 <option value="month">This Month</option>
@@ -403,7 +403,7 @@
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Select Facility to Manage</label>
                             <select id="calendar-facility-select" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white appearance-none cursor-pointer font-medium text-slate-800 shadow-sm" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;">
                                 <!-- Populated dynamically -->
-                                <option value="" disabled selected>Loading facilities...</option>
+                                <option value="" disabled="" selected="">Loading facilities...</option>
                             </select>
                         </div>
                     </div>
@@ -468,7 +468,7 @@
                                     <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Action Type<span class="text-red-500">*</span></label>
                                     <div class="flex flex-wrap items-center gap-4 mt-2">
                                         <label class="flex items-center cursor-pointer">
-                                            <input type="radio" name="modal-block-type" value="offline" class="w-4 h-4 text-primary focus:ring-primary border-slate-300" checked onchange="toggleModalBlockType()">
+                                            <input type="radio" name="modal-block-type" value="offline" class="w-4 h-4 text-primary focus:ring-primary border-slate-300" checked="" onchange="toggleModalBlockType()">
                                             <span class="ml-2 text-sm font-semibold text-slate-700">Offline Booking</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
@@ -508,7 +508,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Booking Title<span class="text-red-500">*</span></label>
-                                        <input type="text" id="modal-block-notes" required placeholder="e.g. Private Lesson or Open Hockey" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
+                                        <input type="text" id="modal-block-notes" required="" placeholder="e.g. Private Lesson or Open Hockey" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Locker Room <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top">OPTIONAL</span></label>
@@ -612,13 +612,13 @@
                         <div class="w-full md:w-64">
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Select Facility to Manage</label>
                             <select id="discount-facility-select" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white cursor-pointer font-medium text-slate-800 shadow-sm" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;" onchange="loadFacilityDiscounts()">
-                                <option value="" disabled selected>Loading facilities...</option>
+                                <option value="" disabled="" selected="">Loading facilities...</option>
                             </select>
                         </div>
                     </div>
                     
                     <div class="flex justify-end mb-6">
-                        <button onclick="openDiscountModal()" id="btn-create-discount" class="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg font-bold transition-custom text-sm flex items-center shadow-sm disabled:opacity-50" disabled>
+                        <button onclick="openDiscountModal()" id="btn-create-discount" class="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg font-bold transition-custom text-sm flex items-center shadow-sm disabled:opacity-50" disabled="">
                             <i class="fa-solid fa-plus mr-2"></i> Create Discount
                         </button>
                     </div>
@@ -663,7 +663,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Value<span class="text-red-500">*</span></label>
-                                        <input type="number" id="disc-value" required min="1" step="0.01" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-inner bg-slate-50 hover:bg-slate-100 transition-colors text-slate-700 font-medium placeholder-slate-400" placeholder="e.g. 20">
+                                        <input type="number" id="disc-value" required="" min="1" step="0.01" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-inner bg-slate-50 hover:bg-slate-100 transition-colors text-slate-700 font-medium placeholder-slate-400" placeholder="e.g. 20">
                                     </div>
                                 </div>
                                 
@@ -734,7 +734,7 @@
             <!-- Tab: Wallet -->
             <div id="tab-wallet" class="col-span-2 lg:col-span-none hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
-                    <h2 class="text-2xl font-bold text-dark mb-6">Wallet & Payouts</h2>
+                    <h2 class="text-2xl font-bold text-dark mb-6">Wallet &amp; Payouts</h2>
                     
                     <div id="wallet-alert" class="hidden"></div>
                     
@@ -844,20 +844,20 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">First Name</label>
-                                <input type="text" id="prof-first-name" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                                <input type="text" id="prof-first-name" required="" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Last Name</label>
-                                <input type="text" id="prof-last-name" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                                <input type="text" id="prof-last-name" required="" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Email Address</label>
-                            <input type="email" id="prof-email" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                            <input type="email" id="prof-email" required="" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Phone Number</label>
-                            <input type="tel" id="prof-phone" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                            <input type="tel" id="prof-phone" required="" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Company / Facility Owner Name / Municipality</label>
@@ -865,13 +865,13 @@
                         </div>
                         
                         <div class="md:col-span-2 pt-4 border-t border-slate-100 hidden" id="legal-agreements-block">
-                            <h3 class="text-lg font-bold text-dark mb-3">Legal & Platform Agreements</h3>
+                            <h3 class="text-lg font-bold text-dark mb-3">Legal &amp; Platform Agreements</h3>
                             <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center gap-4">
                                 <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-lg flex-shrink-0">
                                     <i class="fa-solid fa-check"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-bold text-slate-800">GameGroundz Host Terms & Conditions</h4>
+                                    <h4 class="font-bold text-slate-800">GameGroundz Host Terms &amp; Conditions</h4>
                                     <p class="text-sm text-slate-500 mt-0.5">Accepted on: <strong id="prof-tc-date" class="text-slate-700"></strong></p>
                                 </div>
                                 <a href="pdfs/GameGroundz_Terms_and_Conditions_v2.docx.pdf" target="_blank" class="ml-auto px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50 hover:text-primary transition-custom">
@@ -933,13 +933,13 @@
                             <!-- Timeframe Filter -->
                             <select id="analytics-time-filter" class="flex-1 md:flex-none px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm min-w-[150px]" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em; padding-right: 2.5rem;" onchange="updateAnalyticsState()">
                                 <option value="today">Today</option>
-                                <option value="weekly" selected>This Week</option>
+                                <option value="weekly" selected="">This Week</option>
                                 <option value="monthly">This Month</option>
                             </select>
                             
                             <!-- Facility Filter -->
                             <select id="analytics-fac-filter" class="flex-1 md:flex-none px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm min-w-[200px]" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em; padding-right: 2.5rem;" onchange="updateAnalyticsState()">
-                                <option value="all" selected>All Facilities</option>
+                                <option value="all" selected="">All Facilities</option>
                                 <!-- Populated dynamically -->
                             </select>
                         </div>
@@ -999,7 +999,7 @@
                             <div class="flex items-center mb-6 border-b border-slate-700 pb-4">
                                 <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-2xl mr-4 shadow-sm backdrop-blur-sm border border-white/5"><i class="fa-solid fa-calculator text-primary"></i></div>
                                 <div>
-                                    <h3 class="text-xl md:text-2xl font-bold text-white mb-1">Pricing & Profit Calculator</h3>
+                                    <h3 class="text-xl md:text-2xl font-bold text-white mb-1">Pricing &amp; Profit Calculator</h3>
                                     <p class="text-slate-300 text-sm">Calculate your break-even point and find the perfect hourly rate to hit your targets.</p>
                                 </div>
                             </div>
@@ -1073,12 +1073,12 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Facility Name</label>
-                            <input type="text" id="fac-name" required class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="e.g. Aréna Rosemère">
+                            <input type="text" id="fac-name" required="" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="e.g. Aréna Rosemère">
                         </div>
                         
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Facility Environment Entity Type</label>
-                            <select id="fac-host-type" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white" required>
+                            <select id="fac-host-type" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white" required="">
                                 <option value="Other">Standard / Private Facility</option>
                                 <option value="Municipality / City">Municipality / City</option>
                             </select>
@@ -1112,7 +1112,7 @@
                         
                         <div class="relative">
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Facility Address</label>
-                            <input type="text" id="fac-location" autocomplete="off" required class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="Full Address (e.g. 123 Main St, Montreal, QC)" style="background: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z\'/><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M15 11a3 3 0 11-6 0 3 3 0 016 0z\'/></svg>') no-repeat 10px center; background-size: 20px;">
+                            <input type="text" id="fac-location" autocomplete="off" required="" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="Full Address (e.g. 123 Main St, Montreal, QC)" style="background: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z\'/><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M15 11a3 3 0 11-6 0 3 3 0 016 0z\'/></svg>') no-repeat 10px center; background-size: 20px;">
                             <input type="hidden" id="fac-lat" value="">
                             <input type="hidden" id="fac-lng" value="">
                         </div>
@@ -1120,300 +1120,12 @@
                 </div>
 
                 <!-- Facility Basics & Capacity -->
-                <div>
-                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">2. Share some basics about your place</h2>
-                    
-                    <div class="space-y-6">
-                        <!-- Locker Rooms -->
-                        <div class="flex items-center justify-between py-2 border-b border-slate-100 pb-4">
-                            <span class="text-slate-700 font-semibold">Locker Rooms</span>
-                            <div class="flex items-center gap-4">
-                                <button type="button" onclick="const p=this.nextElementSibling; p.textContent=Math.max(0, parseInt(p.textContent)-1)" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
-                                    <i class="fa-solid fa-minus text-xs"></i>
-                                </button>
-                                <span id="fac-locker-rooms" class="w-4 text-center text-slate-700 font-medium">0</span>
-                                <button type="button" onclick="const p=this.previousElementSibling; p.textContent=parseInt(p.textContent)+1" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
-                                    <i class="fa-solid fa-plus text-xs"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Capacity -->
-                        <div class="flex items-center justify-between py-2 border-b border-slate-100 pb-4">
-                            <span class="text-slate-700 font-semibold">Maximum capacity of individuals</span>
-                            <div class="flex items-center gap-4">
-                                <button type="button" onclick="const p=this.nextElementSibling; p.textContent=Math.max(0, parseInt(p.textContent)-5)" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
-                                    <i class="fa-solid fa-minus text-xs"></i>
-                                </button>
-                                <span id="fac-capacity" class="w-6 text-center text-slate-700 font-medium">0</span>
-                                <button type="button" onclick="const p=this.previousElementSibling; p.textContent=parseInt(p.textContent)+5" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
-                                    <i class="fa-solid fa-plus text-xs"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Size -->
-                        <div>
-                            <label class="block text-xl font-bold text-dark mb-4">Size</label>
-                            <input type="text" id="fac-size" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom" placeholder="Enter size (e.g. 10,000 sq ft, 200x85 ft)">
-                            <div class="mt-3 flex flex-wrap gap-2" id="size-suggestions-container">
-                                <span class="text-sm text-slate-500 font-medium py-1.5 pr-2">Suggestions:</span>
-                                <button type="button" onclick="const input = document.getElementById('fac-size'); input.value = 'NHL size (standard)'; document.querySelectorAll('.size-pill').forEach(el=>el.classList.remove('bg-slate-200','border-slate-800')); this.classList.add('bg-slate-200','border-slate-800');" class="size-pill px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:border-slate-800 transition-custom bg-white">NHL size (standard)</button>
-                                <button type="button" onclick="const input = document.getElementById('fac-size'); input.value = '3vs3 size (mini)'; document.querySelectorAll('.size-pill').forEach(el=>el.classList.remove('bg-slate-200','border-slate-800')); this.classList.add('bg-slate-200','border-slate-800');" class="size-pill px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:border-slate-800 transition-custom bg-white">3vs3 size (mini)</button>
-                                <button type="button" onclick="const input = document.getElementById('fac-size'); input.value = 'Olympic size'; document.querySelectorAll('.size-pill').forEach(el=>el.classList.remove('bg-slate-200','border-slate-800')); this.classList.add('bg-slate-200','border-slate-800');" class="size-pill px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:border-slate-800 transition-custom bg-white">Olympic size</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
 
                 <!-- Services / Amenities -->
-                <div>
-                    <h2 class="text-xl font-bold text-dark mb-2 border-b border-slate-100 pb-2">3. Services</h2>
-                    <p class="text-slate-500 mb-6 flex justify-between items-center text-sm">
-                        <span>Select the amenities provided at your facility.</span>
-                        <span class="text-xs italic">Click to select/deselect</span>
-                    </p>
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="amenities-container">
-                        <!-- Wifi -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="wifi">
-                            <i class="fa-solid fa-wifi text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">Wifi</span>
-                        </div>
-                        <!-- Parking -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="parking">
-                            <i class="fa-solid fa-square-parking text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">Free parking</span>
-                        </div>
-                        <!-- TV -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="tv">
-                            <i class="fa-solid fa-tv text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">TV</span>
-                        </div>
-                        <!-- First Aid -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="first_aid">
-                            <i class="fa-solid fa-truck-medical text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">First Aid Kit</span>
-                        </div>
-                        <!-- Wheelchair -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="accessibility">
-                            <i class="fa-solid fa-wheelchair text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">Wheelchair accessible</span>
-                        </div>
-                        <!-- Concessions -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="concessions">
-                            <i class="fa-solid fa-utensils text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">Concessions</span>
-                        </div>
-                        <!-- Pro Shop -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="pro_shop">
-                            <i class="fa-solid fa-shop text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">Pro Shop</span>
-                        </div>
-                        <!-- Beer -->
-                        <div id="amenity-beer" class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="beer">
-                            <i class="fa-solid fa-beer-mug-empty text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">Beer</span>
-                        </div>
-                        <!-- LiveBarn -->
-                        <div id="amenity-livebarn" class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="livebarn">
-                            <i class="fa-solid fa-video text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">LiveBarn</span>
-                        </div>
-                        <!-- Scoreboard -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="scoreboard">
-                            <i class="fa-solid fa-star text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">Scoreboard</span>
-                        </div>
-                        <!-- Showers / Changerooms -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="showers">
-                            <i class="fa-solid fa-shower text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">Showers / Changerooms</span>
-                        </div>
-                        <!-- Sound System -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="sound_system">
-                            <i class="fa-solid fa-volume-high text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">Sound System</span>
-                        </div>
-                        <!-- Spectator Seating -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="spectator_seating">
-                            <i class="fa-solid fa-chair text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">Spectator Seating</span>
-                        </div>
-                        <!-- Equipment Rental -->
-                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="equipment_rental">
-                            <i class="fa-solid fa-bag-shopping text-3xl text-dark"></i>
-                            <span class="font-semibold text-slate-700">Equipment Rental</span>
-                        </div>
-                    </div>
-                </div>
+                
 
-                <script>
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const facType = document.getElementById('fac-type');
-                        const facEnv = document.getElementById('fac-env');
-                        const facName = document.getElementById('fac-name');
-                        const facSubtitle = document.getElementById('fac-subtitle');
-                        const sizeContainer = document.getElementById('size-suggestions-container');
-                        
-                        const liveBarn = document.getElementById('amenity-livebarn');
-                        const beer = document.getElementById('amenity-beer');
-
-                        const sportConfigs = {
-                            'ice': {
-                                env: 'indoor',
-                                placeholderName: 'e.g. Aréna Rosemère',
-                                placeholderSubtitle: 'e.g. Professional NHL-sized Ice Rink',
-                                sizes: ['NHL size (standard)', '3vs3 size (mini)', 'Olympic size'],
-                                showIceAmenities: true
-                            },
-                            'soccer': {
-                                env: 'outdoor',
-                                placeholderName: 'e.g. Terrain de soccer synthétique de Laval',
-                                placeholderSubtitle: 'e.g. Regulation Soccer Field with Artificial Turf',
-                                sizes: ['FIFA standard', '7v7 field', '5v5 mini'],
-                                showIceAmenities: false
-                            },
-                            'basketball': {
-                                env: 'indoor',
-                                placeholderName: 'e.g. Centre Multisport Basketball Court',
-                                placeholderSubtitle: 'e.g. Hardwood Full Basketball Court',
-                                sizes: ['Full court', 'Half court'],
-                                showIceAmenities: false
-                            },
-                            'tennis': {
-                                env: 'outdoor',
-                                placeholderName: 'e.g. Club de Tennis de Montreal',
-                                placeholderSubtitle: 'e.g. Professional Clay Tennis Court',
-                                sizes: ['Single court', 'Double court'],
-                                showIceAmenities: false
-                            },
-                            'pickleball': {
-                                env: 'indoor',
-                                placeholderName: 'e.g. Indoor Pickleball Complex',
-                                placeholderSubtitle: 'e.g. Premium Pickleball Court',
-                                sizes: ['Single court', 'Double court'],
-                                showIceAmenities: false
-                            },
-                            'pool': {
-                                env: 'indoor',
-                                placeholderName: 'e.g. Complexe aquatique de Blainville',
-                                placeholderSubtitle: 'e.g. Olympic-size 50m Swimming Pool',
-                                sizes: ['25m', '50m Olympic', 'Leisure/Recreational'],
-                                showIceAmenities: false
-                            },
-                            'football': {
-                                env: 'outdoor',
-                                placeholderName: 'e.g. Complexe Sportif Football Field',
-                                placeholderSubtitle: 'e.g. Premium Synthetic Turf Field',
-                                sizes: ['CFL/NFL standard', 'Youth'],
-                                showIceAmenities: false
-                            },
-                            'gym': {
-                                env: 'indoor',
-                                placeholderName: 'e.g. Peak Performance Gym',
-                                placeholderSubtitle: 'e.g. Fully Equipped Fitness Center',
-                                sizes: [],
-                                showIceAmenities: false
-                            }
-                        };
-
-                        function updateFormForSport() {
-                            if (!facType) return;
-                            const sport = facType.value;
-                            const config = sportConfigs[sport];
-                            if (!config) return;
-
-                            if (facEnv) facEnv.value = config.env;
-                            if (facName) facName.placeholder = config.placeholderName;
-                            if (facSubtitle) facSubtitle.placeholder = config.placeholderSubtitle;
-                            
-                            if (liveBarn) {
-                                liveBarn.style.display = config.showIceAmenities ? 'flex' : 'none';
-                                if (!config.showIceAmenities) {
-                                    liveBarn.classList.remove('border-slate-800', 'bg-slate-50');
-                                    liveBarn.classList.add('border-slate-200');
-                                }
-                            }
-                            if (beer) {
-                                beer.style.display = config.showIceAmenities ? 'flex' : 'none';
-                                if (!config.showIceAmenities) {
-                                    beer.classList.remove('border-slate-800', 'bg-slate-50');
-                                    beer.classList.add('border-slate-200');
-                                }
-                            }
-
-                            if (sizeContainer) {
-                                sizeContainer.innerHTML = '<span class="text-sm text-slate-500 font-medium py-1.5 pr-2">Suggestions:</span>';
-                                if (config.sizes.length === 0) {
-                                    sizeContainer.innerHTML += '<span class="text-sm text-slate-400 italic py-1.5">No standard presets for this sport.</span>';
-                                } else {
-                                    config.sizes.forEach(sizeStr => {
-                                        const btn = document.createElement('button');
-                                        btn.type = 'button';
-                                        btn.className = 'size-pill px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:border-slate-800 transition-custom bg-white';
-                                        btn.innerText = sizeStr;
-                                        btn.onclick = function() {
-                                            const sizeInput = document.getElementById('fac-size');
-                                            if(sizeInput) sizeInput.value = sizeStr;
-                                            document.querySelectorAll('.size-pill').forEach(el=>el.classList.remove('bg-slate-200','border-slate-800'));
-                                            this.classList.add('bg-slate-200','border-slate-800');
-                                        };
-                                        sizeContainer.appendChild(btn);
-                                    });
-                                }
-                            }
-                        }
-
-                        if (facType) facType.addEventListener('change', updateFormForSport);
-                        
-                        // Fire on load if fac-type exists
-                        if (facType && facType.value) {
-                            // Don't auto-override environment on initial load, let existing be.
-                            // But do update UI for amenities and size pills
-                            // For simplicity, we just rebuild pills and display hooks.
-                            const sport = facType.value;
-                            const config = sportConfigs[sport];
-                            if (config) {
-                                if (liveBarn) {
-                                    liveBarn.style.display = config.showIceAmenities ? 'flex' : 'none';
-                                }
-                                if (beer) {
-                                    beer.style.display = config.showIceAmenities ? 'flex' : 'none';
-                                }
-                                if (sizeContainer) {
-                                    sizeContainer.innerHTML = '<span class="text-sm text-slate-500 font-medium py-1.5 pr-2">Suggestions:</span>';
-                                    if (config.sizes.length === 0) {
-                                        sizeContainer.innerHTML += '<span class="text-sm text-slate-400 italic py-1.5">No standard presets for this sport.</span>';
-                                    } else {
-                                        config.sizes.forEach(sizeStr => {
-                                            const btn = document.createElement('button');
-                                            btn.type = 'button';
-                                            btn.className = 'size-pill px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:border-slate-800 transition-custom bg-white';
-                                            btn.innerText = sizeStr;
-                                            btn.onclick = function() {
-                                                const sizeInput = document.getElementById('fac-size');
-                                                if(sizeInput) sizeInput.value = sizeStr;
-                                                document.querySelectorAll('.size-pill').forEach(el=>el.classList.remove('bg-slate-200','border-slate-800'));
-                                                this.classList.add('bg-slate-200','border-slate-800');
-                                            };
-                                            sizeContainer.appendChild(btn);
-                                        });
-                                    }
-                                }
-                            }
-                        }
-                    });
-
-                    // Add click listeners to amenity cards immediately after rendering
-                    document.querySelectorAll('.amenity-card').forEach(card => {
-                        card.addEventListener('click', function() {
-                            this.classList.toggle('border-slate-800');
-                            this.classList.toggle('bg-slate-50');
-                            this.classList.toggle('border-slate-200');
-                        });
-                    });
-                </script>
+                
 
                 <!-- Facility Details -->
                 <div>
@@ -1431,7 +1143,7 @@
                         </div>
                         
                         <div class="mb-4 pt-2">
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Key Features & Amenities</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Key Features &amp; Amenities</label>
                             <p class="text-xs text-slate-500 mb-4">Highlight the best parts of your facility with a short title and description.</p>
                             
                             <div id="features-container" class="space-y-3 mb-4">
@@ -1456,7 +1168,7 @@
                                 <label class="block text-xs font-semibold text-slate-500 mb-1">Open Time</label>
                                 <select id="fac-open-time" class="w-full px-3 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;">
                                     <option value="05:00">5:00 AM</option>
-                                    <option value="06:00" selected>6:00 AM</option>
+                                    <option value="06:00" selected="">6:00 AM</option>
                                     <option value="07:00">7:00 AM</option>
                                     <option value="08:00">8:00 AM</option>
                                     <option value="09:00">9:00 AM</option>
@@ -1468,7 +1180,7 @@
                                     <option value="20:00">8:00 PM</option>
                                     <option value="21:00">9:00 PM</option>
                                     <option value="22:00">10:00 PM</option>
-                                    <option value="23:00" selected>11:00 PM</option>
+                                    <option value="23:00" selected="">11:00 PM</option>
                                     <option value="24:00">Midnight</option>
                                 </select>
                             </div>
@@ -1486,7 +1198,7 @@
                                 <label class="block text-xs font-semibold text-slate-500 mb-1">Weekend Open Time</label>
                                 <select id="fac-weekend-open-time" class="w-full px-3 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;">
                                     <option value="05:00">5:00 AM</option>
-                                    <option value="06:00" selected>6:00 AM</option>
+                                    <option value="06:00" selected="">6:00 AM</option>
                                     <option value="07:00">7:00 AM</option>
                                     <option value="08:00">8:00 AM</option>
                                     <option value="09:00">9:00 AM</option>
@@ -1498,7 +1210,7 @@
                                     <option value="20:00">8:00 PM</option>
                                     <option value="21:00">9:00 PM</option>
                                     <option value="22:00">10:00 PM</option>
-                                    <option value="23:00" selected>11:00 PM</option>
+                                    <option value="23:00" selected="">11:00 PM</option>
                                     <option value="24:00">Midnight</option>
                                 </select>
                             </div>
@@ -1508,7 +1220,7 @@
 
                 <!-- Pricing & Booking -->
                 <div>
-                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">6. Pricing & Booking</h2>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">6. Pricing &amp; Booking</h2>
                     
                     <div class="mb-5">
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Unit</label>
@@ -1534,7 +1246,7 @@
 
                     <div class="flex flex-col pt-4 border-t border-slate-100 mt-4">
                         <label class="flex items-center group cursor-pointer mb-2">
-                            <input type="checkbox" id="fac-has-processing-fee" class="w-5 h-5 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer transition-custom" checked onchange="document.getElementById('processing-fee-amount-container').classList.toggle('hidden', !this.checked)">
+                            <input type="checkbox" id="fac-has-processing-fee" class="w-5 h-5 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer transition-custom" checked="" onchange="document.getElementById('processing-fee-amount-container').classList.toggle('hidden', !this.checked)">
                             <span class="ml-3 text-sm font-semibold text-slate-700 group-hover:text-dark">Charge Processing Fee</span>
                         </label>
                         <div id="processing-fee-amount-container" class="mt-2 pl-8">
@@ -1546,7 +1258,7 @@
 
                     <div class="flex flex-col justify-end pt-4 border-t border-slate-100 mt-4">
                         <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" id="fac-instant" class="w-5 h-5 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer transition-custom" checked>
+                            <input type="checkbox" id="fac-instant" class="w-5 h-5 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer transition-custom" checked="">
                             <span class="ml-3 text-slate-700 font-semibold group-hover:text-dark">Allow Instant Booking</span>
                         </label>
                         <p class="text-xs text-slate-400 mt-1 ml-8">Enable players to book without manual approval.</p>
@@ -1607,7 +1319,7 @@
                     <p class="text-xs text-slate-500 mb-4">Upload high-quality photos of your facility. <strong class="text-primary font-bold">Adding 3 or more photos is highly recommended</strong> to attract more players.</p>
                     
                     <div class="relative border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition-custom cursor-pointer overflow-hidden min-h-[300px] flex items-center justify-center" id="fac-image-dropzone">
-                        <input type="file" id="fac-image-file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*" multiple>
+                        <input type="file" id="fac-image-file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*" multiple="">
                         <div id="fac-image-placeholder" class="transition-opacity duration-300 relative z-20">
                             <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-primary text-2xl mx-auto mb-4 shadow-sm pointer-events-none">
                                 <i class="fa-solid fa-images"></i>
@@ -1640,11 +1352,36 @@
                     <button type="submit" id="submit-btn" class="bg-primary hover:bg-primaryHover text-white px-8 py-3 rounded-xl font-bold transition-custom shadow-glow flex items-center">
                         <i class="fa-solid fa-plus mr-2"></i> Create Listing
                     </button>
-                    </form>
-                </div>
+                    
+                </div></form>
             </div>
 
-                </div> <!-- End lg:col-span-3 -->
+                </div>
+<!-- Tab: Surfaces -->
+<div id="tab-surfaces" class="col-span-2 hidden">
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-dark">Manage Surfaces</h2>
+                <p class="text-slate-500 text-sm" id="surfaces-facility-name">Select a facility first.</p>
+            </div>
+            <button type="button" onclick="openSurfaceModal()" class="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl font-bold transition-custom shadow-sm flex items-center">
+                <i class="fa-solid fa-plus mr-2"></i> Add Surface
+            </button>
+        </div>
+
+        <div id="surfaces-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamically populated -->
+        </div>
+        <div id="surfaces-empty" class="hidden py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl">
+            <i class="fa-regular fa-clone text-4xl text-slate-300 mb-3"></i>
+            <h3 class="text-lg font-bold text-slate-700">No surfaces yet</h3>
+            <p class="text-slate-500 text-sm mt-1 mb-4">Add your first playing surface (rink, court, field) to this facility.</p>
+            <button type="button" onclick="openSurfaceModal()" class="text-primary font-bold hover:underline">Add Surface Now</button>
+        </div>
+    </div>
+</div>
+ <!-- End lg:col-span-3 -->
             </div> <!-- End Dashboard Content Grid -->
         </div> <!-- End dashboard-content -->
     <!-- Public Session Details Modal -->
@@ -1683,7 +1420,7 @@
         </div>
     </div>
     <!-- /Modal -->
-    </main>
+    </div></main>
 
     <script>
         function formatTimeSlots(slotsArray) {
@@ -1919,7 +1656,7 @@
                                 <span class="font-semibold text-dark">$${fac.base_price}<span class="text-xs text-slate-500 font-normal">/hr</span></span>
                                 <div>
                                     <button data-fac-id="${fac.id}" onclick="handleEditClick(this)" class="text-slate-500 text-sm font-bold hover:text-dark mr-3 transition-custom">Edit</button>
-                                    <a href="facility.html?id=${fac.id}" class="text-primary text-sm font-bold hover:underline">View Listing</a>
+                                    <button data-fac-id="${fac.id}" onclick="manageSurfaces(${fac.id})" class="text-primary text-sm font-bold hover:underline">Manage Surfaces</button>
                                 </div>
                             </div>
                         </div>
@@ -4844,19 +4581,7 @@
             btn.classList.add('opacity-80', 'cursor-not-allowed');
             errorDiv.classList.add('hidden');
             
-            // Build pricing rules array
-            const pricingRules = Array.from(document.querySelectorAll('.pricing-rule-row')).map(row => {
-                const daySelect = row.querySelector('.rule-days');
-                return {
-                    days: daySelect ? daySelect.value : 'everyday',
-                    start: row.querySelector('.rule-start').value,
-                    end: row.querySelector('.rule-end').value,
-                    price: parseInt(row.querySelector('.rule-price').value, 10)
-                };
-            });
-            
-            // Base price is the lowest price in the rules
-            const basePrice = pricingRules.length > 0 ? Math.min(...pricingRules.map(r => r.price)) : 100;
+// Pricing rules moved to Surface
 
             // Build features array
             const features = Array.from(document.querySelectorAll('.feature-row')).map(row => {
@@ -4886,27 +4611,13 @@
                 subtitle: document.getElementById('fac-subtitle').value,
                 description: document.getElementById('fac-description').value,
                 features: features,
-                locker_rooms: parseInt(document.getElementById('fac-locker-rooms').textContent, 10),
-                capacity: parseInt(document.getElementById('fac-capacity').textContent, 10),
-                size_info: document.getElementById('fac-size').value,
-                amenities: Array.from(document.querySelectorAll('.amenity-card.border-slate-800')).map(el => el.dataset.amenity),
-                type: document.getElementById('fac-type').value,
                 facility_type: document.getElementById('fac-host-type') ? document.getElementById('fac-host-type').value : 'Other',
-                environment: document.getElementById('fac-env').value,
                 location: document.getElementById('fac-location').value,
                 lat: document.getElementById('fac-lat').value ? parseFloat(document.getElementById('fac-lat').value) : null,
                 lng: document.getElementById('fac-lng').value ? parseFloat(document.getElementById('fac-lng').value) : null,
-                base_price: basePrice,
-                pricing_unit: document.getElementById('fac-pricing-unit') ? document.getElementById('fac-pricing-unit').value : 'hour',
-                pricing_rules: pricingRules,
                 image_url: JSON.stringify(window.localImagesArray),
-                connected_facilities: Array.from(document.querySelectorAll('input[name="connected_fac"]:checked')).map(cb => parseInt(cb.value, 10)),
-                is_instant_book: document.getElementById('fac-instant').checked ? 1 : 0,
-                advance_booking_days: document.getElementById('fac-advance-booking').value ? parseInt(document.getElementById('fac-advance-booking').value, 10) : 180,
-                has_processing_fee: document.getElementById('fac-has-processing-fee') && document.getElementById('fac-has-processing-fee').checked ? 1 : 0,
-                processing_fee_amount: document.getElementById('fac-processing-fee-amount') ? parseFloat(document.getElementById('fac-processing-fee-amount').value) : 15.00,
                 operating_hours: operating_hours,
-                listing_status: document.getElementById('fac-listing-status').value
+                listing_status: 'draft' // Default to draft, publish via surfaces
             };
 
             try {
@@ -5228,7 +4939,7 @@
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeHostCancelModal()"></div>
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center p-6 border-b border-slate-100">
-                <h3 class="text-xl font-bold text-red-600">Cancel & Refund Booking</h3>
+                <h3 class="text-xl font-bold text-red-600">Cancel &amp; Refund Booking</h3>
                 <button onclick="closeHostCancelModal()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-500 transition-custom">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -5246,7 +4957,7 @@
                 <div class="flex gap-4 mt-8">
                     <button onclick="closeHostCancelModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-custom">Keep Booking</button>
                     <button id="confirm-host-cancel-btn" onclick="processHostCancellation()" class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-custom shadow-glow flex justify-center items-center">
-                        <span id="confirm-host-cancel-text">Yes, Cancel & Refund</span>
+                        <span id="confirm-host-cancel-text">Yes, Cancel &amp; Refund</span>
                         <i id="confirm-host-cancel-spinner" class="fa-solid fa-spinner fa-spin hidden"></i>
                     </button>
                 </div>
@@ -5505,7 +5216,7 @@
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <div>
-                    <h3 class="text-xl font-extrabold text-slate-800">GameGroundz Host Terms & Conditions</h3>
+                    <h3 class="text-xl font-extrabold text-slate-800">GameGroundz Host Terms &amp; Conditions</h3>
                     <p class="text-sm text-slate-500 mt-1">Please read and accept our updated terms to continue managing your facilities.</p>
                 </div>
                 <a href="pdfs/GameGroundz_Terms_and_Conditions_v2.docx.pdf" target="_blank" class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-primary hover:bg-slate-50 hover:border-primary/30 transition-custom shadow-sm" title="Open Full Format in New Tab">
@@ -5526,8 +5237,8 @@
                     </div>
                 </div>
                 <div class="flex justify-end">
-                    <button id="tc-accept-btn" class="px-6 py-2.5 bg-slate-200 text-slate-500 rounded-xl font-bold transition-custom flex items-center shadow-sm cursor-not-allowed" disabled>
-                        <span>Accept & Continue</span>
+                    <button id="tc-accept-btn" class="px-6 py-2.5 bg-slate-200 text-slate-500 rounded-xl font-bold transition-custom flex items-center shadow-sm cursor-not-allowed" disabled="">
+                        <span>Accept &amp; Continue</span>
                         <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                     </button>
                 </div>
@@ -6101,6 +5812,214 @@
                 btn.innerHTML = origHTML;
             }
         });
+    
+        // ------------------ SURFACES LOGIC ------------------
+        window.currentSurfaces = [];
+        window.currentSurfaceId = null;
+
+        window.manageSurfaces = async function(facId) {
+            currentFacilityId = facId;
+            const fac = ownerFacilities.find(f => f.id == facId);
+            if (fac) {
+                document.getElementById('surfaces-facility-name').textContent = `Managing surfaces for: ${fac.name}`;
+            }
+            switchTab('surfaces');
+            await fetchSurfaces(facId);
+        };
+
+        window.fetchSurfaces = async function(facId) {
+            try {
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                const res = await fetch(`${API_BASE_URL}/api/facilities/${facId}`);
+                const data = await res.json();
+                window.currentSurfaces = data.surfaces || [];
+                renderSurfaces();
+                
+                // Populate Calendar Dropdown
+                const calSelect = document.getElementById('calendar-surface-select');
+                if (calSelect) {
+                    calSelect.innerHTML = '';
+                    if (window.currentSurfaces.length > 0) {
+                        window.currentSurfaces.forEach(s => {
+                            calSelect.innerHTML += `<option value="${s.id}">${s.name} - ${s.type}</option>`;
+                        });
+                        window.currentSurfaceId = window.currentSurfaces[0].id;
+                    } else {
+                        calSelect.innerHTML = '<option value="">No surfaces added yet</option>';
+                        window.currentSurfaceId = null;
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to fetch surfaces", e);
+            }
+        };
+
+        window.renderSurfaces = function() {
+            const list = document.getElementById('surfaces-list');
+            const empty = document.getElementById('surfaces-empty');
+            
+            list.innerHTML = '';
+            if (window.currentSurfaces.length === 0) {
+                list.classList.add('hidden');
+                empty.classList.remove('hidden');
+            } else {
+                list.classList.remove('hidden');
+                empty.classList.add('hidden');
+                
+                window.currentSurfaces.forEach(surf => {
+                    let dispImg = surf.image_url ? surf.image_url : 'https://placehold.co/600x400/f8fafc/64748b?text=No+Image';
+                    list.innerHTML += `
+                        <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-custom bg-white">
+                            <img src="${dispImg}" class="w-full h-32 object-cover">
+                            <div class="p-4 flex flex-col">
+                                <h3 class="font-bold text-lg text-dark mb-1">${surf.name}</h3>
+                                <p class="text-sm text-slate-500 mb-2">${surf.type} • ${surf.size_info || 'Unknown size'}</p>
+                                <div class="mt-2 flex justify-between items-center pt-3 border-t border-slate-100">
+                                    <span class="font-semibold text-dark">$${surf.base_price}<span class="text-xs text-slate-500 font-normal">/hr</span></span>
+                                    <button onclick="editSurface(${surf.id})" class="text-primary font-bold hover:underline text-sm">Edit</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        };
+
+        window.openSurfaceModal = function() {
+            document.getElementById('surface-form').reset();
+            document.getElementById('surf-id').value = '';
+            document.getElementById('surface-modal-title').textContent = 'Add New Surface';
+            document.getElementById('surf-image-preview').classList.add('hidden');
+            window.localSurfaceImage = '';
+            document.getElementById('add-surface-modal').classList.remove('hidden');
+        };
+
+        window.closeSurfaceModal = function() {
+            document.getElementById('add-surface-modal').classList.add('hidden');
+        };
+
+        window.editSurface = function(surfId) {
+            const surf = window.currentSurfaces.find(s => s.id == surfId);
+            if (!surf) return;
+            
+            openSurfaceModal();
+            document.getElementById('surface-modal-title').textContent = 'Edit Surface';
+            document.getElementById('surf-id').value = surf.id;
+            document.getElementById('surf-name').value = surf.name;
+            
+            // Re-populate everything else
+            if (document.getElementById('fac-type')) document.getElementById('fac-type').value = surf.type;
+            if (document.getElementById('fac-size')) document.getElementById('fac-size').value = surf.size_info;
+            if (document.getElementById('fac-capacity')) document.getElementById('fac-capacity').textContent = surf.capacity;
+            if (document.getElementById('fac-locker-rooms')) document.getElementById('fac-locker-rooms').textContent = surf.locker_rooms || 0;
+            
+            // Amenities
+            document.querySelectorAll('.amenity-card').forEach(card => card.classList.remove('border-slate-800', 'bg-slate-50'));
+            if (surf.amenities) {
+                try {
+                    const amenitiesList = typeof surf.amenities === 'string' ? JSON.parse(surf.amenities) : surf.amenities;
+                    amenitiesList.forEach(am => {
+                        const card = document.querySelector(`.amenity-card[data-amenity="${am}"]`);
+                        if (card) {
+                            card.classList.add('border-slate-800', 'bg-slate-50');
+                        }
+                    });
+                } catch(e) {}
+            }
+            
+            if (surf.image_url) {
+                const prev = document.getElementById('surf-image-preview');
+                prev.src = surf.image_url;
+                prev.classList.remove('hidden');
+                window.localSurfaceImage = surf.image_url;
+            }
+        };
+
+        window.previewSurfaceImage = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    window.localSurfaceImage = e.target.result;
+                    const preview = document.getElementById('surf-image-preview');
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        // Handle Surface Form Submit
+        if (document.getElementById('surface-form')) {
+            document.getElementById('surface-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const surfId = document.getElementById('surf-id').value;
+                const btn = document.getElementById('surf-submit-btn');
+                const origText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving...';
+                btn.disabled = true;
+
+                // Build pricing rules array from modal
+                const pricingRules = Array.from(document.getElementById('add-surface-modal').querySelectorAll('.pricing-rule-row')).map(row => {
+                    const daySelect = row.querySelector('.rule-days');
+                    return {
+                        days: daySelect ? daySelect.value : 'everyday',
+                        start: row.querySelector('.rule-start').value,
+                        end: row.querySelector('.rule-end').value,
+                        price: parseInt(row.querySelector('.rule-price').value, 10)
+                    };
+                });
+                const basePrice = pricingRules.length > 0 ? Math.min(...pricingRules.map(r => r.price)) : 100;
+
+                const payload = {
+                    name: document.getElementById('surf-name').value,
+                    type: document.getElementById('fac-type') ? document.getElementById('fac-type').value : 'ice',
+                    environment: document.getElementById('fac-env') ? document.getElementById('fac-env').value : 'indoor',
+                    locker_rooms: document.getElementById('fac-locker-rooms') ? parseInt(document.getElementById('fac-locker-rooms').textContent, 10) : 0,
+                    capacity: document.getElementById('fac-capacity') ? parseInt(document.getElementById('fac-capacity').textContent, 10) : 0,
+                    size_info: document.getElementById('fac-size') ? document.getElementById('fac-size').value : '',
+                    amenities: Array.from(document.getElementById('add-surface-modal').querySelectorAll('.amenity-card.border-slate-800')).map(el => el.dataset.amenity),
+                    base_price: basePrice,
+                    pricing_unit: document.getElementById('fac-pricing-unit') ? document.getElementById('fac-pricing-unit').value : 'hour',
+                    pricing_rules: pricingRules,
+                    image_url: window.localSurfaceImage || null,
+                    is_instant_book: document.getElementById('fac-instant') && document.getElementById('fac-instant').checked ? 1 : 0,
+                    advance_booking_days: document.getElementById('fac-advance-booking') && document.getElementById('fac-advance-booking').value ? parseInt(document.getElementById('fac-advance-booking').value, 10) : 180,
+                    has_processing_fee: document.getElementById('fac-has-processing-fee') && document.getElementById('fac-has-processing-fee').checked ? 1 : 0,
+                    processing_fee_amount: document.getElementById('fac-processing-fee-amount') ? parseFloat(document.getElementById('fac-processing-fee-amount').value) : 15.00
+                };
+
+                try {
+                    const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                    let url = `${API_BASE_URL}/api/host/facilities/${currentFacilityId}/surfaces`;
+                    let method = 'POST';
+                    if (surfId) {
+                        url = `${API_BASE_URL}/api/host/surfaces/${surfId}`;
+                        method = 'PUT';
+                    }
+
+                    const res = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        credentials: 'include'
+                    });
+
+                    if (!res.ok) throw new Error("Failed to save surface");
+                    
+                    await fetchSurfaces(currentFacilityId);
+                    closeSurfaceModal();
+                } catch (err) {
+                    console.error(err);
+                    alert("Error saving surface: " + err.message);
+                } finally {
+                    btn.innerHTML = origText;
+                    btn.disabled = false;
+                }
+            });
+        }
+
     </script>
     
     <!-- Assign Locker Modal -->
@@ -6126,5 +6045,58 @@
             </form>
         </div>
     </div>
-</body>
-</html>
+
+
+
+<!-- Add/Edit Surface Modal -->
+<div id="add-surface-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col relative">
+        <div class="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-100 p-6 flex justify-between items-center z-10 rounded-t-3xl">
+            <div>
+                <h2 class="text-2xl font-bold text-dark" id="surface-modal-title">Add New Surface</h2>
+                <p class="text-slate-500 text-sm">Configure pricing, amenities, and details for this specific playing surface.</p>
+            </div>
+            <button type="button" onclick="closeSurfaceModal()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-dark transition-custom flex items-center justify-center">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6 md:p-8">
+            <form id="surface-form" class="space-y-8">
+                <input type="hidden" id="surf-id" value="">
+                
+                <div>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">Surface Name</h2>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Name (e.g. Rink A, Court 1)</label>
+                        <input type="text" id="surf-name" required="" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                    </div>
+                </div>
+
+                <!-- Move Surface Type here if we want, but let's just copy the fields from section2/3/7/8 -->
+                ${section2 ? $.html(section2) : ''}
+                ${section3 ? $.html(section3) : ''}
+                ${section7 ? $.html(section7) : ''}
+                ${section8 ? $.html(section8) : ''}
+
+                <!-- Surface Image Upload -->
+                <div>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">Surface Image</h2>
+                    <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:border-primary hover:bg-primary/5 transition-custom cursor-pointer" onclick="document.getElementById('surf-image-file').click()">
+                        <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-400 mb-3"></i>
+                        <p class="font-bold text-slate-700">Click to upload surface image</p>
+                        <p class="text-xs text-slate-500 mt-1">PNG, JPG up to 10MB</p>
+                        <input type="file" id="surf-image-file" accept="image/*" class="hidden" onchange="previewSurfaceImage(event)">
+                    </div>
+                    <img id="surf-image-preview" src="" class="hidden mt-4 rounded-xl max-h-[300px] object-cover w-full">
+                </div>
+
+                <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
+                    <button type="button" onclick="closeSurfaceModal()" class="px-6 py-3 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-custom font-bold">Cancel</button>
+                    <button type="submit" id="surf-submit-btn" class="bg-primary hover:bg-primaryHover text-white px-8 py-3 rounded-xl font-bold transition-custom shadow-glow">Save Surface</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+${scripts}
+</body></html>

@@ -291,9 +291,9 @@
                         </div>
                         
                         <!-- Connected Facilities Switcher -->
-                        <div id="connected-facilities-switcher-container" class="hidden border-b border-slate-300 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative">
-                            <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="connected-facility-select">Facility Option</label>
-                            <select id="connected-facility-select" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none pr-6">
+                        <div id="surface-switcher-container" class="hidden border-b border-slate-300 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative">
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="surface-select">Surface Option</label>
+                            <select id="surface-select" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none pr-6">
                             </select>
                             <div class="absolute right-3 top-6 text-slate-400 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                         </div>
@@ -781,30 +781,68 @@
                     currentFacilityId = facility.id;
                     const facilityDiscounts = facility.discounts || [];
                     
-                    // Handle Connected Facilities Switcher
-                    const connectedContainer = document.getElementById('connected-facilities-switcher-container');
-                    const connectedSelect = document.getElementById('connected-facility-select');
+                                        // Handle Surface Switcher
+                    const surfaceContainer = document.getElementById('surface-switcher-container');
+                    const surfaceSelect = document.getElementById('surface-select');
                     
-                    if (facility.connected_facilities_data && facility.connected_facilities_data.length > 0) {
-                        const filteredConnected = facility.connected_facilities_data.filter(f => f.type === facility.type);
+                    window.currentSurfaces = facility.surfaces || [];
+                    window.currentSurfaceId = null;
+
+                    if (window.currentSurfaces.length > 0) {
+                        surfaceContainer.classList.remove('hidden');
                         
-                        if (filteredConnected.length > 0) {
-                            connectedContainer.classList.remove('hidden');
-                            
-                            let optionsHtml = `<option value="${facility.id}" selected>${facility.name} (Current)</option>`;
-                            filteredConnected.forEach(f => {
-                                optionsHtml += `<option value="${f.id}">${f.name}</option>`;
-                            });
-                            
-                            connectedSelect.innerHTML = optionsHtml;
-                            
-                            // Listen for switch
-                            connectedSelect.addEventListener('change', (e) => {
-                                if (e.target.value != facility.id) {
-                                    window.location.href = `facility.html?id=${e.target.value}`;
-                                }
-                            });
-                        }
+                        let optionsHtml = '';
+                        window.currentSurfaces.forEach((s, index) => {
+                            optionsHtml += `<option value="${s.id}">${s.name} - ${s.type}</option>`;
+                        });
+                        
+                        surfaceSelect.innerHTML = optionsHtml;
+                        window.currentSurfaceId = window.currentSurfaces[0].id;
+                        
+                        // Update UI with first surface details
+                        updateSurfaceUI(window.currentSurfaces[0]);
+                        
+                        surfaceSelect.addEventListener('change', (e) => {
+                            const selectedId = e.target.value;
+                            window.currentSurfaceId = selectedId;
+                            const selectedSurface = window.currentSurfaces.find(s => s.id == selectedId);
+                            if (selectedSurface) {
+                                updateSurfaceUI(selectedSurface);
+                                // Refresh calendar
+                                selectedSlotIds.clear();
+                                updateBookingUI();
+                                fetchBookedSlots().then(bookedIds => {
+                                    renderCalendar(currentDate);
+                                });
+                            }
+                        });
+                    }
+
+                    function updateSurfaceUI(surface) {
+                        hourlyRate = surface.base_price || 0;
+                        let hasProcessingFee = surface.has_processing_fee == 1;
+                        processingFee = hasProcessingFee ? (surface.processing_fee_amount || 15.00) : 0;
+                        
+                        try { pricingRules = JSON.parse(surface.pricing_rules || '[]'); } catch(e) { pricingRules = []; }
+                        
+                        window.pricingUnit = surface.pricing_unit || 'hour';
+                        pricingUnitLabel = window.pricingUnit === 'half_day' ? '/ half-day' : (window.pricingUnit === 'full_day' ? '/ day' : '/ hour');
+                        pricingUnitLabelShort = window.pricingUnit === 'half_day' ? '/ half-day' : (window.pricingUnit === 'full_day' ? '/ day' : '/hr');
+                        
+                        document.querySelector('#booking-widget-container .text-2xl.font-bold').innerHTML = `$${hourlyRate}`;
+                        document.querySelector('#booking-widget-container .text-slate-500.font-medium').innerText = pricingUnitLabel;
+                        document.getElementById('mobile-footer-price').innerHTML = `$${hourlyRate} <span class="text-sm font-normal text-slate-500">${pricingUnitLabelShort}</span>`;
+                        
+                        // Update amenities and features if needed
+                        // For now we just update pricing for the widget.
+                    }
+                    
+                    // Call it once for the default facility price if surfaces array is empty
+                    if (window.currentSurfaces.length === 0) {
+                        // Fallback
+                        document.querySelector('#booking-widget-container .text-2xl.font-bold').innerHTML = `$${hourlyRate}`;
+                        document.querySelector('#booking-widget-container .text-slate-500.font-medium').innerText = pricingUnitLabel;
+                        document.getElementById('mobile-footer-price').innerHTML = `$${hourlyRate} <span class="text-sm font-normal text-slate-500">${pricingUnitLabelShort}</span>`;
                     }
 
                     // Expose it globally for render
@@ -1615,6 +1653,12 @@
 
                 // Update chips (Group by Date)
                 selectedContainer.innerHTML = '';
+                
+                let isPublicSessionCheckout = false;
+                if (count > 0 && window.publicSessionSlots) {
+                    isPublicSessionCheckout = window.publicSessionSlots.has(Array.from(selectedSlotIds)[0]);
+                }
+
                 if (count === 0) {
                     selectedContainer.innerHTML = '<span class="text-sm text-slate-400 italic">No slots selected</span>';
                 } else {
@@ -1631,7 +1675,8 @@
                         
                         const groupDiv = document.createElement('div');
                         groupDiv.className = 'w-full mb-2 last:mb-0';
-                        groupDiv.innerHTML = `<div class="text-xs font-bold text-slate-500 mb-1 pl-1 border-l-2 border-primary">${dayLabel}</div><div class="flex flex-wrap gap-2" id="chips-${dStr}"></div>`;
+                        const borderClass = isPublicSessionCheckout ? 'border-indigo-500' : 'border-primary';
+                        groupDiv.innerHTML = `<div class="text-xs font-bold text-slate-500 mb-1 pl-1 border-l-2 ${borderClass}">${dayLabel}</div><div class="flex flex-wrap gap-2" id="chips-${dStr}"></div>`;
                         selectedContainer.appendChild(groupDiv);
 
                         const chipsDiv = groupDiv.querySelector(`#chips-${dStr}`);
@@ -1646,7 +1691,11 @@
                             const tLabel = `${h}:${m} ${ampm}`;
 
                             const span = document.createElement('span');
-                            span.className = 'px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-sm font-semibold flex items-center shadow-sm';
+                            if (isPublicSessionCheckout) {
+                                span.className = 'px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-md text-sm font-semibold flex items-center shadow-sm';
+                            } else {
+                                span.className = 'px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-sm font-semibold flex items-center shadow-sm';
+                            }
                             span.innerHTML = `${tLabel} <i class="fa-solid fa-xmark ml-2 text-xs opacity-60 hover:opacity-100 cursor-pointer"></i>`;
                             span.querySelector('i').onclick = (e) => {
                                 e.stopPropagation();
@@ -1659,7 +1708,6 @@
                 }
 
                 // Calculate pricing
-                const isPublicSessionCheckout = count > 0 && window.publicSessionSlots && window.publicSessionSlots.has(Array.from(selectedSlotIds)[0]);
                 const activityContainer = document.getElementById('activity-type-container');
                 const pSessAdmissionContainer = document.getElementById('public-session-admission-container');
 

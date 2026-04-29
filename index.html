@@ -28,7 +28,7 @@
             }
         }
     </script>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=2">
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -49,7 +49,7 @@
                     <!-- Desktop Only Links -->
                     <div class="hidden md:flex items-center space-x-8">
                         <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
-                    <a href="how-it-works.html" class="text-slate-600 hover:text-primary font-medium transition-custom">How it Works</a>
+                    <a href="public-sessions.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Public Sessions</a>
                     
                     <div class="h-6 w-px bg-slate-300"></div>
                     </div>
@@ -108,7 +108,7 @@
         <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-100">
             <div class="px-4 pt-2 pb-6 space-y-2">
                 <a href="search.html" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Find a Surface</span><span class="lang-fr-only notranslate">Trouver une surface</span></a>
-                <a href="how-it-works.html" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">How it Works</span><span class="lang-fr-only notranslate">Comment ça fonctionne</span></a>
+                <a href="public-sessions.html" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Public Sessions</span><span class="lang-fr-only notranslate">Séances publiques</span></a>
                 <a href="#" id="mobile-login-btn" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Log in</span><span class="lang-fr-only notranslate">Se connecter</span></a>
                 <a href="owner-dashboard.html" id="mobile-list-facility-btn" class="block px-3 py-3 mt-4 text-center rounded-full text-base font-medium bg-dark text-white hover:bg-slate-800"><span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span></a>
                 <!-- Mobile Language Toggle -->
@@ -283,6 +283,7 @@
             </div>
         </div>
     </section>
+
 
     <!-- Featured Facilities Section (Now following hero directly) -->
     <section class="py-24 bg-light shadow-[0_-10px_40px_rgba(0,0,0,0.1)] relative z-20">
@@ -534,6 +535,7 @@
                     <h4 class="font-bold text-lg mb-6">Company</h4>
                     <ul class="space-y-4 text-slate-400">
                         <li><a href="about.html" class="hover:text-primary transition-custom">About Us</a></li>
+                        <li><a href="how-it-works.html" class="hover:text-primary transition-custom">How it Works</a></li>
                         <li><a href="#" class="hover:text-primary transition-custom">Contact</a></li>
                         <li><a href="#" class="hover:text-primary transition-custom">Terms of Service</a></li>
                         <li><a href="#" class="hover:text-primary transition-custom">Privacy Policy</a></li>
@@ -871,7 +873,7 @@
                         // Also attach to signup modal municipality input
                         const authMunicipalitySearch = document.getElementById('auth-municipality-search');
                         if (authMunicipalitySearch) {
-                            const authAutocomplete = new google.maps.places.Autocomplete(authMunicipalitySearch, { types: ['(regions)'], fields: ['formatted_address'] });
+                            const authAutocomplete = new google.maps.places.Autocomplete(authMunicipalitySearch, { types: ['(cities)'], fields: ['formatted_address'] });
                             authAutocomplete.addListener('place_changed', function() {
                                 const place = authAutocomplete.getPlace();
                                 if (place.formatted_address) {
@@ -888,7 +890,7 @@
                         // Also attach to host public municipality field
                         const authHostCity = document.getElementById('auth-host-city');
                         if (authHostCity) {
-                            const hostAutocomplete = new google.maps.places.Autocomplete(authHostCity, { types: ['(regions)'], fields: ['formatted_address'] });
+                            const hostAutocomplete = new google.maps.places.Autocomplete(authHostCity, { types: ['(cities)'], fields: ['formatted_address'] });
                             hostAutocomplete.addListener('place_changed', function() {
                                 const place = hostAutocomplete.getPlace();
                                 if (place.formatted_address) {
@@ -1113,6 +1115,8 @@
                 `;
             }
         }
+
+
 
         // Initialize features
         fetchFeaturedFacilities();

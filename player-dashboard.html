@@ -388,7 +388,7 @@
         async function initPlacesMap() {
             try {
                 const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
-                const res = await fetch(`${API_BASE_URL}/api/keys/maps`);
+                const res = await fetch(`${API_BASE_URL}/api/config/maps`);
                 if (res.ok) {
                     const data = await res.json();
                     if (!data.apiKey) return;
