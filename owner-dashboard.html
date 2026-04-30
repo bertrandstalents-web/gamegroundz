@@ -399,7 +399,7 @@
                             <h2 class="text-2xl font-bold text-dark mb-2">Calendar Manager</h2>
                             <p class="text-slate-500">Click and drag on the calendar to block out offline rentals (e.g., City Leagues).</p>
                         </div>
-                        <div class="w-full md:w-64">
+                        <div class="w-full md:w-auto md:min-w-[16rem] max-w-full">
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Select Facility to Manage</label>
                             <select id="calendar-facility-select" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white appearance-none cursor-pointer font-medium text-slate-800 shadow-sm" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;">
                                 <!-- Populated dynamically -->
@@ -428,6 +428,7 @@
                             
                             <form id="block-time-interactive-form" class="p-4 md:p-8 space-y-6 overflow-y-auto">
                                 
+                                <input type="hidden" id="modal-true-facility-id">
                                 <input type="hidden" id="modal-facility-id">
                                 <input type="hidden" id="modal-date-val">
                                 <input type="hidden" id="modal-edit-discount-id">
@@ -609,7 +610,7 @@
                             <h2 class="text-2xl font-bold text-dark mb-2">Discount Manager</h2>
                             <p class="text-slate-500">Create promotional discounts for specific facilities to boost bookings.</p>
                         </div>
-                        <div class="w-full md:w-64">
+                        <div class="w-full md:w-auto md:min-w-[16rem] max-w-full">
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Select Facility to Manage</label>
                             <select id="discount-facility-select" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white cursor-pointer font-medium text-slate-800 shadow-sm" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;" onchange="loadFacilityDiscounts()">
                                 <option value="" disabled="" selected="">Loading facilities...</option>
@@ -1085,23 +1086,23 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Surface Type</label>
-                                <select id="fac-type" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
-                                    <option value="ice">Ice Rink</option>
-                                    <option value="soccer">Soccer Field (Turf)</option>
-                                    <option value="basketball">Basketball Court</option>
-                                    <option value="tennis">Tennis Court</option>
-                                    <option value="pickleball">Pickleball Court</option>
-                                    <option value="pool">Swimming Pool</option>
-                                    <option value="football">Football Field</option>
-                                    <option value="gym">Training Gym</option>
-                                    <option value="deck-hockey">Deck-Hockey</option>
-                                    <option value="squash">Squash</option>
-                                    <option value="badminton">Badminton</option>
-                                </select>
+                            <div class="col-span-2">
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Surface Types</label>
+                                <div id="fac-type-container" class="flex flex-wrap gap-2">
+                                    <label class="cursor-pointer"><input type="checkbox" value="ice" class="peer hidden fac-type-cb"><div class="px-4 py-2 rounded-full border border-slate-200 text-sm font-medium text-slate-600 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary/50 transition-all select-none">Ice Rink</div></label>
+                                    <label class="cursor-pointer"><input type="checkbox" value="soccer" class="peer hidden fac-type-cb"><div class="px-4 py-2 rounded-full border border-slate-200 text-sm font-medium text-slate-600 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary/50 transition-all select-none">Soccer Field (Turf)</div></label>
+                                    <label class="cursor-pointer"><input type="checkbox" value="basketball" class="peer hidden fac-type-cb"><div class="px-4 py-2 rounded-full border border-slate-200 text-sm font-medium text-slate-600 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary/50 transition-all select-none">Basketball Court</div></label>
+                                    <label class="cursor-pointer"><input type="checkbox" value="tennis" class="peer hidden fac-type-cb"><div class="px-4 py-2 rounded-full border border-slate-200 text-sm font-medium text-slate-600 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary/50 transition-all select-none">Tennis Court</div></label>
+                                    <label class="cursor-pointer"><input type="checkbox" value="pickleball" class="peer hidden fac-type-cb"><div class="px-4 py-2 rounded-full border border-slate-200 text-sm font-medium text-slate-600 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary/50 transition-all select-none">Pickleball Court</div></label>
+                                    <label class="cursor-pointer"><input type="checkbox" value="pool" class="peer hidden fac-type-cb"><div class="px-4 py-2 rounded-full border border-slate-200 text-sm font-medium text-slate-600 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary/50 transition-all select-none">Swimming Pool</div></label>
+                                    <label class="cursor-pointer"><input type="checkbox" value="football" class="peer hidden fac-type-cb"><div class="px-4 py-2 rounded-full border border-slate-200 text-sm font-medium text-slate-600 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary/50 transition-all select-none">Football Field</div></label>
+                                    <label class="cursor-pointer"><input type="checkbox" value="gym" class="peer hidden fac-type-cb"><div class="px-4 py-2 rounded-full border border-slate-200 text-sm font-medium text-slate-600 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary/50 transition-all select-none">Training Gym</div></label>
+                                    <label class="cursor-pointer"><input type="checkbox" value="deck-hockey" class="peer hidden fac-type-cb"><div class="px-4 py-2 rounded-full border border-slate-200 text-sm font-medium text-slate-600 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary/50 transition-all select-none">Deck-Hockey</div></label>
+                                    <label class="cursor-pointer"><input type="checkbox" value="squash" class="peer hidden fac-type-cb"><div class="px-4 py-2 rounded-full border border-slate-200 text-sm font-medium text-slate-600 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary/50 transition-all select-none">Squash</div></label>
+                                    <label class="cursor-pointer"><input type="checkbox" value="badminton" class="peer hidden fac-type-cb"><div class="px-4 py-2 rounded-full border border-slate-200 text-sm font-medium text-slate-600 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary/50 transition-all select-none">Badminton</div></label>
+                                </div>
                             </div>
-                            <div>
+                            <div class="col-span-2 md:col-span-1 mt-4">
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Environment</label>
                                 <select id="fac-env" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
                                     <option value="indoor">Indoor</option>
@@ -1119,17 +1120,106 @@
                     </div>
                 </div>
 
-                <!-- Facility Basics & Capacity -->
-                
+                <!-- Facility Basics & Capacity Moved to Surface Modal -->
 
                 <!-- Services / Amenities -->
-                
+                <div>
+                    <h2 class="text-xl font-bold text-dark mb-2 border-b border-slate-100 pb-2">2. Services</h2>
+                    <p class="text-slate-500 mb-6 flex justify-between items-center text-sm">
+                        <span>Select the amenities provided at your facility.</span>
+                        <span class="text-xs italic">Click to select/deselect</span>
+                    </p>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="amenities-container">
+                        <!-- Wifi -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="wifi">
+                            <i class="fa-solid fa-wifi text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Wifi</span>
+                        </div>
+                        <!-- Parking -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="parking">
+                            <i class="fa-solid fa-square-parking text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Free parking</span>
+                        </div>
+                        <!-- TV -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="tv">
+                            <i class="fa-solid fa-tv text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">TV</span>
+                        </div>
+                        <!-- First Aid -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="first_aid">
+                            <i class="fa-solid fa-truck-medical text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">First Aid Kit</span>
+                        </div>
+                        <!-- Wheelchair -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="accessibility">
+                            <i class="fa-solid fa-wheelchair text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Wheelchair accessible</span>
+                        </div>
+                        <!-- Concessions -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="concessions">
+                            <i class="fa-solid fa-utensils text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Concessions</span>
+                        </div>
+                        <!-- Pro Shop -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="pro_shop">
+                            <i class="fa-solid fa-shop text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Pro Shop</span>
+                        </div>
+                        <!-- Beer -->
+                        <div id="amenity-beer" class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="beer">
+                            <i class="fa-solid fa-beer-mug-empty text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Beer</span>
+                        </div>
+                        <!-- LiveBarn -->
+                        <div id="amenity-livebarn" class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="livebarn">
+                            <i class="fa-solid fa-video text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">LiveBarn</span>
+                        </div>
+                        <!-- Scoreboard -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="scoreboard">
+                            <i class="fa-solid fa-star text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Scoreboard</span>
+                        </div>
+                        <!-- Showers / Changerooms -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="showers">
+                            <i class="fa-solid fa-shower text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Showers / Changerooms</span>
+                        </div>
+                        <!-- Sound System -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="sound_system">
+                            <i class="fa-solid fa-volume-high text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Sound System</span>
+                        </div>
+                        <!-- Spectator Seating -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="spectator_seating">
+                            <i class="fa-solid fa-chair text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Spectator Seating</span>
+                        </div>
+                        <!-- Equipment Rental -->
+                        <div class="amenity-card cursor-pointer border border-slate-200 rounded-xl p-6 flex flex-col gap-4 hover:border-slate-800 transition-custom bg-white" data-amenity="equipment_rental">
+                            <i class="fa-solid fa-bag-shopping text-3xl text-dark"></i>
+                            <span class="font-semibold text-slate-700">Equipment Rental</span>
+                        </div>
+                    </div>
+                </div>
 
-                
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        // Add click listeners to amenity cards
+                        document.querySelectorAll('.amenity-card').forEach(card => {
+                            card.addEventListener('click', function() {
+                                this.classList.toggle('border-slate-800');
+                                this.classList.toggle('bg-slate-50');
+                                this.classList.toggle('border-slate-200');
+                            });
+                        });
+                    });
+                </script>
 
                 <!-- Facility Details -->
                 <div>
-                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">4. Facility Details</h2>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">3. Facility Details</h2>
                     
                     <div class="space-y-4">
                         <div>
@@ -1159,7 +1249,7 @@
 
                 <!-- Operating Hours -->
                 <div>
-                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">5. Operating Hours</h2>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">4. Operating Hours</h2>
                     <div class="mb-4">
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Standard Daily Hours</label>
                         <p class="text-xs text-slate-500 mb-4">Set the earliest time players can book and the latest time your facility closes.</p>
@@ -1218,59 +1308,11 @@
                     </div>
                 </div>
 
-                <!-- Pricing & Booking -->
+                <!-- Listing Visibility -->
                 <div>
-                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">6. Pricing &amp; Booking</h2>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">5. Listing Visibility</h2>
                     
-                    <div class="mb-5">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Unit</label>
-                        <select id="fac-pricing-unit" class="w-full md:w-1/2 px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
-                            <option value="hour">Per Hour</option>
-                            <option value="half_day">Per Half-Day</option>
-                            <option value="full_day">Per Full Day</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Rules</label>
-                        <p class="text-xs text-slate-500 mb-4">Set up your hourly pricing for different times of the day. The lowest price will be shown as your baseline.</p>
-                        
-                        <div id="pricing-rules-container" class="space-y-3 mb-4">
-                            <!-- Dynamic rule rows go here -->
-                        </div>
-                        
-                        <button type="button" id="add-rule-btn" class="text-sm font-bold text-primary hover:text-primaryHover flex items-center transition-custom bg-primary/10 px-4 py-2 rounded-lg">
-                            <i class="fa-solid fa-plus mr-2"></i> Add a Time Slot
-                        </button>
-                    </div>
-
-                    <div class="flex flex-col pt-4 border-t border-slate-100 mt-4">
-                        <label class="flex items-center group cursor-pointer mb-2">
-                            <input type="checkbox" id="fac-has-processing-fee" class="w-5 h-5 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer transition-custom" checked="" onchange="document.getElementById('processing-fee-amount-container').classList.toggle('hidden', !this.checked)">
-                            <span class="ml-3 text-sm font-semibold text-slate-700 group-hover:text-dark">Charge Processing Fee</span>
-                        </label>
-                        <div id="processing-fee-amount-container" class="mt-2 pl-8">
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Fee Amount ($)</label>
-                            <input type="number" id="fac-processing-fee-amount" min="0" step="0.01" class="w-full md:w-1/3 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white" placeholder="15.00" value="15.00">
-                            <p class="text-xs text-slate-400 mt-1">Amount added to the player's total at checkout.</p>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col justify-end pt-4 border-t border-slate-100 mt-4">
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" id="fac-instant" class="w-5 h-5 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer transition-custom" checked="">
-                            <span class="ml-3 text-slate-700 font-semibold group-hover:text-dark">Allow Instant Booking</span>
-                        </label>
-                        <p class="text-xs text-slate-400 mt-1 ml-8">Enable players to book without manual approval.</p>
-                    </div>
-
-                    <div class="flex flex-col pt-4 border-t border-slate-100 mt-4">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Advance Booking Limit (Days)</label>
-                        <input type="number" id="fac-advance-booking" min="1" max="1000" class="w-full md:w-1/3 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white" placeholder="180">
-                        <p class="text-xs text-slate-400 mt-1">Maximum number of days in advance a player can book (default 180 days).</p>
-                    </div>
-
-                    <div id="listing-status-container" class="hidden flex-col justify-end pt-4 border-t border-slate-100 mt-4">
+                    <div id="listing-status-container" class="flex flex-col justify-end">
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Listing Visibility Status</label>
                         <select id="fac-listing-status" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
                             <option value="pending">Active / Pending Approval</option>
@@ -1284,7 +1326,7 @@
                 
                 <!-- Co-Hosts -->
                 <div id="co-hosts-section" class="hidden mb-8">
-                    <h2 class="text-xl font-bold text-dark mb-2 border-b border-slate-100 pb-2">8. Co-Hosts (Team)</h2>
+                    <h2 class="text-xl font-bold text-dark mb-2 border-b border-slate-100 pb-2">6. Co-Hosts (Team)</h2>
                     <p class="text-xs text-slate-500 mb-4">Invite team members to help manage this facility. They will have full access to this facility's dashboard.</p>
                     
                     <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6">
@@ -1303,7 +1345,7 @@
 
                 <!-- Connected Facilities -->
                 <div id="connected-facilities-section" class="mb-8">
-                    <h2 class="text-xl font-bold text-dark mb-2 border-b border-slate-100 pb-2">9. Connected Facilities</h2>
+                    <h2 class="text-xl font-bold text-dark mb-2 border-b border-slate-100 pb-2">7. Connected Facilities</h2>
                     <p class="text-xs text-slate-500 mb-4">Link this facility to other facilities you manage (e.g., multiple rinks in the same building). Players will be able to easily switch between them when booking.</p>
                     
                     <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6">
@@ -1315,7 +1357,7 @@
 
                 <!-- Media -->
                 <div>
-                    <h2 class="text-xl font-bold text-dark mb-2 border-b border-slate-100 pb-2">6. Photos</h2>
+                    <h2 class="text-xl font-bold text-dark mb-2 border-b border-slate-100 pb-2">8. Photos</h2>
                     <p class="text-xs text-slate-500 mb-4">Upload high-quality photos of your facility. <strong class="text-primary font-bold">Adding 3 or more photos is highly recommended</strong> to attract more players.</p>
                     
                     <div class="relative border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition-custom cursor-pointer overflow-hidden min-h-[300px] flex items-center justify-center" id="fac-image-dropzone">
@@ -1360,12 +1402,16 @@
 <!-- Tab: Surfaces -->
 <div id="tab-surfaces" class="col-span-2 hidden">
     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
-                <h2 class="text-2xl font-bold text-dark">Manage Surfaces</h2>
-                <p class="text-slate-500 text-sm" id="surfaces-facility-name">Select a facility first.</p>
+                <h2 class="text-2xl font-bold text-dark flex flex-wrap items-center gap-3">
+                    Manage Surfaces
+                    <select id="surface-facility-selector" onchange="manageSurfaces(this.value)" class="text-sm font-medium bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-700 focus:outline-none focus:border-primary hidden cursor-pointer">
+                    </select>
+                </h2>
+                <p class="text-slate-500 text-sm mt-1" id="surfaces-facility-name">Select a facility first.</p>
             </div>
-            <button type="button" onclick="openSurfaceModal()" class="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl font-bold transition-custom shadow-sm flex items-center">
+            <button type="button" onclick="openSurfaceModal()" class="w-full md:w-auto bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl font-bold transition-custom shadow-sm flex items-center justify-center">
                 <i class="fa-solid fa-plus mr-2"></i> Add Surface
             </button>
         </div>
@@ -1490,16 +1536,23 @@
             if(profTab) profTab.classList.add('hidden');
             const ourPeopleTabHtml = document.getElementById('tab-our-people');
             if(ourPeopleTabHtml) ourPeopleTabHtml.classList.add('hidden');
+            const surfacesTab = document.getElementById('tab-surfaces');
+            if(surfacesTab) surfacesTab.classList.add('hidden');
             
             // Show selected tab
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             
             if (tabId === 'our-people') {
                 loadOurPeople();
+            } else if (tabId === 'surfaces') {
+                if ((typeof currentFacilityId === 'undefined' || !currentFacilityId) && typeof ownerFacilities !== 'undefined' && ownerFacilities.length > 0) {
+                    manageSurfaces(ownerFacilities[0].id);
+                    return; // manageSurfaces calls switchTab, so we can exit here
+                }
             }
 
             // Reset tab button styles
-            const btns = ['facilities', 'analytics', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile', 'our-people'];
+            const btns = ['facilities', 'surfaces', 'analytics', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile', 'our-people'];
             btns.forEach(btn => {
                 const el = document.getElementById(`tab-btn-${btn}`);
                 if(el) el.className = 'w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
@@ -1670,12 +1723,33 @@
             const prevVal = selectEl.value;
             const prevDiscVal = discSelectEl ? discSelectEl.value : '';
             
-            selectEl.innerHTML = '<option value="" disabled selected>Choose a facility</option>';
+            selectEl.innerHTML = '<option value="" disabled selected>Choose a surface</option>';
             if(discSelectEl) discSelectEl.innerHTML = '<option value="" disabled selected>Choose a facility</option>';
 
             facilities.forEach(fac => {
-                selectEl.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
                 if(discSelectEl) discSelectEl.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
+                
+                if (fac.surfaces && fac.surfaces.length > 0) {
+                    let optgroup = document.createElement('optgroup');
+                    optgroup.label = fac.name;
+                    fac.surfaces.forEach(surf => {
+                        let displayName = surf.name;
+                        if (displayName.startsWith(fac.name + ' - ')) {
+                            displayName = displayName.substring(fac.name.length + 3);
+                        } else if (displayName.startsWith(fac.name + ' ')) {
+                            displayName = displayName.substring(fac.name.length + 1);
+                        } else if (displayName.startsWith(fac.name)) {
+                            displayName = displayName.substring(fac.name.length).trim() || displayName;
+                        }
+                        optgroup.innerHTML += `<option value="${surf.id}" data-fac-id="${fac.id}">${displayName}</option>`;
+                    });
+                    selectEl.appendChild(optgroup);
+                } else {
+                    let optgroup = document.createElement('optgroup');
+                    optgroup.label = fac.name;
+                    optgroup.innerHTML += `<option value="" disabled>No surfaces available</option>`;
+                    selectEl.appendChild(optgroup);
+                }
             });
 
             if (prevVal) {
@@ -1751,9 +1825,19 @@
             // Initialize calendar if not already initialized
             if (facilities.length > 0) {
                 if(!selectEl.value && !currentCalendar) {
-                    selectEl.value = facilities[0].id; // auto select first
-                    if (!document.getElementById('tab-calendar').classList.contains('hidden')) {
-                        initCalendar(facilities[0].id);
+                    // Try to auto-select the first available surface
+                    let firstSurfaceId = null;
+                    for (const fac of facilities) {
+                        if (fac.surfaces && fac.surfaces.length > 0) {
+                            firstSurfaceId = fac.surfaces[0].id;
+                            break;
+                        }
+                    }
+                    if (firstSurfaceId) {
+                        selectEl.value = firstSurfaceId;
+                        if (!document.getElementById('tab-calendar').classList.contains('hidden')) {
+                            initCalendar(firstSurfaceId);
+                        }
                     }
                 }
                 
@@ -1796,18 +1880,12 @@
                 card.classList.remove('border-slate-800', 'bg-slate-50');
                 card.classList.add('border-slate-200');
             });
-            document.getElementById('fac-locker-rooms').textContent = '0';
-            document.getElementById('fac-capacity').textContent = '0';
 
             // Clear dynamic containers
             const featuresContainer = document.getElementById('features-container');
             if (featuresContainer) featuresContainer.innerHTML = '';
             
-            const rulesContainer = document.getElementById('pricing-rules-container');
-            if (rulesContainer) {
-                rulesContainer.innerHTML = '';
-                if (typeof createRuleRow === 'function') createRuleRow();
-            }
+            // Pricing rules moved to Surface
 
             // Hide listing status container on "Add New"
             document.getElementById('listing-status-container').classList.add('hidden');
@@ -1878,14 +1956,11 @@
             if (typeof loadCoHosts === 'function') loadCoHosts(facility.id);
             document.getElementById('fac-subtitle').value = facility.subtitle || '';
             document.getElementById('fac-description').value = facility.description || '';
-            document.getElementById('fac-locker-rooms').textContent = facility.locker_rooms || 0;
-            document.getElementById('fac-capacity').textContent = facility.capacity || 0;
             
-            const facTypeEl = document.getElementById('fac-type');
-            if (facTypeEl) {
-                facTypeEl.value = facility.type || 'ice';
-                facTypeEl.dispatchEvent(new Event('change'));
-            }
+            const types = facility.type ? facility.type.split(',') : ['ice'];
+            document.querySelectorAll('.fac-type-cb').forEach(cb => {
+                cb.checked = types.includes(cb.value);
+            });
             
             document.getElementById('fac-size').value = facility.size_info || '';
             document.getElementById('fac-env').value = facility.environment || 'indoor';
@@ -1895,24 +1970,7 @@
             document.getElementById('fac-lat').value = facility.lat || '';
             document.getElementById('fac-lng').value = facility.lng || '';
             
-            const pricingUnitEl = document.getElementById('fac-pricing-unit');
-            if (pricingUnitEl) pricingUnitEl.value = facility.pricing_unit || 'hour';
-
-            document.getElementById('fac-instant').checked = facility.is_instant_book == 1;
-            document.getElementById('fac-advance-booking').value = facility.advance_booking_days || 180;
-            
-            const hasFeeCb = document.getElementById('fac-has-processing-fee');
-            const feeAmtContainer = document.getElementById('processing-fee-amount-container');
-            if (hasFeeCb) {
-                // Default to true if undefined (for older records where default is 1)
-                hasFeeCb.checked = (facility.has_processing_fee === 1 || facility.has_processing_fee === true || facility.has_processing_fee === undefined);
-                if (feeAmtContainer) feeAmtContainer.classList.toggle('hidden', !hasFeeCb.checked);
-            }
-            const feeAmt = document.getElementById('fac-processing-fee-amount');
-            if (feeAmt) {
-                feeAmt.value = facility.processing_fee_amount !== undefined ? facility.processing_fee_amount : 15.00;
-            }
-            
+            // Pricing and booking settings moved to Surface
             window.localImagesArray = [];
             if (facility.image_url) {
                 // If it looks like a JSON array string, parse it, otherwise push string directly.
@@ -2006,24 +2064,7 @@
                     });
                 }
             }
-            // Populate pricing rules
-            const rulesContainer = document.getElementById('pricing-rules-container');
-            rulesContainer.innerHTML = ''; // clear existing
-            if (facility.pricing_rules) {
-                let parsedRules = facility.pricing_rules;
-                if (typeof parsedRules === 'string') {
-                     try { parsedRules = JSON.parse(parsedRules); } catch(e){}
-                }
-                if (Array.isArray(parsedRules) && parsedRules.length > 0) {
-                    parsedRules.forEach(r => {
-                         createRuleRow(r.start, r.end, r.price, r.days);
-                    });
-                } else {
-                    createRuleRow(); // default empty if none
-                }
-            } else {
-                createRuleRow(); // default empty
-            }
+            // Pricing rules moved to Surface
         }
 
 
@@ -2538,7 +2579,7 @@
             }
         });
 
-        async function initCalendar(facilityId) {
+        async function initCalendar(surfaceId) {
             const calendarEl = document.getElementById('calendar');
 
             // Show a temporary loading state
@@ -2546,8 +2587,13 @@
                 calendarEl.innerHTML = '<div class="flex justify-center py-20"><i class="fa-solid fa-spinner fa-spin text-3xl text-slate-300"></i></div>';
             }
 
-            // Filter bookings for this facility
-            const facilityBookings = allBookingsCache.filter(b => b.facility_id === parseInt(facilityId, 10));
+            // Filter bookings for this surface
+            const surfaceBookings = allBookingsCache.filter(b => b.surface_id === parseInt(surfaceId, 10));
+
+            // Determine facilityId from the selected option in order to fetch discounts
+            const selectEl = document.getElementById('calendar-facility-select');
+            const selectedOption = Array.from(selectEl.options).find(opt => opt.value == surfaceId);
+            const facilityId = selectedOption ? selectedOption.getAttribute('data-fac-id') : null;
             
             // Fetch discounts for this facility
             let facilityDiscounts = [];
@@ -2575,7 +2621,7 @@
 
             // Transform GameGroundz bookings to FullCalendar Events
             const calendarEvents = [];
-            facilityBookings.forEach(b => {
+            surfaceBookings.forEach(b => {
                 const slots = JSON.parse(b.time_slots);
                 
                 if(slots.length === 0) return;
@@ -3107,8 +3153,11 @@
             }
 
             const facSelect = document.getElementById('calendar-facility-select');
-            const facName = facSelect.options[facSelect.selectedIndex].text;
+            const selectedOption = facSelect.options[facSelect.selectedIndex];
+            const facName = selectedOption.text;
+            const trueFacId = selectedOption.getAttribute('data-fac-id');
 
+            document.getElementById('modal-true-facility-id').value = trueFacId;
             document.getElementById('modal-facility-id').value = facId;
             document.getElementById('modal-facility-display').textContent = facName;
 
@@ -3182,8 +3231,11 @@
         function openEditEventModal(eventObj) {
             const facId = document.getElementById('calendar-facility-select').value;
             const facSelect = document.getElementById('calendar-facility-select');
-            const facName = facSelect.options[facSelect.selectedIndex].text;
+            const selectedOption = facSelect.options[facSelect.selectedIndex];
+            const facName = selectedOption.text;
+            const trueFacId = selectedOption.getAttribute('data-fac-id');
 
+            document.getElementById('modal-true-facility-id').value = trueFacId;
             document.getElementById('modal-facility-id').value = facId;
             document.getElementById('modal-facility-display').textContent = facName;
 
@@ -3593,7 +3645,8 @@
             const repeatDays = Array.from(document.querySelectorAll('input[name="repeat_day"]:checked')).map(cb => parseInt(cb.value, 10));
 
             const payload = {
-                facility_id: parseInt(document.getElementById('modal-facility-id').value, 10),
+                facility_id: parseInt(document.getElementById('modal-true-facility-id').value, 10),
+                surface_id: parseInt(document.getElementById('modal-facility-id').value, 10),
                 booking_date: document.getElementById('modal-date-val').value,
                 time_slots: slots,
                 manual_notes: document.getElementById('modal-block-notes').value,
@@ -4094,7 +4147,33 @@
             return time12;
         }
 
-        function createRuleRow(start = "08:00", end = "22:00", price = 150, days = "everyday") {
+        window.handleAddTimeSlot = function() {
+            if (typeof window.createRuleRow !== 'function') {
+                alert('Still loading script, please wait a second.');
+                return;
+            }
+            
+            let start = "08:00";
+            const rulesContainer = document.getElementById('pricing-rules-container');
+            if (rulesContainer) {
+                const existingRows = rulesContainer.querySelectorAll('.pricing-rule-row');
+                if (existingRows.length > 0) {
+                    const lastRow = existingRows[existingRows.length - 1];
+                    const lastEndHidden = lastRow.querySelector('input.rule-end');
+                    if (lastEndHidden && lastEndHidden.value) {
+                        start = lastEndHidden.value;
+                    }
+                }
+            }
+            
+            window.createRuleRow(start, "22:00", 150);
+            if (typeof window.updateAllTimeOptions === 'function') {
+                window.updateAllTimeOptions();
+            }
+        };
+
+        window.createRuleRow = function(start = "08:00", end = "22:00", price = 150, days = "everyday") {
+            const rulesContainer = document.getElementById('pricing-rules-container');
             const displayStart = formatTimeForDisplay(start);
             const displayEnd = formatTimeForDisplay(end);
             const row = document.createElement('div');
@@ -4291,7 +4370,7 @@
             return html;
         }
 
-        function updateAllTimeOptions() {
+        window.updateAllTimeOptions = function() {
             document.querySelectorAll('.pricing-rule-row').forEach(row => {
                 const daySelect = row.querySelector('.rule-days');
                 const ruleType = daySelect ? daySelect.value : 'everyday';
@@ -4362,23 +4441,7 @@
             createRuleRow(initialStart, initialEnd, 150);
             updateAllTimeOptions();
 
-            addRuleBtn.addEventListener('click', () => {
-                let defaultStart = openSelect && openSelect.value ? openSelect.value : "08:00";
-                let lastEnd = null;
-                const existingRows = rulesContainer.querySelectorAll('.pricing-rule-row');
-                if (existingRows.length > 0) {
-                    const lastRow = existingRows[existingRows.length - 1];
-                    const lastEndHidden = lastRow.querySelector('input.rule-end');
-                    if (lastEndHidden && lastEndHidden.value) {
-                        lastEnd = lastEndHidden.value;
-                    }
-                }
-                
-                let start = lastEnd || defaultStart;
-                let end = closeSelect && closeSelect.value ? closeSelect.value : "22:00";
-                createRuleRow(start, end, 150);
-                updateAllTimeOptions();
-            });
+            // Event listener removed as we are using onclick directly on the button
 
             if (hasWeekendCb) {
                 hasWeekendCb.addEventListener('change', (e) => {
@@ -4606,18 +4669,29 @@
                 if (weClose) operating_hours.weekend_close = weClose.value;
             }
 
+            const selectedTypes = Array.from(document.querySelectorAll('.fac-type-cb:checked')).map(cb => cb.value);
+            const typeVals = selectedTypes.length > 0 ? selectedTypes.join(',') : 'ice';
+            const envVal = document.getElementById('fac-env') ? document.getElementById('fac-env').value : 'indoor';
+
             const payload = {
                 name: document.getElementById('fac-name').value,
                 subtitle: document.getElementById('fac-subtitle').value,
                 description: document.getElementById('fac-description').value,
                 features: features,
+                locker_rooms: document.getElementById('fac-locker-rooms') ? parseInt(document.getElementById('fac-locker-rooms').textContent, 10) : 0,
+                capacity: document.getElementById('fac-capacity') ? parseInt(document.getElementById('fac-capacity').textContent, 10) : 0,
+                amenities: Array.from(document.querySelectorAll('.amenity-card.border-slate-800')).map(el => el.dataset.amenity),
                 facility_type: document.getElementById('fac-host-type') ? document.getElementById('fac-host-type').value : 'Other',
+                type: typeVals,
+                environment: envVal,
+                base_price: 100,
                 location: document.getElementById('fac-location').value,
                 lat: document.getElementById('fac-lat').value ? parseFloat(document.getElementById('fac-lat').value) : null,
                 lng: document.getElementById('fac-lng').value ? parseFloat(document.getElementById('fac-lng').value) : null,
                 image_url: JSON.stringify(window.localImagesArray),
+                connected_facilities: Array.from(document.querySelectorAll('input[name="connected_fac"]:checked')).map(cb => parseInt(cb.value, 10)),
                 operating_hours: operating_hours,
-                listing_status: 'draft' // Default to draft, publish via surfaces
+                listing_status: document.getElementById('fac-listing-status') ? document.getElementById('fac-listing-status').value : 'pending'
             };
 
             try {
@@ -5819,10 +5893,21 @@
 
         window.manageSurfaces = async function(facId) {
             currentFacilityId = facId;
-            const fac = ownerFacilities.find(f => f.id == facId);
-            if (fac) {
-                document.getElementById('surfaces-facility-name').textContent = `Managing surfaces for: ${fac.name}`;
+            const fac = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == facId) : null;
+            
+            const selector = document.getElementById('surface-facility-selector');
+            const nameText = document.getElementById('surfaces-facility-name');
+            
+            if (selector && typeof ownerFacilities !== 'undefined' && ownerFacilities.length > 0) {
+                selector.innerHTML = ownerFacilities.map(f => `<option value="${f.id}" ${f.id == facId ? 'selected' : ''}>${f.name}</option>`).join('');
+                selector.classList.remove('hidden');
+                if (nameText) nameText.classList.add('hidden');
+            } else if (fac && nameText) {
+                nameText.textContent = `Facility: ${fac.name}`;
+                nameText.classList.remove('hidden');
+                if (selector) selector.classList.add('hidden');
             }
+            
             switchTab('surfaces');
             await fetchSurfaces(facId);
         };
@@ -5830,7 +5915,7 @@
         window.fetchSurfaces = async function(facId) {
             try {
                 const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
-                const res = await fetch(`${API_BASE_URL}/api/facilities/${facId}`);
+                const res = await fetch(`${API_BASE_URL}/api/facilities/${facId}?_t=${Date.now()}`);
                 const data = await res.json();
                 window.currentSurfaces = data.surfaces || [];
                 renderSurfaces();
@@ -5885,13 +5970,171 @@
             }
         };
 
+        const sizeOptionsMap = {
+            'ice': [
+                {value: 'NHL Size (200\' x 85\')', label: 'NHL Size (200\' x 85\')'},
+                {value: 'Olympic Size (200\' x 100\')', label: 'Olympic Size (200\' x 100\')'},
+                {value: 'Small/Training Rink', label: 'Small/Training Rink'},
+                {value: 'Outdoor Rink', label: 'Outdoor Rink'},
+                {value: 'Custom Size', label: 'Custom Size'}
+            ],
+            'soccer': [
+                {value: 'Full Size (11v11)', label: 'Full Size (11v11)'},
+                {value: 'Half Field (7v7)', label: 'Half Field (7v7)'},
+                {value: 'Small Sided (5v5)', label: 'Small Sided (5v5)'},
+                {value: 'Futsal Court', label: 'Futsal Court'}
+            ],
+            'basketball': [
+                {value: 'Full Court (NBA Size)', label: 'Full Court (NBA Size)'},
+                {value: 'Full Court (High School)', label: 'Full Court (High School)'},
+                {value: 'Half Court', label: 'Half Court'}
+            ],
+            'tennis': [
+                {value: 'Standard Singles/Doubles', label: 'Standard Singles/Doubles'}
+            ],
+            'pickleball': [
+                {value: 'Standard (44\' x 20\')', label: 'Standard (44\' x 20\')'}
+            ],
+            'pool': [
+                {value: 'Olympic (50m)', label: 'Olympic (50m)'},
+                {value: 'Short Course (25m)', label: 'Short Course (25m)'},
+                {value: 'Short Course (25yd)', label: 'Short Course (25yd)'},
+                {value: 'Leisure Pool', label: 'Leisure Pool'}
+            ],
+            'football': [
+                {value: 'Regulation Size (120yd x 53.3yd)', label: 'Regulation Size (120yd x 53.3yd)'},
+                {value: 'Training Field', label: 'Training Field'}
+            ],
+            'gym': [
+                {value: 'Large (Multiple Courts)', label: 'Large (Multiple Courts)'},
+                {value: 'Medium (Single Court)', label: 'Medium (Single Court)'},
+                {value: 'Small Studio', label: 'Small Studio'}
+            ],
+            'deck-hockey': [
+                {value: 'Regulation Size', label: 'Regulation Size'},
+                {value: 'Small Size', label: 'Small Size'}
+            ]
+        };
+
+        window.toggleSizeDropdown = function() {
+            const menu = document.getElementById('fac-size-menu');
+            const icon = document.getElementById('fac-size-icon');
+            const isOpen = !menu.classList.contains('opacity-0');
+            
+            if (isOpen) {
+                window.closeSizeDropdown();
+            } else {
+                menu.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
+                menu.classList.add('opacity-100', 'translate-y-0');
+                if (icon) icon.classList.add('rotate-180');
+            }
+        };
+
+        window.closeSizeDropdown = function() {
+            const menu = document.getElementById('fac-size-menu');
+            const icon = document.getElementById('fac-size-icon');
+            if (menu) {
+                menu.classList.add('opacity-0', 'pointer-events-none', '-translate-y-2');
+                menu.classList.remove('opacity-100', 'translate-y-0');
+            }
+            if (icon) icon.classList.remove('rotate-180');
+        };
+
+        window.selectSizeOption = function(val, label) {
+            document.getElementById('fac-size').value = val;
+            const display = document.getElementById('fac-size-display');
+            if (display) {
+                display.textContent = label;
+                display.classList.remove('text-slate-400');
+                display.classList.add('text-slate-800');
+            }
+            window.closeSizeDropdown();
+        };
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('fac-size-dropdown-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                window.closeSizeDropdown();
+            }
+        });
+
+        window.updateSizeOptions = function(type, defaultVal) {
+            const list = document.getElementById('fac-size-list');
+            const input = document.getElementById('fac-size');
+            const display = document.getElementById('fac-size-display');
+            if (!list || !input || !display) return;
+            
+            const options = sizeOptionsMap[type] || [{value: 'Standard Size', label: 'Standard Size'}, {value: 'Custom Size', label: 'Custom Size'}];
+            
+            // Keep the custom option if it exists in defaultVal but isn't in our standard list
+            if (defaultVal && !options.find(o => o.value === defaultVal)) {
+                options.push({value: defaultVal, label: defaultVal});
+            }
+            
+            list.innerHTML = options.map(opt => `
+                <li>
+                    <button type="button" class="w-full text-left px-4 py-2.5 text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors font-medium text-sm" onclick="selectSizeOption('${opt.value.replace(/'/g, "\\'")}', '${opt.label.replace(/'/g, "\\'")}')">
+                        ${opt.label}
+                    </button>
+                </li>
+            `).join('');
+            
+            if (defaultVal) {
+                input.value = defaultVal;
+                display.textContent = defaultVal;
+                display.classList.remove('text-slate-400');
+                display.classList.add('text-slate-800');
+            } else {
+                input.value = '';
+                display.textContent = 'Select size...';
+                display.classList.remove('text-slate-800');
+                display.classList.add('text-slate-400');
+            }
+        };
+
         window.openSurfaceModal = function() {
-            document.getElementById('surface-form').reset();
-            document.getElementById('surf-id').value = '';
-            document.getElementById('surface-modal-title').textContent = 'Add New Surface';
-            document.getElementById('surf-image-preview').classList.add('hidden');
-            window.localSurfaceImage = '';
-            document.getElementById('add-surface-modal').classList.remove('hidden');
+            try {
+                if (!window.currentFacilityId) {
+                    alert("Please select a facility first before adding a surface.");
+                    return;
+                }
+                document.getElementById('surface-form').reset();
+                document.querySelectorAll('input[name="surf_type_radio"]').forEach(r => r.checked = false);
+                document.getElementById('surf-id').value = '';
+                
+                // Set default type and update sizes
+                document.getElementById('surf-type').value = 'ice';
+                const firstRadio = document.querySelector('input[name="surf_type_radio"][value="ice"]');
+                if (firstRadio) firstRadio.checked = true;
+                if (window.updateSizeOptions) window.updateSizeOptions('ice');
+                
+                document.getElementById('surface-modal-title').textContent = 'Add New Surface';
+                document.getElementById('surf-image-preview').classList.add('hidden');
+                window.localSurfaceImage = '';
+                
+                if (document.getElementById('surf-capacity')) document.getElementById('surf-capacity').textContent = '0';
+                if (document.getElementById('surf-locker-rooms')) document.getElementById('surf-locker-rooms').textContent = '0';
+                
+                if (document.getElementById('fac-has-processing-fee')) {
+                    document.getElementById('fac-has-processing-fee').checked = true;
+                    document.getElementById('processing-fee-amount-container').classList.remove('hidden');
+                }
+                if (document.getElementById('fac-processing-fee-amount')) document.getElementById('fac-processing-fee-amount').value = '15.00';
+                if (document.getElementById('fac-instant')) document.getElementById('fac-instant').checked = true;
+                if (document.getElementById('fac-advance-booking')) document.getElementById('fac-advance-booking').value = '180';
+                if (document.getElementById('fac-pricing-unit')) document.getElementById('fac-pricing-unit').value = 'hour';
+                
+                const rulesContainer = document.getElementById('pricing-rules-container');
+                if (rulesContainer) {
+                    rulesContainer.innerHTML = '';
+                    if (typeof createRuleRow === 'function') createRuleRow();
+                }
+
+                document.getElementById('add-surface-modal').classList.remove('hidden');
+            } catch (e) {
+                alert("Error in openSurfaceModal: " + e.message + "\n" + e.stack);
+            }
         };
 
         window.closeSurfaceModal = function() {
@@ -5908,10 +6151,15 @@
             document.getElementById('surf-name').value = surf.name;
             
             // Re-populate everything else
-            if (document.getElementById('fac-type')) document.getElementById('fac-type').value = surf.type;
+            if (document.getElementById('surf-type')) {
+                document.getElementById('surf-type').value = surf.type;
+                const radio = document.querySelector(`input[name="surf_type_radio"][value="${surf.type}"]`);
+                if (radio) radio.checked = true;
+                if (window.updateSizeOptions) window.updateSizeOptions(surf.type, surf.size_info);
+            }
             if (document.getElementById('fac-size')) document.getElementById('fac-size').value = surf.size_info;
-            if (document.getElementById('fac-capacity')) document.getElementById('fac-capacity').textContent = surf.capacity;
-            if (document.getElementById('fac-locker-rooms')) document.getElementById('fac-locker-rooms').textContent = surf.locker_rooms || 0;
+            if (document.getElementById('surf-capacity')) document.getElementById('surf-capacity').textContent = surf.capacity || 0;
+            if (document.getElementById('surf-locker-rooms')) document.getElementById('surf-locker-rooms').textContent = surf.locker_rooms || 0;
             
             // Amenities
             document.querySelectorAll('.amenity-card').forEach(card => card.classList.remove('border-slate-800', 'bg-slate-50'));
@@ -5933,6 +6181,35 @@
                 prev.classList.remove('hidden');
                 window.localSurfaceImage = surf.image_url;
             }
+
+            if (document.getElementById('fac-pricing-unit')) document.getElementById('fac-pricing-unit').value = surf.pricing_unit || 'hour';
+            if (document.getElementById('fac-has-processing-fee')) {
+                document.getElementById('fac-has-processing-fee').checked = surf.has_processing_fee == 1;
+                document.getElementById('processing-fee-amount-container').classList.toggle('hidden', surf.has_processing_fee != 1);
+            }
+            if (document.getElementById('fac-processing-fee-amount')) document.getElementById('fac-processing-fee-amount').value = surf.processing_fee_amount || 15.00;
+            if (document.getElementById('fac-instant')) document.getElementById('fac-instant').checked = surf.is_instant_book == 1;
+            if (document.getElementById('fac-advance-booking')) document.getElementById('fac-advance-booking').value = surf.advance_booking_days || 180;
+            
+            const rulesContainer = document.getElementById('pricing-rules-container');
+            if (rulesContainer) {
+                rulesContainer.innerHTML = '';
+                if (surf.pricing_rules) {
+                    let parsedRules = surf.pricing_rules;
+                    if (typeof parsedRules === 'string') {
+                         try { parsedRules = JSON.parse(parsedRules); } catch(e){}
+                    }
+                    if (Array.isArray(parsedRules) && parsedRules.length > 0) {
+                        parsedRules.forEach(r => {
+                             if (typeof window.createRuleRow === 'function') window.createRuleRow(r.start, r.end, r.price, r.days);
+                        });
+                    } else {
+                        if (typeof window.createRuleRow === 'function') window.createRuleRow();
+                    }
+                } else {
+                    if (typeof window.createRuleRow === 'function') window.createRuleRow();
+                }
+            }
         };
 
         window.previewSurfaceImage = function(event) {
@@ -5950,9 +6227,8 @@
         };
 
         // Handle Surface Form Submit
-        if (document.getElementById('surface-form')) {
-            document.getElementById('surface-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
+        window.submitSurfaceForm = async function(e) {
+            if (e) e.preventDefault();
                 
                 const surfId = document.getElementById('surf-id').value;
                 const btn = document.getElementById('surf-submit-btn');
@@ -5974,10 +6250,10 @@
 
                 const payload = {
                     name: document.getElementById('surf-name').value,
-                    type: document.getElementById('fac-type') ? document.getElementById('fac-type').value : 'ice',
+                    type: document.getElementById('surf-type') ? document.getElementById('surf-type').value : 'ice',
                     environment: document.getElementById('fac-env') ? document.getElementById('fac-env').value : 'indoor',
-                    locker_rooms: document.getElementById('fac-locker-rooms') ? parseInt(document.getElementById('fac-locker-rooms').textContent, 10) : 0,
-                    capacity: document.getElementById('fac-capacity') ? parseInt(document.getElementById('fac-capacity').textContent, 10) : 0,
+                    locker_rooms: document.getElementById('surf-locker-rooms') ? parseInt(document.getElementById('surf-locker-rooms').textContent, 10) : 0,
+                    capacity: document.getElementById('surf-capacity') ? parseInt(document.getElementById('surf-capacity').textContent, 10) : 0,
                     size_info: document.getElementById('fac-size') ? document.getElementById('fac-size').value : '',
                     amenities: Array.from(document.getElementById('add-surface-modal').querySelectorAll('.amenity-card.border-slate-800')).map(el => el.dataset.amenity),
                     base_price: basePrice,
@@ -6010,15 +6286,22 @@
                     
                     await fetchSurfaces(currentFacilityId);
                     closeSurfaceModal();
+                    
+                    // Show beautiful success pop-up!
+                    const successModal = document.getElementById('surface-success-modal');
+                    if (successModal) {
+                        successModal.classList.remove('hidden');
+                    }
                 } catch (err) {
                     console.error(err);
                     alert("Error saving surface: " + err.message);
                 } finally {
-                    btn.innerHTML = origText;
-                    btn.disabled = false;
+                    if (btn) {
+                        btn.innerHTML = origText;
+                        btn.disabled = false;
+                    }
                 }
-            });
-        }
+            };
 
     </script>
     
@@ -6048,6 +6331,20 @@
 
 
 
+    <!-- Surface Success Modal -->
+    <div id="surface-success-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[120] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden text-center animate-slide-up p-8">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fa-solid fa-check text-4xl text-green-500"></i>
+            </div>
+            <h3 class="text-2xl font-extrabold text-dark mb-2">Success!</h3>
+            <p class="text-slate-500 mb-8 leading-relaxed">Your surface has been successfully saved. It is now active and ready for bookings!</p>
+            <button onclick="document.getElementById('surface-success-modal').classList.add('hidden')" class="w-full bg-primary hover:bg-primaryHover text-white font-bold py-3.5 rounded-xl transition-custom shadow-glow">
+                Awesome
+            </button>
+        </div>
+    </div>
+
 <!-- Add/Edit Surface Modal -->
 <div id="add-surface-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col relative">
@@ -6061,7 +6358,7 @@
             </button>
         </div>
         <div class="p-6 md:p-8">
-            <form id="surface-form" class="space-y-8">
+            <form id="surface-form" class="space-y-8" onsubmit="window.submitSurfaceForm(event)">
                 <input type="hidden" id="surf-id" value="">
                 
                 <div>
@@ -6072,11 +6369,183 @@
                     </div>
                 </div>
 
-                <!-- Move Surface Type here if we want, but let's just copy the fields from section2/3/7/8 -->
-                ${section2 ? $.html(section2) : ''}
-                ${section3 ? $.html(section3) : ''}
-                ${section7 ? $.html(section7) : ''}
-                ${section8 ? $.html(section8) : ''}
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Surface Type</label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="surf_type_radio" value="ice" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
+                                Ice Rink
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="surf_type_radio" value="soccer" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
+                                Soccer Field
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="surf_type_radio" value="basketball" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
+                                Basketball Court
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="surf_type_radio" value="tennis" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
+                                Tennis Court
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="surf_type_radio" value="pickleball" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
+                                Pickleball Court
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="surf_type_radio" value="pool" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
+                                Swimming Pool
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="surf_type_radio" value="football" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
+                                Football Field
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="surf_type_radio" value="gym" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
+                                Training Gym
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="surf_type_radio" value="deck-hockey" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
+                                Deck-Hockey
+                            </div>
+                        </label>
+                    </div>
+                    <input type="hidden" id="surf-type" value="ice">
+                    
+                    <div class="mt-4 relative" id="fac-size-dropdown-wrapper">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Surface Size</label>
+                        <input type="hidden" id="fac-size" value="">
+                        <button type="button" id="fac-size-trigger" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white flex justify-between items-center text-slate-700 font-medium shadow-sm hover:border-slate-400" onclick="if(window.toggleSizeDropdown) window.toggleSizeDropdown()">
+                            <span id="fac-size-display" class="text-slate-400">Select size...</span>
+                            <i class="fa-solid fa-chevron-down text-slate-400 text-sm transition-transform duration-200" id="fac-size-icon"></i>
+                        </button>
+                        
+                        <div id="fac-size-menu" class="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl opacity-0 pointer-events-none transform -translate-y-2 transition-all duration-200 overflow-hidden">
+                            <ul id="fac-size-list" class="max-h-60 overflow-y-auto py-2">
+                                <!-- Options populated dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Surface Basics & Capacity -->
+                <div>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">Share some basics about your place</h2>
+                    
+                    <div class="space-y-6">
+                        <!-- Locker Rooms -->
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100 pb-4">
+                            <span class="text-slate-700 font-semibold">Locker Rooms</span>
+                            <div class="flex items-center gap-4">
+                                <button type="button" onclick="const p=this.nextElementSibling; p.textContent=Math.max(0, parseInt(p.textContent)-1)" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
+                                    <i class="fa-solid fa-minus text-xs"></i>
+                                </button>
+                                <span id="surf-locker-rooms" class="w-4 text-center text-slate-700 font-medium">0</span>
+                                <button type="button" onclick="const p=this.previousElementSibling; p.textContent=parseInt(p.textContent)+1" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Capacity -->
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100 pb-4">
+                            <span class="text-slate-700 font-semibold">Maximum capacity of individuals</span>
+                            <div class="flex items-center gap-4">
+                                <button type="button" onclick="const p=this.nextElementSibling; p.textContent=Math.max(0, parseInt(p.textContent)-5)" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
+                                    <i class="fa-solid fa-minus text-xs"></i>
+                                </button>
+                                <span id="surf-capacity" class="w-6 text-center text-slate-700 font-medium">0</span>
+                                <button type="button" onclick="const p=this.previousElementSibling; p.textContent=parseInt(p.textContent)+5" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing & Booking -->
+                <div>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">Pricing &amp; Booking</h2>
+                    
+                    <div class="mb-5">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Unit</label>
+                        <select id="fac-pricing-unit" class="w-full md:w-1/2 px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
+                            <option value="hour">Per Hour</option>
+                            <option value="half_day">Per Half-Day</option>
+                            <option value="full_day">Per Full Day</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Rules</label>
+                        <p class="text-xs text-slate-500 mb-4">Set up your hourly pricing for different times of the day. The lowest price will be shown as your baseline.</p>
+                        
+                        <div id="pricing-rules-container" class="space-y-3 mb-4">
+                            <!-- Dynamic rule rows go here -->
+                        </div>
+                        
+                        <button type="button" id="add-rule-btn" onclick="if(window.handleAddTimeSlot) window.handleAddTimeSlot();" class="text-sm font-bold text-primary hover:text-primaryHover flex items-center transition-custom bg-primary/10 px-4 py-2 rounded-lg w-fit">
+                            <i class="fa-solid fa-plus mr-2"></i> Add a Time Slot
+                        </button>
+                    </div>
+
+                    <div class="flex flex-col pt-4 border-t border-slate-100 mt-4">
+                        <label class="flex items-center group cursor-pointer mb-2">
+                            <input type="checkbox" id="fac-has-processing-fee" class="w-5 h-5 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer transition-custom" checked="" onchange="document.getElementById('processing-fee-amount-container').classList.toggle('hidden', !this.checked)">
+                            <span class="ml-3 text-sm font-semibold text-slate-700 group-hover:text-dark">Charge Processing Fee</span>
+                        </label>
+                        <div id="processing-fee-amount-container" class="mt-2 pl-8">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Fee Amount ($)</label>
+                            <input type="number" id="fac-processing-fee-amount" min="0" step="0.01" class="w-full md:w-1/3 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white" placeholder="15.00" value="15.00">
+                            <p class="text-xs text-slate-400 mt-1 mb-3">Amount added to the player's total at checkout.</p>
+                            
+                            <div class="bg-blue-50/50 border border-blue-100 rounded-lg p-3 flex items-start max-w-lg">
+                                <i class="fa-solid fa-lightbulb text-blue-500 mt-0.5 mr-2"></i>
+                                <p class="text-xs text-blue-800 leading-relaxed">
+                                    <strong class="font-bold">Recommendation:</strong> We suggest using the processing fee to cover both GameGroundz platform fees and Stripe processing costs. Setting this between $10-$20 usually covers all expenses for a typical booking.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col justify-end pt-4 border-t border-slate-100 mt-4">
+                        <label class="flex items-center group cursor-pointer">
+                            <input type="checkbox" id="fac-instant" class="w-5 h-5 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer transition-custom" checked="">
+                            <span class="ml-3 text-slate-700 font-semibold group-hover:text-dark">Allow Instant Booking</span>
+                        </label>
+                        <p class="text-xs text-slate-400 mt-1 ml-8">Enable players to book without manual approval.</p>
+                    </div>
+
+                    <div class="flex flex-col pt-4 border-t border-slate-100 mt-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Advance Booking Limit (Days)</label>
+                        <input type="number" id="fac-advance-booking" min="1" max="1000" class="w-full md:w-1/3 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white" placeholder="180">
+                        <p class="text-xs text-slate-400 mt-1 mb-3">Maximum number of days in advance a player can book.</p>
+                        
+                        <div class="bg-blue-50/50 border border-blue-100 rounded-lg p-3 flex items-start max-w-lg">
+                            <i class="fa-solid fa-calendar-check text-blue-500 mt-0.5 mr-2"></i>
+                            <p class="text-xs text-blue-800 leading-relaxed">
+                                <strong class="font-bold">Recommendation:</strong> Limit players to booking a maximum of 3-4 months (90-120 days) in advance to maintain flexibility in your schedule for tournaments or seasonal changes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Surface Image Upload -->
                 <div>

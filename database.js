@@ -159,7 +159,14 @@ async function initDatabase() {
         await client.query(`CREATE TABLE IF NOT EXISTS surfaces (
             id SERIAL PRIMARY KEY,
             facility_id INTEGER REFERENCES facilities(id),
+            host_id INTEGER REFERENCES users(id),
             name TEXT NOT NULL,
+            subtitle TEXT DEFAULT '',
+            description TEXT DEFAULT '',
+            location TEXT DEFAULT '',
+            lat REAL,
+            lng REAL,
+            image_url TEXT DEFAULT '',
             type TEXT NOT NULL,
             environment TEXT NOT NULL,
             size_info TEXT DEFAULT '',
@@ -191,6 +198,22 @@ async function initDatabase() {
         try {
             await client.query(`ALTER TABLE facilities ADD COLUMN advance_booking_days INTEGER DEFAULT 180`);
         } catch(e) {}
+        try {
+            await client.query(`ALTER TABLE users ADD COLUMN rating REAL DEFAULT 5.0`);
+            await client.query(`ALTER TABLE users ADD COLUMN reviews_count INTEGER DEFAULT 0`);
+        } catch(e) {}
+
+        // Surface-centric migrations
+        try {
+            await client.query(`ALTER TABLE surfaces ADD COLUMN host_id INTEGER REFERENCES users(id)`);
+            await client.query(`ALTER TABLE surfaces ADD COLUMN subtitle TEXT DEFAULT ''`);
+            await client.query(`ALTER TABLE surfaces ADD COLUMN description TEXT DEFAULT ''`);
+            await client.query(`ALTER TABLE surfaces ADD COLUMN location TEXT DEFAULT ''`);
+            await client.query(`ALTER TABLE surfaces ADD COLUMN lat REAL`);
+            await client.query(`ALTER TABLE surfaces ADD COLUMN lng REAL`);
+            await client.query(`ALTER TABLE surfaces ADD COLUMN image_url TEXT DEFAULT ''`);
+        } catch(e) {}
+
         try {
             await client.query(`ALTER TABLE facilities ADD COLUMN lat REAL`);
             await client.query(`ALTER TABLE facilities ADD COLUMN lng REAL`);
@@ -360,7 +383,7 @@ async function initDatabase() {
 
         // Seed initial Facility data if the table is empty
         const res = await client.query("SELECT COUNT(*) as count FROM facilities");
-        if (parseInt(res.rows[0].count) === 0) {
+        if (false) { // SEEDING DISABLED
             console.log("Seeding initial facility data...");
             
             // Ensure at least one user exists to act as host (to satisfy PG foreign key wrapper)

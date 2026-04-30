@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Search and filter sports facilities by type, environment, and price on GameGroundz.">
-    <title>Find Sports Surfaces | GameGroundz</title>
+    <meta name="description" content="Search and filter public sports sessions by type, environment, and price on GameGroundz.">
+    <title>Find Public Sessions | GameGroundz</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -62,6 +62,7 @@
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-6" id="nav-actions">
                     <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
+                    <a href="public-sessions.html" class="text-primary font-medium transition-custom">Public Sessions</a>
                     <div class="h-6 w-px bg-slate-300"></div>
                     <!-- Profile Puck -->
                                         <div class="relative flex items-center">
@@ -231,8 +232,52 @@
         <div class="flex-1">
             <div class="flex justify-between items-center mb-6">
                 <div>
-                    <h1 class="text-2xl font-bold text-dark">Sports Surfaces in your area</h1>
-                    <p class="text-slate-500 text-sm mt-1" id="results-count">Showing 24 available surfaces</p>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <h1 class="text-2xl font-bold text-dark">Public Sessions in your area</h1>
+                        
+                        <div class="flex flex-wrap items-center gap-2 relative">
+                            <!-- Custom Date Dropdown -->
+                            <div class="relative inline-block text-left text-sm font-normal">
+                                <button id="custom-date-btn" class="flex items-center justify-between bg-white border border-slate-200 hover:border-primary text-slate-700 font-semibold rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm transition-custom min-w-[120px]">
+                                    <span id="custom-date-label">Today</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-2"></i>
+                                </button>
+                                <div id="custom-date-menu" class="hidden absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 overflow-hidden transform origin-top-left transition-all">
+                                    <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="">Any Date</div>
+                                    <div class="date-option px-4 py-2 bg-slate-50 text-primary font-bold cursor-pointer transition-custom" data-value="today">Today</div>
+                                    <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="tomorrow">Tomorrow</div>
+                                    <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom border-t border-slate-50 mt-1 pt-2" data-value="custom">
+                                        <i class="fa-regular fa-calendar mr-2"></i>Custom Date...
+                                    </div>
+                                </div>
+                                <input type="date" id="inline-custom-date" class="absolute opacity-0 w-0 h-0 p-0 pointer-events-none" style="bottom: 0; left: 50%;">
+                                <input type="hidden" id="inline-date-filter" value="today">
+                            </div>
+
+                            <!-- Custom Activity Dropdown -->
+                            <div class="relative inline-block text-left text-sm font-normal">
+                                <button id="custom-activity-btn" class="flex items-center justify-between bg-white border border-slate-200 hover:border-primary text-slate-700 font-semibold rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm transition-custom max-w-[200px]">
+                                    <span id="custom-activity-label" class="truncate">Activity Type</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-2"></i>
+                                </button>
+                                <div id="custom-activity-menu" class="hidden absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 overflow-y-auto max-h-[60vh] transform origin-top-left transition-all custom-scrollbar">
+                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom font-bold" data-value="" data-label="Activity Type">Any Activity</div>
+                                    
+                                    <div class="px-4 py-1.5 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ice Rink</div>
+                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free skating" data-label="Free Skating">Free Skating</div>
+                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free hockey" data-label="Free Hockey">Free Hockey</div>
+                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free hockey (18+)" data-label="Free Hockey (18+)">Free Hockey (18+)</div>
+                                    
+                                    <div class="px-4 py-1.5 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-t border-slate-50 pt-3">Swimming Pool</div>
+                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="swimming lane" data-label="Swimming Lane">Swimming Lane</div>
+                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="open swim and diving board" data-label="Open Swim & Dive">Open Swim and Diving Board</div>
+                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="recreational and family pool" data-label="Rec & Family Pool">Recreational and Family Pool</div>
+                                </div>
+                                <input type="hidden" id="inline-activity-filter" value="">
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-slate-500 text-sm mt-1" id="results-count">Showing 24 upcoming sessions</p>
                 </div>
                 
                 <div class="flex items-center space-x-2">
@@ -495,52 +540,59 @@
             return urlStr || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
         }
 
-        // Function to build standard surface card HTML
-        function createFacilityCard(facility) {
-            const isInstantBook = facility.is_instant_book === 1;
-            const bookStatusHtml = isInstantBook 
-                ? '<span class="text-primary font-bold"><i class="fa-solid fa-bolt mr-1"></i> Instant Book</span>'
-                : '<span class="text-slate-500 font-medium whitespace-nowrap">Request to Book</span>';
+        // Function to build standard facility card HTML
+        function getActivityImage(notes, facilityType, originalUrl) {
+            const text = (notes || '').toLowerCase();
+            if (text.includes('hockey')) return 'https://images.unsplash.com/photo-1515523110800-9415d13b84a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            if (text.includes('skat') || text.includes('patinage') || text.includes('glace')) return 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            if (text.includes('swim') || text.includes('bath') || text.includes('bain') || facilityType === 'pool') return 'https://images.unsplash.com/photo-1530549387789-4c1017266635?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            if (text.includes('soccer') || facilityType === 'turf') return 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            if (text.includes('basketball') || facilityType === 'court') return 'https://images.unsplash.com/photo-1546519638-68e109498ffc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            if (text.includes('pickleball')) return 'https://images.unsplash.com/photo-1622228514120-1a1200fa889c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            
+            try {
+                const parsed = JSON.parse(originalUrl);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+            } catch (e) {}
+            return originalUrl || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+        }
 
-            const typeDisplay = facility.type.charAt(0).toUpperCase() + facility.type.slice(1);
-            const envDisplay = facility.environment.charAt(0).toUpperCase() + facility.environment.slice(1);
+        function createFacilityCard(session) {
+            const typeDisplay = session.facility_type.charAt(0).toUpperCase() + session.facility_type.slice(1);
+            const slots = (typeof session.time_slots === 'string') ? JSON.parse(session.time_slots) : session.time_slots;
+            const timeDisplay = slots && slots.length > 0 ? slots[0] : '';
+            const slotKeys = slots ? slots.map(s => `${session.booking_date}|${s}`) : [];
+            
+            const spotsRemaining = Math.max(0, (session.capacity || 0) - (session.joined_count || 0));
+            const activityName = session.manual_notes || 'Public Session';
+            const displayImage = getActivityImage(session.manual_notes, session.facility_type, session.image_url);
 
-            let topBadges = '';
-            if (facility.active_promotions) {
-                topBadges += `<div class="bg-red-500/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-white shadow-sm flex items-center"><i class="fa-solid fa-tag mr-1"></i> Promo</div>`;
-            }
-            if (isInstantBook) {
-                topBadges += `<div class="bg-primary/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-white shadow-sm">Instant Book</div>`;
-            }
             return `
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick="window.location.href='surface.html?id=${facility.id}'">
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick='sessionStorage.setItem("pending_booking_date", "${session.booking_date}"); sessionStorage.setItem("pending_booking_slots", ${JSON.stringify(JSON.stringify(slotKeys))}); window.location.href="facility.html?id=${session.facility_id}"'>
                     <div class="relative h-48 hover-zoom-img-container">
-                        <img src="${getPrimaryImageUrl(facility.image_url)}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
-                        <div class="absolute top-3 left-3 right-3 flex flex-wrap gap-2 z-20 max-w-[calc(100%-1.5rem)]">
-                            <div class="bg-white/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-slate-800 border border-slate-200">
-                                <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating} (${facility.reviews_count})
+                        <img src="${displayImage}" alt="${session.facility_name}" class="w-full h-full object-cover bg-slate-100">
+                        <div class="absolute top-3 left-3 flex flex-wrap gap-2 z-20">
+                            <div class="bg-primary/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-white shadow-sm flex items-center">
+                                <i class="fa-solid fa-users mr-1"></i> ${activityName}
                             </div>
-                            ${topBadges}
                         </div>
-                        <button class="absolute bottom-3 right-3 w-8 h-8 bg-white/80 hover:bg-white backdrop-blur rounded-full flex items-center justify-center text-slate-500 hover:text-red-500 transition-custom z-10 shadow-sm">
-                            <i class="fa-regular fa-heart text-sm"></i>
-                        </button>
                     </div>
                     <div class="p-5">
                         <div class="flex justify-between items-start mb-1">
-                            <h3 class="text-lg font-bold text-dark group-hover:text-primary transition-custom truncate pr-4">${facility.name}</h3>
-                            <span class="font-bold text-dark whitespace-nowrap">From $${facility.base_price}<span class="text-xs font-normal text-slate-500">${facility.pricing_unit === 'half_day' ? '/ half-day' : (facility.pricing_unit === 'full_day' ? '/ day' : '/hr')}</span></span>
+                            <h3 class="text-lg font-bold text-dark group-hover:text-primary transition-custom truncate pr-4">${session.facility_name}</h3>
+                            <span class="font-bold text-dark whitespace-nowrap">From $${session.participant_price || 0}<span class="text-xs font-normal text-slate-500">/pp</span></span>
                         </div>
                         <p class="text-slate-500 text-xs mb-3 flex items-center">
-                            <i class="fa-solid fa-location-dot mr-1"></i> ${facility.location}
+                            <i class="fa-solid fa-location-dot mr-1"></i> ${session.location}
                         </p>
                         <div class="flex gap-1.5 mb-4 overflow-hidden">
                             <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[11px] font-semibold whitespace-nowrap">${typeDisplay}</span>
-                            <span class="px-2 py-0.5 bg-slate-100 text-slate-600 border border-transparent rounded text-[11px] font-semibold whitespace-nowrap">${envDisplay}</span>
                         </div>
                         <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-3 gap-y-2 text-xs">
-                            ${bookStatusHtml}
-                            <span class="text-slate-500 font-medium">Available Today</span>
+                            <div class="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold text-slate-600">
+                                ${session.booking_date} ${timeDisplay}
+                            </div>
+                            <span class="text-xs font-semibold ${spotsRemaining > 0 ? 'text-primary' : 'text-red-500'}">${spotsRemaining} spots left</span>
                         </div>
                     </div>
                 </div>
@@ -550,17 +602,15 @@
         let map;
         let markers = [];
         let currentPage = 1;
-        const limitPerPage = 50; // Increased to fetch all relevant facilities for the map
-        let allFetchedFacilities = []; // Store fetched facilities globally
+        const limitPerPage = 50; 
+        let allFetchedFacilities = []; 
 
         function initMap() {
-            // Default center around Montreal
             map = L.map('map').setView([45.5017, -73.5673], 10);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
             }).addTo(map);
 
-            // Listen for map move/zoom events
             map.on('moveend', () => {
                 updateListingsFromMapBounds();
             });
@@ -568,31 +618,16 @@
 
         function updateMapMarkers(facilities, preventFitBounds = false) {
             if (!map) return;
-            
-            // Clear existing
             markers.forEach(m => map.removeLayer(m));
             markers = [];
-
             if (facilities.length === 0) return;
 
             const bounds = L.latLngBounds();
-            
-            // Group facilities by exact coordinate (rounded to 5 decimals to catch ~1m differences)
             const groupedFacilities = {};
 
             facilities.forEach((f, i) => {
-                let actualLat, actualLng;
-                
-                if (f.lat && f.lng) {
-                    actualLat = f.lat;
-                    actualLng = f.lng;
-                } else {
-                    // Fallback visually if missing coordinates
-                    actualLat = 45.5017 + (Math.random() - 0.5) * 0.2;
-                    actualLng = -73.5673 + (Math.random() - 0.5) * 0.2;
-                    f.lat = actualLat;
-                    f.lng = actualLng;
-                }
+                let actualLat = f.lat || 45.5017 + (Math.random() - 0.5) * 0.2;
+                let actualLng = f.lng || -73.5673 + (Math.random() - 0.5) * 0.2;
                 
                 const key = `${actualLat.toFixed(5)}_${actualLng.toFixed(5)}`;
                 if (!groupedFacilities[key]) {
@@ -601,23 +636,26 @@
                 groupedFacilities[key].items.push(f);
             });
 
-            // Render each grouped marker
             Object.values(groupedFacilities).forEach(group => {
                 const marker = L.marker([group.lat, group.lng]).addTo(map);
-                
                 let popupContent = `<div class="max-h-[300px] overflow-y-auto space-y-4 pr-2 custom-scrollbar">`;
                 
-                // Add a header if multiple facilities are under the exact same roof
                 if (group.items.length > 1) {
-                    popupContent += `<div class="text-xs font-bold text-slate-500 uppercase tracking-wide border-b border-slate-200 pb-1 mb-2">${group.items.length} Facilities Here</div>`;
+                    popupContent += `<div class="text-xs font-bold text-slate-500 uppercase tracking-wide border-b border-slate-200 pb-1 mb-2">${group.items.length} Sessions Here</div>`;
                 }
                 
-                group.items.forEach(f => {
+                group.items.forEach(session => {
+                    const activityName = session.manual_notes || 'Public Session';
+                    const displayImage = getActivityImage(session.manual_notes, session.facility_type, session.image_url);
+                    const slots = (typeof session.time_slots === 'string') ? JSON.parse(session.time_slots) : session.time_slots;
+                    const timeDisplay = slots && slots.length > 0 ? slots[0] : '';
+
                     popupContent += `
-                        <div class="w-48 cursor-pointer ${group.items.length > 1 ? 'border-b border-slate-100 pb-3 last:border-0 last:pb-0' : ''}" onclick="window.location.href='surface.html?id=${f.id}'">
-                            <img src="${getPrimaryImageUrl(f.primary_image || f.image_url)}" class="w-full h-24 object-cover rounded-lg mb-2">
-                            <div class="font-bold text-sm truncate hover:text-primary transition-custom">${f.name}</div>
-                            <div class="font-bold text-primary">From $${f.base_price}<span class="text-xs text-slate-500 font-normal">${f.pricing_unit === 'half_day' ? '/ half-day' : (f.pricing_unit === 'full_day' ? '/ day' : '/hr')}</span></div>
+                        <div class="w-48 cursor-pointer ${group.items.length > 1 ? 'border-b border-slate-100 pb-3 last:border-0 last:pb-0' : ''}" onclick="window.location.href='facility.html?id=${session.facility_id}'">
+                            <img src="${displayImage}" class="w-full h-24 object-cover rounded-lg mb-2">
+                            <div class="font-bold text-sm truncate hover:text-primary transition-custom">${session.facility_name}</div>
+                            <div class="text-xs text-slate-500 mb-1">${activityName} - ${session.booking_date} ${timeDisplay}</div>
+                            <div class="font-bold text-primary">From $${session.participant_price || 0}<span class="text-xs text-slate-500 font-normal">/pp</span></div>
                         </div>
                     `;
                 });
@@ -628,7 +666,6 @@
                 bounds.extend([group.lat, group.lng]);
             });
 
-            // Set a slightly tighter padding and lower maxZoom for better context display
             if (!preventFitBounds) {
                 map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12, animate: false });
             }
@@ -644,8 +681,6 @@
 
             if (isMapVisible) {
                 const bounds = map.getBounds();
-                
-                // Filter facilities that fall within the current map view
                 visibleFacilities = allFetchedFacilities.filter(f => {
                     if (f.lat && f.lng) {
                         return bounds.contains(L.latLng(f.lat, f.lng));
@@ -653,11 +688,9 @@
                     return false;
                 });
             } else {
-                // Map is hidden (e.g., mobile), filter by distance from map center (50km radius)
                 const center = map.getCenter();
                 visibleFacilities = allFetchedFacilities.filter(f => {
                     if (f.lat && f.lng) {
-                        // distanceTo returns distance in meters
                         return center.distanceTo(L.latLng(f.lat, f.lng)) < 50000; 
                     }
                     return false;
@@ -668,21 +701,19 @@
             
             if (visibleFacilities.length === 0) {
                  const msgSuffix = isMapVisible ? ' in this map area' : '';
-                 facilitiesGrid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 text-lg">No facilities match your criteria${msgSuffix}.</div>`;
-                 resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">0</span> available facilities`;
+                 facilitiesGrid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 text-lg">No sessions match your criteria${msgSuffix}.</div>`;
+                 resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">0</span> upcoming sessions`;
             } else {
                 visibleFacilities.forEach(facility => {
                     facilitiesGrid.innerHTML += createFacilityCard(facility);
                 });
                 const msgSuffix = isMapVisible ? ' in this area' : '';
-                resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">${visibleFacilities.length}</span> facilities${msgSuffix}`;
+                resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">${visibleFacilities.length}</span> sessions${msgSuffix}`;
             }
             
-            // Hide pagination since we are scrolling the map now
             pagination.classList.add('hidden');
         }
 
-        // Handle window resize to invalidate map size if it becomes visible
         window.addEventListener('resize', () => {
             const mapViewEl = document.getElementById('map-view');
             if (map && mapViewEl && window.getComputedStyle(mapViewEl).display !== 'none') {
@@ -697,44 +728,83 @@
             try {
                 facilitiesGrid.style.opacity = '0.5';
                 
-                const params = new URLSearchParams();
-                if (filters.maxPrice && filters.maxPrice < 300) params.append('maxPrice', filters.maxPrice);
-                if (filters.environment) params.append('environment', filters.environment);
-                if (filters.types && filters.types.length > 0) params.append('types', filters.types.join(','));
-                if (filters.search) params.append('search', filters.search);
-                
-                const dateVal = filters.date !== undefined ? filters.date : (document.getElementById('sidebarDateSearch') ? document.getElementById('sidebarDateSearch').value : '');
-                const timeVal = filters.time !== undefined ? filters.time : (document.getElementById('sidebarTimeSearch') ? document.getElementById('sidebarTimeSearch').value : '');
-                
-                if (dateVal) params.append('date', dateVal);
-                if (timeVal) params.append('time', timeVal);
-                
-                params.append('limit', limitPerPage);
-                params.append('offset', (currentPage - 1) * limitPerPage);
-                
                 const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
-                const response = await fetch(`${API_BASE_URL}/api/public/surfaces?` + params.toString());
+                const response = await fetch(`${API_BASE_URL}/api/public_sessions/upcoming/all`);
                 
                 if (!response.ok) throw new Error(`Server returned ${response.status}`);
-                const data = await response.json();
-                allFetchedFacilities = data; // Store globally
+                let data = await response.json();
+                
+                // Client-side filtering
+                if (filters.maxPrice !== undefined && filters.maxPrice < 300) {
+                    data = data.filter(s => (s.participant_price || 0) <= filters.maxPrice);
+                }
+                if (filters.types && filters.types.length > 0) {
+                    data = data.filter(s => filters.types.includes(s.facility_type));
+                }
+                if (filters.search) {
+                    const searchLower = filters.search.toLowerCase();
+                    data = data.filter(s => 
+                        (s.facility_name && s.facility_name.toLowerCase().includes(searchLower)) ||
+                        (s.location && s.location.toLowerCase().includes(searchLower)) ||
+                        (s.manual_notes && s.manual_notes.toLowerCase().includes(searchLower))
+                    );
+                }
+                
+                // Date logic (combines sidebar and inline)
+                const inlineDate = document.getElementById('inline-date-filter')?.value;
+                const customDate = document.getElementById('inline-custom-date')?.value;
+                let targetDate = filters.date || '';
+                
+                if (!targetDate) {
+                    if (inlineDate === 'today') {
+                        // Use local date string formatting to avoid timezone issues
+                        const today = new Date();
+                        const tzOffset = today.getTimezoneOffset() * 60000;
+                        targetDate = (new Date(today - tzOffset)).toISOString().split('T')[0];
+                    } else if (inlineDate === 'tomorrow') {
+                        const tmrw = new Date();
+                        tmrw.setDate(tmrw.getDate() + 1);
+                        const tzOffset = tmrw.getTimezoneOffset() * 60000;
+                        targetDate = (new Date(tmrw - tzOffset)).toISOString().split('T')[0];
+                    } else if (inlineDate === 'custom' && customDate) {
+                        targetDate = customDate;
+                    }
+                }
+                
+                if (targetDate) {
+                    data = data.filter(s => s.booking_date === targetDate);
+                }
+                
+                // Activity logic
+                const inlineActivity = document.getElementById('inline-activity-filter')?.value;
+                if (inlineActivity) {
+                    const actLower = inlineActivity.toLowerCase();
+                    // Some notes might use french equivalents, so we should map them loosely if needed
+                    data = data.filter(s => s.manual_notes && s.manual_notes.toLowerCase().includes(actLower) || 
+                        (actLower === 'free skating' && s.manual_notes && (s.manual_notes.toLowerCase().includes('patinage') || s.manual_notes.toLowerCase().includes('libre'))) ||
+                        (actLower === 'free hockey' && s.manual_notes && (s.manual_notes.toLowerCase().includes('hockey libre') || s.manual_notes.toLowerCase().includes('bâton'))) ||
+                        (actLower === 'swimming lane' && s.manual_notes && (s.manual_notes.toLowerCase().includes('corridor') || s.manual_notes.toLowerCase().includes('longueur'))) ||
+                        (actLower === 'recreational and family pool' && s.manual_notes && (s.manual_notes.toLowerCase().includes('bain libre') || s.manual_notes.toLowerCase().includes('récréatif')))
+                    );
+                }
+                // (Note: ignoring environment filter since public sessions don't return environment info easily without joining, but if needed we could add it)
+                
+                allFetchedFacilities = data;
                 
                 facilitiesGrid.innerHTML = '';
                 if (data.length === 0) {
-                    facilitiesGrid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 text-lg">No facilities match your criteria. Try adjusting your filters.</div>';
-                    resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">0</span> available facilities`;
+                    facilitiesGrid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 text-lg">No sessions match your criteria. Try adjusting your filters.</div>';
+                    resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">0</span> upcoming sessions`;
                     pagination.classList.add('hidden');
                     updateMapMarkers([]);
                 } else {
                     updateMapMarkers(data, preventFitBounds);
-                    // Instead of raw render, we trigger the map bounds render immediately
-                    // The map bounds might take a fraction of a second to settle after fitBounds
                     setTimeout(updateListingsFromMapBounds, 50);
                 }
                 facilitiesGrid.style.opacity = '1';
                 
             } catch (error) {
-                console.error("Error fetching facilities:", error);
+                console.error("Error fetching sessions:", error);
                 facilitiesGrid.innerHTML = `<div class="col-span-full bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 text-center">${error.message}</div>`;
                 facilitiesGrid.style.opacity = '1';
             }
@@ -1042,6 +1112,131 @@
             } catch (e) { }
         });
 
+        
+        // Inline filter event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            const inlineDateFilter = document.getElementById('inline-date-filter');
+            const inlineCustomDate = document.getElementById('inline-custom-date');
+            const inlineActivityFilter = document.getElementById('inline-activity-filter');
+            const applyFiltersBtn = document.getElementById('apply-filters-btn');
+            
+            // Custom Date Logic
+            const dateBtn = document.getElementById('custom-date-btn');
+            const dateMenu = document.getElementById('custom-date-menu');
+            const dateLabel = document.getElementById('custom-date-label');
+            const dateOptions = document.querySelectorAll('.date-option');
+            
+            if (dateBtn && dateMenu) {
+                dateBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dateMenu.classList.toggle('hidden');
+                    document.getElementById('custom-activity-menu')?.classList.add('hidden');
+                });
+                
+                dateOptions.forEach(opt => {
+                    opt.addEventListener('click', (e) => {
+                        const val = opt.getAttribute('data-value');
+                        
+                        if (val === 'custom') {
+                            dateMenu.classList.add('hidden');
+                            if (inlineCustomDate.showPicker) {
+                                inlineCustomDate.showPicker();
+                            } else {
+                                inlineCustomDate.focus();
+                            }
+                            return; // Wait for picker to change
+                        }
+                        
+                        // Update UI & Value
+                        inlineDateFilter.value = val;
+                        dateLabel.textContent = opt.textContent.trim();
+                        dateMenu.classList.add('hidden');
+                        
+                        // Update active state
+                        dateOptions.forEach(o => {
+                            o.classList.remove('bg-slate-50', 'text-primary', 'font-bold');
+                            if(o !== opt) o.classList.add('hover:bg-slate-50', 'text-slate-700');
+                        });
+                        opt.classList.add('bg-slate-50', 'text-primary', 'font-bold');
+                        opt.classList.remove('hover:bg-slate-50', 'text-slate-700');
+                        
+                        // Reset custom date input just in case
+                        if(inlineCustomDate) inlineCustomDate.value = '';
+                        
+                        if(applyFiltersBtn) applyFiltersBtn.click();
+                    });
+                });
+                
+                if (inlineCustomDate) {
+                    inlineCustomDate.addEventListener('change', (e) => {
+                        if (e.target.value) {
+                            inlineDateFilter.value = 'custom';
+                            dateLabel.textContent = e.target.value; // Show actual date
+                            
+                            // Highlight custom option
+                            dateOptions.forEach(o => o.classList.remove('bg-slate-50', 'text-primary', 'font-bold'));
+                            const customOpt = Array.from(dateOptions).find(o => o.getAttribute('data-value') === 'custom');
+                            if(customOpt) {
+                                customOpt.classList.add('bg-slate-50', 'text-primary', 'font-bold');
+                                // Do not change the textContent of customOpt, keep it "Custom Date..."
+                            }
+                            
+                            if(applyFiltersBtn) applyFiltersBtn.click();
+                        } else {
+                            // If they cancelled the picker
+                            inlineDateFilter.value = '';
+                            dateLabel.textContent = 'Any Date';
+                            dateOptions.forEach(o => o.classList.remove('bg-slate-50', 'text-primary', 'font-bold'));
+                            const anyOpt = Array.from(dateOptions).find(o => o.getAttribute('data-value') === '');
+                            if(anyOpt) anyOpt.classList.add('bg-slate-50', 'text-primary', 'font-bold');
+                            
+                            if(applyFiltersBtn) applyFiltersBtn.click();
+                        }
+                    });
+                }
+            }
+            
+            // Custom Activity Logic
+            const activityBtn = document.getElementById('custom-activity-btn');
+            const activityMenu = document.getElementById('custom-activity-menu');
+            const activityLabel = document.getElementById('custom-activity-label');
+            const activityOptions = document.querySelectorAll('.activity-option');
+            
+            if (activityBtn && activityMenu) {
+                activityBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    activityMenu.classList.toggle('hidden');
+                    document.getElementById('custom-date-menu')?.classList.add('hidden');
+                });
+                
+                activityOptions.forEach(opt => {
+                    opt.addEventListener('click', (e) => {
+                        const val = opt.getAttribute('data-value');
+                        const label = opt.getAttribute('data-label');
+                        
+                        inlineActivityFilter.value = val;
+                        activityLabel.textContent = label;
+                        activityMenu.classList.add('hidden');
+                        
+                        activityOptions.forEach(o => {
+                            o.classList.remove('bg-slate-50', 'text-primary', 'font-bold');
+                            if(o !== opt) o.classList.add('hover:bg-slate-50', 'text-slate-600');
+                        });
+                        opt.classList.add('bg-slate-50', 'text-primary', 'font-bold');
+                        opt.classList.remove('hover:bg-slate-50', 'text-slate-600');
+                        
+                        if(applyFiltersBtn) applyFiltersBtn.click();
+                    });
+                });
+            }
+            
+            // Close menus when clicking outside
+            document.addEventListener('click', () => {
+                if (dateMenu && !dateMenu.classList.contains('hidden')) dateMenu.classList.add('hidden');
+                if (activityMenu && !activityMenu.classList.contains('hidden')) activityMenu.classList.add('hidden');
+            });
+        });
+        
         // Mobile Filter & Map Logic
         document.addEventListener('DOMContentLoaded', () => {
             const filtersSidebar = document.getElementById('filters-sidebar');

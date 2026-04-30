@@ -682,9 +682,9 @@ app.get('/api/municipalities', (req, res) => {
     });
 });
 
-// GET and POST all facilities (with optional filtering)
-app.all('/api/facilities', (req, res) => {
-    const paramsSource = req.method === 'POST' ? { ...req.query, ...req.body } : req.query;
+// GET all facilities (with optional filtering)
+app.get('/api/facilities', (req, res) => {
+    const paramsSource = req.query;
     const { type, types, environment, maxPrice, limit, offset, search } = paramsSource;
     
     let query = "SELECT f.* FROM facilities f WHERE f.listing_status = 'approved'";
@@ -729,7 +729,7 @@ app.all('/api/facilities', (req, res) => {
 
     if (req.query.search) {
         const primarySearchTerm = req.query.search.split(',')[0].trim();
-        query += " AND (f.name ILIKE ? OR f.location ILIKE ? OR f.subtitle ILIKE ?)";
+        query += " AND (f.name LIKE ? OR f.location LIKE ? OR f.subtitle LIKE ?)";
         params.push(`%${primarySearchTerm}%`, `%${primarySearchTerm}%`, `%${primarySearchTerm}%`);
     }
 
@@ -1123,6 +1123,231 @@ app.put('/api/host/facilities/:id', (req, res) => {
 
 // --- SURFACES ENDPOINTS ---
 
+// GET all public surfaces (with fallback to facility location/info)
+app.get('/api/public/surfaces', (req, res) => {
+    const { limit, search } = req.query;
+    
+    let query = `
+        SELECT 
+            s.*, 
+            f.name as facility_name, 
+            f.operating_hours as effective_operating_hours,
+            COALESCE(NULLIF(s.location, ''), f.location) as effective_location,
+            COALESCE(s.lat, f.lat) as effective_lat,
+            COALESCE(s.lng, f.lng) as effective_lng
+        FROM surfaces s
+        LEFT JOIN facilities f ON s.facility_id = f.id
+        WHERE s.status != 'deleted' AND (f.id IS NULL OR f.listing_status = 'approved')
+    `;
+    const params = [];
+
+    if (search) {
+        const primarySearchTerm = search.split(',')[0].trim();
+        query += " AND (s.name LIKE ? OR f.name LIKE ? OR COALESCE(s.location, f.location) LIKE ?)";
+        params.push(`%${primarySearchTerm}%`, `%${primarySearchTerm}%`, `%${primarySearchTerm}%`);
+    }
+
+    query += " ORDER BY s.id DESC";
+
+    if (limit && !isNaN(limit)) {
+        query += " LIMIT ?";
+        params.push(limit);
+    }
+
+    db.all(query, params, (err, surfaces) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        // Fetch images for these surfaces
+        if (surfaces.length === 0) return res.json([]);
+        const surfaceIds = surfaces.map(s => s.id);
+        const placeholders = surfaceIds.map(() => '?').join(',');
+        
+        db.all(`SELECT * FROM surface_images WHERE surface_id IN (${placeholders})`, surfaceIds, (err, images) => {
+            const imagesMap = {};
+            (images || []).forEach(img => {
+                if (!imagesMap[img.surface_id]) imagesMap[img.surface_id] = [];
+                imagesMap[img.surface_id].push(img);
+            });
+            
+            const tzOffset = -4 * 60; // Assuming EST/EDT
+            const now = new Date(Date.now() + tzOffset * 60 * 1000);
+            const todayDateStr = now.toISOString().split('T')[0];
+            const todayTimeStr = now.toISOString().split('T')[1].substring(0, 5);
+            const dayOfWeek = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][now.getUTCDay()];
+
+            db.all(`SELECT surface_id, start_time, end_time FROM reservations WHERE date = ? AND status != 'cancelled'`, [todayDateStr], (err, bookings) => {
+                const bookedMap = {};
+                (bookings || []).forEach(b => {
+                    const sid = b.surface_id;
+                    if (!bookedMap[sid]) bookedMap[sid] = new Set();
+                    
+                    let curr = b.start_time;
+                    while (curr < b.end_time) {
+                        bookedMap[sid].add(curr);
+                        let [h, m] = curr.split(':').map(Number);
+                        m += 30;
+                        if (m >= 60) { h++; m -= 60; }
+                        curr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                    }
+                });
+
+                db.all("SELECT * FROM discounts", [], (err, allDiscounts) => {
+                    surfaces.forEach(s => {
+                        s.images = imagesMap[s.id] || [];
+                        s.primary_image = s.images.length > 0 ? s.images[0].image_url : (s.image_url || s.facility_image_url);
+
+                        const facDiscounts = (allDiscounts || []).filter(d => d.facility_id === s.facility_id || d.facility_id === null);
+                        const activeDiscounts = facDiscounts.filter(dist => {
+                            const sdStr = dist.start_date ? (typeof dist.start_date === 'string' ? dist.start_date.split('T')[0] : dist.start_date.toISOString().split('T')[0]) : null;
+                            const edStr = dist.end_date ? (typeof dist.end_date === 'string' ? dist.end_date.split('T')[0] : dist.end_date.toISOString().split('T')[0]) : null;
+
+                            if (sdStr && sdStr > todayDateStr) return false;
+                            if (edStr && edStr < todayDateStr) return false;
+                            if (dist.recurring_day && dist.recurring_day !== dayOfWeek) return false;
+                            if (dist.start_time && dist.end_time) {
+                                if (todayTimeStr >= dist.end_time) return false;
+                            }
+                            return true;
+                        });
+
+                        s.active_promotions = activeDiscounts.length > 0;
+
+                        const availableSlots = [];
+                        let opHours = { open: "06:00", close: "23:00" };
+                        try {
+                            if (s.effective_operating_hours) {
+                                opHours = typeof s.effective_operating_hours === 'string' ? JSON.parse(s.effective_operating_hours) : s.effective_operating_hours;
+                            }
+                        } catch(e){}
+
+                        const isWeekend = dayOfWeek === 'Saturday' || dayOfWeek === 'Sunday';
+                        if (isWeekend && opHours.weekend_open) {
+                            opHours.open = opHours.weekend_open;
+                            opHours.close = opHours.weekend_close || opHours.close;
+                        }
+
+                        const startHour = parseInt(opHours.open.split(':')[0], 10);
+                        let endHour = parseInt(opHours.close.split(':')[0], 10);
+                        if (endHour === 0 && opHours.close === "24:00") endHour = 24;
+
+                        const bSet = bookedMap[s.id] || new Set();
+
+                        for (let hour = startHour; hour < endHour; hour++) {
+                            const strH = hour.toString().padStart(2, '0');
+                            const slot1 = `${strH}:00`;
+                            const slot2 = `${strH}:30`;
+                            
+                            [slot1, slot2].forEach(slot => {
+                                if (slot > todayTimeStr) {
+                                    if (!bSet.has(slot)) {
+                                        let hasDiscount = false;
+                                        activeDiscounts.forEach(dist => {
+                                            if (dist.start_time && dist.end_time) {
+                                                if (slot >= dist.start_time && slot < dist.end_time) hasDiscount = true;
+                                            } else {
+                                                hasDiscount = true;
+                                            }
+                                        });
+                                        availableSlots.push({ time: slot, discount: hasDiscount });
+                                    }
+                                }
+                            });
+                        }
+
+                        s.display_slots_today = availableSlots.slice(0, 3);
+                    });
+                    
+                    res.json(surfaces);
+                });
+            });
+        });
+    });
+});
+
+// GET a specific surface by ID
+app.get('/api/public/surfaces/:id', (req, res) => {
+    const query = `
+        SELECT 
+            s.*, 
+            f.name as facility_name, 
+            f.host_id,
+            f.description as facility_description,
+            f.amenities as facility_amenities,
+            f.features as facility_features,
+            COALESCE(NULLIF(s.location, ''), f.location) as effective_location,
+            COALESCE(s.lat, f.lat) as effective_lat,
+            COALESCE(s.lng, f.lng) as effective_lng,
+            f.operating_hours as effective_operating_hours,
+            u.profile_picture as host_profile_picture,
+            u.company_name,
+            u.first_name || ' ' || u.last_name as host_name
+        FROM surfaces s
+        LEFT JOIN facilities f ON s.facility_id = f.id
+        LEFT JOIN users u ON COALESCE(s.host_id, f.host_id) = u.id
+        WHERE s.id = ? AND s.status != 'deleted'
+    `;
+    db.get(query, [req.params.id], (err, surface) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!surface) return res.status(404).json({ error: "Surface not found" });
+        
+        // Inherit facility fields if surface fields are empty
+        surface.description = surface.description || surface.facility_description;
+        
+        const isEmptyJSON = (val) => !val || val === '' || val === '[]' || val === '"{}"';
+        
+        if (isEmptyJSON(surface.amenities)) {
+            surface.amenities = surface.facility_amenities || '[]';
+        }
+        
+        if (isEmptyJSON(surface.features)) {
+            surface.features = surface.facility_features || '[]';
+        }
+        
+        db.all("SELECT * FROM surface_images WHERE surface_id = ?", [surface.id], (err, images) => {
+            surface.images = images || [];
+            
+            db.all("SELECT * FROM discounts WHERE is_active = 1 AND (facility_id = ? OR surface_id = ? OR (facility_id IS NULL AND surface_id IS NULL))", [surface.facility_id, surface.id], (err, discounts) => {
+                surface.discounts = discounts || [];
+                res.json(surface);
+            });
+        });
+    });
+});
+
+// POST a standalone surface
+app.post('/api/host/surfaces/standalone', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+    
+    const { name, subtitle, description, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, images, location, lat, lng } = req.body;
+    
+    if (!name || !type || !environment || base_price === undefined || !location) {
+        return res.status(400).json({ error: "Missing required surface fields (including location)" });
+    }
+    
+    // For a standalone surface, we insert it with facility_id = NULL
+    db.run(`INSERT INTO surfaces (facility_id, host_id, name, subtitle, description, location, lat, lng, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [req.session.userId, name, subtitle || '', description || '', location, lat || null, lng || null, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(pricing_rules || []), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, has_processing_fee === false ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0],
+        function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            const surfaceId = this.lastID;
+            
+            // Surface added successfully
+            
+            if (images && images.length > 0) {
+                let inserted = 0;
+                images.forEach((img, idx) => {
+                    db.run("INSERT INTO surface_images (surface_id, image_url, is_primary) VALUES (?, ?, ?)", [surfaceId, img, idx === 0 ? 1 : 0], () => {
+                        inserted++;
+                        if (inserted === images.length) res.json({ message: "Surface added", surfaceId });
+                    });
+                });
+            } else {
+                res.json({ message: "Surface added", surfaceId });
+            }
+        }
+    );
+});
+
 // GET surfaces for a facility
 app.get('/api/facilities/:id/surfaces', (req, res) => {
     db.all("SELECT * FROM surfaces WHERE facility_id = ? AND status != 'deleted'", [req.params.id], (err, surfaces) => {
@@ -1152,14 +1377,14 @@ app.post('/api/host/facilities/:id/surfaces', (req, res) => {
     db.get("SELECT id FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", [facilityId, req.session.userId, `%"${req.session.email}"%`], (err, fac) => {
         if (err || !fac) return res.status(404).json({ error: "Facility not found or unauthorized" });
         
-        const { name, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, images } = req.body;
+        const { name, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url, images } = req.body;
         
         if (!name || !type || !environment || base_price === undefined) {
             return res.status(400).json({ error: "Missing required surface fields" });
         }
         
-        db.run(`INSERT INTO surfaces (facility_id, name, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [facilityId, name, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(pricing_rules || []), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, has_processing_fee === false ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0],
+        db.run(`INSERT INTO surfaces (facility_id, name, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [facilityId, name, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(pricing_rules || []), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, (has_processing_fee === false || has_processing_fee === 0) ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0, image_url || null],
             function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 const surfaceId = this.lastID;
@@ -1173,6 +1398,7 @@ app.post('/api/host/facilities/:id/surfaces', (req, res) => {
                             if (inserted === images.length) res.status(201).json({ message: "Surface created", id: surfaceId });
                         });
                     });
+
                 } else {
                     res.status(201).json({ message: "Surface created", id: surfaceId });
                 }
@@ -1192,10 +1418,10 @@ app.put('/api/host/surfaces/:id', (req, res) => {
         db.get("SELECT id FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", [surface.facility_id, req.session.userId, `%"${req.session.email}"%`], (err, fac) => {
             if (err || !fac) return res.status(401).json({ error: "Unauthorized" });
             
-            const { name, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, images } = req.body;
+            const { name, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url, images } = req.body;
             
-            db.run(`UPDATE surfaces SET name=?, type=?, environment=?, size_info=?, capacity=?, base_price=?, pricing_rules=?, features=?, amenities=?, is_instant_book=?, advance_booking_days=?, has_processing_fee=?, processing_fee_amount=?, pricing_unit=?, locker_rooms=? WHERE id=?`,
-                [name, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(pricing_rules || []), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, has_processing_fee === false ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0, surfaceId],
+            db.run(`UPDATE surfaces SET name=?, type=?, environment=?, size_info=?, capacity=?, base_price=?, pricing_rules=?, features=?, amenities=?, is_instant_book=?, advance_booking_days=?, has_processing_fee=?, processing_fee_amount=?, pricing_unit=?, locker_rooms=?, image_url=? WHERE id=?`,
+                [name, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(pricing_rules || []), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, (has_processing_fee === false || has_processing_fee === 0) ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0, image_url || null, surfaceId],
                 function(err) {
                     if (err) return res.status(500).json({ error: err.message });
                     
@@ -1361,7 +1587,27 @@ app.get('/api/host/facilities', (req, res) => {
     
     db.all("SELECT * FROM facilities WHERE host_id = ? OR co_host_emails LIKE ? ORDER BY sort_order ASC, id DESC", [req.session.userId, `%"${req.session.email}"%`], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
+        
+        if (rows.length === 0) return res.json([]);
+        
+        const facilityIds = rows.map(f => f.id);
+        const placeholders = facilityIds.map(() => '?').join(',');
+        
+        db.all(`SELECT id, facility_id, name, type, environment FROM surfaces WHERE facility_id IN (${placeholders}) AND status != 'deleted' ORDER BY id ASC`, facilityIds, (err, surfaces) => {
+            if (err) return res.status(500).json({ error: err.message });
+            
+            const surfacesByFac = {};
+            surfaces.forEach(s => {
+                if (!surfacesByFac[s.facility_id]) surfacesByFac[s.facility_id] = [];
+                surfacesByFac[s.facility_id].push(s);
+            });
+            
+            rows.forEach(fac => {
+                fac.surfaces = surfacesByFac[fac.id] || [];
+            });
+            
+            res.json(rows);
+        });
     });
 });
 
@@ -1489,9 +1735,9 @@ app.post('/api/host/block-time', (req, res) => {
         return res.status(401).json({ error: "Unauthorized" });
     }
     
-    const { facility_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment } = req.body;
+    const { facility_id, surface_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment } = req.body;
     
-    if (!facility_id || !booking_date || !time_slots || !manual_notes) {
+    if (!facility_id || !surface_id || !booking_date || !time_slots || !manual_notes) {
         return res.status(400).json({ error: "Missing required fields" });
     }
     
@@ -1535,8 +1781,8 @@ app.post('/api/host/block-time', (req, res) => {
         }
         
         const sql = `
-            INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment)
-            VALUES ($1, $2, $3, 0, 'confirmed', $4, $5, $6, $7, $8, $9, $10, $11)
+            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment)
+            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12)
         `;
         
         try {
@@ -1546,14 +1792,14 @@ app.post('/api/host/block-time', (req, res) => {
                     : "SELECT pg_advisory_xact_lock(hashtext($1::text || '|' || $2::text)::bigint)";
                 
                 if (datesToBook.length > 1) {
-                    await client.query(lockKeyQuery, [facility_id]);
+                    await client.query(lockKeyQuery, [surface_id]);
                 } else {
-                    await client.query(lockKeyQuery, [facility_id, datesToBook[0]]);
+                    await client.query(lockKeyQuery, [surface_id, datesToBook[0]]);
                 }
 
                 const { rows: existingBookings } = await client.query(
-                    `SELECT booking_date, time_slots FROM bookings WHERE (surface_id = $1 OR (surface_id IS NULL AND facility_id = $1)) AND booking_date = ANY($2::text[]) AND status != 'cancelled' FOR UPDATE`,
-                    [facility_id, datesToBook]
+                    `SELECT booking_date, time_slots FROM bookings WHERE surface_id = $1 AND booking_date = ANY($2::text[]) AND status != 'cancelled' FOR UPDATE`,
+                    [surface_id, datesToBook]
                 );
 
                 let hasConflict = false;
@@ -1574,7 +1820,7 @@ app.post('/api/host/block-time', (req, res) => {
                 }
 
                 for (const dateStr of datesToBook) {
-                    await client.query(sql, [facility_id, dateStr, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse, kidPriceToUse, resOnlyToUse, locker_room_assignment || '']);
+                    await client.query(sql, [facility_id, surface_id, dateStr, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse, kidPriceToUse, resOnlyToUse, locker_room_assignment || '']);
                 }
             });
 
@@ -1609,7 +1855,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
 
     // Verify ownership via facilities table
     db.get(
-        `SELECT b.id, b.facility_id, b.recurring_group_id FROM bookings b 
+        `SELECT b.id, b.facility_id, b.surface_id, b.recurring_group_id FROM bookings b 
          JOIN facilities f ON b.facility_id = f.id 
          WHERE b.id = ? AND (f.host_id = ? OR f.co_host_emails LIKE ?)`,
         [bookingId, req.session.userId, `%"${req.session.email}"%`],
@@ -1653,14 +1899,14 @@ app.put('/api/host/bookings/:id', (req, res) => {
                         : "SELECT pg_advisory_xact_lock(hashtext($1::text || '|' || $2::text)::bigint)";
                     
                     if (allDatesToCheck.length > 1) {
-                        await client.query(lockKeyQuery, [row.facility_id]);
+                        await client.query(lockKeyQuery, [row.surface_id || row.facility_id]);
                     } else {
-                        await client.query(lockKeyQuery, [row.facility_id, booking_date]);
+                        await client.query(lockKeyQuery, [row.surface_id || row.facility_id, booking_date]);
                     }
 
                     const { rows: existingBookings } = await client.query(
-                        `SELECT id, booking_date, time_slots FROM bookings WHERE facility_id = $1 AND booking_date = ANY($2::text[]) AND status != 'cancelled' FOR UPDATE`,
-                        [row.facility_id, allDatesToCheck]
+                        `SELECT id, booking_date, time_slots FROM bookings WHERE (surface_id = $1 OR (surface_id IS NULL AND facility_id = $2)) AND booking_date = ANY($3::text[]) AND status != 'cancelled' FOR UPDATE`,
+                        [row.surface_id, row.facility_id, allDatesToCheck]
                     );
 
                     let hasConflict = false;
@@ -1693,11 +1939,11 @@ app.put('/api/host/bookings/:id', (req, res) => {
                     if (datesToBook.length > 0) {
                         const bTypeStr = isPublic ? 'public_session' : 'manual';
                         const insertSql = `
-                            INSERT INTO bookings (facility_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment)
-                            VALUES ($1, $2, $3, 0, 'confirmed', $4, $5, $6, $7, $8, $9, $10, $11)
+                            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment)
+                            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12)
                         `;
-                        for (const d of datesToBook) {
-                            await client.query(insertSql, [row.facility_id, d, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment || '']);
+                        for (const dateStr of datesToBook) {
+                            await client.query(insertSql, [row.facility_id, row.surface_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment || '']);
                         }
                     }
                 });
