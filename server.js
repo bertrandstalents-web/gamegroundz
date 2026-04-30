@@ -857,11 +857,16 @@ app.get('/api/facilities', (req, res) => {
                                 if (!isPast) {
                                     // Check if ANY surface is free at this slot
                                     let isAvailable = false;
+                                    let applicableDiscounts = [];
                                     for (let s of facSurfaces) {
                                         const bSet = bookedMap[s.id] || new Set();
                                         if (!bSet.has(slot)) {
                                             isAvailable = true;
-                                            break;
+                                            activeDiscounts.forEach(dist => {
+                                                if (!dist.surface_id || dist.surface_id === s.id) {
+                                                    if (!applicableDiscounts.includes(dist)) applicableDiscounts.push(dist);
+                                                }
+                                            });
                                         }
                                     }
 
@@ -877,7 +882,7 @@ app.get('/api/facilities', (req, res) => {
 
                                         if (inTimeBlock) {
                                             let hasDiscount = false;
-                                            activeDiscounts.forEach(dist => {
+                                            applicableDiscounts.forEach(dist => {
                                                 if (dist.start_time && dist.end_time) {
                                                     if (slot >= dist.start_time && slot < dist.end_time) hasDiscount = true;
                                                 } else {
@@ -1198,7 +1203,10 @@ app.get('/api/public/surfaces', (req, res) => {
                         s.images = imagesMap[s.id] || [];
                         s.primary_image = s.images.length > 0 ? s.images[0].image_url : (s.image_url || s.facility_image_url);
 
-                        const facDiscounts = (allDiscounts || []).filter(d => d.facility_id === s.facility_id || d.facility_id === null);
+                        const facDiscounts = (allDiscounts || []).filter(d => 
+                            (d.facility_id === s.facility_id || d.facility_id === null) && 
+                            (!d.surface_id || d.surface_id === s.id)
+                        );
                         const activeDiscounts = facDiscounts.filter(dist => {
                             const sdStr = dist.start_date ? (typeof dist.start_date === 'string' ? dist.start_date.split('T')[0] : dist.start_date.toISOString().split('T')[0]) : null;
                             const edStr = dist.end_date ? (typeof dist.end_date === 'string' ? dist.end_date.split('T')[0] : dist.end_date.toISOString().split('T')[0]) : null;
@@ -1308,7 +1316,7 @@ app.get('/api/public/surfaces/:id', (req, res) => {
         db.all("SELECT * FROM surface_images WHERE surface_id = ?", [surface.id], (err, images) => {
             surface.images = images || [];
             
-            db.all("SELECT * FROM discounts WHERE is_active = 1 AND (facility_id = ? OR surface_id = ? OR (facility_id IS NULL AND surface_id IS NULL))", [surface.facility_id, surface.id], (err, discounts) => {
+            db.all("SELECT * FROM discounts WHERE is_active = 1 AND ( (facility_id = ? AND (surface_id IS NULL OR surface_id = ?)) OR (facility_id IS NULL AND surface_id IS NULL) OR surface_id = ? )", [surface.facility_id, surface.id, surface.id], (err, discounts) => {
                 surface.discounts = discounts || [];
                 res.json(surface);
             });
@@ -2529,15 +2537,28 @@ app.get('/api/host/discounts/:facility_id', (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
 
     const facilityId = req.params.facility_id;
+    const surfaceId = req.query.surface_id;
     
     // Verify host owns this facility
     db.get("SELECT id FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", [facilityId, req.session.userId, `%"${req.session.email}"%`], (err, row) => {
         if (err || !row) return res.status(403).json({ error: "Access denied" });
 
-        db.all("SELECT * FROM discounts WHERE facility_id = ? ORDER BY id DESC", [facilityId], (err, rows) => {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json(rows);
-        });
+        if (surfaceId === 'all') {
+            db.all("SELECT * FROM discounts WHERE facility_id = ? AND surface_id IS NULL ORDER BY id DESC", [facilityId], (err, rows) => {
+                if (err) return res.status(500).json({ error: err.message });
+                res.json(rows);
+            });
+        } else if (surfaceId) {
+            db.all("SELECT * FROM discounts WHERE facility_id = ? AND surface_id = ? ORDER BY id DESC", [facilityId, surfaceId], (err, rows) => {
+                if (err) return res.status(500).json({ error: err.message });
+                res.json(rows);
+            });
+        } else {
+            db.all("SELECT * FROM discounts WHERE facility_id = ? ORDER BY id DESC", [facilityId], (err, rows) => {
+                if (err) return res.status(500).json({ error: err.message });
+                res.json(rows);
+            });
+        }
     });
 });
 
@@ -2545,19 +2566,23 @@ app.get('/api/host/discounts/:facility_id', (req, res) => {
 app.post('/api/host/discounts', (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
 
-    const { facility_id, discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute } = req.body;
+    const { facility_id, surface_id, discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute } = req.body;
     
     if (!facility_id || !discount_type || !value) {
         return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    if (surface_id === undefined) {
+        return res.status(400).json({ error: "CRITICAL: Your browser is using an old cached version of the dashboard. Please completely clear your browser cache or open an Incognito window." });
     }
 
     db.get("SELECT id FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", [facility_id, req.session.userId, `%"${req.session.email}"%`], (err, row) => {
         if (err || !row) return res.status(403).json({ error: "Access denied" });
 
         db.run(
-            `INSERT INTO discounts (facility_id, discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute, is_active) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
-            [facility_id, discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute],
+            `INSERT INTO discounts (facility_id, surface_id, discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute, is_active) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+            [facility_id, surface_id === 'all' ? null : (surface_id || null), discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute],
             function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 res.status(201).json({ message: "Discount created", id: this.lastID });
@@ -2571,7 +2596,7 @@ app.put('/api/host/discounts/:id', (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
 
     const discountId = req.params.id;
-    const { discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute } = req.body;
+    const { surface_id, discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute } = req.body;
 
     if (!discount_type || !value) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -2589,9 +2614,9 @@ app.put('/api/host/discounts/:id', (req, res) => {
 
         db.run(
             `UPDATE discounts 
-             SET discount_type = ?, value = ?, start_date = ?, end_date = ?, start_time = ?, end_time = ?, recurring_day = ?, is_last_minute = ? 
+             SET surface_id = ?, discount_type = ?, value = ?, start_date = ?, end_date = ?, start_time = ?, end_time = ?, recurring_day = ?, is_last_minute = ? 
              WHERE id = ?`,
-            [discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute, discountId],
+            [surface_id === 'all' ? null : (surface_id !== undefined ? surface_id : null), discount_type, value, start_date, end_date, start_time, end_time, recurring_day, is_last_minute, discountId],
             function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 res.json({ message: "Discount updated successfully" });
@@ -2930,8 +2955,13 @@ app.post('/api/bookings/calculate', (req, res) => {
     db.get("SELECT base_price, pricing_rules FROM surfaces WHERE id = ?", [req.body.surface_id || facility_id], (err, facility) => {
         if (err || !facility) return res.status(404).json({ error: "Facility not found" });
 
-        db.all("SELECT * FROM discounts WHERE facility_id = ? OR facility_id IS NULL", [facility_id], (err, discounts) => {
+        db.all("SELECT * FROM discounts WHERE facility_id = ? OR facility_id IS NULL", [facility_id], (err, allDiscounts) => {
             if (err) return res.status(500).json({ error: "DB Error" });
+            
+            const requestSurfaceId = req.body.surface_id || null;
+            const discounts = allDiscounts.filter(d => 
+                !d.surface_id || !requestSurfaceId || String(d.surface_id) === String(requestSurfaceId)
+            );
             
             let totalPricing = { base_price: 0, discount_amount: 0, total_price: 0 };
             
@@ -3003,8 +3033,13 @@ app.post('/api/create-checkout-session', (req, res) => {
     `, [facility_id], (err, facility) => {
         if (err || !facility) return res.status(404).json({ error: "Facility not found" });
 
-        db.all("SELECT * FROM discounts WHERE facility_id = ? OR facility_id IS NULL", [facility_id], (err, discounts) => {
+        db.all("SELECT * FROM discounts WHERE facility_id = ? OR facility_id IS NULL", [facility_id], (err, allDiscounts) => {
             if (err) return res.status(500).json({ error: "DB Error" });
+            
+            const requestSurfaceId = req.body.surface_id || null;
+            const discounts = allDiscounts.filter(d => 
+                !d.surface_id || !requestSurfaceId || String(d.surface_id) === String(requestSurfaceId)
+            );
             
             let secureTotalPrice = 0;
             for (const [dateStr, slots] of Object.entries(parsedMultiDaySlots)) {

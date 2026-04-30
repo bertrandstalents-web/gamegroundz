@@ -1451,6 +1451,10 @@
                 const validDiscounts = discounts.filter(d => {
                     if (!d.is_active) return false;
                     
+                    if (d.surface_id !== null && d.surface_id !== undefined && String(d.surface_id) !== String(window.currentSurfaceId)) {
+                        return false;
+                    }
+                    
                     // Fix timezone mismatch: extract just the YYYY-MM-DD part before parsing
                     if (d.start_date) {
                         const sDate = d.start_date.split('T')[0];

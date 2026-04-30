@@ -611,8 +611,8 @@
                             <p class="text-slate-500">Create promotional discounts for specific facilities to boost bookings.</p>
                         </div>
                         <div class="w-full md:w-auto md:min-w-[16rem] max-w-full">
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Select Facility to Manage</label>
-                            <select id="discount-facility-select" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white cursor-pointer font-medium text-slate-800 shadow-sm" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;" onchange="loadFacilityDiscounts()">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Select Surface to Manage</label>
+                            <select id="discount-facility-select" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none appearance-none transition-custom bg-white cursor-pointer font-medium text-slate-800 shadow-sm" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;" onchange="loadFacilityDiscounts()">
                                 <option value="" disabled="" selected="">Loading facilities...</option>
                             </select>
                         </div>
@@ -651,9 +651,22 @@
                                 <p class="text-sm text-slate-500 mt-1">Create promotional deals for your facility.</p>
                             </div>
                             
+                            <div class="px-8 pb-4">
+                                <p class="text-sm font-semibold text-slate-700 bg-blue-50 text-blue-800 p-3 rounded-lg border border-blue-100 flex items-center">
+                                    <i class="fa-solid fa-info-circle mr-2"></i> Applying to: <span id="disc-target-surface-name" class="font-bold ml-1">All Surfaces (Entire Facility)</span>
+                                </p>
+                            </div>
                             <!-- Form -->
                             <form id="create-discount-form" class="px-8 pb-8 space-y-5 overflow-y-auto">
                                 <input type="hidden" id="disc-edit-id" value="">
+                                
+                                <div class="mb-4">
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Apply Discount To<span class="text-red-500">*</span></label>
+                                    <select id="modal-discount-surface" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-slate-50 hover:bg-slate-100 transition-colors shadow-inner text-slate-700 font-medium">
+                                        <!-- Populated via JS -->
+                                    </select>
+                                </div>
+
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Type<span class="text-red-500">*</span></label>
@@ -1717,21 +1730,23 @@
                 `;
             });
 
-            // Populate Calendar form select
+            // Populate Calendar form select and Discount form select
             const selectEl = document.getElementById('calendar-facility-select');
             const discSelectEl = document.getElementById('discount-facility-select');
             const prevVal = selectEl.value;
             const prevDiscVal = discSelectEl ? discSelectEl.value : '';
             
             selectEl.innerHTML = '<option value="" disabled selected>Choose a surface</option>';
-            if(discSelectEl) discSelectEl.innerHTML = '<option value="" disabled selected>Choose a facility</option>';
+            if(discSelectEl) discSelectEl.innerHTML = '<option value="" disabled selected>Choose a surface</option>';
 
             facilities.forEach(fac => {
-                if(discSelectEl) discSelectEl.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
-                
                 if (fac.surfaces && fac.surfaces.length > 0) {
                     let optgroup = document.createElement('optgroup');
                     optgroup.label = fac.name;
+                    let discOptgroup = document.createElement('optgroup');
+                    discOptgroup.label = fac.name;
+                    discOptgroup.innerHTML += `<option value="all" data-fac-id="${fac.id}">All Surfaces (Entire Facility)</option>`;
+
                     fac.surfaces.forEach(surf => {
                         let displayName = surf.name;
                         if (displayName.startsWith(fac.name + ' - ')) {
@@ -1742,21 +1757,33 @@
                             displayName = displayName.substring(fac.name.length).trim() || displayName;
                         }
                         optgroup.innerHTML += `<option value="${surf.id}" data-fac-id="${fac.id}">${displayName}</option>`;
+                        discOptgroup.innerHTML += `<option value="${surf.id}" data-fac-id="${fac.id}">${displayName}</option>`;
                     });
                     selectEl.appendChild(optgroup);
+                    if(discSelectEl) discSelectEl.appendChild(discOptgroup);
                 } else {
                     let optgroup = document.createElement('optgroup');
                     optgroup.label = fac.name;
                     optgroup.innerHTML += `<option value="" disabled>No surfaces available</option>`;
                     selectEl.appendChild(optgroup);
+
+                    let discOptgroup = document.createElement('optgroup');
+                    discOptgroup.label = fac.name;
+                    discOptgroup.innerHTML += `<option value="" disabled>No surfaces available</option>`;
+                    if(discSelectEl) discSelectEl.appendChild(discOptgroup);
                 }
             });
 
-            if (prevVal) {
+            if (prevVal && selectEl && Array.from(selectEl.options).some(o => o.value === prevVal)) {
                 selectEl.value = prevVal;
+            } else if (selectEl) {
+                selectEl.value = "";
             }
-            if (prevDiscVal && discSelectEl) {
+
+            if (prevDiscVal && discSelectEl && Array.from(discSelectEl.options).some(o => o.value === prevDiscVal)) {
                 discSelectEl.value = prevDiscVal;
+            } else if (discSelectEl) {
+                discSelectEl.value = "";
             }
 
             // Initialize Sortable on the facilities container
@@ -1788,18 +1815,57 @@
                             const prevResVal = resFacFilter ? resFacFilter.value : '';
                             
                             if (selectEl) {
-                                selectEl.innerHTML = '<option value="" disabled>Choose a facility</option>';
-                                ownerFacilities.forEach(fac => {
-                                    selectEl.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
-                                });
-                                if (prevVal) selectEl.value = prevVal;
+                                selectEl.innerHTML = '<option value="" disabled>Choose a surface</option>';
                             }
                             if (discSelectEl) {
-                                discSelectEl.innerHTML = '<option value="" disabled>Choose a facility</option>';
-                                ownerFacilities.forEach(fac => {
-                                    discSelectEl.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
-                                });
-                                if (prevDiscVal) discSelectEl.value = prevDiscVal;
+                                discSelectEl.innerHTML = '<option value="" disabled>Choose a surface</option>';
+                            }
+
+                            ownerFacilities.forEach(fac => {
+                                if (fac.surfaces && fac.surfaces.length > 0) {
+                                    let optgroup = document.createElement('optgroup');
+                                    optgroup.label = fac.name;
+                                    let discOptgroup = document.createElement('optgroup');
+                                    discOptgroup.label = fac.name;
+                                    discOptgroup.innerHTML += `<option value="all" data-fac-id="${fac.id}">All Surfaces (Entire Facility)</option>`;
+
+                                    fac.surfaces.forEach(surf => {
+                                        let displayName = surf.name;
+                                        if (displayName.startsWith(fac.name + ' - ')) {
+                                            displayName = displayName.substring(fac.name.length + 3);
+                                        } else if (displayName.startsWith(fac.name + ' ')) {
+                                            displayName = displayName.substring(fac.name.length + 1);
+                                        } else if (displayName.startsWith(fac.name)) {
+                                            displayName = displayName.substring(fac.name.length).trim() || displayName;
+                                        }
+                                        optgroup.innerHTML += `<option value="${surf.id}" data-fac-id="${fac.id}">${displayName}</option>`;
+                                        discOptgroup.innerHTML += `<option value="${surf.id}" data-fac-id="${fac.id}">${displayName}</option>`;
+                                    });
+                                    if(selectEl) selectEl.appendChild(optgroup);
+                                    if(discSelectEl) discSelectEl.appendChild(discOptgroup);
+                                } else {
+                                    let optgroup = document.createElement('optgroup');
+                                    optgroup.label = fac.name;
+                                    optgroup.innerHTML += `<option value="" disabled>No surfaces available</option>`;
+                                    if(selectEl) selectEl.appendChild(optgroup);
+
+                                    let discOptgroup = document.createElement('optgroup');
+                                    discOptgroup.label = fac.name;
+                                    discOptgroup.innerHTML += `<option value="" disabled>No surfaces available</option>`;
+                                    if(discSelectEl) discSelectEl.appendChild(discOptgroup);
+                                }
+                            });
+
+                            if (selectEl && prevVal && Array.from(selectEl.options).some(o => o.value === prevVal)) {
+                                selectEl.value = prevVal;
+                            } else if (selectEl) {
+                                selectEl.value = "";
+                            }
+                            
+                            if (discSelectEl && prevDiscVal && Array.from(discSelectEl.options).some(o => o.value === prevDiscVal)) {
+                                discSelectEl.value = prevDiscVal;
+                            } else if (discSelectEl) {
+                                discSelectEl.value = "";
                             }
                             if (resFacFilter) {
                                 resFacFilter.innerHTML = '<option value="all">All Facilities</option>';
@@ -2601,7 +2667,8 @@
                 const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 const discRes = await fetch(`${API_BASE_URL}/api/host/discounts/${facilityId}`, { credentials: 'include' });
                 if (discRes.ok) {
-                    facilityDiscounts = await discRes.json();
+                    const allDiscounts = await discRes.json();
+                    facilityDiscounts = allDiscounts.filter(d => d.surface_id === null || d.surface_id === parseInt(surfaceId, 10));
                 }
             } catch (error) {
                 console.error("Failed to fetch discounts for calendar:", error);
@@ -3584,9 +3651,11 @@
 
             // Handle Discount Submission
             if (blockType === 'discount') {
-                const facId = parseInt(document.getElementById('modal-facility-id').value, 10);
+                const surfaceId = parseInt(document.getElementById('modal-facility-id').value, 10);
+                const facilityId = parseInt(document.getElementById('modal-true-facility-id').value, 10);
                 const payload = {
-                    facility_id: facId,
+                    facility_id: facilityId,
+                    surface_id: surfaceId,
                     discount_type: document.getElementById('modal-disc-type').value,
                     value: parseFloat(document.getElementById('modal-disc-value').value),
                     start_date: document.getElementById('modal-date-val').value, 
@@ -4810,17 +4879,30 @@
         }
 
         function loadFacilityDiscounts() {
-            const facId = document.getElementById('discount-facility-select').value;
-            if (!facId) return;
+            const selectEl = document.getElementById('discount-facility-select');
+            const surfaceId = selectEl.value;
+            const facId = selectEl.options[selectEl.selectedIndex]?.getAttribute('data-fac-id');
+            if (!surfaceId || !facId || surfaceId === "") {
+                const btn = document.getElementById('btn-create-discount');
+                if(btn) btn.disabled = true;
+                return;
+            }
 
             const btn = document.getElementById('btn-create-discount');
             if(btn) btn.disabled = false;
+
+            const targetSpan = document.getElementById('disc-target-surface-name');
+            if(targetSpan && selectEl.options[selectEl.selectedIndex]) {
+                targetSpan.textContent = selectEl.options[selectEl.selectedIndex].text;
+            }
 
             const container = document.getElementById('host-discounts-list');
             container.innerHTML = `<div class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><p>Loading discounts...</p></div>`;
 
             const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
-            fetch(`${API_BASE_URL}/api/host/discounts/${facId}`, { credentials: 'include' })
+            const fetchUrl = `${API_BASE_URL}/api/host/discounts/${facId}?surface_id=${encodeURIComponent(surfaceId)}`;
+            console.log("Fetching discounts from:", fetchUrl);
+            fetch(fetchUrl, { credentials: 'include' })
                 .then(res => {
                     if (res.status === 401) window.location.href = 'index.html';
                     return res.json();
@@ -4893,6 +4975,21 @@
             const btnEl = document.getElementById('disc-submit-btn');
             if(btnEl) btnEl.innerHTML = 'Save Discount';
             
+            const modalSurfaceSelect = document.getElementById('modal-discount-surface');
+            const mainSelect = document.getElementById('discount-facility-select');
+            
+            if (modalSurfaceSelect && mainSelect) {
+                modalSurfaceSelect.innerHTML = '';
+                Array.from(mainSelect.options).forEach(opt => {
+                    const newOpt = document.createElement('option');
+                    newOpt.value = opt.value;
+                    newOpt.text = opt.text;
+                    newOpt.setAttribute('data-fac-id', opt.getAttribute('data-fac-id'));
+                    modalSurfaceSelect.appendChild(newOpt);
+                });
+                modalSurfaceSelect.value = mainSelect.value;
+            }
+
             document.getElementById('discount-modal-backdrop').classList.remove('hidden');
         }
 
@@ -4906,15 +5003,33 @@
                 e.preventDefault();
                 const btn = document.getElementById('disc-submit-btn');
                 const errorDiv = document.getElementById('disc-error');
-                const facId = document.getElementById('discount-facility-select').value;
+                const selectEl = document.getElementById('modal-discount-surface');
+                const surfaceId = selectEl.value;
+                const facId = selectEl.options[selectEl.selectedIndex]?.getAttribute('data-fac-id');
                 
                 errorDiv.classList.add('hidden');
                 const originalText = btn.innerHTML;
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving...';
                 btn.disabled = true;
 
+                if (!facId || isNaN(parseInt(facId, 10))) {
+                    alert("Error: Facility ID is missing or invalid. Please refresh the page.");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                let parsedSurfaceId = surfaceId === 'all' ? 'all' : parseInt(surfaceId, 10);
+                if (surfaceId !== 'all' && isNaN(parsedSurfaceId)) {
+                    alert("Error: Surface ID is missing or invalid. Please select a valid surface or 'All Surfaces' and try again.");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+
                 const payload = {
                     facility_id: parseInt(facId, 10),
+                    surface_id: parsedSurfaceId,
                     discount_type: document.getElementById('disc-type').value,
                     value: parseFloat(document.getElementById('disc-value').value),
                     start_date: document.getElementById('disc-start').value || null,
