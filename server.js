@@ -1134,7 +1134,9 @@ app.get('/api/public/surfaces', (req, res) => {
             f.operating_hours as effective_operating_hours,
             COALESCE(NULLIF(s.location, ''), f.location) as effective_location,
             COALESCE(s.lat, f.lat) as effective_lat,
-            COALESCE(s.lng, f.lng) as effective_lng
+            COALESCE(s.lng, f.lng) as effective_lng,
+            f.rating,
+            f.reviews_count
         FROM surfaces s
         LEFT JOIN facilities f ON s.facility_id = f.id
         WHERE s.status != 'deleted' AND (f.id IS NULL OR f.listing_status = 'approved')
