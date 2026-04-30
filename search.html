@@ -518,7 +518,7 @@
                         <img src="${getPrimaryImageUrl(facility.image_url)}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
                         <div class="absolute top-3 left-3 right-3 flex flex-wrap gap-2 z-20 max-w-[calc(100%-1.5rem)]">
                             <div class="bg-white/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-slate-800 border border-slate-200">
-                                <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating} (${facility.reviews_count})
+                                <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating || 'New'} ${facility.reviews_count ? `(${facility.reviews_count})` : ''}
                             </div>
                             ${topBadges}
                         </div>
@@ -532,7 +532,7 @@
                             <span class="font-bold text-dark whitespace-nowrap">From $${facility.base_price}<span class="text-xs font-normal text-slate-500">${facility.pricing_unit === 'half_day' ? '/ half-day' : (facility.pricing_unit === 'full_day' ? '/ day' : '/hr')}</span></span>
                         </div>
                         <p class="text-slate-500 text-xs mb-3 flex items-center">
-                            <i class="fa-solid fa-location-dot mr-1"></i> ${facility.location}
+                            <i class="fa-solid fa-location-dot mr-1"></i> ${facility.effective_location || facility.location || 'Location unavailable'}
                         </p>
                         <div class="flex gap-1.5 mb-4 overflow-hidden">
                             <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[11px] font-semibold whitespace-nowrap">${typeDisplay}</span>
@@ -583,15 +583,18 @@
             facilities.forEach((f, i) => {
                 let actualLat, actualLng;
                 
-                if (f.lat && f.lng) {
+                if (f.effective_lat && f.effective_lng) {
+                    actualLat = f.effective_lat;
+                    actualLng = f.effective_lng;
+                } else if (f.lat && f.lng) {
                     actualLat = f.lat;
                     actualLng = f.lng;
                 } else {
                     // Fallback visually if missing coordinates
                     actualLat = 45.5017 + (Math.random() - 0.5) * 0.2;
                     actualLng = -73.5673 + (Math.random() - 0.5) * 0.2;
-                    f.lat = actualLat;
-                    f.lng = actualLng;
+                    f.effective_lat = actualLat;
+                    f.effective_lng = actualLng;
                 }
                 
                 const key = `${actualLat.toFixed(5)}_${actualLng.toFixed(5)}`;
@@ -647,8 +650,10 @@
                 
                 // Filter facilities that fall within the current map view
                 visibleFacilities = allFetchedFacilities.filter(f => {
-                    if (f.lat && f.lng) {
-                        return bounds.contains(L.latLng(f.lat, f.lng));
+                    const lat = f.effective_lat || f.lat;
+                    const lng = f.effective_lng || f.lng;
+                    if (lat && lng) {
+                        return bounds.contains(L.latLng(lat, lng));
                     }
                     return false;
                 });
@@ -656,9 +661,11 @@
                 // Map is hidden (e.g., mobile), filter by distance from map center (50km radius)
                 const center = map.getCenter();
                 visibleFacilities = allFetchedFacilities.filter(f => {
-                    if (f.lat && f.lng) {
+                    const lat = f.effective_lat || f.lat;
+                    const lng = f.effective_lng || f.lng;
+                    if (lat && lng) {
                         // distanceTo returns distance in meters
-                        return center.distanceTo(L.latLng(f.lat, f.lng)) < 50000; 
+                        return center.distanceTo(L.latLng(lat, lng)) < 50000; 
                     }
                     return false;
                 });
