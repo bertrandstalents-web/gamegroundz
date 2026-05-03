@@ -608,6 +608,61 @@
                 }
                 return parseFloat(basePrice);
             }
+
+            function getTieredPriceHTML(basePrice, rules, unitLabelShort) {
+                const isFr = localStorage.getItem('gg_language') === 'fr';
+                const offPeakStr = isFr ? 'hors-pointe' : 'off-peak';
+                const peakStr = isFr ? 'heure de pointe' : 'peak';
+                const fromStr = isFr ? 'À partir de' : 'From';
+
+                let peakPrice = parseFloat(basePrice);
+                let peakLabel = '';
+                if (rules && rules.length > 0) {
+                    rules.forEach(r => {
+                        const p = parseFloat(r.price);
+                        if (p > peakPrice) {
+                            peakPrice = p;
+                            if (r.start && r.end) {
+                                peakLabel = `${peakStr}: ${r.start}-${r.end}`;
+                            } else {
+                                peakLabel = peakStr;
+                            }
+                        }
+                    });
+                }
+                if (peakPrice > basePrice) {
+                    return `<span class="text-lg font-bold text-dark">${fromStr} $${basePrice}${unitLabelShort}</span><span class="text-sm text-slate-500 font-medium ml-1">(${offPeakStr})</span> <span class="text-lg font-bold text-dark mx-1">&middot;</span> <span class="text-lg font-bold text-dark">$${peakPrice}${unitLabelShort}</span><span class="text-sm text-slate-500 font-medium ml-1">(${peakLabel})</span>`;
+                }
+                return `<span class="text-2xl font-bold text-dark">$${basePrice}</span><span class="text-slate-500 font-medium"> ${unitLabelShort}</span>`;
+            }
+
+            function getTieredPriceMobileHTML(basePrice, rules, unitLabelShort) {
+                const isFr = localStorage.getItem('gg_language') === 'fr';
+                const offPeakStr = isFr ? 'hors-pointe' : 'off-peak';
+                const peakStr = isFr ? 'heure de pointe' : 'peak';
+                const fromStr = isFr ? 'À partir de' : 'From';
+
+                let peakPrice = parseFloat(basePrice);
+                let peakLabel = '';
+                if (rules && rules.length > 0) {
+                    rules.forEach(r => {
+                        const p = parseFloat(r.price);
+                        if (p > peakPrice) {
+                            peakPrice = p;
+                            if (r.start && r.end) {
+                                peakLabel = `${peakStr}: ${r.start}-${r.end}`;
+                            } else {
+                                peakLabel = peakStr;
+                            }
+                        }
+                    });
+                }
+                if (peakPrice > basePrice) {
+                    return `${fromStr} $${basePrice}${unitLabelShort} <span class="text-xs font-normal text-slate-500">(${offPeakStr})</span> &middot; $${peakPrice}${unitLabelShort} <span class="text-xs font-normal text-slate-500">(${peakLabel})</span>`;
+                }
+                return `$${basePrice} <span class="text-sm font-normal text-slate-500">${unitLabelShort}</span>`;
+            }
+
             
             // Dynamically generated slots based on operating hours
             let availableSlots = [];
@@ -829,9 +884,11 @@
                         pricingUnitLabel = window.pricingUnit === 'half_day' ? '/ half-day' : (window.pricingUnit === 'full_day' ? '/ day' : '/ hour');
                         pricingUnitLabelShort = window.pricingUnit === 'half_day' ? '/ half-day' : (window.pricingUnit === 'full_day' ? '/ day' : '/hr');
                         
-                        document.querySelector('#booking-widget-container .text-2xl.font-bold').innerHTML = `$${hourlyRate}`;
-                        document.querySelector('#booking-widget-container .text-slate-500.font-medium').innerText = pricingUnitLabel;
-                        document.getElementById('mobile-footer-price').innerHTML = `$${hourlyRate} <span class="text-sm font-normal text-slate-500">${pricingUnitLabelShort}</span>`;
+                        const widgetPriceContainer = document.querySelector('#booking-widget-container .text-lg.font-bold')?.parentElement || document.querySelector('#booking-widget-container .text-2xl.font-bold')?.parentElement;
+                        if (widgetPriceContainer) {
+                            widgetPriceContainer.innerHTML = getTieredPriceHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
+                        }
+                        document.getElementById('mobile-footer-price').innerHTML = getTieredPriceMobileHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
                         
                         // Update amenities and features if needed
                         // For now we just update pricing for the widget.
@@ -840,9 +897,11 @@
                     // Call it once for the default facility price if surfaces array is empty
                     if (window.currentSurfaces.length === 0) {
                         // Fallback
-                        document.querySelector('#booking-widget-container .text-2xl.font-bold').innerHTML = `$${hourlyRate}`;
-                        document.querySelector('#booking-widget-container .text-slate-500.font-medium').innerText = pricingUnitLabel;
-                        document.getElementById('mobile-footer-price').innerHTML = `$${hourlyRate} <span class="text-sm font-normal text-slate-500">${pricingUnitLabelShort}</span>`;
+                        const widgetPriceContainer = document.querySelector('#booking-widget-container .text-lg.font-bold')?.parentElement || document.querySelector('#booking-widget-container .text-2xl.font-bold')?.parentElement;
+                        if (widgetPriceContainer) {
+                            widgetPriceContainer.innerHTML = getTieredPriceHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
+                        }
+                        document.getElementById('mobile-footer-price').innerHTML = getTieredPriceMobileHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
                     }
 
                     // Expose it globally for render
@@ -1084,7 +1143,7 @@
                     // Price Focus & Widget Rating
                     const priceEl = document.querySelector('.sticky.top-28 .text-2xl.font-bold.text-dark');
                     if(priceEl && priceEl.parentElement) {
-                        priceEl.parentElement.innerHTML = `<span class="text-2xl font-bold text-dark">From $${hourlyRate}</span><span class="text-slate-500 font-medium"> ${pricingUnitLabel}</span>`;
+                        priceEl.parentElement.innerHTML = getTieredPriceHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
                     }
                     
                     const widgetRatingEl = document.querySelector('.sticky.top-28 .flex.flex-col.items-end');
@@ -1197,7 +1256,7 @@
                     // Mobile Footer Price
                     const mobilePriceContainer = document.querySelector('.fixed.bottom-0 .text-lg.font-bold.text-dark');
                     if (mobilePriceContainer) {
-                        mobilePriceContainer.innerHTML = `From $${hourlyRate} <span class="text-sm font-normal text-slate-500">${pricingUnitLabel}</span>`;
+                        mobilePriceContainer.innerHTML = getTieredPriceMobileHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
                     }
 
                     // Re-render pricing calculation to use new hourly rate
@@ -1782,6 +1841,8 @@
                     if (hours > 0) {
                         let subtotal = 0;
                         let bestDiscountValue = 0;
+                        let peakSurcharge = 0;
+                        let maxSelectedPrice = hourlyRate;
 
                     // Group slots by date first to apply discounts accurately day-by-day or globally
                     const groupedForPricing = {};
@@ -1806,7 +1867,14 @@
                             if(h === 0) h = 12;
                             const formattedTime = `${h}:${m} ${ampm}`;
 
-                            groupSubtotal += getPriceForTimeSlot(formattedTime, hourlyRate, pricingRules, isWeekendGroup) / 2;
+                            const slotPrice = getPriceForTimeSlot(formattedTime, hourlyRate, pricingRules, isWeekendGroup);
+                            groupSubtotal += slotPrice / 2;
+                            if (slotPrice > hourlyRate) {
+                                peakSurcharge += (slotPrice - hourlyRate) / 2;
+                            }
+                            if (slotPrice > maxSelectedPrice) {
+                                maxSelectedPrice = slotPrice;
+                            }
                         });
                         subtotal += groupSubtotal;
 
@@ -1865,9 +1933,37 @@
                     currentTotal = discountedSubtotal + processingFee + tax; // update global total
 
                     if (hours === 1) {
-                        priceCalcEl.innerHTML = `$${subtotal.toFixed(0)} x 1 hour`;
+                        priceCalcEl.innerHTML = `$${hourlyRate} x 1 hour`;
                     } else {
-                        priceCalcEl.innerHTML = `Multiple slots (avg $${(subtotal/hours).toFixed(0)}${pricingUnitLabelShort})`;
+                        priceCalcEl.innerHTML = `$${hourlyRate} x ${hours} hours`;
+                    }
+
+                    // Dynamically update the price display at the top of widget and mobile footer
+                    const widgetPriceContainer = document.querySelector('#booking-widget-container .text-lg.font-bold')?.parentElement || document.querySelector('#booking-widget-container .text-2xl.font-bold')?.parentElement;
+                    if (widgetPriceContainer) {
+                        widgetPriceContainer.innerHTML = `<span class="text-2xl font-bold text-dark">$${maxSelectedPrice}</span><span class="text-slate-500 font-medium"> ${pricingUnitLabelShort}</span>`;
+                    }
+                    const mobileFooterPrice = document.getElementById('mobile-footer-price');
+                    if (mobileFooterPrice) {
+                        mobileFooterPrice.innerHTML = `$${maxSelectedPrice} <span class="text-sm font-normal text-slate-500">${pricingUnitLabelShort}</span>`;
+                    }
+
+                    // Handle Peak Pricing UI
+                    const peakPricingElId = 'peak-pricing-row';
+                    let peakPricingDiv = document.getElementById(peakPricingElId);
+                    if (peakSurcharge > 0) {
+                        if(!peakPricingDiv) {
+                            peakPricingDiv = document.createElement('div');
+                            peakPricingDiv.id = peakPricingElId;
+                            peakPricingDiv.className = 'flex justify-between text-base text-slate-600 mb-3';
+                            priceCalcEl.parentElement.parentElement.insertBefore(peakPricingDiv, priceCalcEl.parentElement.nextSibling);
+                        }
+                        const isFr = localStorage.getItem('gg_language') === 'fr';
+                        const labelText = isFr ? 'Tarif de pointe' : 'Peak pricing';
+                        const valText = isFr ? `+${peakSurcharge.toFixed(2).replace('.', ',')} $` : `+$${peakSurcharge.toFixed(2)}`;
+                        peakPricingDiv.innerHTML = `<span>${labelText}</span><span>${valText}</span>`;
+                    } else {
+                        if (peakPricingDiv) peakPricingDiv.remove();
                     }
 
                     // Insert Discount UI element into the list if it exists
@@ -1887,7 +1983,7 @@
                         if(discountDiv) discountDiv.remove();
                         subtotalEl.classList.remove('line-through', 'text-slate-400');
                     }
-                    subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+                    subtotalEl.textContent = `$${(subtotal - peakSurcharge).toFixed(2)}`;
                     
                     const processingFeeRow = document.getElementById('processing-fee-row');
                     const processingFeeAmountEl = document.getElementById('processing-fee-amount');
@@ -1915,6 +2011,9 @@
                     if (discountDiv) discountDiv.remove();
                     subtotalEl.classList.remove('line-through', 'text-slate-400');
                     
+                    const peakPricingDiv = document.getElementById('peak-pricing-row');
+                    if (peakPricingDiv) peakPricingDiv.remove();
+                    
                     const processingFeeRow = document.getElementById('processing-fee-row');
                     if (processingFeeRow) {
                         if (processingFee === 0) {
@@ -1930,6 +2029,16 @@
                     
                     taxEl.textContent = `$0.00`;
                     totalEl.textContent = `$0.00`;
+                    
+                    // Restore tiered pricing display
+                    const widgetPriceContainer = document.querySelector('#booking-widget-container .text-lg.font-bold')?.parentElement || document.querySelector('#booking-widget-container .text-2xl.font-bold')?.parentElement;
+                    if (widgetPriceContainer) {
+                        widgetPriceContainer.innerHTML = getTieredPriceHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
+                    }
+                    const mobileFooterPrice = document.getElementById('mobile-footer-price');
+                    if (mobileFooterPrice) {
+                        mobileFooterPrice.innerHTML = getTieredPriceMobileHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
+                    }
                 } // End of private session calc block
              }
             } // End of render function
