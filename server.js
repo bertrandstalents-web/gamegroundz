@@ -513,7 +513,7 @@ app.post('/api/auth/login', (req, res) => {
         
         // Set auth_token cookie to satisfy requirements
         res.cookie('auth_token', user.id.toString(), {
-            httpOnly: false, // Accessible to JS if needed
+            httpOnly: true, // Secure against XSS
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
