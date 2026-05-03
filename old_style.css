@@ -1,0 +1,176 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* Language specific visibility */
+html[data-lang="fr"] .lang-en-only { display: none !important; }
+html:not([data-lang="fr"]) .lang-fr-only { display: none !important; }
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Hide scrollbar for select dropdowns */
+.hidden-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hidden-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* Glassmorphism utilities */
+.glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.glass-dark {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Smooth transitions */
+.transition-custom {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Image zoom on hover */
+.hover-zoom-img-container {
+    overflow: hidden;
+}
+.hover-zoom-img-container img {
+    transition: transform 0.5s ease;
+}
+.hover-zoom-img-container:hover img {
+    transform: scale(1.05);
+}
+
+/* Custom shadow */
+.shadow-soft {
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+}
+
+.shadow-glow {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* Hero gradient */
+.hero-gradient {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    padding-bottom: 0.15em;
+    margin-bottom: -0.15em;
+}
+
+/* Google Places Autocomplete Customization */
+.pac-container {
+    background-color: #ffffff !important;
+    border-radius: 0.75rem !important; /* rounded-xl */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; /* shadow-xl */
+    border: 1px solid #f1f5f9 !important; /* border-slate-100 */
+    margin-top: 0.5rem !important; /* mt-2 */
+    font-family: inherit !important;
+    padding-top: 0.25rem !important;
+    min-width: 320px !important; /* Prevent from becoming too narrow */
+    z-index: 100000 !important; /* Ensure it appears above modals */
+}
+
+.pac-item {
+    padding: 0.75rem 1rem 0.75rem 2.5rem !important; /* Extra left padding for the icon */
+    cursor: pointer !important;
+    border-top: none !important;
+    border-bottom: 1px solid #f8fafc !important; /* border-slate-50 */
+    font-size: 0.875rem !important; /* text-sm */
+    color: #475569 !important; /* text-slate-600 */
+    transition: background-color 0.2s ease !important;
+    line-height: 1.25rem !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    position: relative !important;
+}
+
+.pac-item > span {
+    white-space: normal !important;
+}
+
+.pac-item:last-of-type {
+    border-bottom: none !important;
+}
+
+.pac-item:hover, .pac-item-selected {
+    background-color: #f8fafc !important; /* hover:bg-slate-50 */
+}
+
+.pac-item-query {
+    font-size: 0.875rem !important;
+    font-weight: 500 !important; /* font-medium */
+    color: #1e293b !important; /* text-slate-800 */
+    padding-right: 0.25rem !important;
+    white-space: normal !important;
+}
+
+/* Hide Google's default pin icon */
+.pac-icon {
+    display: none !important; 
+}
+
+/* Add custom FontAwesome location icon */
+.pac-item::before {
+    content: '\f041' !important; /* FontAwesome location-dot */
+    font-family: 'Font Awesome 6 Free' !important;
+    font-weight: 900 !important;
+    color: #94a3b8 !important; /* text-slate-400 */
+    font-size: 1rem !important;
+    position: absolute !important;
+    left: 1rem !important;
+    top: 0.85rem !important;
+}
+
+/* Adjust the Google Logo container padding */
+.pac-container::after {
+    display: block !important;
+    margin: 0.5rem 1rem 0.5rem auto !important;
+}
+
+/* Custom scrollbar for inner containers (weekly/daily views) */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
+}
