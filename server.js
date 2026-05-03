@@ -237,6 +237,10 @@ app.use((req, res, next) => {
     next();
 });
 
+// Redirects for legacy URLs
+app.get('/host-dashboard.html', (req, res) => res.redirect(301, '/owner-dashboard.html'));
+app.get('/dashboard.html', (req, res) => res.redirect(301, '/player-dashboard.html'));
+
 // Serve static frontend files from current directory
 app.use(express.static(path.join(__dirname)));
 
