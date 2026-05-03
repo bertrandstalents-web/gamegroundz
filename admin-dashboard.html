@@ -79,9 +79,7 @@
         <!-- Top Header -->
         <header class="bg-white px-8 py-5 flex justify-between items-center shadow-sm z-10">
             <div class="flex items-center gap-4">
-                <button class="hamburger-btn" onclick="document.body.classList.toggle('nav-open')">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
+
                 <h1 class="text-2xl font-bold text-dark" id="page-title">Admin Dashboard</h1>
             </div>
             <div class="flex items-center space-x-4">
@@ -1004,15 +1002,6 @@
                         }
                     }
                 } catch(e) {}
-            }
-        });
-
-        // Outside click to close mobile menu
-        document.addEventListener('click', (e) => {
-            const adminSidebar = document.querySelector('.admin-sidebar');
-            const hamburgerBtn = document.querySelector('.hamburger-btn');
-            if (document.body.classList.contains('nav-open') && adminSidebar && !adminSidebar.contains(e.target) && !hamburgerBtn.contains(e.target)) {
-                document.body.classList.remove('nav-open');
             }
         });
     </script>

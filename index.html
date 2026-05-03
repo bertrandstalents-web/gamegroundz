@@ -89,17 +89,10 @@
                         
                         <a href="owner-dashboard.html" id="list-facility-btn" class="inline-block mt-2 md:mt-0 bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-full font-medium transition-custom shadow-md hover:shadow-lg"><span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span></a>
                     </div>
-                    
-                    <!-- Hamburger Button -->
-                    <button class="hamburger-btn" onclick="document.body.classList.toggle('nav-open')">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
             </div>
             </div>
         </div>
     </div>
-
-        <!-- The legacy mobile-menu div has been removed in favor of vanilla CSS .nav-open drawer -->
 
         <!-- Horizontal Categories Bar (Sticky with Navbar) -->
         <div class="w-full bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-sm overflow-x-auto hide-scrollbar z-40">
@@ -790,15 +783,6 @@
             } else {
                 nav.classList.remove('shadow-md');
                 nav.classList.replace('border-slate-200/50', 'border-slate-200');
-            }
-        });
-
-        // Outside click to close mobile menu
-        document.addEventListener('click', (e) => {
-            const navLinks = document.querySelector('.nav-links');
-            const hamburgerBtn = document.querySelector('.hamburger-btn');
-            if (document.body.classList.contains('nav-open') && navLinks && !navLinks.contains(e.target) && !hamburgerBtn.contains(e.target)) {
-                document.body.classList.remove('nav-open');
             }
         });
 

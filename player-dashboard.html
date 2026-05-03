@@ -95,10 +95,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Hamburger Button -->
-                    <button class="hamburger-btn" onclick="document.body.classList.toggle('nav-open')">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
                 </div>
             </div>
         </div>
@@ -1451,14 +1447,6 @@
         });
     </script>
     <script>
-        // Outside click to close mobile menu
-        document.addEventListener('click', (e) => {
-            const navLinks = document.querySelector('.nav-links');
-            const hamburgerBtn = document.querySelector('.hamburger-btn');
-            if (document.body.classList.contains('nav-open') && navLinks && !navLinks.contains(e.target) && !hamburgerBtn.contains(e.target)) {
-                document.body.classList.remove('nav-open');
-            }
-        });
     </script>
 </body>
 </html>
