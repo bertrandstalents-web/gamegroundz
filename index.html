@@ -250,7 +250,7 @@
                         </select>
                     </div>
                     <button id="homeSearchBtn" class="w-full md:w-auto bg-primary hover:bg-primaryHover text-white px-8 py-3.5 rounded-xl md:rounded-full font-bold text-lg transition-custom shadow-glow flex items-center justify-center">
-                        <i class="fa-solid fa-search mr-2"></i> Search
+                        <i class="fa-solid fa-search mr-2"></i> <span class="lang-en-only">Search</span><span class="lang-fr-only notranslate">Recherche</span>
                     </button>
                 </div>
                 
@@ -1716,7 +1716,7 @@
                         listBtn.textContent = "Admin Dashboard";
                         listBtn.href = "admin-dashboard.html";
                     } else if (user.role === 'host') {
-                        listBtn.textContent = "Host Dashboard";
+                        listBtn.innerHTML = '<span class="lang-en-only">Host Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord de l\\'hôte</span>';
                         listBtn.href = "owner-dashboard.html";
                         listBtn.classList.add('relative');
                         checkHostNotifications(listBtn);
@@ -1730,7 +1730,7 @@
                         mobileListBtn.textContent = "Admin Dashboard";
                         mobileListBtn.href = "admin-dashboard.html";
                     } else if (user.role === 'host') {
-                        mobileListBtn.textContent = "Host Dashboard";
+                        mobileListBtn.innerHTML = '<span class="lang-en-only">Host Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord de l\\'hôte</span>';
                         mobileListBtn.href = "owner-dashboard.html";
                         mobileListBtn.classList.add('relative');
                         checkHostNotifications(mobileListBtn);
@@ -1747,7 +1747,7 @@
                     mobileProfileBtn.href = profileHref;
                     mobileProfileBtn.innerHTML = `
                         <i class="fa-solid fa-user-check text-xl mb-1 pb-0.5 text-primary"></i>
-                        <span class="text-[10px] font-medium text-primary">Profile</span>
+                        <span class="text-[10px] font-medium text-primary"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></span>
                     `;
                 }
                 
@@ -1799,8 +1799,8 @@
                     mobileLoginBtn.textContent = "Log in";
                     mobileLoginBtn.addEventListener('click', openAuthModal);
                 }
-                if (listBtn) listBtn.textContent = "List Your Facility";
-                if (mobileListBtn) mobileListBtn.textContent = "List Your Facility";
+                if (listBtn) listBtn.innerHTML = '<span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span>';
+                if (mobileListBtn) mobileListBtn.innerHTML = '<span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span>';
                 
                 const mobileProfileBtn = document.getElementById('mobile-bottom-profile-btn');
                 if (mobileProfileBtn) {
@@ -1808,7 +1808,7 @@
                     mobileProfileBtn.href = "#";
                     mobileProfileBtn.innerHTML = `
                         <i class="fa-regular fa-user text-xl mb-1 pb-0.5"></i>
-                        <span class="text-[10px] font-medium">Log in</span>
+                        <span class="text-[10px] font-medium"><span class="lang-en-only">Log in</span><span class="lang-fr-only notranslate">Se connecter</span></span>
                     `;
                 }
 
@@ -1878,6 +1878,38 @@
                 } catch(e) {}
             }
         });
+
+        // Setup MutationObserver to watch data-lang for placeholder translations
+        const langObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'data-lang') {
+                    updateHeroTranslations(document.documentElement.getAttribute('data-lang'));
+                }
+            });
+        });
+        langObserver.observe(document.documentElement, { attributes: true });
+
+        function updateHeroTranslations(lang) {
+            const locSearch = document.getElementById('locationSearch');
+            const dateSearch = document.getElementById('homeDateSearch');
+            const sportSelect = document.getElementById('homeSportSearch');
+            const timeSelect = document.getElementById('homeTimeSearch');
+            
+            if (lang === 'fr') {
+                if (locSearch) locSearch.placeholder = "Où voulez-vous jouer ?";
+                if (dateSearch) dateSearch.placeholder = "N'importe quelle date";
+                if (sportSelect && sportSelect.options[0].value === "") sportSelect.options[0].text = "N'importe quel sport";
+                if (timeSelect && timeSelect.options[0].value === "") timeSelect.options[0].text = "N'importe quelle heure";
+            } else {
+                if (locSearch) locSearch.placeholder = "Where do you want to play?";
+                if (dateSearch) dateSearch.placeholder = "Any Date";
+                if (sportSelect && sportSelect.options[0].value === "") sportSelect.options[0].text = "Any Sport";
+                if (timeSelect && timeSelect.options[0].value === "") timeSelect.options[0].text = "Any Time";
+            }
+        }
+        
+        // Initial call
+        updateHeroTranslations(document.documentElement.getAttribute('data-lang') || 'en');
     </script>
 
     <!-- Dynamically update puck links based on user role -->

@@ -145,13 +145,13 @@
                             <span class="font-extrabold text-[11px] tracking-tight text-primary notranslate leading-none">Groundz</span>
                         </div>
                     </div>
-                    <span class="ml-2 pl-2 md:ml-4 md:pl-4 border-l border-slate-300 font-medium text-slate-500 text-xs md:text-base whitespace-nowrap sm:whitespace-normal">Host Dashboard</span>
+                    <span class="ml-2 pl-2 md:ml-4 md:pl-4 border-l border-slate-300 font-medium text-slate-500 text-xs md:text-base whitespace-nowrap sm:whitespace-normal"><span class="lang-en-only">Host Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord de l'hôte</span></span>
                 </div>
                 <div class="flex flex-1 max-w-xl mx-2 md:mx-8 relative"></div>
                 <div class="flex items-center space-x-3 md:space-x-6">
                     <div class="nav-links flex items-center space-x-3 md:space-x-6">
                         <a href="index.html" class="text-slate-600 hover:text-dark font-medium transition-custom text-sm flex items-center">
-                            <span>Return to GameGroundz</span>
+                            <span class="lang-en-only">Return to GameGroundz</span><span class="lang-fr-only notranslate">Retour à GameGroundz</span>
                         </a>
                         
                         <div class="h-6 w-px bg-slate-300 hidden md:block"></div>
@@ -248,30 +248,30 @@
 
                     <!-- Live Revenue Dashboard -->
                     <div id="live-revenue-dashboard" class="col-span-1 lg:col-span-none lg:mb-8 flex flex-col h-full w-full lg:block lg:h-auto">
-                        <h2 class="hidden lg:block text-lg md:text-2xl font-bold text-dark mb-3 md:mb-4">Live Revenue Dashboard</h2>
+                        <h2 class="hidden lg:block text-lg md:text-2xl font-bold text-dark mb-3 md:mb-4"><span class="lang-en-only">Live Revenue Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord des revenus en direct</span></h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 flex-1 h-full lg:flex-none lg:h-auto">
                             <!-- Today's Revenue -->
                             <div onclick="switchTab('analytics')" class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto cursor-pointer hover:-translate-y-1 hover:shadow-md hover:border-primary/30 transition-custom transform duration-300 relative group">
                                 <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 rounded-2xl md:rounded-3xl transition-opacity duration-300 pointer-events-none"></div>
-                                <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider">Today's Revenue</span>
+                                <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider"><span class="lang-en-only">Today's Revenue</span><span class="lang-fr-only notranslate">Revenus d'aujourd'hui</span></span>
                                 <span id="stat-today-rev" class="text-xl md:text-3xl font-extrabold text-dark">$0</span>
                             </div>
                             <!-- This Week's Revenue -->
                             <div onclick="switchTab('analytics')" class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto cursor-pointer hover:-translate-y-1 hover:shadow-md hover:border-primary/30 transition-custom transform duration-300 relative group">
                                 <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 rounded-2xl md:rounded-3xl transition-opacity duration-300 pointer-events-none"></div>
-                                <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider"><span class="hidden lg:inline">This </span>Week's Revenue</span>
+                                <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider"><span class="lang-en-only"><span class="hidden lg:inline">This </span>Week's Revenue</span><span class="lang-fr-only notranslate">Revenus de <span class="hidden lg:inline">cette </span>semaine</span></span>
                                 <span id="stat-week-rev" class="text-xl md:text-3xl font-extrabold text-dark">$0</span>
                             </div>
                             <!-- This Month's Revenue -->
                             <div onclick="switchTab('analytics')" class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto cursor-pointer hover:-translate-y-1 hover:shadow-md hover:border-primary/30 transition-custom transform duration-300 relative group">
                                 <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 rounded-2xl md:rounded-3xl transition-opacity duration-300 pointer-events-none"></div>
-                                <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider"><span class="hidden lg:inline">This </span>Month's Revenue</span>
+                                <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider"><span class="lang-en-only"><span class="hidden lg:inline">This </span>Month's Revenue</span><span class="lang-fr-only notranslate">Revenus de <span class="hidden lg:inline">ce </span>mois</span></span>
                                 <span id="stat-month-rev" class="text-xl md:text-3xl font-extrabold text-dark">$0</span>
                             </div>
                             <!-- Bookings Today -->
                             <div onclick="showTodayReservations()" class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto cursor-pointer hover:-translate-y-1 hover:shadow-md hover:border-primary/30 transition-custom transform duration-300 relative group">
                                 <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 rounded-2xl md:rounded-3xl transition-opacity duration-300 pointer-events-none"></div>
-                                <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider">Bookings Today</span>
+                                <span class="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-500 mb-0.5 lg:mb-2 uppercase tracking-wider"><span class="lang-en-only">Bookings Today</span><span class="lang-fr-only notranslate">Réservations aujourd'hui</span></span>
                                 <span id="stat-today-count" class="text-xl md:text-3xl font-extrabold text-dark">0</span>
                             </div>
                         </div>
@@ -281,10 +281,11 @@
             <div id="tab-facilities" class="col-span-2 lg:col-span-none block">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                        <h2 class="text-2xl font-bold text-dark whitespace-nowrap">My Facilities</h2>
+                        <h2 class="text-2xl font-bold text-dark whitespace-nowrap"><span class="lang-en-only">My Facilities</span><span class="lang-fr-only notranslate">Mes installations</span></h2>
                         <div class="flex flex-col sm:flex-row items-center gap-2 md:gap-4 w-full md:w-auto">
                             <select id="facility-surface-filter" onchange="renderFacilities(ownerFacilities)" class="w-full sm:w-auto px-4 py-2 border-2 border-slate-200 bg-slate-50 text-slate-700 hover:border-primary transition-custom font-bold rounded-xl focus:outline-none cursor-pointer text-sm">
-                                <option value="all">All Surfaces</option>
+                                <option value="all" class="lang-en-only">All Surfaces</option>
+                                <option value="all" class="lang-fr-only notranslate">Toutes les surfaces</option>
                                 <option value="ice">Ice Rink</option>
                                 <option value="soccer">Soccer Field (Turf)</option>
                                 <option value="basketball">Basketball Court</option>
