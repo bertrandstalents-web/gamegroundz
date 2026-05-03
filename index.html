@@ -560,14 +560,14 @@
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" id="auth-backdrop"></div>
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center p-6 border-b border-slate-100">
-                <h3 class="text-xl font-bold text-dark" id="auth-title">Log in or sign up</h3>
+                <h3 class="text-xl font-bold text-dark" id="auth-title" data-i18n="login_title_dynamic">Log in or sign up</h3>
                 <button id="close-auth-btn" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-500 transition-custom">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             
             <div class="p-6 overflow-y-auto">
-                <h4 class="text-2xl font-extrabold text-dark mb-6">Welcome to <span class="notranslate"><span class="notranslate">GameGroundz</span></span></h4>
+                <h4 class="text-2xl font-extrabold text-dark mb-6" data-i18n="login_title">Welcome to <span class="notranslate"><span class="notranslate">GameGroundz</span></span></h4>
                 
                 <form id="auth-form" class="space-y-4" novalidate onsubmit="handleAuth(event)">
                     <div id="name-field-container" class="hidden space-y-4">
@@ -747,10 +747,10 @@
                         </div>
                     </div>
                     <div>
-                        <input type="email" id="auth-email" placeholder="Email Address" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
+                        <input type="email" id="auth-email" placeholder="Email Address" data-i18n="email_placeholder" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
                     </div>
                     <div class="relative">
-                        <input type="password" id="auth-password" placeholder="Password" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700 pr-12">
+                        <input type="password" id="auth-password" placeholder="Password" data-i18n="password_placeholder" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700 pr-12">
                         <button type="button" id="toggle-password-btn" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-custom focus:outline-none">
                             <i class="fa-solid fa-eye" id="toggle-password-icon"></i>
                         </button>
@@ -764,9 +764,9 @@
                     </div>
                     
                     <div id="forgot-password-container" class="text-right mt-1 mb-2">
-                        <a href="forgot-password.html" class="text-sm font-semibold text-primary hover:text-dark transition-custom">Forgot your password?</a>
+                        <a href="forgot-password.html" class="text-sm font-semibold text-primary hover:text-dark transition-custom" data-i18n="forgot_password">Forgot your password?</a>
                     </div>
-                    <button type="submit" id="auth-submit-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-lg transition-custom shadow-glow mt-2">
+                    <button type="submit" id="auth-submit-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-lg transition-custom shadow-glow mt-2" data-i18n="submit_btn">
                         Continue
                     </button>
                     <div id="login-error" style="color:#dc2626; font-size:14px; margin-top:8px; display:none;"></div>
@@ -774,8 +774,8 @@
                 </form>
 
                 <div class="mt-6 pt-6 border-t border-slate-100 text-center text-sm text-slate-600 font-medium">
-                    <span id="auth-toggle-text">Don't have an account?</span> 
-                    <button id="auth-toggle-btn" class="text-primary hover:text-dark font-bold underline transition-custom ml-1">Sign up</button>
+                    <span id="auth-toggle-text" data-i18n="no_account">Don't have an account?</span> 
+                    <button id="auth-toggle-btn" class="text-primary hover:text-dark font-bold underline transition-custom ml-1" data-i18n="sign_up">Sign up</button>
                 </div>
             </div>
         </div>
@@ -1167,6 +1167,39 @@
             });
         }
 
+        // Modal Translations Dictionary
+        const modalTranslations = {
+            'login_title': { en: 'Welcome to <span class="notranslate">GameGroundz</span>', fr: 'Bienvenue sur <span class="notranslate">GameGroundz</span>' },
+            'email_placeholder': { en: 'Email Address', fr: 'Courriel' },
+            'password_placeholder': { en: 'Password', fr: 'Mot de passe' },
+            'submit_btn': { en: 'Continue', fr: 'Se connecter' },
+            'forgot_password': { en: 'Forgot your password?', fr: 'Mot de passe oublié ?' },
+            'no_account': { en: "Don't have an account?", fr: 'Pas encore de compte ?' },
+            'sign_up': { en: 'Sign up', fr: "S'inscrire" },
+            'login_title_dynamic': { en: 'Log in or sign up', fr: 'Se connecter ou s\'inscrire' },
+            'signup_title_dynamic': { en: 'Sign up', fr: "S'inscrire" },
+            'already_have_account': { en: 'Already have an account?', fr: 'Déjà un compte ?' },
+            'log_in': { en: 'Log in', fr: 'Se connecter' }
+        };
+
+        function applyModalTranslations() {
+            const isFR = localStorage.getItem('gg_language') === 'fr';
+            const lang = isFR ? 'fr' : 'en';
+            
+            document.querySelectorAll('#auth-modal [data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (modalTranslations[key]) {
+                    if (el.tagName === 'INPUT') {
+                        el.placeholder = modalTranslations[key][lang];
+                    } else if (key === 'login_title') {
+                        el.innerHTML = modalTranslations[key][lang];
+                    } else {
+                        el.textContent = modalTranslations[key][lang];
+                    }
+                }
+            });
+        }
+
         // Auth Modal Logic
         const authModal = document.getElementById('auth-modal');
         const loginBtn = document.getElementById('login-btn');
@@ -1193,9 +1226,9 @@
             e.preventDefault();
             isLoginMode = !isLoginMode;
             if (isLoginMode) {
-                authTitle.textContent = "Log in or sign up";
-                authToggleText.textContent = "Don't have an account?";
-                authToggleBtn.textContent = "Sign up";
+                authTitle.setAttribute('data-i18n', 'login_title_dynamic');
+                authToggleText.setAttribute('data-i18n', 'no_account');
+                authToggleBtn.setAttribute('data-i18n', 'sign_up');
                 nameFieldContainer.classList.add('hidden');
                 reqs.classList.add('hidden');
                 confContainer.classList.add('hidden');
@@ -1206,9 +1239,9 @@
                 phoneInput.required = false;
                 confInput.required = false;
             } else {
-                authTitle.textContent = "Sign up";
-                authToggleText.textContent = "Already have an account?";
-                authToggleBtn.textContent = "Log in";
+                authTitle.setAttribute('data-i18n', 'signup_title_dynamic');
+                authToggleText.setAttribute('data-i18n', 'already_have_account');
+                authToggleBtn.setAttribute('data-i18n', 'log_in');
                 nameFieldContainer.classList.remove('hidden');
                 reqs.classList.remove('hidden');
                 confContainer.classList.remove('hidden');
@@ -1226,6 +1259,7 @@
                 phoneInput.required = true;
                 confInput.required = true;
             }
+            applyModalTranslations();
         }
 
         function openAuthModal(e) {
@@ -1242,6 +1276,8 @@
             // Close mobile menu if open
             const mobileMenu = document.getElementById('mobile-menu');
             if (mobileMenu) mobileMenu.classList.add('hidden');
+
+            applyModalTranslations();
         }
 
         function closeAuthModal() {
