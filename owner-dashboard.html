@@ -149,43 +149,49 @@
                 </div>
                 <div class="flex flex-1 max-w-xl mx-2 md:mx-8 relative"></div>
                 <div class="flex items-center space-x-3 md:space-x-6">
-                    <a href="index.html" class="text-slate-600 hover:text-dark font-medium transition-custom text-sm hidden md:flex items-center">
-                        <span>Return to GameGroundz</span>
-                    </a>
-                    
-                    <div class="h-6 w-px bg-slate-300"></div>
-                    
-                    <!-- Profile Puck -->
-                    <div class="relative flex items-center">
-                        <button id="profile-puck-btn" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-custom shadow-sm overflow-hidden focus:outline-none z-10">
-                            <i class="fa-solid fa-user text-lg text-slate-400" id="puck-icon"></i>
-                            <span id="puck-initials" class="hidden text-sm font-bold text-slate-700 uppercase notranslate"></span>
-                            <img id="puck-img" class="hidden w-full h-full object-cover" src="" alt="Profile">
-                        </button>
+                    <div class="nav-links flex items-center space-x-3 md:space-x-6">
+                        <a href="index.html" class="text-slate-600 hover:text-dark font-medium transition-custom text-sm flex items-center">
+                            <span>Return to GameGroundz</span>
+                        </a>
                         
-                        <!-- Dropdown -->
-                        <div id="puck-dropdown" class="hidden absolute top-12 right-0 w-48 bg-white rounded-xl shadow-lg border border-slate-100 pb-2 z-50 transform origin-top-right transition-all">
-                            <!-- Language Toggle -->
-                            <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl mb-2">
-                                <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Language</span>
-                                <div class="flex items-center space-x-1">
-                                    <button onclick="window.switchLanguage('en')" id="dropdown-lang-btn-en" class="px-2 py-0.5 rounded text-xs font-bold bg-white text-dark shadow-sm border border-slate-200 cursor-pointer notranslate">EN</button>
-                                    <button onclick="window.switchLanguage('fr')" id="dropdown-lang-btn-fr" class="px-2 py-0.5 rounded text-xs font-bold text-slate-500 hover:text-dark border border-transparent cursor-pointer notranslate">FR</button>
-                                </div>
-                            </div>
+                        <div class="h-6 w-px bg-slate-300 hidden md:block"></div>
+                        
+                        <!-- Profile Puck -->
+                        <div class="relative flex items-center">
+                            <button id="profile-puck-btn" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-custom shadow-sm overflow-hidden focus:outline-none z-10">
+                                <i class="fa-solid fa-user text-lg text-slate-400" id="puck-icon"></i>
+                                <span id="puck-initials" class="hidden text-sm font-bold text-slate-700 uppercase notranslate"></span>
+                                <img id="puck-img" class="hidden w-full h-full object-cover" src="" alt="Profile">
+                            </button>
                             
-                            <div class="px-4 py-2 border-b border-slate-100 mb-1">
-                                <span class="block text-sm font-bold text-slate-800 truncate" id="puck-name">User</span>
-                                <span class="block text-xs text-slate-500 truncate" id="puck-email">user@example.com</span>
+                            <!-- Dropdown -->
+                            <div id="puck-dropdown" class="hidden absolute top-12 right-0 w-48 bg-white rounded-xl shadow-lg border border-slate-100 pb-2 z-50 transform origin-top-right transition-all">
+                                <!-- Language Toggle -->
+                                <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl mb-2">
+                                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Language</span>
+                                    <div class="flex items-center space-x-1">
+                                        <button onclick="window.switchLanguage('en')" id="dropdown-lang-btn-en" class="px-2 py-0.5 rounded text-xs font-bold bg-white text-dark shadow-sm border border-slate-200 cursor-pointer notranslate">EN</button>
+                                        <button onclick="window.switchLanguage('fr')" id="dropdown-lang-btn-fr" class="px-2 py-0.5 rounded text-xs font-bold text-slate-500 hover:text-dark border border-transparent cursor-pointer notranslate">FR</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="px-4 py-2 border-b border-slate-100 mb-1">
+                                    <span class="block text-sm font-bold text-slate-800 truncate" id="puck-name">User</span>
+                                    <span class="block text-xs text-slate-500 truncate" id="puck-email">user@example.com</span>
+                                </div>
+                                <a href="index.html" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary">
+                                    <span class="lang-en-only">Home</span>
+                                    <span class="lang-fr-only notranslate">Accueil</span>
+                                </a>
+                                <a href="#profile" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('owner-dashboard.html')){ try{ switchTab('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); return false;}catch(e){} }">Profile</a>
+                                <button id="nav-logout-btn" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom">Log out</button>
                             </div>
-                            <a href="index.html" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary">
-                                <span class="lang-en-only">Home</span>
-                                <span class="lang-fr-only notranslate">Accueil</span>
-                            </a>
-                            <a href="#profile" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('owner-dashboard.html')){ try{ switchTab('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); return false;}catch(e){} }">Profile</a>
-                            <button id="nav-logout-btn" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom">Log out</button>
                         </div>
                     </div>
+                    <!-- Hamburger Button -->
+                    <button class="hamburger-btn" onclick="document.body.classList.toggle('nav-open')">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -195,8 +201,8 @@
     <main class="flex-1 max-w-[1600px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 md:py-10">
         <div class="mb-4 md:mb-8 flex justify-between items-start md:items-center">
             <div>
-                <h1 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight mb-1 md:mb-2" id="dashboard-title">Host Dashboard</h1>
-                <p class="text-slate-500 text-sm md:text-lg">Manage your facilities and upcoming reservations.</p>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight mb-1 md:mb-2" id="dashboard-title"><span class="lang-en-only">Host Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord de l'hôte</span></h1>
+                <p class="text-slate-500 text-sm md:text-lg"><span class="lang-en-only">Manage your facilities and upcoming reservations.</span><span class="lang-fr-only notranslate">Gérez vos installations et les réservations à venir.</span></p>
             </div>
             <a href="dispatch.html" target="_blank" class="hidden md:flex items-center bg-dark hover:bg-slate-800 text-white px-4 py-2 rounded-xl font-bold transition-custom shadow-sm text-sm">
                 <i class="fa-solid fa-tv mr-2"></i> Launch Dispatch TV
@@ -223,17 +229,16 @@
                 <div class="col-span-1 lg:w-[280px] flex-shrink-0">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 md:p-4 sticky top-28 h-full lg:h-auto">
                         <ul class="space-y-0.5 md:space-y-1">
-                            <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base bg-primary/10 text-primary rounded-xl font-bold transition-custom"><i class="fa-solid fa-list w-6 mr-2 md:mr-3"></i> My Facilities</button></li>
-    <li><button id="tab-btn-surfaces" onclick="switchTab('surfaces')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-layer-group w-6 mr-2 md:mr-3"></i> Surfaces</button></li>
-
-                            <li><button id="tab-btn-analytics" onclick="switchTab('analytics')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-chart-pie w-6 mr-2 md:mr-3"></i> Analytics / Statistiques</button></li>
-                            <li><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 mr-2 md:mr-3"></i> Reservations</button></li>
-                            <li><button id="tab-btn-calendar" onclick="switchTab('calendar')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-regular fa-calendar w-6 mr-2 md:mr-3"></i> Calendar</button></li>
-                            <li><button id="tab-btn-discounts" onclick="switchTab('discounts')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tags w-6 mr-2 md:mr-3"></i> Discounts</button></li>
-                            <li><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 mr-2 md:mr-3"></i> Wallet &amp; Payouts</button></li>
-                            <li><button id="tab-btn-profile" onclick="switchTab('profile')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-user w-6 mr-2 md:mr-3"></i> Profile</button></li>
-                            <li><button id="tab-btn-add-new" onclick="switchTab('add-new')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-plus w-6 mr-2 md:mr-3"></i> Add New Facility</button></li>
-                            <li id="nav-item-our-people" class="hidden"><button id="tab-btn-our-people" onclick="switchTab('our-people')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-users w-6 mr-2 md:mr-3"></i> Our People</button></li>
+                            <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base bg-primary/10 text-primary rounded-xl font-bold transition-custom"><i class="fa-solid fa-list w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">My Facilities</span><span class="lang-fr-only notranslate">Mes installations</span></button></li>
+                            <li><button id="tab-btn-surfaces" onclick="switchTab('surfaces')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-layer-group w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Surfaces</span><span class="lang-fr-only notranslate">Surfaces</span></button></li>
+                            <li><button id="tab-btn-analytics" onclick="switchTab('analytics')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-chart-pie w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Analytics</span><span class="lang-fr-only notranslate">Statistiques</span></button></li>
+                            <li><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Reservations</span><span class="lang-fr-only notranslate">Réservations</span></button></li>
+                            <li><button id="tab-btn-calendar" onclick="switchTab('calendar')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-regular fa-calendar w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Calendar</span><span class="lang-fr-only notranslate">Calendrier</span></button></li>
+                            <li><button id="tab-btn-discounts" onclick="switchTab('discounts')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tags w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Discounts</span><span class="lang-fr-only notranslate">Rabais</span></button></li>
+                            <li><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Wallet &amp; Payouts</span><span class="lang-fr-only notranslate">Portefeuille et paiements</span></button></li>
+                            <li><button id="tab-btn-profile" onclick="switchTab('profile')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-user w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></button></li>
+                            <li><button id="tab-btn-add-new" onclick="switchTab('add-new')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-plus w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Add New Facility</span><span class="lang-fr-only notranslate">Ajouter une installation</span></button></li>
+                            <li id="nav-item-our-people" class="hidden"><button id="tab-btn-our-people" onclick="switchTab('our-people')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-users w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Our People</span><span class="lang-fr-only notranslate">Notre équipe</span></button></li>
                         </ul>
                     </div>
                 </div>
@@ -1528,32 +1533,29 @@
             }).join(', ');
         }
 
-        function switchTab(tabId) {
+        window.switchTab = function(tabId) {
             const resTab = document.getElementById('tab-reservations');
             if (resTab && !resTab.classList.contains('hidden') && tabId !== 'reservations') {
                 document.querySelectorAll('.reservation-unread-badge').forEach(b => b.remove());
             }
 
-            // Hide all tabs
-            document.getElementById('tab-facilities').classList.add('hidden');
-            document.getElementById('tab-reservations').classList.add('hidden');
-            document.getElementById('tab-calendar').classList.add('hidden');
-            document.getElementById('tab-add-new').classList.add('hidden');
-            const analyticsTab = document.getElementById('tab-analytics');
-            if(analyticsTab) analyticsTab.classList.add('hidden');
-            const discTab = document.getElementById('tab-discounts');
-            if(discTab) discTab.classList.add('hidden');
-            const walletTab = document.getElementById('tab-wallet');
-            if(walletTab) walletTab.classList.add('hidden');
-            const profTab = document.getElementById('tab-profile');
-            if(profTab) profTab.classList.add('hidden');
-            const ourPeopleTabHtml = document.getElementById('tab-our-people');
-            if(ourPeopleTabHtml) ourPeopleTabHtml.classList.add('hidden');
-            const surfacesTab = document.getElementById('tab-surfaces');
-            if(surfacesTab) surfacesTab.classList.add('hidden');
-            
+            // Safe hide helper
+            const hideIfExists = (id) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            };
+
+            // Hide all potential tabs
+            const allTabs = ['facilities', 'surfaces', 'analytics', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile', 'our-people', 'settings'];
+            allTabs.forEach(t => hideIfExists(`tab-${t}`));
+
             // Show selected tab
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const selectedTab = document.getElementById(`tab-${tabId}`);
+            if (selectedTab) {
+                selectedTab.classList.remove('hidden');
+            } else {
+                console.warn(`Tab content for ${tabId} not found.`);
+            }
             
             if (tabId === 'our-people') {
                 loadOurPeople();
@@ -3806,7 +3808,7 @@
                 
                 try {
                     const userObj = JSON.parse(storedUser);
-                    document.getElementById('dashboard-title').textContent = `Welcome, ${userObj.name}`;
+                    document.getElementById('dashboard-title').innerHTML = `<span class="lang-en-only">Welcome, ${userObj.name}</span><span class="lang-fr-only notranslate">Bienvenue, ${userObj.name}</span>`;
                 } catch (e) {}
 
                 // Fetch data for the host
@@ -4014,7 +4016,7 @@
 
                 // Update greeting
                 const updatedName = payload.first_name.trim() + ' ' + payload.last_name.trim();
-                document.getElementById('dashboard-title').textContent = `Welcome, ${updatedName}`;
+                document.getElementById('dashboard-title').innerHTML = `<span class="lang-en-only">Welcome, ${updatedName}</span><span class="lang-fr-only notranslate">Bienvenue, ${updatedName}</span>`;
                 
                 // Update localStorage
                 const storedUser = localStorage.getItem('gg_user');

@@ -211,6 +211,32 @@ app.use(session({
     }
 }));
 
+// Protected HTML routes middleware
+app.use((req, res, next) => {
+    const protectedRoutes = {
+        '/admin-dashboard.html': 'admin',
+        '/owner-dashboard.html': 'host'
+    };
+    
+    // Check if the requested path is a protected route
+    const requiredRole = protectedRoutes[req.path];
+    if (requiredRole) {
+        // Parse auth_token from cookies
+        const cookies = req.headers.cookie || '';
+        const authToken = cookies.split(';').map(c => c.trim()).find(c => c.startsWith('auth_token='));
+        
+        if (!authToken) {
+            return res.redirect('/index.html?login=true');
+        }
+        
+        // Also ensure session has the correct role (since we still use sessions for role check internally)
+        if (req.session && req.session.userRole && req.session.userRole !== requiredRole && req.session.userRole !== 'admin') {
+            return res.redirect('/index.html');
+        }
+    }
+    next();
+});
+
 // Serve static frontend files from current directory
 app.use(express.static(path.join(__dirname)));
 
@@ -484,6 +510,14 @@ app.post('/api/auth/login', (req, res) => {
         req.session.userRole = user.role;
         req.session.userName = user.name;
         req.session.email = user.email;
+        
+        // Set auth_token cookie to satisfy requirements
+        res.cookie('auth_token', user.id.toString(), {
+            httpOnly: false, // Accessible to JS if needed
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+        });
 
         res.json({ 
             message: "Logged in successfully", 

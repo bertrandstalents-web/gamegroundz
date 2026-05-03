@@ -43,82 +43,65 @@
                     <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
                     <span class="font-bold text-2xl tracking-tight text-dark notranslate">Game<span class="text-primary">Groundz</span></span>
                 </div>
-                
-                <!-- Right Side Navigation Container -->
+                               <!-- Right Side Navigation Container -->
                 <div class="flex items-center space-x-4 md:space-x-8">
-                    <!-- Desktop Only Links -->
-                    <div class="hidden md:flex items-center space-x-8">
-                        <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
-                    <a href="public-sessions.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Public Sessions</a>
-                    
-                    <div class="h-6 w-px bg-slate-300"></div>
-                    </div>
-                    
-                    <!-- Profile Puck -->
-                                        <div class="relative flex items-center">
-                                            <button id="profile-puck-btn" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-custom shadow-sm overflow-hidden focus:outline-none z-10">
-                                                <i class="fa-solid fa-user text-lg text-slate-400" id="puck-icon"></i>
-                                                <span id="puck-initials" class="hidden text-sm font-bold text-slate-700 uppercase notranslate"></span>
-                                                <img id="puck-img" class="hidden w-full h-full object-cover" src="" alt="Profile">
-                                            </button>
-                                            
-                                            <!-- Dropdown -->
-                                            <div id="puck-dropdown" class="hidden absolute top-12 right-0 w-48 bg-white rounded-xl shadow-lg border border-slate-100 pb-2 z-50 transform origin-top-right transition-all">
-                                                <!-- Language Toggle -->
-                                                <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl mb-2">
-                                                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Language</span>
-                                                    <div class="flex items-center space-x-1">
-                                                        <button onclick="window.switchLanguage('en')" id="dropdown-lang-btn-en" class="px-2 py-0.5 rounded text-xs font-bold bg-white text-dark shadow-sm border border-slate-200 cursor-pointer notranslate">EN</button>
-                                                        <button onclick="window.switchLanguage('fr')" id="dropdown-lang-btn-fr" class="px-2 py-0.5 rounded text-xs font-bold text-slate-500 hover:text-dark border border-transparent cursor-pointer notranslate">FR</button>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div id="puck-logged-out">
-                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); openAuthModal(event);"><span class="lang-en-only">Log in</span><span class="lang-fr-only notranslate">Se connecter</span></a>
-                                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); toggleAuthMode(event); openAuthModal(event);"><span class="lang-en-only">Sign up</span><span class="lang-fr-only notranslate">S'inscrire</span></a>
-                                                </div>
-                                                <div id="puck-logged-in" class="hidden">
-                                                    <div class="px-4 py-2 border-b border-slate-100 mb-1">
-                                                        <span class="block text-sm font-bold text-slate-800 truncate" id="puck-name">User</span>
-                                                        <span class="block text-xs text-slate-500 truncate" id="puck-email">user@example.com</span>
-                                                    </div>
-                                                    <a href="#" id="puck-dashboard" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord</span></a>
-                                                    <a href="player-dashboard.html" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('player-dashboard.html')){ try{ switchNav('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); return false;}catch(e){} }"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></a>
-                                                    <button id="puck-logout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom"><span class="lang-en-only">Log out</span><span class="lang-fr-only notranslate">Se déconnecter</span></button>
-                                                </div>
-                                            </div>
-                                        </div>
-                    
-                    <a href="owner-dashboard.html" id="list-facility-btn" class="hidden md:inline-block bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-full font-medium transition-custom shadow-md hover:shadow-lg"><span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span></a>
-                    
-                    <!-- Mobile Menu Button (Hidden in favor of bottom nav) -->
-                                    <div class="hidden md:hidden items-center">
-                                        <button id="mobile-menu-btn" class="text-slate-600 hover:text-dark focus:outline-none">
-                                            <i class="fa-solid fa-bars text-2xl"></i>
-                                        </button>
+                    <!-- Nav Links -->
+                    <div class="nav-links flex items-center space-x-8">
+                        <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom"><span class="lang-en-only">Find a Surface</span><span class="lang-fr-only notranslate">Trouver une surface</span></a>
+                        <a href="public-sessions.html" class="text-slate-600 hover:text-primary font-medium transition-custom"><span class="lang-en-only">Public Sessions</span><span class="lang-fr-only notranslate">Séances publiques</span></a>
+                        
+                        <div class="h-6 w-px bg-slate-300 hidden md:block"></div>
+                        
+                        <!-- Profile Puck -->
+                        <div class="relative flex items-center mt-2 md:mt-0">
+                            <button id="profile-puck-btn" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-custom shadow-sm overflow-hidden focus:outline-none z-10">
+                                <i class="fa-solid fa-user text-lg text-slate-400" id="puck-icon"></i>
+                                <span id="puck-initials" class="hidden text-sm font-bold text-slate-700 uppercase notranslate"></span>
+                                <img id="puck-img" class="hidden w-full h-full object-cover" src="" alt="Profile">
+                            </button>
+                            
+                            <!-- Dropdown -->
+                            <div id="puck-dropdown" class="hidden absolute top-12 right-0 w-48 bg-white rounded-xl shadow-lg border border-slate-100 pb-2 z-50 transform origin-top-right transition-all">
+                                <!-- Language Toggle -->
+                                <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl mb-2">
+                                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Language</span>
+                                    <div class="flex items-center space-x-1">
+                                        <button onclick="window.switchLanguage('en')" id="dropdown-lang-btn-en" class="px-2 py-0.5 rounded text-xs font-bold bg-white text-dark shadow-sm border border-slate-200 cursor-pointer notranslate">EN</button>
+                                        <button onclick="window.switchLanguage('fr')" id="dropdown-lang-btn-fr" class="px-2 py-0.5 rounded text-xs font-bold text-slate-500 hover:text-dark border border-transparent cursor-pointer notranslate">FR</button>
                                     </div>
                                 </div>
+                                
+                                <div id="puck-logged-out">
+                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); openAuthModal(event);"><span class="lang-en-only">Log in</span><span class="lang-fr-only notranslate">Se connecter</span></a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); toggleAuthMode(event); openAuthModal(event);"><span class="lang-en-only">Sign up</span><span class="lang-fr-only notranslate">S'inscrire</span></a>
+                                </div>
+                                <div id="puck-logged-in" class="hidden">
+                                    <div class="px-4 py-2 border-b border-slate-100 mb-1">
+                                        <span class="block text-sm font-bold text-slate-800 truncate" id="puck-name">User</span>
+                                        <span class="block text-xs text-slate-500 truncate" id="puck-email">user@example.com</span>
+                                    </div>
+                                    <a href="#" id="puck-dashboard" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord</span></a>
+                                    <a href="player-dashboard.html" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('player-dashboard.html')){ try{ switchNav('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); return false;}catch(e){} }"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></a>
+                                    <button id="puck-logout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom"><span class="lang-en-only">Log out</span><span class="lang-fr-only notranslate">Se déconnecter</span></button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <a href="owner-dashboard.html" id="list-facility-btn" class="inline-block mt-2 md:mt-0 bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-full font-medium transition-custom shadow-md hover:shadow-lg"><span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span></a>
+                    </div>
+                    
+                    <!-- Hamburger Button -->
+                    <button class="hamburger-btn" onclick="document.body.classList.toggle('nav-open')">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
                 </div>
+            </div>iv>
             </div>
         
 
         </div>
 
-        <!-- Mobile Menu (Hidden by default) -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-100">
-            <div class="px-4 pt-2 pb-6 space-y-2">
-                <a href="search.html" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Find a Surface</span><span class="lang-fr-only notranslate">Trouver une surface</span></a>
-                <a href="public-sessions.html" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Public Sessions</span><span class="lang-fr-only notranslate">Séances publiques</span></a>
-                <a href="#" id="mobile-login-btn" class="block px-3 py-3 rounded-md text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Log in</span><span class="lang-fr-only notranslate">Se connecter</span></a>
-                <a href="owner-dashboard.html" id="mobile-list-facility-btn" class="block px-3 py-3 mt-4 text-center rounded-full text-base font-medium bg-dark text-white hover:bg-slate-800"><span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span></a>
-                <!-- Mobile Language Toggle -->
-                <div class="flex items-center space-x-2 px-3 py-3 border-t border-slate-100 mt-2 pt-4">
-                    <span class="text-sm font-medium text-slate-500 mr-2">Language:</span>
-                    <button onclick="window.switchLanguage('en')" id="mobile-lang-btn-en" class="px-3 py-1 rounded-full text-sm font-bold bg-slate-200 text-dark shadow-sm transition-all duration-200">EN</button>
-                    <button onclick="window.switchLanguage('fr')" id="mobile-lang-btn-fr" class="px-3 py-1 rounded-full text-sm font-bold text-slate-500 bg-slate-50 transition-all duration-200">FR</button>
-                </div>
-            </div>
-        </div>
+        <!-- The legacy mobile-menu div has been removed in favor of vanilla CSS .nav-open drawer -->
 
         <!-- Horizontal Categories Bar (Sticky with Navbar) -->
         <div class="w-full bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-sm overflow-x-auto hide-scrollbar z-40">
@@ -788,6 +771,7 @@
                     <button type="submit" id="auth-submit-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-lg transition-custom shadow-glow mt-2">
                         Continue
                     </button>
+                    <div id="login-error" style="color:#dc2626; font-size:14px; margin-top:8px; display:none;"></div>
                     <div id="auth-error" class="hidden text-red-500 text-sm font-medium mt-2 text-center"></div>
                 </form>
 
@@ -811,10 +795,13 @@
             }
         });
 
-        // Mobile menu toggle
-        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
+        // Outside click to close mobile menu
+        document.addEventListener('click', (e) => {
+            const navLinks = document.querySelector('.nav-links');
+            const hamburgerBtn = document.querySelector('.hamburger-btn');
+            if (document.body.classList.contains('nav-open') && navLinks && !navLinks.contains(e.target) && !hamburgerBtn.contains(e.target)) {
+                document.body.classList.remove('nav-open');
+            }
         });
 
         // Profile Puck Logic
@@ -1249,6 +1236,11 @@
             authModal.classList.add('flex');
             document.body.style.overflow = 'hidden';
             
+            // Clear any previous errors
+            const loginError = document.getElementById('login-error');
+            if (loginError) loginError.style.display = 'none';
+            if (authError) authError.classList.add('hidden');
+            
             // Close mobile menu if open
             const mobileMenu = document.getElementById('mobile-menu');
             if (mobileMenu) mobileMenu.classList.add('hidden');
@@ -1266,6 +1258,21 @@
         if (authBackdrop) authBackdrop.addEventListener('click', closeAuthModal);
         if (authToggleBtn) authToggleBtn.addEventListener('click', toggleAuthMode);
 
+        const authEmailInput = document.getElementById('auth-email');
+        const authPasswordInput = document.getElementById('auth-password');
+        if (authEmailInput) {
+            authEmailInput.addEventListener('input', () => {
+                const errorDiv = document.getElementById('login-error');
+                if (errorDiv) errorDiv.style.display = 'none';
+            });
+        }
+        if (authPasswordInput) {
+            authPasswordInput.addEventListener('input', () => {
+                const errorDiv = document.getElementById('login-error');
+                if (errorDiv) errorDiv.style.display = 'none';
+            });
+        }
+        
         const roleRadios = document.querySelectorAll('input[name="auth-role"]');
         const companyContainer = document.getElementById('company-name-container');
         const companyInput = document.getElementById('auth-company-name');
@@ -1587,8 +1594,17 @@
                 updateUserUI(data.user);
                 
             } catch (err) {
-                authError.textContent = err.message;
-                authError.classList.remove('hidden');
+                if (isLoginMode) {
+                    const errorDiv = document.getElementById('login-error');
+                    if (errorDiv) {
+                        const isFR = window.currentLang === 'fr';
+                        errorDiv.textContent = isFR ? 'Courriel ou mot de passe incorrect.' : 'Incorrect email or password.';
+                        errorDiv.style.display = 'block';
+                    }
+                } else {
+                    authError.textContent = err.message;
+                    authError.classList.remove('hidden');
+                }
             } finally {
                 authSubmitBtn.textContent = originalText;
                 authSubmitBtn.disabled = false;

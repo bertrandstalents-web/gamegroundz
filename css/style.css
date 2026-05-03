@@ -174,3 +174,71 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #cbd5e1;
 }
+
+/* Mobile Hamburger Menu */
+.hamburger-btn {
+    display: none;
+    font-size: 1.5rem;
+    color: #475569;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+}
+
+.hamburger-btn:hover {
+    color: #0f172a;
+}
+
+@media (max-width: 768px) {
+    .nav-links, .admin-sidebar {
+        display: none !important;
+    }
+    
+    .hamburger-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .nav-open .nav-links {
+        display: flex !important;
+        flex-direction: column;
+        position: fixed;
+        top: 80px; /* Below the navbar */
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 20px;
+        z-index: 1000;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        border-top: 1px solid #f1f5f9;
+        max-height: calc(100vh - 80px);
+        overflow-y: auto;
+    }
+    
+    .nav-open .nav-links a,
+    .nav-open .nav-links button,
+    .nav-open .nav-links .relative {
+        width: 100%;
+        text-align: left;
+        margin: 8px 0;
+    }
+    
+    .nav-open .nav-links > div {
+        width: 100%;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    .nav-open .admin-sidebar {
+        display: flex !important;
+        position: fixed;
+        top: 80px; /* Below the admin header */
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        overflow-y: auto;
+    }
+}
