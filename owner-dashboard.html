@@ -1603,6 +1603,27 @@
                     if (badge) badge.remove();
                 }
             }
+
+            if (tabId === 'calendar') {
+                setTimeout(() => {
+                    if (typeof currentCalendar !== 'undefined' && currentCalendar) {
+                        currentCalendar.render();
+                    } else {
+                        const selectEl = document.getElementById('calendar-facility-select');
+                        if (selectEl && selectEl.value) {
+                            if (typeof initCalendar === 'function') initCalendar(selectEl.value);
+                        } else if (selectEl && selectEl.options.length > 1) {
+                            for (let i = 0; i < selectEl.options.length; i++) {
+                                if (selectEl.options[i].value && !selectEl.options[i].disabled) {
+                                    selectEl.value = selectEl.options[i].value;
+                                    if (typeof initCalendar === 'function') initCalendar(selectEl.value);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }, 100);
+            }
         }
 
         // Fetch Host Data Overview
