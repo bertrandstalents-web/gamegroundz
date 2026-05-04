@@ -288,14 +288,14 @@
                 </a>
             </div>
             
-            <div id="featured-facilities-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-opacity duration-300">
+            <div id="featured-facilities-grid" class="flex overflow-x-auto pb-6 -mx-4 px-4 snap-x snap-mandatory hide-scrollbar gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0 md:px-0 md:mx-0 transition-opacity duration-300">
                 <!-- Facilities will be injected here by JavaScript -->
-                <div class="col-span-full flex justify-center py-12">
+                <div class="w-full md:col-span-full flex justify-center py-12">
                      <i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i>
                 </div>
             </div>
 
-            <div id="featured-public-sessions-grid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-opacity duration-300">
+            <div id="featured-public-sessions-grid" class="hidden flex overflow-x-auto pb-6 -mx-4 px-4 snap-x snap-mandatory hide-scrollbar gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0 md:px-0 md:mx-0 transition-opacity duration-300">
                 <!-- Public sessions will be injected here by JavaScript -->
             </div>
         </div>
@@ -998,8 +998,8 @@
                     return a.base_price - b.base_price;
                 });
                 
-                // Get exactly 3 or fewer dynamically ordered listings
-                const featured = facilities.slice(0, 3);
+                // Get dynamically ordered listings
+                const featured = facilities.slice(0, 6);
                 
                 featured.forEach(facility => {
                     const isInstantBook = facility.is_instant_book === 1;
@@ -1027,7 +1027,7 @@
 
                     const card = `
                         <!-- Surface Card -->
-                        <div class="bg-white rounded-3xl overflow-hidden shadow-soft border border-slate-100 group cursor-pointer" onclick="window.location.href='surface.html?id=${facility.id}'">
+                        <div class="w-[85vw] flex-shrink-0 snap-start md:w-auto bg-white rounded-3xl overflow-hidden shadow-soft border border-slate-100 group cursor-pointer" onclick="window.location.href='surface.html?id=${facility.id}'">
                             <div class="relative h-64 hover-zoom-img-container">
                                 <img src="${getPrimaryImageUrl(facility.image_url)}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
                                 <div class="absolute top-4 left-4 right-4 flex flex-wrap gap-2 z-20 max-w-[calc(100%-2rem)]">
@@ -1981,7 +1981,7 @@
             const displayImage = getSessionImage(session.manual_notes, session.facility_type, session.image_url);
 
             return `
-                <div class="bg-white rounded-3xl overflow-hidden shadow-soft border border-slate-100 hover:shadow-md transition-custom group cursor-pointer" onclick='sessionStorage.setItem("pending_booking_date", "${session.booking_date}"); sessionStorage.setItem("pending_booking_slots", ${JSON.stringify(JSON.stringify(slotKeys))}); window.location.href="facility.html?id=${session.facility_id}"'>
+                <div class="w-[85vw] flex-shrink-0 snap-start md:w-auto bg-white rounded-3xl overflow-hidden shadow-soft border border-slate-100 hover:shadow-md transition-custom group cursor-pointer" onclick='sessionStorage.setItem("pending_booking_date", "${session.booking_date}"); sessionStorage.setItem("pending_booking_slots", ${JSON.stringify(JSON.stringify(slotKeys))}); window.location.href="facility.html?id=${session.facility_id}"'>
                     <div class="relative h-64 hover-zoom-img-container">
                         <img src="${displayImage}" alt="${session.facility_name}" class="w-full h-full object-cover bg-slate-100">
                         <div class="absolute top-4 left-4 flex flex-wrap gap-2 z-20">
@@ -2026,7 +2026,7 @@
                 if (!response.ok) throw new Error("Failed to fetch");
                 let sessions = await response.json();
                 
-                sessions = sessions.slice(0, 3); // match featured surfaces count
+                sessions = sessions.slice(0, 6); // fetch up to 6 for carousel
                 
                 grid.innerHTML = '';
                 if (sessions.length === 0) {
