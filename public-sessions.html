@@ -145,6 +145,7 @@
                                     <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="">Any Date</div>
                                     <div class="date-option px-4 py-2 bg-slate-50 text-primary font-bold cursor-pointer transition-custom" data-value="today">Today</div>
                                     <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="tomorrow">Tomorrow</div>
+                                    <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="week">This Week</div>
                                     <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom border-t border-slate-50 mt-1 pt-2" data-value="custom">
                                         <i class="fa-regular fa-calendar mr-2"></i>Custom Date...
                                     </div>
@@ -654,13 +655,27 @@
                         tmrw.setDate(tmrw.getDate() + 1);
                         const tzOffset = tmrw.getTimezoneOffset() * 60000;
                         targetDate = (new Date(tmrw - tzOffset)).toISOString().split('T')[0];
+                    } else if (inlineDate === 'week') {
+                        targetDate = 'week';
                     } else if (inlineDate === 'custom' && customDate) {
                         targetDate = customDate;
                     }
                 }
                 
                 if (targetDate) {
-                    data = data.filter(s => s.booking_date === targetDate);
+                    if (targetDate === 'week') {
+                        const today = new Date();
+                        const tzOffset = today.getTimezoneOffset() * 60000;
+                        const todayStr = (new Date(today - tzOffset)).toISOString().split('T')[0];
+                        
+                        const nextWeek = new Date();
+                        nextWeek.setDate(nextWeek.getDate() + 7);
+                        const nextWeekStr = (new Date(nextWeek - tzOffset)).toISOString().split('T')[0];
+                        
+                        data = data.filter(s => s.booking_date >= todayStr && s.booking_date <= nextWeekStr);
+                    } else {
+                        data = data.filter(s => s.booking_date === targetDate);
+                    }
                 }
                 
                 // Activity logic
