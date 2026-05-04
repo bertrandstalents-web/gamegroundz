@@ -513,6 +513,16 @@
                                     <div>
                                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Booking Title<span class="text-red-500">*</span></label>
                                         <input type="text" id="modal-block-notes" required="" placeholder="e.g. Private Lesson or Open Hockey" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
+                                        <div id="modal-block-notes-custom-wrapper" class="relative hidden">
+                                            <button type="button" id="modal-block-notes-btn" onclick="document.getElementById('modal-block-notes-dropdown').classList.toggle('hidden')" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm bg-white flex items-center justify-between">
+                                                <span id="modal-block-notes-display">Select an activity</span>
+                                                <i class="fa-solid fa-chevron-down text-slate-400"></i>
+                                            </button>
+                                            <div id="modal-block-notes-dropdown" class="hidden absolute z-[100] w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden py-1">
+                                                <ul id="modal-block-notes-list">
+                                                </ul>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Locker Room <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top">OPTIONAL</span></label>
@@ -3078,20 +3088,22 @@
             const offlineFields = document.getElementById('modal-offline-fields');
             const discountFields = document.getElementById('modal-discount-fields');
             const notesInput = document.getElementById('modal-block-notes');
+            const notesSelect = document.getElementById('modal-block-notes-select');
             const submitBtn = document.getElementById('modal-submit-btn');
             const isEditMode = document.getElementById('modal-edit-booking-id') && document.getElementById('modal-edit-booking-id').value !== '';
             const isDiscountEditMode = document.getElementById('modal-edit-discount-id') && document.getElementById('modal-edit-discount-id').value !== '';
 
             if (blockType === 'discount') {
                 if(offlineFields) offlineFields.classList.add('hidden');
-                if(notesInput) notesInput.required = false;
+                if(notesInput) { notesInput.required = false; notesInput.classList.remove('hidden'); }
+                const customWrapper = document.getElementById('modal-block-notes-custom-wrapper');
+                if (customWrapper) customWrapper.classList.add('hidden');
                 if(discountFields) discountFields.classList.remove('hidden');
                 const discValue = document.getElementById('modal-disc-value');
                 if(discValue) discValue.required = true;
                 if(submitBtn) submitBtn.innerHTML = isDiscountEditMode ? 'Save Changes' : 'Add Discount';
             } else if (blockType === 'public_session') {
                 if(offlineFields) offlineFields.classList.remove('hidden');
-                if(notesInput) notesInput.required = true;
                 if(discountFields) discountFields.classList.add('hidden');
 
                 const publicExtras = document.getElementById('public-session-extra');
@@ -3102,8 +3114,44 @@
                 const discValue = document.getElementById('modal-disc-value');
                 if(discValue) discValue.required = false;
 
-                const facId = document.getElementById('modal-facility-id').value;
-                const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == facId) : null;
+                const trueFacId = document.getElementById('modal-true-facility-id').value;
+                const surfaceId = document.getElementById('modal-facility-id').value;
+                const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == trueFacId) : null;
+                const surface = facility && facility.surfaces ? facility.surfaces.find(s => s.id == surfaceId) : null;
+                const surfaceType = surface ? surface.type : '';
+
+                let optionsData = [];
+                if (surfaceType === 'ice') {
+                    optionsData = ['Free Skating', 'Free Hockey', 'Free Hockey (18+)'];
+                } else if (surfaceType === 'pool') {
+                    optionsData = ['Swimming Lane', 'Open Swim and Diving Board', 'Recreational and Family Pool'];
+                } else {
+                    optionsData = ['Public Session'];
+                }
+
+                const customWrapper = document.getElementById('modal-block-notes-custom-wrapper');
+                if (customWrapper) {
+                    const notesList = document.getElementById('modal-block-notes-list');
+                    const notesDisplay = document.getElementById('modal-block-notes-display');
+                    
+                    notesList.innerHTML = optionsData.map(opt => 
+                        `<li><button type="button" class="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-primary transition-custom border-b border-slate-50 last:border-0" onclick="document.getElementById('modal-block-notes').value = '${opt}'; document.getElementById('modal-block-notes-display').textContent = '${opt}'; document.getElementById('modal-block-notes-dropdown').classList.add('hidden');">${opt}</button></li>`
+                    ).join('');
+                    
+                    customWrapper.classList.remove('hidden');
+                    
+                    let selectedValue = optionsData[0];
+                    if (notesInput && notesInput.value && optionsData.includes(notesInput.value)) {
+                        selectedValue = notesInput.value;
+                    }
+                    if (notesInput) notesInput.value = selectedValue;
+                    notesDisplay.textContent = selectedValue;
+                }
+                if (notesInput) {
+                    notesInput.classList.add('hidden');
+                    notesInput.required = false;
+                }
+
                 const residentsContainer = document.getElementById('modal-public-residents-only-container');
                 if (residentsContainer) {
                     if (facility && facility.facility_type === 'Municipality / City') {
@@ -3116,7 +3164,9 @@
                 if(submitBtn) submitBtn.innerHTML = isEditMode ? 'Save Changes' : 'Create Public Session';
             } else {
                 if(offlineFields) offlineFields.classList.remove('hidden');
-                if(notesInput) notesInput.required = true;
+                if(notesInput) { notesInput.required = true; notesInput.classList.remove('hidden'); }
+                const customWrapper = document.getElementById('modal-block-notes-custom-wrapper');
+                if (customWrapper) customWrapper.classList.add('hidden');
                 if(discountFields) discountFields.classList.add('hidden');
 
                 const publicExtras = document.getElementById('public-session-extra');
