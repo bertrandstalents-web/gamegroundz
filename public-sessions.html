@@ -558,7 +558,8 @@
         }
 
         function createFacilityCard(session) {
-            const typeDisplay = session.facility_type.charAt(0).toUpperCase() + session.facility_type.slice(1);
+            const typesArr = session.facility_type ? session.facility_type.split(',').map(t => t.trim().charAt(0).toUpperCase() + t.trim().slice(1)) : [];
+            const typeDisplay = typesArr.join(', ');
             const slots = (typeof session.time_slots === 'string') ? JSON.parse(session.time_slots) : session.time_slots;
             const timeDisplay = slots && slots.length > 0 ? slots[0] : '';
             const slotKeys = slots ? slots.map(s => `${session.booking_date}|${s}`) : [];
@@ -739,7 +740,11 @@
                     data = data.filter(s => (s.participant_price || 0) <= filters.maxPrice);
                 }
                 if (filters.types && filters.types.length > 0) {
-                    data = data.filter(s => filters.types.includes(s.facility_type));
+                    data = data.filter(s => {
+                        if (!s.facility_type) return false;
+                        const fTypes = s.facility_type.split(',').map(t => t.trim());
+                        return filters.types.some(t => fTypes.includes(t));
+                    });
                 }
                 if (filters.search) {
                     const searchLower = filters.search.toLowerCase();
@@ -848,7 +853,7 @@
                     search: searchQuery,
                     date: dateVal,
                     time: timeVal
-                }, true).finally(() => {
+                }, false).finally(() => {
                     applyBtn.innerHTML = originalText;
                     applyBtn.disabled = false;
                 });

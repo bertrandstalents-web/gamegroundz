@@ -2085,17 +2085,22 @@ app.get('/api/bookings/:facility_id', (req, res) => {
 // GET upcoming public sessions across all facilities
 app.get('/api/public_sessions/upcoming/all', (req, res) => {
     // We only want future public sessions or today's
+    const serverNow = new Date();
+    const tzStr = serverNow.toLocaleString('en-US', { timeZone: 'America/New_York' }); 
+    const now = new Date(tzStr);
+    const todayStr = now.toISOString().split('T')[0];
+
     const query = `
         SELECT b.*, f.name as facility_name, f.location, f.type as facility_type, f.image_url, f.lat, f.lng,
         (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
         FROM bookings b 
         JOIN facilities f ON b.facility_id = f.id
         WHERE b.booking_type = 'public_session' AND b.status = 'confirmed' 
-        AND b.booking_date >= TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD')
+        AND b.booking_date >= ?
         ORDER BY b.booking_date ASC, b.time_slots ASC
     `;
     
-    db.all(query, [], (err, rows) => {
+    db.all(query, [todayStr], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -2105,17 +2110,22 @@ app.get('/api/public_sessions/upcoming/all', (req, res) => {
 app.get('/api/public_sessions/:facility_id', (req, res) => {
     const { facility_id } = req.params;
     
+    const serverNow = new Date();
+    const tzStr = serverNow.toLocaleString('en-US', { timeZone: 'America/New_York' }); 
+    const now = new Date(tzStr);
+    const todayStr = now.toISOString().split('T')[0];
+
     // We only want future public sessions or today's
     const query = `
         SELECT b.*, 
         (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
         FROM bookings b 
         WHERE b.facility_id = ? AND b.booking_type = 'public_session' AND b.status = 'confirmed' 
-        AND b.booking_date >= TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD')
+        AND b.booking_date >= ?
         ORDER BY b.booking_date ASC, b.time_slots ASC
     `;
     
-    db.all(query, [facility_id], (err, rows) => {
+    db.all(query, [facility_id, todayStr], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
