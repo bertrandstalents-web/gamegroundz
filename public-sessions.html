@@ -430,7 +430,7 @@
                 const parsed = JSON.parse(originalUrl);
                 if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]) return parsed[0];
             } catch (e) {}
-            if (originalUrl && typeof originalUrl === 'string' && originalUrl.startsWith('http')) {
+            if (originalUrl && typeof originalUrl === 'string' && (originalUrl.startsWith('http') || originalUrl.startsWith('data:image/'))) {
                 return originalUrl;
             }
 
