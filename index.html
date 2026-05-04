@@ -273,29 +273,29 @@
             <div class="flex justify-between items-end mb-12">
                 <div>
                     <h2 id="featured-title" class="text-4xl font-extrabold text-dark mb-4"><span class="lang-en-only">Featured Surfaces</span><span class="lang-fr-only notranslate">Surfaces en vedette</span></h2>
-                    <p class="text-lg text-slate-500 flex flex-wrap items-center">
+                    <p class="text-lg text-slate-500">
                         <span id="featured-subtitle-text">
                             <span class="lang-en-only">Discover top-rated spaces available for booking right now.</span>
                             <span class="lang-fr-only notranslate">Découvrez des espaces très bien notés disponibles en ce moment.</span>
                         </span>
-                        <a id="featured-view-all" href="search.html" class="inline-flex md:hidden items-center text-primary font-bold hover:text-primaryHover transition-custom ml-1">
-                            <span class="lang-en-only">View all</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-1 text-sm"></i>
-                        </a>
                     </p>
+                    <a id="featured-view-all" href="search.html" class="inline-flex md:hidden items-center text-primary font-bold hover:text-primaryHover transition-custom mt-2">
+                        <span class="lang-en-only">View all</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-1 text-sm"></i>
+                    </a>
                 </div>
                 <a id="featured-view-all-desktop" href="search.html" class="hidden md:flex items-center text-primary font-bold hover:text-primaryHover transition-custom mb-2 relative z-10">
                     <span class="lang-en-only">View All</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-2"></i>
                 </a>
             </div>
             
-            <div id="featured-facilities-grid" class="flex overflow-x-auto pb-6 -mx-4 px-4 snap-x snap-mandatory hide-scrollbar gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0 md:px-0 md:mx-0 transition-opacity duration-300">
+            <div id="featured-facilities-grid" class="flex overflow-x-auto pb-6 -mx-4 sm:-mx-6 snap-x snap-mandatory hide-scrollbar gap-4 before:content-[''] before:w-4 sm:before:w-6 before:flex-shrink-0 after:content-[''] after:w-4 sm:after:w-6 after:flex-shrink-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0 md:mx-0 md:before:hidden md:after:hidden transition-opacity duration-300">
                 <!-- Facilities will be injected here by JavaScript -->
                 <div class="w-full md:col-span-full flex justify-center py-12">
                      <i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i>
                 </div>
             </div>
 
-            <div id="featured-public-sessions-grid" class="hidden flex overflow-x-auto pb-6 -mx-4 px-4 snap-x snap-mandatory hide-scrollbar gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0 md:px-0 md:mx-0 transition-opacity duration-300">
+            <div id="featured-public-sessions-grid" class="hidden flex overflow-x-auto pb-6 -mx-4 sm:-mx-6 snap-x snap-mandatory hide-scrollbar gap-4 before:content-[''] before:w-4 sm:before:w-6 before:flex-shrink-0 after:content-[''] after:w-4 sm:after:w-6 after:flex-shrink-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0 md:mx-0 md:before:hidden md:after:hidden transition-opacity duration-300">
                 <!-- Public sessions will be injected here by JavaScript -->
             </div>
         </div>
