@@ -2091,10 +2091,13 @@ app.get('/api/public_sessions/upcoming/all', (req, res) => {
     const todayStr = now.toISOString().split('T')[0];
 
     const query = `
-        SELECT b.*, f.name as facility_name, f.location, f.type as facility_type, f.image_url, f.lat, f.lng,
+        SELECT b.*, f.name as facility_name, f.location, f.type as facility_type, 
+        CASE WHEN s.image_url IS NOT NULL AND s.image_url != '' THEN s.image_url ELSE f.image_url END as image_url, 
+        f.lat, f.lng,
         (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
         FROM bookings b 
         JOIN facilities f ON b.facility_id = f.id
+        LEFT JOIN surfaces s ON b.surface_id = s.id
         WHERE b.booking_type = 'public_session' AND b.status = 'confirmed' 
         AND b.booking_date >= ?
         ORDER BY b.booking_date ASC, b.time_slots ASC
