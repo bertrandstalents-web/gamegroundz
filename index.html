@@ -259,12 +259,12 @@
 
     <!-- Mobile Quick Navigation Tabs -->
     <div class="md:hidden flex w-full relative z-30 bg-white shadow-sm">
-        <a href="search.html" class="flex-1 py-4 text-center bg-slate-200 text-dark font-bold text-[17px] border-r border-b border-slate-300 active:bg-slate-300 transition-custom">
+        <button id="mobile-tab-surfaces" onclick="switchMobileView('surfaces')" class="flex-1 py-4 text-center bg-white text-dark font-bold text-[17px] border-r border-slate-200 transition-custom focus:outline-none">
             <span class="lang-en-only">Find a Surface</span><span class="lang-fr-only notranslate">Trouver une surface</span>
-        </a>
-        <a href="public-sessions.html" class="flex-1 py-4 text-center bg-white text-dark font-bold text-[17px] active:bg-slate-50 transition-custom">
+        </button>
+        <button id="mobile-tab-sessions" onclick="switchMobileView('sessions')" class="flex-1 py-4 text-center bg-slate-100 text-slate-500 font-bold text-[17px] border-b border-slate-300 transition-custom focus:outline-none">
             <span class="lang-en-only">Public Sessions</span><span class="lang-fr-only notranslate">Séances publiques</span>
-        </a>
+        </button>
     </div>
 
     <!-- Featured Facilities Section (Now following hero directly) -->
@@ -272,25 +272,31 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-end mb-12">
                 <div>
-                    <h2 class="text-4xl font-extrabold text-dark mb-4">Featured Surfaces</h2>
-                    <p class="text-lg text-slate-500">Discover top-rated spaces available for booking right now.</p>
+                    <h2 id="featured-title" class="text-4xl font-extrabold text-dark mb-4"><span class="lang-en-only">Featured Surfaces</span><span class="lang-fr-only notranslate">Surfaces en vedette</span></h2>
+                    <p class="text-lg text-slate-500 flex flex-wrap items-center">
+                        <span id="featured-subtitle-text">
+                            <span class="lang-en-only">Discover top-rated spaces available for booking right now.</span>
+                            <span class="lang-fr-only notranslate">Découvrez des espaces très bien notés disponibles en ce moment.</span>
+                        </span>
+                        <a id="featured-view-all" href="search.html" class="inline-flex md:hidden items-center text-primary font-bold hover:text-primaryHover transition-custom ml-1">
+                            <span class="lang-en-only">View all</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-1 text-sm"></i>
+                        </a>
+                    </p>
                 </div>
-                <a href="search.html" class="hidden md:flex items-center text-primary font-bold hover:text-primaryHover transition-custom mb-2 relative z-10">
-                    View All <i class="fa-solid fa-arrow-right ml-2"></i>
+                <a id="featured-view-all-desktop" href="search.html" class="hidden md:flex items-center text-primary font-bold hover:text-primaryHover transition-custom mb-2 relative z-10">
+                    <span class="lang-en-only">View All</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-2"></i>
                 </a>
             </div>
             
-            <div id="featured-facilities-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div id="featured-facilities-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-opacity duration-300">
                 <!-- Facilities will be injected here by JavaScript -->
                 <div class="col-span-full flex justify-center py-12">
                      <i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i>
                 </div>
             </div>
-            
-            <div class="mt-12 text-center md:hidden relative z-10">
-                <a href="search.html" class="inline-flex items-center text-primary font-bold hover:text-primaryHover transition-custom">
-                    View All Facilities <i class="fa-solid fa-arrow-right ml-2"></i>
-                </a>
+
+            <div id="featured-public-sessions-grid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-opacity duration-300">
+                <!-- Public sessions will be injected here by JavaScript -->
             </div>
         </div>
     </section>
@@ -1902,6 +1908,140 @@
         
         // Initial call
         updateHeroTranslations(document.documentElement.getAttribute('data-lang') || 'en');
+        // Mobile Toggle Logic
+        window.publicSessionsFetched = false;
+        
+        function switchMobileView(viewType) {
+            const tabSurfaces = document.getElementById('mobile-tab-surfaces');
+            const tabSessions = document.getElementById('mobile-tab-sessions');
+            const title = document.getElementById('featured-title');
+            const subtitleText = document.getElementById('featured-subtitle-text');
+            const viewAllLink = document.getElementById('featured-view-all');
+            const viewAllDesktop = document.getElementById('featured-view-all-desktop');
+            const gridSurfaces = document.getElementById('featured-facilities-grid');
+            const gridSessions = document.getElementById('featured-public-sessions-grid');
+
+            if (viewType === 'surfaces') {
+                tabSurfaces.className = "flex-1 py-4 text-center bg-white text-dark font-bold text-[17px] border-r border-slate-200 transition-custom focus:outline-none";
+                tabSessions.className = "flex-1 py-4 text-center bg-slate-100 text-slate-500 font-bold text-[17px] border-b border-slate-300 transition-custom focus:outline-none";
+                
+                if (title) title.innerHTML = '<span class="lang-en-only">Featured Surfaces</span><span class="lang-fr-only notranslate">Surfaces en vedette</span>';
+                if (subtitleText) subtitleText.innerHTML = '<span class="lang-en-only">Discover top-rated spaces available for booking right now.</span><span class="lang-fr-only notranslate">Découvrez des espaces très bien notés disponibles en ce moment.</span>';
+                if (viewAllLink) viewAllLink.href = 'search.html';
+                if (viewAllDesktop) viewAllDesktop.href = 'search.html';
+                
+                if (gridSurfaces) gridSurfaces.classList.remove('hidden');
+                if (gridSessions) gridSessions.classList.add('hidden');
+            } else {
+                tabSessions.className = "flex-1 py-4 text-center bg-white text-dark font-bold text-[17px] border-l border-slate-200 transition-custom focus:outline-none";
+                tabSurfaces.className = "flex-1 py-4 text-center bg-slate-100 text-slate-500 font-bold text-[17px] border-b border-slate-300 transition-custom focus:outline-none";
+
+                if (title) title.innerHTML = '<span class="lang-en-only">Upcoming Public Sessions</span><span class="lang-fr-only notranslate">Séances publiques à venir</span>';
+                if (subtitleText) subtitleText.innerHTML = '<span class="lang-en-only">Find and join drop-in activities near you.</span><span class="lang-fr-only notranslate">Trouvez et rejoignez des activités près de chez vous.</span>';
+                if (viewAllLink) viewAllLink.href = 'public-sessions.html';
+                if (viewAllDesktop) viewAllDesktop.href = 'public-sessions.html';
+                
+                if (gridSurfaces) gridSurfaces.classList.add('hidden');
+                if (gridSessions) gridSessions.classList.remove('hidden');
+                
+                if (!window.publicSessionsFetched) {
+                    fetchFeaturedPublicSessions();
+                }
+            }
+            
+            // Re-apply language if needed
+            if (typeof updateLanguage === 'function') {
+                updateLanguage(window.currentLang || 'en');
+            }
+        }
+
+        function getSessionImage(notes, facilityType, originalUrl) {
+            const text = (notes || '').toLowerCase();
+            if (text.includes('hockey')) return 'https://images.unsplash.com/photo-1515523110800-9415d13b84a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            if (text.includes('skat') || text.includes('patinage') || text.includes('glace')) return 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            if (text.includes('swim') || text.includes('bath') || text.includes('bain') || facilityType === 'pool') return 'https://images.unsplash.com/photo-1530549387789-4c1017266635?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            if (text.includes('soccer') || facilityType === 'turf') return 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            if (text.includes('basketball') || facilityType === 'court') return 'https://images.unsplash.com/photo-1546519638-68e109498ffc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            if (text.includes('pickleball')) return 'https://images.unsplash.com/photo-1622228514120-1a1200fa889c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            try {
+                const parsed = JSON.parse(originalUrl);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+            } catch (e) {}
+            return originalUrl || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+        }
+
+        function createPublicSessionCard(session) {
+            const typesArr = session.facility_type ? session.facility_type.split(',').map(t => t.trim().charAt(0).toUpperCase() + t.trim().slice(1)) : [];
+            const typeDisplay = typesArr.join(', ');
+            const slots = (typeof session.time_slots === 'string') ? JSON.parse(session.time_slots) : session.time_slots;
+            const timeDisplay = slots && slots.length > 0 ? slots[0] : '';
+            const slotKeys = slots ? slots.map(s => `${session.booking_date}|${s}`) : [];
+            const spotsRemaining = Math.max(0, (session.capacity || 0) - (session.joined_count || 0));
+            const activityName = session.manual_notes || 'Public Session';
+            const displayImage = getSessionImage(session.manual_notes, session.facility_type, session.image_url);
+
+            return `
+                <div class="bg-white rounded-3xl overflow-hidden shadow-soft border border-slate-100 hover:shadow-md transition-custom group cursor-pointer" onclick='sessionStorage.setItem("pending_booking_date", "${session.booking_date}"); sessionStorage.setItem("pending_booking_slots", ${JSON.stringify(JSON.stringify(slotKeys))}); window.location.href="facility.html?id=${session.facility_id}"'>
+                    <div class="relative h-64 hover-zoom-img-container">
+                        <img src="${displayImage}" alt="${session.facility_name}" class="w-full h-full object-cover bg-slate-100">
+                        <div class="absolute top-4 left-4 flex flex-wrap gap-2 z-20">
+                            <div class="bg-primary/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-sm flex items-center">
+                                <i class="fa-solid fa-users mr-1"></i> ${activityName}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-dark group-hover:text-primary transition-custom truncate pr-4">${session.facility_name}</h3>
+                            <span class="font-bold text-lg text-dark whitespace-nowrap">From $${session.participant_price || 0}<span class="text-sm font-normal text-slate-500">/pp</span></span>
+                        </div>
+                        <p class="text-slate-500 mb-4 flex items-center text-sm">
+                            <i class="fa-solid fa-location-dot mr-2 text-slate-400"></i> ${session.location}
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold whitespace-nowrap">${typeDisplay}</span>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-4 gap-y-2">
+                            <div class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-600">
+                                ${session.booking_date} ${timeDisplay}
+                            </div>
+                            <span class="text-sm font-bold ${spotsRemaining > 0 ? 'text-primary' : 'text-red-500'}">${spotsRemaining} spots left</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function fetchFeaturedPublicSessions() {
+            const grid = document.getElementById('featured-public-sessions-grid');
+            if (!grid) return;
+            grid.innerHTML = '<div class="col-span-full flex justify-center py-12"><i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i></div>';
+            
+            try {
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                const response = await fetch(`${API_BASE_URL}/api/public/sessions`, { 
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!response.ok) throw new Error("Failed to fetch");
+                let sessions = await response.json();
+                
+                sessions = sessions.slice(0, 3); // match featured surfaces count
+                
+                grid.innerHTML = '';
+                if (sessions.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 font-medium text-lg">No public sessions found.</div>';
+                    return;
+                }
+                
+                sessions.forEach(s => {
+                    grid.insertAdjacentHTML('beforeend', createPublicSessionCard(s));
+                });
+                window.publicSessionsFetched = true;
+            } catch(e) {
+                grid.innerHTML = '<div class="col-span-full text-center py-12 text-red-500">Error loading sessions.</div>';
+            }
+        }
     </script>
 
     <!-- Dynamically update puck links based on user role -->
