@@ -123,119 +123,9 @@
     <!-- Main Content -->
     <div class="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
         
-        <!-- Mobile Filter Overlay -->
-        <div id="mobile-filter-overlay" class="fixed inset-0 bg-slate-900/60 z-[55] hidden lg:hidden backdrop-blur-sm transition-opacity opacity-0"></div>
-
-        <!-- Sidebar Filters -->
-        <aside id="filters-sidebar" class="fixed inset-x-0 bottom-0 z-[60] transform translate-y-full transition-transform duration-300 ease-in-out lg:relative lg:translate-y-0 lg:z-auto lg:w-72 lg:flex-shrink-0 w-full h-[85vh] lg:h-auto rounded-t-3xl lg:rounded-none bg-white lg:bg-transparent shadow-2xl lg:shadow-none flex flex-col">
+        <!-- Sidebar Filters removed -->
             
-            <!-- Mobile Handle -->
-            <div class="lg:hidden w-full flex justify-center pt-3 pb-2 cursor-pointer" id="close-filters-handle">
-                <div class="w-12 h-1.5 bg-slate-300 rounded-full"></div>
-            </div>
 
-            <!-- Inner container -->
-            <div class="bg-white lg:rounded-2xl lg:shadow-sm lg:border lg:border-slate-200 p-6 lg:sticky lg:top-28 overflow-y-auto flex-1 pb-24 lg:pb-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-bold text-lg text-dark">Filters</h3>
-                    <button class="text-sm text-primary hover:text-primaryHover font-medium lg:hidden" id="mobile-filter-close-text">Close</button>
-                    <button class="text-sm text-primary hover:text-primaryHover font-medium hidden lg:block">Clear All</button>
-                </div>
-                
-                <!-- Filter: Sport Type -->
-                <div class="mb-6">
-                    <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Sport Surface</h4>
-                    <div class="space-y-2">
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="all" id="filter-all" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer" checked>
-                            <span class="ml-3 text-slate-600 group-hover:text-dark">All Surfaces</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="ice" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark">Ice Rink</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="soccer" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="notranslate">Soccer</span> Field (Turf)</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="basketball" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="notranslate">Basketball</span> Court</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="pickleball" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="notranslate">Pickleball</span> Court</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="pool" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark">Swimming Pool</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="tennis" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="notranslate">Tennis</span> Court</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="football" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="notranslate">Football</span> Field</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="gym" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark">Gymnasium</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="deck-hockey" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark notranslate">Deck-Hockey</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="squash" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark notranslate">Squash</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="badminton" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark notranslate">Badminton</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Filter: Environment -->
-                <div class="mb-6 border-t border-slate-100 pt-6">
-                    <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Environment</h4>
-                    <div class="flex bg-slate-100 p-1 rounded-xl">
-                        <button class="env-btn flex-1 py-1.5 text-sm font-medium bg-white text-dark rounded-lg shadow-sm" data-active="true">Any</button>
-                        <button class="env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark">Indoor</button>
-                        <button class="env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark">Outdoor</button>
-                    </div>
-                </div>
-
-                <!-- Filter: Price -->
-                <div class="mb-6 border-t border-slate-100 pt-6">
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="font-semibold text-slate-800 text-sm uppercase tracking-wide">Price per Hour</h4>
-                    </div>
-                    <input type="range" id="price-range" class="w-full accent-primary h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="300" value="200" step="10">
-                    <div class="flex justify-between text-sm text-slate-500 mt-2 font-medium">
-                        <span>$0</span>
-                        <span id="price-display">Up to $200</span>
-                    </div>
-                </div>
-
-                <!-- Filter: Date & Time -->
-                <div class="mb-6 border-t border-slate-100 pt-6">
-                    <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Availability</h4>
-                    <input type="text" id="sidebarDateSearch" placeholder="Any Date" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-3 cursor-pointer" onclick="if(this.showPicker) this.showPicker();">
-                    <select id="sidebarTimeSearch" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary">
-                        <option value="">Any Time</option>
-                        <option value="morning">Morning (Midnight - 12pm)</option>
-                        <option value="afternoon">Afternoon (12pm - 5pm)</option>
-                        <option value="night">Night (5pm - Midnight)</option>
-                    </select>
-                </div>
-
-                <button id="apply-filters-btn" class="w-full bg-dark hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-custom flex items-center justify-center mt-auto lg:mt-0">
-                    Apply Filters
-                </button>
-            </div>
-        </aside>
 
         <!-- Search Results -->
         <div class="flex-1">
@@ -301,11 +191,11 @@
             </div>
 
             <!-- Results and Map Area -->
-            <div class="flex flex-col xl:flex-row gap-6 mt-6">
+            <div class="flex flex-col lg:flex-row gap-6 mt-6">
                 
                 <!-- Results Grid -->
                 <div class="flex-1 w-full pb-20 lg:pb-0" id="results-view">
-                    <div id="facilitiesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8">
+                    <div id="facilitiesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-6 pb-8">
                         <!-- Facilities will be injected here -->
                         <div class="col-span-full flex justify-center py-12">
                              <i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i>
@@ -429,15 +319,7 @@
                     if (map) {
                         map.setView([userLat, userLng], 10);
                     }
-                    const typeCheckboxes = document.querySelectorAll('.type-filter:checked');
-                    const selectedTypes = [];
-                    let isAll = false;
-                    typeCheckboxes.forEach(cb => {
-                        if (cb.value === 'all') isAll = true;
-                        else selectedTypes.push(cb.value);
-                    });
-                    
-                    fetchFacilities({ types: isAll ? [] : selectedTypes }, true);
+                    fetchFacilities({}, true);
                     return;
                 }
             } catch (err) {
@@ -445,14 +327,7 @@
             }
             
             // Final fallback: fetch facilities using default map center
-            const typeCheckboxes = document.querySelectorAll('.type-filter:checked');
-            const selectedTypes = [];
-            let isAll = false;
-            typeCheckboxes.forEach(cb => {
-                if (cb.value === 'all') isAll = true;
-                else selectedTypes.push(cb.value);
-            });
-            fetchFacilities({ types: isAll ? [] : selectedTypes }, false);
+            fetchFacilities({}, false);
         }
 
         const locateMeBtn = document.getElementById('locate-me-btn');
@@ -465,7 +340,7 @@
                             if (map) map.setView([position.coords.latitude, position.coords.longitude], 10);
                             const navSearch = document.getElementById('navLocationSearch');
                             if (navSearch) navSearch.value = 'Current Location';
-                            document.getElementById('apply-filters-btn').click();
+                            applyFilters();
                         },
                         (error) => {
                             alert("Location access denied or unavailable. Falling back to approximate location.");
@@ -536,7 +411,6 @@
         // Backend Integration
         const facilitiesGrid = document.getElementById('facilitiesGrid');
         const resultsCountEl = document.getElementById('results-count');
-        const applyBtn = document.getElementById('apply-filters-btn');
         const pagination = document.getElementById('pagination');
 
         function getPrimaryImageUrl(urlStr) {
@@ -824,80 +698,33 @@
             }
         }
 
-        // Apply Filters API Call
-        if(applyBtn && resultsCountEl) {
-            applyBtn.addEventListener('click', async () => {
-                currentPage = 1; // reset string on filter
-                const originalText = applyBtn.innerHTML;
-                applyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Filtering...';
-                applyBtn.disabled = true;
-
-                const maxPrice = priceRange ? parseInt(priceRange.value) : 300;
-                
-                // Get checked types
-                const typeCheckboxes = document.querySelectorAll('.type-filter:checked');
-                const selectedTypes = [];
-                let isAll = false;
-                typeCheckboxes.forEach(cb => {
-                    if(cb.value === 'all') isAll = true;
-                    else selectedTypes.push(cb.value);
-                });
-
-                const navSearch = document.getElementById('navLocationSearch');
-                const rawSearchQuery = navSearch ? navSearch.value.trim() : '';
-                
-                let isLocation = false;
-                if (rawSearchQuery) {
-                    isLocation = await panMapToLocation(rawSearchQuery);
-                }
-                const searchQuery = isLocation ? '' : rawSearchQuery;
-
-                const dateVal = document.getElementById('sidebarDateSearch') ? document.getElementById('sidebarDateSearch').value : '';
-                const timeVal = document.getElementById('sidebarTimeSearch') ? document.getElementById('sidebarTimeSearch').value : '';
-
-                fetchFacilities({ 
-                    maxPrice: maxPrice,
-                    environment: selectedEnv,
-                    types: isAll ? [] : selectedTypes,
-                    search: searchQuery,
-                    date: dateVal,
-                    time: timeVal
-                }, false).finally(() => {
-                    applyBtn.innerHTML = originalText;
-                    applyBtn.disabled = false;
-                });
-            });
-        }
-
-        // Type filter "All" logic
-        const filterAll = document.getElementById('filter-all');
-        const typeFilters = document.querySelectorAll('.type-filter');
-        typeFilters.forEach(cb => {
-            if (cb.value !== 'all') {
-                cb.addEventListener('change', () => {
-                    if (cb.checked) filterAll.checked = false;
-                });
-            } else {
-                cb.addEventListener('change', () => {
-                    if (cb.checked) {
-                        typeFilters.forEach(other => {
-                            if (other.value !== 'all') other.checked = false;
-                        });
-                    }
-                });
+        // Apply Filters Logic
+        async function applyFilters() {
+            currentPage = 1;
+            const navSearch = document.getElementById('navLocationSearch');
+            const rawSearchQuery = navSearch ? navSearch.value.trim() : '';
+            
+            let isLocation = false;
+            if (rawSearchQuery) {
+                isLocation = await panMapToLocation(rawSearchQuery);
             }
-        });
+            const searchQuery = isLocation ? '' : rawSearchQuery;
+
+            fetchFacilities({ 
+                search: searchQuery
+            }, false);
+        }
 
         // Pagination buttons
         document.getElementById('prev-page')?.addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--;
-                applyBtn.click();
+                applyFilters();
             }
         });
         document.getElementById('next-page')?.addEventListener('click', () => {
             currentPage++;
-            applyBtn.click();
+            applyFilters();
         });
 
         // Load initially
@@ -939,15 +766,8 @@
                 const isLocation = await panMapToLocation(explicitLocation);
                 
                 // Construct initial filters based on URL
-                const typeCheckboxes = document.querySelectorAll('.type-filter:checked');
-                const selectedTypes = [];
-                let isAll = false;
-                typeCheckboxes.forEach(cb => {
-                    if (cb.value === 'all') isAll = true;
-                    else selectedTypes.push(cb.value);
-                });
                 
-                fetchFacilities({ types: isAll ? [] : selectedTypes, search: isLocation ? '' : explicitLocation }, isLocation);
+                fetchFacilities({ search: isLocation ? '' : explicitLocation }, isLocation);
                 
             } else if ("geolocation" in navigator && window.isSecureContext) {
                 // No explicit location, try geolocation to center the map on the user
@@ -965,15 +785,8 @@
                         // Pass true to prevent fit bounds from breaking the user's location setting
                         
                         // Construct initial filters for geolocation fetch
-                        const typeCheckboxes = document.querySelectorAll('.type-filter:checked');
-                        const selectedTypes = [];
-                        let isAll = false;
-                        typeCheckboxes.forEach(cb => {
-                            if (cb.value === 'all') isAll = true;
-                            else selectedTypes.push(cb.value);
-                        });
                         
-                        fetchFacilities({ types: isAll ? [] : selectedTypes }, true);
+                        fetchFacilities({}, true);
                     },
                     (error) => {
                         console.warn("Geolocation error/denied:", error);
@@ -1132,7 +945,6 @@
             const inlineDateFilter = document.getElementById('inline-date-filter');
             const inlineCustomDate = document.getElementById('inline-custom-date');
             const inlineActivityFilter = document.getElementById('inline-activity-filter');
-            const applyFiltersBtn = document.getElementById('apply-filters-btn');
             
             // Custom Date Logic
             const dateBtn = document.getElementById('custom-date-btn');
@@ -1177,7 +989,7 @@
                         // Reset custom date input just in case
                         if(inlineCustomDate) inlineCustomDate.value = '';
                         
-                        if(applyFiltersBtn) applyFiltersBtn.click();
+                        if(typeof applyFilters === 'function') applyFilters();
                     });
                 });
                 
@@ -1195,7 +1007,7 @@
                                 // Do not change the textContent of customOpt, keep it "Custom Date..."
                             }
                             
-                            if(applyFiltersBtn) applyFiltersBtn.click();
+                            if(typeof applyFilters === 'function') applyFilters();
                         } else {
                             // If they cancelled the picker
                             inlineDateFilter.value = '';
@@ -1204,7 +1016,7 @@
                             const anyOpt = Array.from(dateOptions).find(o => o.getAttribute('data-value') === '');
                             if(anyOpt) anyOpt.classList.add('bg-slate-50', 'text-primary', 'font-bold');
                             
-                            if(applyFiltersBtn) applyFiltersBtn.click();
+                            if(typeof applyFilters === 'function') applyFilters();
                         }
                     });
                 }
@@ -1239,7 +1051,7 @@
                         opt.classList.add('bg-slate-50', 'text-primary', 'font-bold');
                         opt.classList.remove('hover:bg-slate-50', 'text-slate-600');
                         
-                        if(applyFiltersBtn) applyFiltersBtn.click();
+                        if(typeof applyFilters === 'function') applyFilters();
                     });
                 });
             }
@@ -1326,13 +1138,10 @@
     </script>
     <script src="js/i18n.js"></script>
 
-    <!-- Mobile FABs for Map & Filters -->
+    <!-- Mobile FAB for Map -->
     <div class="lg:hidden fixed bottom-24 left-0 w-full flex justify-center z-40 pointer-events-none">
-        <div class="bg-dark text-white rounded-full flex shadow-xl pointer-events-auto divide-x divide-slate-700">
-            <button id="open-filters-btn" class="px-6 py-3 font-bold text-sm flex items-center hover:bg-slate-800 rounded-l-full transition-custom">
-                <i class="fa-solid fa-sliders mr-2"></i> <span class="lang-en-only">Filters</span><span class="lang-fr-only notranslate">Filtres</span>
-            </button>
-            <button id="mobile-map-toggle" class="px-6 py-3 font-bold text-sm flex items-center hover:bg-slate-800 rounded-r-full transition-custom">
+        <div class="bg-dark text-white rounded-full flex shadow-xl pointer-events-auto">
+            <button id="mobile-map-toggle" class="px-6 py-3 font-bold text-sm flex items-center hover:bg-slate-800 rounded-full transition-custom">
                 <i class="fa-regular fa-map mr-2"></i> <span class="lang-en-only">Map</span><span class="lang-fr-only notranslate">Carte</span>
             </button>
         </div>
