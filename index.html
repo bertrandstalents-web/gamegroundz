@@ -44,11 +44,11 @@
                     <span class="font-bold text-2xl tracking-tight text-dark notranslate">Game<span class="text-primary">Groundz</span></span>
                 </div>
                                <!-- Right Side Navigation Container -->
-                <div class="flex items-center space-x-4 md:space-x-8">
+                <div class="flex items-center space-x-4 lg:space-x-8">
                     <!-- Desktop Only Links -->
-                    <div class="hidden md:flex items-center space-x-8">
-                        <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom"><span class="lang-en-only">Find a Surface</span><span class="lang-fr-only notranslate">Trouver une surface</span></a>
-                        <a href="public-sessions.html" class="text-slate-600 hover:text-primary font-medium transition-custom"><span class="lang-en-only">Public Sessions</span><span class="lang-fr-only notranslate">Séances publiques</span></a>
+                    <div class="hidden md:flex items-center space-x-4 lg:space-x-8">
+                        <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom whitespace-nowrap text-sm lg:text-base"><span class="lang-en-only">Find a Surface</span><span class="lang-fr-only notranslate">Trouver une surface</span></a>
+                        <a href="public-sessions.html" class="text-slate-600 hover:text-primary font-medium transition-custom whitespace-nowrap text-sm lg:text-base"><span class="lang-en-only">Public Sessions</span><span class="lang-fr-only notranslate">Séances publiques</span></a>
                         
                         <div class="h-6 w-px bg-slate-300"></div>
                     </div>
@@ -88,7 +88,7 @@
                             </div>
                         </div>
                         
-                        <a href="owner-dashboard.html" id="list-facility-btn" class="hidden md:inline-block bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-full font-medium transition-custom shadow-md hover:shadow-lg"><span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span></a>
+                        <a href="owner-dashboard.html" id="list-facility-btn" class="hidden md:inline-block bg-dark hover:bg-slate-800 text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-full font-medium transition-custom shadow-md hover:shadow-lg whitespace-nowrap text-sm lg:text-base"><span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span></a>
             </div>
             </div>
         </div>
@@ -1704,7 +1704,7 @@
                         listBtn.classList.add('relative');
                         checkHostNotifications(listBtn);
                     } else {
-                        listBtn.textContent = "My Bookings";
+                        listBtn.innerHTML = '<span class="lang-en-only">My Bookings</span><span class="lang-fr-only notranslate">Mes réservations</span>';
                         listBtn.href = "player-dashboard.html";
                     }
                 }
@@ -1718,7 +1718,7 @@
                         mobileListBtn.classList.add('relative');
                         checkHostNotifications(mobileListBtn);
                     } else {
-                        mobileListBtn.textContent = "My Bookings";
+                        mobileListBtn.innerHTML = '<span class="lang-en-only">My Bookings</span><span class="lang-fr-only notranslate">Mes réservations</span>';
                         mobileListBtn.href = "player-dashboard.html";
                     }
                 }
