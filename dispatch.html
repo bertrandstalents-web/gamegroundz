@@ -35,6 +35,7 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 4px solid var(--gg-primary);
+            gap: 2rem;
         }
 
         .header-brand {
@@ -117,8 +118,8 @@
             text-transform: uppercase;
         }
 
-        .col-time { width: 25%; }
-        .col-activity { width: 55%; }
+        .col-time { width: 30%; white-space: nowrap; }
+        .col-activity { width: 50%; }
         .col-locker { width: 20%; text-align: right; }
 
         .booking-row {
@@ -129,6 +130,11 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
             transition: all 0.3s ease;
             align-items: center;
+        }
+
+        .booking-row .col-time {
+            font-size: clamp(1.2rem, 1.5vw, 1.5rem);
+            letter-spacing: -0.02em;
         }
 
         /* Alternate row styling */
@@ -174,14 +180,19 @@
 <body>
 
     <header class="dispatch-header">
-        <div class="header-brand">
+        <div class="header-brand" style="flex: 1;">
             <div style="display:flex; align-items:center;">
                 <i class="fa-solid fa-layer-group" style="color: var(--gg-primary); font-size: 3rem; margin-right: 0.75rem;"></i>
                 <span class="notranslate" style="font-weight: 800; font-size: 2.25rem; font-family: 'Outfit', sans-serif; letter-spacing: -1px; color: #fff; line-height: 1;">Game<span style="color: var(--gg-primary);">Groundz</span></span>
             </div>
             <h1 class="header-title" style="margin-left: 1.5rem; padding-left: 1.5rem; border-left: 2px solid rgba(255,255,255,0.2);">DISPATCH</h1>
         </div>
-        <div class="header-time-container">
+        
+        <div id="facility-name-header" style="flex: 0 0 auto; text-align: center; font-family: 'Outfit', sans-serif; font-size: clamp(1.5rem, 2vw, 2rem); font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: center; display: none;">
+            <span id="facility-name-text" style="border: 1px solid var(--gg-primary); padding: 0.5rem 2rem; border-radius: 0.75rem; background: rgba(16, 185, 129, 0.1); white-space: nowrap;">Loading...</span>
+        </div>
+
+        <div class="header-time-container" style="flex: 1; text-align: right;">
             <div class="header-date" id="current-date">--</div>
             <div class="header-time" id="current-time">--:--</div>
         </div>
@@ -259,16 +270,20 @@
         function formatTimeRange(timeslotArray) {
             if (!timeslotArray || timeslotArray.length === 0) return "--:--";
             let start = timeslotArray[0];
-            let end = timeslotArray[timeslotArray.length - 1]; // We really want the end of the last slot.
+            let endSlot = timeslotArray[timeslotArray.length - 1]; // This is the start of the last 30 min block
             
-            // Temporary simple render, assuming '16:00' format strings. 
             if (typeof start === 'object') start = start.start;
-            if (typeof end === 'object') end = end.start; // In GG, we might just have start times.
+            if (typeof endSlot === 'object') endSlot = endSlot.start;
             
-            // Try to extract an end time. If it's a 1-hour slot, add 1h.
+            // Add 30 minutes to the last slot's start time to get the actual end time
+            let end = endSlot;
             try {
-                let [eh, em] = end.split(':').map(Number);
-                eh += 1;
+                let [eh, em] = endSlot.split(':').map(Number);
+                em += 30;
+                if (em >= 60) {
+                    eh += Math.floor(em / 60);
+                    em = em % 60;
+                }
                 end = `${String(eh).padStart(2,'0')}:${String(em).padStart(2,'0')}`;
             } catch(e) {}
 
@@ -277,11 +292,19 @@
 
         async function fetchDispatchData() {
             try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const facilityId = urlParams.get('facility_id');
+                
+                if (!facilityId) {
+                    document.getElementById('dispatch-container').innerHTML = '<div class="empty-state" style="width:100%;">Please select a facility from your Host Dashboard to launch Dispatch TV.</div>';
+                    return;
+                }
+
                 // Get today's local date string YYYY-MM-DD
                 const d = new Date();
                 const dStr = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
                 
-                const res = await fetch(`/api/host/dispatch-data?date=${dStr}`);
+                const res = await fetch(`/api/host/dispatch-data?date=${dStr}&facility_id=${facilityId}`);
                 if (!res.ok) {
                     if (res.status === 401) {
                         document.getElementById('dispatch-container').innerHTML = '<div class="empty-state" style="width:100%;">Please log in to your Host account to view Dispatch. <a href="/login.html" style="color:var(--gg-blue);text-decoration:underline;">Log in</a></div>';
@@ -301,14 +324,19 @@
             const container = document.getElementById('dispatch-container');
             container.innerHTML = ''; // clear
 
-            const facilities = Object.keys(data);
-            if (facilities.length === 0) {
-                container.innerHTML = '<div class="empty-state" style="width:100%;">No activities scheduled for today.</div>';
+            if (!data.surfaces || data.surfaces.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="width:100%;">No surfaces configured for this facility.</div>';
                 return;
             }
 
-            facilities.forEach(facilityName => {
-                const bookings = data[facilityName];
+            // Update Facility Header
+            const facHeader = document.getElementById('facility-name-header');
+            const facText = document.getElementById('facility-name-text');
+            facText.textContent = data.facilityName;
+            facHeader.style.display = 'flex'; // Use flex so the child centering works
+
+            data.surfaces.forEach(surf => {
+                const bookings = surf.bookings || [];
                 
                 // Build Column
                 const col = document.createElement('div');
@@ -316,7 +344,7 @@
 
                 const header = document.createElement('div');
                 header.className = 'facility-header';
-                header.textContent = facilityName;
+                header.textContent = surf.name;
                 col.appendChild(header);
 
                 const colHeadings = document.createElement('div');
@@ -328,26 +356,45 @@
                 `;
                 col.appendChild(colHeadings);
 
-                bookings.forEach(b => {
-                    let slots = [];
-                    try { slots = JSON.parse(b.time_slots || '[]'); } catch(e){}
-                    
-                    const timing = isCurrentOrPast(slots);
-                    const timeStr = formatTimeRange(slots);
-                    
-                    // Display activity name or notes
-                    const activityName = b.booking_type === 'public_session' ? (b.manual_notes ? `Public Session - ${b.manual_notes}` : 'Public Session') : (b.manual_notes || 'Private Booking');
-                    const locker = b.locker_room_assignment || '-';
+                if (bookings.length === 0) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.innerHTML = 'No activities scheduled';
+                    col.appendChild(emptyState);
+                } else {
+                    bookings.forEach(b => {
+                        let slots = [];
+                        try { slots = JSON.parse(b.time_slots || '[]'); } catch(e){}
+                        
+                        const timing = isCurrentOrPast(slots);
+                        const timeStr = formatTimeRange(slots);
+                        
+                        // Display activity name or notes
+                        let activityName = '';
+                        if (b.booking_type === 'public_session') {
+                            activityName = b.manual_notes ? `Public Session - ${b.manual_notes}` : 'Public Session';
+                        } else if (b.booking_type === 'manual') {
+                            activityName = b.manual_notes || 'Private Booking';
+                        } else {
+                            // Standard app booking
+                            activityName = (b.first_name || b.last_name) ? `${b.first_name || ''} ${b.last_name || ''}`.trim() : 'Private Booking';
+                        }
+                        let locker = b.locker_room_assignment || '-';
+                        if (locker !== '-') {
+                            locker = locker.replace(/Locker\s*/gi, '');
+                            if (!locker.trim()) locker = '-';
+                        }
 
-                    const row = document.createElement('div');
-                    row.className = `booking-row ${timing.isActive ? 'active' : ''} ${timing.isPast && !timing.isActive ? 'past' : ''}`;
-                    row.innerHTML = `
-                        <div class="col-time">${timeStr}</div>
-                        <div class="col-activity">${activityName}</div>
-                        <div class="col-locker">${locker}</div>
-                    `;
-                    col.appendChild(row);
-                });
+                        const row = document.createElement('div');
+                        row.className = `booking-row ${timing.isActive ? 'active' : ''} ${timing.isPast && !timing.isActive ? 'past' : ''}`;
+                        row.innerHTML = `
+                            <div class="col-time">${timeStr}</div>
+                            <div class="col-activity">${activityName}</div>
+                            <div class="col-locker">${locker}</div>
+                        `;
+                        col.appendChild(row);
+                    });
+                }
 
                 container.appendChild(col);
             });

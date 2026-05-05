@@ -202,9 +202,25 @@
                 <h1 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight mb-1 md:mb-2" id="dashboard-title"><span class="lang-en-only">Host Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord de l'hôte</span></h1>
                 <p class="text-slate-500 text-sm md:text-lg"><span class="lang-en-only">Manage your facilities and upcoming reservations.</span><span class="lang-fr-only notranslate">Gérez vos installations et les réservations à venir.</span></p>
             </div>
-            <a href="dispatch.html" target="_blank" class="hidden md:flex items-center bg-dark hover:bg-slate-800 text-white px-4 py-2 rounded-xl font-bold transition-custom shadow-sm text-sm">
-                <i class="fa-solid fa-tv mr-2"></i> Launch Dispatch TV
-            </a>
+            <div class="hidden md:flex items-center gap-3 relative z-40">
+                <!-- Custom Dropdown Container -->
+                <div class="relative custom-select-wrapper" id="dispatch-dropdown-wrapper">
+                    <input type="hidden" id="dispatch-facility-select" value="">
+                    <div id="dispatch-dropdown-button" class="w-[240px] px-4 py-2.5 border border-slate-200 rounded-xl bg-white cursor-pointer flex justify-between items-center text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" onclick="toggleDispatchDropdown(event)">
+                        <span id="dispatch-dropdown-text" class="truncate mr-2">Select facility...</span>
+                        <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" id="dispatch-dropdown-icon"></i>
+                    </div>
+                    <!-- Dropdown Menu -->
+                    <div id="dispatch-dropdown-menu" class="absolute top-full left-0 mt-1.5 w-full bg-white border border-slate-200 rounded-xl shadow-lg hidden max-h-60 overflow-y-auto transform opacity-0 scale-95 transition-all duration-200 origin-top">
+                        <ul id="dispatch-dropdown-list" class="py-1.5">
+                            <!-- Options injected by JS -->
+                        </ul>
+                    </div>
+                </div>
+                <button onclick="launchDispatch()" class="flex items-center bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold transition-custom shadow-sm text-sm whitespace-nowrap">
+                    <i class="fa-solid fa-tv mr-2"></i> Launch Dispatch TV
+                </button>
+            </div>
         </div>
 
         <!-- Auth Guard Message (Hidden by default) -->
@@ -227,7 +243,7 @@
                 <div class="col-span-1 lg:w-[280px] flex-shrink-0">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 md:p-4 sticky top-28 h-full lg:h-auto">
                         <ul class="space-y-0.5 md:space-y-1">
-                            <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base bg-primary/10 text-primary rounded-xl font-bold transition-custom"><i class="fa-solid fa-list w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">My Facilities</span><span class="lang-fr-only notranslate">Mes installations</span></button></li>
+                            <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-list w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">My Facilities</span><span class="lang-fr-only notranslate">Mes installations</span></button></li>
                             <li><button id="tab-btn-surfaces" onclick="switchTab('surfaces')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-layer-group w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Surfaces</span><span class="lang-fr-only notranslate">Surfaces</span></button></li>
                             <li><button id="tab-btn-analytics" onclick="switchTab('analytics')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-chart-pie w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Analytics</span><span class="lang-fr-only notranslate">Statistiques</span></button></li>
                             <li><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Reservations</span><span class="lang-fr-only notranslate">Réservations</span></button></li>
@@ -276,7 +292,7 @@
                     </div>
 
             <!-- Tab: My Facilities -->
-            <div id="tab-facilities" class="col-span-2 lg:col-span-none block">
+            <div id="tab-facilities" class="col-span-2 lg:col-span-none hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                         <h2 class="text-2xl font-bold text-dark whitespace-nowrap"><span class="lang-en-only">My Facilities</span><span class="lang-fr-only notranslate">Mes installations</span></h2>
@@ -447,13 +463,27 @@
                                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Time<span class="text-red-500">*</span></label>
                                         <div class="flex items-center gap-2">
                                             <span class="text-sm font-bold text-slate-500">From</span>
-                                            <select id="modal-start-time" class="flex-1 px-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;">
-                                                <!-- Populated by JS -->
-                                            </select>
+                                            <div class="relative flex-1" id="modal-start-time-wrapper">
+                                                <select id="modal-start-time" class="hidden"></select>
+                                                <button type="button" onclick="toggleTimeDropdown('modal-start-time-dropdown')" class="w-full flex items-center justify-between px-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white">
+                                                    <span id="modal-start-time-display">Select Time</span>
+                                                    <i class="fa-solid fa-chevron-down text-slate-400"></i>
+                                                </button>
+                                                <div id="modal-start-time-dropdown" class="hidden absolute z-[120] w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar">
+                                                    <!-- Populated by JS -->
+                                                </div>
+                                            </div>
                                             <span class="text-sm font-bold text-slate-500 mx-1">to</span>
-                                            <select id="modal-end-time" class="flex-1 px-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;">
-                                                <!-- Populated by JS -->
-                                            </select>
+                                            <div class="relative flex-1" id="modal-end-time-wrapper">
+                                                <select id="modal-end-time" class="hidden"></select>
+                                                <button type="button" onclick="toggleTimeDropdown('modal-end-time-dropdown')" class="w-full flex items-center justify-between px-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white">
+                                                    <span id="modal-end-time-display">Select Time</span>
+                                                    <i class="fa-solid fa-chevron-down text-slate-400"></i>
+                                                </button>
+                                                <div id="modal-end-time-dropdown" class="hidden absolute z-[120] w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar">
+                                                    <!-- Populated by JS -->
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1542,6 +1572,10 @@
         }
 
         window.switchTab = function(tabId) {
+            if (window.history.replaceState) {
+                window.history.replaceState(null, null, '#' + tabId);
+            }
+
             const resTab = document.getElementById('tab-reservations');
             if (resTab && !resTab.classList.contains('hidden') && tabId !== 'reservations') {
                 document.querySelectorAll('.reservation-unread-badge').forEach(b => b.remove());
@@ -1669,6 +1703,81 @@
             }
         }
 
+        function toggleDispatchDropdown(event) {
+            if (event) event.stopPropagation();
+            const menu = document.getElementById('dispatch-dropdown-menu');
+            const icon = document.getElementById('dispatch-dropdown-icon');
+            
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                setTimeout(() => {
+                    menu.classList.remove('opacity-0', 'scale-95');
+                    menu.classList.add('opacity-100', 'scale-100');
+                    icon.classList.add('rotate-180');
+                }, 10);
+            } else {
+                closeDispatchDropdown();
+            }
+        }
+
+        function closeDispatchDropdown() {
+            const menu = document.getElementById('dispatch-dropdown-menu');
+            const icon = document.getElementById('dispatch-dropdown-icon');
+            if (!menu || menu.classList.contains('hidden')) return;
+            
+            menu.classList.remove('opacity-100', 'scale-100');
+            menu.classList.add('opacity-0', 'scale-95');
+            icon.classList.remove('rotate-180');
+            
+            setTimeout(() => {
+                menu.classList.add('hidden');
+            }, 200);
+        }
+
+        function selectDispatchFacility(id, name, closeMenu = true) {
+            document.getElementById('dispatch-facility-select').value = id;
+            const textEl = document.getElementById('dispatch-dropdown-text');
+            textEl.textContent = name;
+            textEl.classList.add('text-dark');
+            
+            const listItems = document.querySelectorAll('#dispatch-dropdown-list li');
+            listItems.forEach(li => {
+                if (li.textContent.trim() === name) {
+                    li.classList.add('bg-primary/5', 'text-primary');
+                    li.classList.remove('text-slate-700');
+                    if (!li.querySelector('i')) {
+                        li.innerHTML = `<span class="flex-1">${name}</span><i class="fa-solid fa-check text-primary ml-2"></i>`;
+                    }
+                } else {
+                    li.classList.remove('bg-primary/5', 'text-primary');
+                    li.classList.add('text-slate-700');
+                    if (li.querySelector('i')) {
+                        // The textContent includes the text of the span. We just need the original name.
+                        const spanText = li.querySelector('span').textContent;
+                        li.innerHTML = `<span>${spanText}</span>`;
+                    }
+                }
+            });
+
+            if (closeMenu) closeDispatchDropdown();
+        }
+
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('dispatch-dropdown-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                closeDispatchDropdown();
+            }
+        });
+
+        function launchDispatch() {
+            const val = document.getElementById('dispatch-facility-select').value;
+            if (!val) {
+                showAlertModal('Required', 'Please select a facility to dispatch first.', 'OK', true);
+                return;
+            }
+            window.open(`dispatch.html?facility_id=${val}`, '_blank');
+        }
+
         function renderFacilities(facilities) {
             const container = document.getElementById('host-facilities-list');
             container.innerHTML = '';
@@ -1749,8 +1858,7 @@
                         <div class="p-4 flex flex-col flex-1">
                             <h3 class="font-bold text-lg text-dark mb-1 truncate">${fac.name}</h3>
                             <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${fac.location.split(',')[0]}</p>
-                            <div class="mt-auto flex justify-between items-center pt-3 border-t border-slate-100">
-                                <span class="font-semibold text-dark">$${fac.base_price}<span class="text-xs text-slate-500 font-normal">/hr</span></span>
+                            <div class="mt-auto flex justify-end items-center pt-3 border-t border-slate-100">
                                 <div>
                                     <button data-fac-id="${fac.id}" onclick="handleEditClick(this)" class="text-slate-500 text-sm font-bold hover:text-dark mr-3 transition-custom">Edit</button>
                                     <button data-fac-id="${fac.id}" onclick="manageSurfaces(${fac.id})" class="text-primary text-sm font-bold hover:underline">Manage Surfaces</button>
@@ -1764,13 +1872,30 @@
             // Populate Calendar form select and Discount form select
             const selectEl = document.getElementById('calendar-facility-select');
             const discSelectEl = document.getElementById('discount-facility-select');
+            const dispatchInputEl = document.getElementById('dispatch-facility-select');
+            const dispatchListEl = document.getElementById('dispatch-dropdown-list');
+            const dispatchTextEl = document.getElementById('dispatch-dropdown-text');
+            
             const prevVal = selectEl.value;
             const prevDiscVal = discSelectEl ? discSelectEl.value : '';
+            const prevDispatchVal = dispatchInputEl ? dispatchInputEl.value : '';
             
             selectEl.innerHTML = '<option value="" disabled selected>Choose a surface</option>';
             if(discSelectEl) discSelectEl.innerHTML = '<option value="" disabled selected>Choose a surface</option>';
+            if(dispatchListEl) dispatchListEl.innerHTML = '';
 
             facilities.forEach(fac => {
+                if (dispatchListEl) {
+                    let li = document.createElement('li');
+                    li.className = 'px-4 py-2.5 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 transition-colors flex items-center justify-between';
+                    li.innerHTML = `<span>${fac.name}</span>`;
+                    li.onclick = (e) => {
+                        e.stopPropagation();
+                        selectDispatchFacility(fac.id, fac.name);
+                    };
+                    dispatchListEl.appendChild(li);
+                }
+
                 if (fac.surfaces && fac.surfaces.length > 0) {
                     let optgroup = document.createElement('optgroup');
                     optgroup.label = fac.name;
@@ -1815,6 +1940,17 @@
                 discSelectEl.value = prevDiscVal;
             } else if (discSelectEl) {
                 discSelectEl.value = "";
+            }
+
+            if (prevDispatchVal && facilities.some(f => f.id.toString() === prevDispatchVal)) {
+                const fac = facilities.find(f => f.id.toString() === prevDispatchVal);
+                selectDispatchFacility(fac.id, fac.name, false);
+            } else if (dispatchInputEl) {
+                dispatchInputEl.value = "";
+                if(dispatchTextEl) {
+                    dispatchTextEl.textContent = "Select facility...";
+                    dispatchTextEl.classList.remove('text-dark');
+                }
             }
 
             // Initialize Sortable on the facilities container
@@ -2512,7 +2648,8 @@
 
                     let assignLockerHtml = '';
                     if (!isPastOrArchived && !booking.is_archived) {
-                        assignLockerHtml = `<button onclick="event.stopPropagation(); window.openAssignLockerModal(${booking.id}, '${(booking.locker_room_assignment || '').replace(/'/g, "\\'")}')" class="text-primary hover:text-primaryHover bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Assign Locker Room"><i class="fa-solid fa-door-open mr-1"></i>Locker</button>`;
+                        const lockerText = booking.locker_room_assignment ? booking.locker_room_assignment : 'Locker';
+                        assignLockerHtml = `<button onclick="event.stopPropagation(); window.openAssignLockerModal(${booking.id}, '${(booking.locker_room_assignment || '').replace(/'/g, "\\'")}')" class="text-primary hover:text-primaryHover bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded-md text-xs font-bold transition-custom" title="Assign Locker Room"><i class="fa-solid fa-door-open mr-1"></i>${lockerText}</button>`;
                     }
 
                     let actionHtml = '';
@@ -3002,6 +3139,7 @@
 
         function populateTimeSelects(startSelect, endSelect, selectedStart24, selectedEnd24) {
             let optionsHTML = '';
+            let customListHTML = '';
             for (let i = 0; i < 24; i++) {
                 for (let j = 0; j < 60; j += 30) {
                     const h = i.toString().padStart(2, '0');
@@ -3018,14 +3156,82 @@
                     
                     const time12 = `${h12}:${m.toString().padStart(2, '0')} ${period}`;
                     optionsHTML += `<option value="${time24}">${time12}</option>`;
+                    customListHTML += `<button type="button" class="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-primary/10 hover:text-primary transition-custom border-b border-slate-50 last:border-0 focus:outline-none focus:bg-primary/10" data-value="${time24}" data-display="${time12}">${time12}</button>`;
                 }
             }
             startSelect.innerHTML = optionsHTML;
             endSelect.innerHTML = optionsHTML;
             
-            if (selectedStart24) startSelect.value = selectedStart24;
-            if (selectedEnd24) endSelect.value = selectedEnd24;
+            const startDropdown = document.getElementById('modal-start-time-dropdown');
+            const endDropdown = document.getElementById('modal-end-time-dropdown');
+            
+            if (startDropdown) {
+                startDropdown.innerHTML = customListHTML;
+                const buttons = startDropdown.querySelectorAll('button');
+                buttons.forEach(btn => btn.addEventListener('click', function() {
+                    startSelect.value = this.getAttribute('data-value');
+                    document.getElementById('modal-start-time-display').textContent = this.getAttribute('data-display');
+                    startDropdown.classList.add('hidden');
+                    if (typeof calculateModalPrice === 'function') calculateModalPrice();
+                }));
+            }
+            if (endDropdown) {
+                endDropdown.innerHTML = customListHTML;
+                const buttons = endDropdown.querySelectorAll('button');
+                buttons.forEach(btn => btn.addEventListener('click', function() {
+                    endSelect.value = this.getAttribute('data-value');
+                    document.getElementById('modal-end-time-display').textContent = this.getAttribute('data-display');
+                    endDropdown.classList.add('hidden');
+                    if (typeof calculateModalPrice === 'function') calculateModalPrice();
+                }));
+            }
+            
+            if (selectedStart24) {
+                startSelect.value = selectedStart24;
+                const btn = startDropdown ? startDropdown.querySelector(`button[data-value="${selectedStart24}"]`) : null;
+                if (btn) document.getElementById('modal-start-time-display').textContent = btn.getAttribute('data-display');
+            }
+            if (selectedEnd24) {
+                endSelect.value = selectedEnd24;
+                const btn = endDropdown ? endDropdown.querySelector(`button[data-value="${selectedEnd24}"]`) : null;
+                if (btn) document.getElementById('modal-end-time-display').textContent = btn.getAttribute('data-display');
+            }
         }
+
+        function toggleTimeDropdown(dropdownId) {
+            if (dropdownId !== 'modal-start-time-dropdown') {
+                const s = document.getElementById('modal-start-time-dropdown');
+                if (s) s.classList.add('hidden');
+            }
+            if (dropdownId !== 'modal-end-time-dropdown') {
+                const e = document.getElementById('modal-end-time-dropdown');
+                if (e) e.classList.add('hidden');
+            }
+            
+            const dropdown = document.getElementById(dropdownId);
+            if (dropdown) {
+                dropdown.classList.toggle('hidden');
+                if (!dropdown.classList.contains('hidden')) {
+                    const selectId = dropdownId === 'modal-start-time-dropdown' ? 'modal-start-time' : 'modal-end-time';
+                    const select = document.getElementById(selectId);
+                    if (select && select.value) {
+                        const selectedBtn = dropdown.querySelector(`button[data-value="${select.value}"]`);
+                        if (selectedBtn) {
+                            setTimeout(() => selectedBtn.scrollIntoView({ block: 'nearest', behavior: 'instant' }), 10);
+                        }
+                    }
+                }
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('#modal-start-time-wrapper') && !event.target.closest('#modal-end-time-wrapper')) {
+                const sDrop = document.getElementById('modal-start-time-dropdown');
+                const eDrop = document.getElementById('modal-end-time-dropdown');
+                if (sDrop) sDrop.classList.add('hidden');
+                if (eDrop) eDrop.classList.add('hidden');
+            }
+        });
 
         async function handleEventChange(eventObj, revertFunc) {
             const startObj = eventObj.start;
@@ -3248,15 +3454,37 @@
             
             container.innerHTML = '';
             
-            const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == facId) : null;
-            if (!facility || !facility.locker_rooms || facility.locker_rooms <= 0) {
+            let targetSurface = null;
+            let targetFacility = null;
+            
+            if (typeof ownerFacilities !== 'undefined') {
+                for (const fac of ownerFacilities) {
+                    if (fac.surfaces) {
+                        const surf = fac.surfaces.find(s => s.id == facId);
+                        if (surf) {
+                            targetSurface = surf;
+                            targetFacility = fac;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            let lockerRoomsCount = 0;
+            if (targetSurface && targetSurface.locker_rooms) {
+                lockerRoomsCount = targetSurface.locker_rooms;
+            } else if (targetFacility && targetFacility.locker_rooms) {
+                lockerRoomsCount = targetFacility.locker_rooms;
+            }
+
+            if (lockerRoomsCount <= 0) {
                 container.innerHTML = '<span class="text-sm text-slate-400 italic">No locker rooms available</span>';
                 return;
             }
             
             const selectedSet = new Set((currentSelection || '').split(',').map(s => s.trim()).filter(Boolean));
             
-            for (let i = 1; i <= facility.locker_rooms; i++) {
+            for (let i = 1; i <= lockerRoomsCount; i++) {
                 const roomName = `Locker ${i}`;
                 const isSelected = selectedSet.has(roomName) || selectedSet.has(i.toString()) || selectedSet.has(`Room ${i}`) || selectedSet.has(`Vestiaire ${i}`);
                 
@@ -5405,8 +5633,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            if (window.location.hash === '#profile' && typeof switchTab === 'function') {
-                switchTab('profile');
+            const hash = window.location.hash.replace('#', '');
+            const validTabs = ['facilities', 'surfaces', 'analytics', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile', 'our-people', 'settings'];
+            if (hash && validTabs.includes(hash) && typeof switchTab === 'function') {
+                switchTab(hash);
+            } else if (typeof switchTab === 'function') {
+                switchTab('facilities');
             }
         });
     </script>
@@ -6026,7 +6258,7 @@
             // Render locker boxes
             const booking = allBookingsCache.find(b => b.id == bookingId);
             if (booking) {
-                renderLockerBoxes(booking.facility_id, 'assign-locker-boxes', 'assign-locker-input', currentAssignment || '');
+                renderLockerBoxes(booking.surface_id || booking.facility_id, 'assign-locker-boxes', 'assign-locker-input', currentAssignment || '');
             }
             
             document.getElementById('assign-locker-modal').classList.remove('hidden');
@@ -6036,43 +6268,45 @@
             document.getElementById('assign-locker-modal').classList.add('hidden');
         };
 
-        document.getElementById('assign-locker-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const bookingId = document.getElementById('assign-locker-booking-id').value;
-            const assignment = document.getElementById('assign-locker-input').value;
-            const btn = document.getElementById('assign-locker-submit-btn');
-            
-            btn.disabled = true;
-            const origHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Saving...';
-
-            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/host/bookings/${bookingId}/locker-room`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ locker_room_assignment: assignment }),
-                    credentials: 'include'
-                });
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('assign-locker-form')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const bookingId = document.getElementById('assign-locker-booking-id').value;
+                const assignment = document.getElementById('assign-locker-input').value;
+                const btn = document.getElementById('assign-locker-submit-btn');
                 
-                if(!res.ok) throw new Error('Failed to assign locker room');
+                btn.disabled = true;
+                const origHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Saving...';
 
-                // Update cache locally so it renders immediately
-                const booking = allBookingsCache.find(b => b.id == bookingId);
-                if (booking) {
-                    booking.locker_room_assignment = assignment;
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/host/bookings/${bookingId}/locker-room`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ locker_room_assignment: assignment }),
+                        credentials: 'include'
+                    });
+                    
+                    if(!res.ok) throw new Error('Failed to assign locker room');
+
+                    // Update cache locally so it renders immediately
+                    const booking = allBookingsCache.find(b => b.id == bookingId);
+                    if (booking) {
+                        booking.locker_room_assignment = assignment;
+                    }
+                    
+                    closeAssignLockerModal();
+                    applyReservationFilters(); // refresh table
+                    
+                } catch(e) {
+                    console.error(e);
+                    alert('Error updating locker room.');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = origHTML;
                 }
-                
-                closeAssignLockerModal();
-                applyReservationFilters(); // refresh table
-                
-            } catch(e) {
-                console.error(e);
-                alert('Error updating locker room.');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = origHTML;
-            }
+            });
         });
     
         // ------------------ SURFACES LOGIC ------------------

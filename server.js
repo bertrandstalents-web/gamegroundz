@@ -27,6 +27,62 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.set('trust proxy', true);
 const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000'];
+
+// --- Locker Room Allocation Helpers ---
+function timeToMins(tStr) {
+    if (!tStr || typeof tStr !== 'string') return 0;
+    const parts = tStr.split(':').map(Number);
+    if (parts.length < 2) return 0;
+    return parts[0] * 60 + parts[1];
+}
+
+async function allocateLockerRooms(client, surfaceId, date, timeSlotsArr) {
+    if (!surfaceId || !timeSlotsArr || timeSlotsArr.length === 0) return null;
+
+    // 1. Get total locker rooms for this surface
+    const { rows: surfaceRows } = await client.query('SELECT locker_rooms FROM surfaces WHERE id = $1', [surfaceId]);
+    if (!surfaceRows || surfaceRows.length === 0) return null;
+    const totalLockers = surfaceRows[0].locker_rooms || 0;
+    if (totalLockers <= 0) return null;
+
+    // 2. Determine new booking window (start to end + 30m buffer)
+    const newStartMins = timeToMins(timeSlotsArr[0]);
+    const newEndMins = timeToMins(timeSlotsArr[timeSlotsArr.length - 1]) + 60; // 30m block + 30m buffer
+
+    // 3. Get existing bookings
+    const { rows: existingBookings } = await client.query(
+        "SELECT time_slots, locker_room_assignment FROM bookings WHERE surface_id = $1 AND booking_date = $2 AND status != 'cancelled' AND locker_room_assignment IS NOT NULL AND locker_room_assignment != ''",
+        [surfaceId, date]
+    );
+
+    const occupiedLockers = new Set();
+    existingBookings.forEach(booking => {
+        try {
+            const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
+            if (!Array.isArray(slots) || slots.length === 0) return;
+
+            const exStartMins = timeToMins(slots[0]);
+            const exEndMins = timeToMins(slots[slots.length - 1]) + 60;
+
+            if (newStartMins < exEndMins && newEndMins > exStartMins) {
+                const lockers = booking.locker_room_assignment.split(',').map(l => l.trim().replace(/Locker\s*/gi, '').replace(/Vestiaire\s*/gi, '').trim());
+                lockers.forEach(l => occupiedLockers.add(l));
+            }
+        } catch (e) {}
+    });
+
+    // 4. Find available lockers
+    const assignedLockers = [];
+    for (let i = 1; i <= totalLockers; i++) {
+        if (!occupiedLockers.has(i.toString())) {
+            assignedLockers.push(`Locker ${i}`);
+            if (assignedLockers.length >= 2) break; // Auto-assign 2 lockers max
+        }
+    }
+
+    return assignedLockers.length > 0 ? assignedLockers.join(', ') : null;
+}
+// --------------------------------------
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) callback(null, true);
@@ -95,9 +151,11 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
 
                         for (const [date, slots] of Object.entries(multi_day_slots)) {
                             const slotsStr = JSON.stringify(slots);
+                            const lockers = await allocateLockerRooms(client, surface_id, date, slots);
+
                             const result = await client.query(
-                                "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8) RETURNING id",
-                                [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId]
+                                "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9) RETURNING id",
+                                [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers]
                             );
                             sendBookingEmails(result.rows[0].id);
                         }
@@ -1652,7 +1710,7 @@ app.get('/api/host/facilities', (req, res) => {
         const facilityIds = rows.map(f => f.id);
         const placeholders = facilityIds.map(() => '?').join(',');
         
-        db.all(`SELECT id, facility_id, name, type, environment FROM surfaces WHERE facility_id IN (${placeholders}) AND status != 'deleted' ORDER BY id ASC`, facilityIds, (err, surfaces) => {
+        db.all(`SELECT id, facility_id, name, type, environment, locker_rooms FROM surfaces WHERE facility_id IN (${placeholders}) AND status != 'deleted' ORDER BY id ASC`, facilityIds, (err, surfaces) => {
             if (err) return res.status(500).json({ error: err.message });
             
             const surfacesByFac = {};
@@ -1759,33 +1817,64 @@ app.get('/api/host/bookings', (req, res) => {
 
 // GET today's dispatch data for the logged-in host
 app.get('/api/host/dispatch-data', (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).json({ error: "Unauthorized" });
-    }
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
     
     const targetDate = req.query.date || new Date().toISOString().split('T')[0];
+    const facility_id = req.query.facility_id;
     
-    const query = `
-        SELECT b.id, b.facility_id, b.booking_date, b.time_slots, b.booking_type, b.manual_notes, b.locker_room_assignment, f.name as facility_name
-        FROM bookings b
-        JOIN facilities f ON b.facility_id = f.id
-        WHERE (f.host_id = ? OR f.co_host_emails LIKE ?) AND b.booking_date = ? AND b.status != 'cancelled'
-        ORDER BY f.sort_order ASC, f.id DESC, b.time_slots ASC
-    `;
+    if (!facility_id) return res.status(400).json({ error: "facility_id is required" });
     
-    db.all(query, [req.session.userId, `%"${req.session.email}"%`, targetDate], (err, rows) => {
+    db.get("SELECT name FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", 
+        [facility_id, req.session.userId, `%"${req.session.email}"%`], (err, facRow) => {
+        
         if (err) return res.status(500).json({ error: err.message });
+        if (!facRow) return res.status(404).json({ error: "Facility not found or access denied" });
         
-        // Group by facility
-        const dispatchData = {};
-        rows.forEach(b => {
-            if (!dispatchData[b.facility_name]) {
-                dispatchData[b.facility_name] = [];
-            }
-            dispatchData[b.facility_name].push(b);
+        const facilityName = facRow.name;
+        
+        db.all("SELECT id, name FROM surfaces WHERE facility_id = ? AND status != 'deleted' ORDER BY id ASC", 
+            [facility_id], (err, surfRows) => {
+            
+            if (err) return res.status(500).json({ error: err.message });
+            const surfaces = surfRows || [];
+            
+            const bookingQuery = `
+                SELECT b.id, b.surface_id, b.booking_date, b.time_slots, b.booking_type, b.manual_notes, b.locker_room_assignment,
+                       u.first_name, u.last_name
+                FROM bookings b
+                LEFT JOIN users u ON b.user_id = u.id
+                WHERE b.facility_id = ? AND b.booking_date = ? AND b.status != 'cancelled'
+                ORDER BY b.time_slots ASC
+            `;
+            
+            db.all(bookingQuery, [facility_id, targetDate], (err, bookingRows) => {
+                if (err) return res.status(500).json({ error: err.message });
+                const bookings = bookingRows || [];
+                
+                const responseData = {
+                    facilityName: facilityName,
+                    surfaces: surfaces.map(s => {
+                        // Clean up surface name for display (remove facility prefix if present)
+                        let displayName = s.name;
+                        if (displayName.startsWith(facilityName + ' - ')) {
+                            displayName = displayName.substring(facilityName.length + 3);
+                        } else if (displayName.startsWith(facilityName + ' ')) {
+                            displayName = displayName.substring(facilityName.length + 1);
+                        } else if (displayName.startsWith(facilityName)) {
+                            displayName = displayName.substring(facilityName.length).trim() || displayName;
+                        }
+
+                        return {
+                            id: s.id,
+                            name: displayName,
+                            bookings: bookings.filter(b => b.surface_id === s.id)
+                        };
+                    })
+                };
+                
+                res.json(responseData);
+            });
         });
-        
-        res.json(dispatchData);
     });
 });
 
@@ -1841,8 +1930,8 @@ app.post('/api/host/block-time', (req, res) => {
         }
         
         const sql = `
-            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment)
-            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12)
+            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, is_read)
+            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12, 1)
         `;
         
         try {
@@ -1999,8 +2088,8 @@ app.put('/api/host/bookings/:id', (req, res) => {
                     if (datesToBook.length > 0) {
                         const bTypeStr = isPublic ? 'public_session' : 'manual';
                         const insertSql = `
-                            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment)
-                            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12)
+                            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, is_read)
+                            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12, 1)
                         `;
                         for (const dateStr of datesToBook) {
                             await client.query(insertSql, [row.facility_id, row.surface_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment || '']);
@@ -2024,6 +2113,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
 
 // PATCH (Edit Locker Room) a booking
 app.patch('/api/host/bookings/:id/locker-room', (req, res) => {
+    console.log("PATCH LOCKER ROOM CALLED!", req.params.id, req.body);
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
     const bookingId = req.params.id;
     const { locker_room_assignment } = req.body;
@@ -3328,9 +3418,11 @@ app.post('/api/bookings/confirm', async (req, res) => {
 
                             for (const [date, slots] of Object.entries(multi_day_slots)) {
                                 const slotsStr = JSON.stringify(slots);
+                                const lockers = await allocateLockerRooms(client, surface_id, date, slots);
+
                                 const result = await client.query(
-                                    "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8) RETURNING id",
-                                    [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId]
+                                    "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9) RETURNING id",
+                                    [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers]
                                 );
                                 sendBookingEmails(result.rows[0].id);
                             }
