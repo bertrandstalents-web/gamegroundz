@@ -22,3 +22,4 @@ apply_*.js
 update_*.js
 run_migration.js
 *-backup.html
+scratch_scripts/
