@@ -607,7 +607,8 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 // Update Dashboard Preferences
-app.patch('/api/user/preferences', requireAuth, (req, res) => {
+app.patch('/api/user/preferences', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Not authenticated" });
     const { preferences } = req.body;
     if (!preferences) return res.status(400).json({ error: "Preferences required" });
     
