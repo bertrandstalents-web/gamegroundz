@@ -189,7 +189,7 @@ body {
     background-color: #ffffff !important;
     border: 1px solid #cbd5e1 !important; /* border-slate-300 */
     border-radius: 0.5rem !important; /* rounded-lg to match fac-open-time */
-    padding: 0.75rem 1rem !important; /* py-3 px-3 equivalent */
+    padding: 0.75rem 2.5rem 0.75rem 1rem !important; /* Added 2.5rem right padding for the chevron */
     min-height: auto !important;
     display: flex !important;
     align-items: center !important;
