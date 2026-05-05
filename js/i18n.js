@@ -30,16 +30,23 @@ document.documentElement.setAttribute('data-lang', savedLang);
     script.async = true;
     document.body.appendChild(script);
 
-    // Inject CSS to hide the Google Translate top banner & keep body in place
+    // Inject CSS to hide the Google Translate top banner, floating icons & keep body in place
     const style = document.createElement('style');
-    style.innerHTML = `
+    style.innerHTML = \`
         .goog-te-banner-frame.skiptranslate { display: none !important; }
         body { top: 0px !important; }
         #goog-gt-tt { display: none !important; opacity: 0 !important; }
         .goog-tooltip, .goog-tooltip:hover { display: none !important; opacity: 0 !important; }
         font { background-color: transparent !important; box-shadow: none !important; }
         .VIpgJd-ZVi9od-ORHb-OEVmcd { display: none !important; }
-    `;
+        .VIpgJd-ZVi9od-aZ2wEe-wOHMyf { display: none !important; }
+        .VIpgJd-ZVi9od-aZ2wEe-wOHMyf-ti6hGc { display: none !important; }
+        .goog-te-gadget-icon { display: none !important; }
+        .goog-te-gadget-simple { display: none !important; }
+        .goog-te-spinner-pos { display: none !important; }
+        iframe.skiptranslate { display: none !important; }
+        div.skiptranslate:not(#google_translate_element) { display: none !important; visibility: hidden !important; }
+    \`;
     document.head.appendChild(style);
 })();
 
