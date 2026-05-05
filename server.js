@@ -1191,6 +1191,37 @@ app.post('/api/facilities', (req, res) => {
     );
 });
 
+
+
+// PUT reorder facilities
+app.put('/api/host/facilities/reorder', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+    
+    console.log("REORDER ENDPOINT CALLED WITH:", req.body);
+    
+    const { orderIds } = req.body;
+    if (!orderIds || !Array.isArray(orderIds)) return res.status(400).json({ error: "Invalid order array" });
+    
+    if (orderIds.length === 0) return res.json({ message: "No change" });
+    
+    try {
+        for (let i = 0; i < orderIds.length; i++) {
+            const parsedId = parseInt(orderIds[i], 10);
+            await new Promise((resolve, reject) => {
+                db.run("UPDATE facilities SET sort_order = ? WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", 
+                [i, parsedId, req.session.userId, `%"${req.session.email}"%`], (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+        }
+        res.json({ message: "Reordered successfully" });
+    } catch (err) {
+        console.error("Error updating sort_order:", err);
+        res.status(500).json({ error: "Error updating some facilities" });
+    }
+});
+
 // PUT (Edit) an existing facility
 app.put('/api/host/facilities/:id', (req, res) => {
     if (!req.session.userId) {
@@ -1749,32 +1780,6 @@ app.get('/api/host/facilities', (req, res) => {
     });
 });
 
-// PUT reorder facilities
-app.put('/api/host/facilities/reorder', async (req, res) => {
-    if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
-    
-    const { orderIds } = req.body;
-    if (!orderIds || !Array.isArray(orderIds)) return res.status(400).json({ error: "Invalid order array" });
-    
-    if (orderIds.length === 0) return res.json({ message: "No change" });
-    
-    try {
-        for (let i = 0; i < orderIds.length; i++) {
-            const parsedId = parseInt(orderIds[i], 10);
-            await new Promise((resolve, reject) => {
-                db.run("UPDATE facilities SET sort_order = ? WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", 
-                [i, parsedId, req.session.userId, `%"${req.session.email}"%`], (err) => {
-                    if (err) reject(err);
-                    else resolve();
-                });
-            });
-        }
-        res.json({ message: "Reordered successfully" });
-    } catch (err) {
-        console.error("Error updating sort_order:", err);
-        res.status(500).json({ error: "Error updating some facilities" });
-    }
-});
 
 // GET unread host notifications count
 app.get('/api/host/notifications/unread-count', (req, res) => {
