@@ -263,10 +263,16 @@ function sendBookingEmails(bookingId) {
         LEFT JOIN users h ON f.host_id = h.id
         WHERE b.id = ?
     `;
-    db.get(query, [bookingId], (err, row) => {
+    db.get(query, [bookingId], async (err, row) => {
         if (err || !row) return;
-        emailService.sendPlayerConfirmation(row);
-        emailService.sendHostConfirmation(row);
+        try {
+            await emailService.sendPlayerConfirmation(row);
+            // Wait 1 second before sending the host email to avoid Office365 rate limiting/spam drops
+            await new Promise(r => setTimeout(r, 1000));
+            await emailService.sendHostConfirmation(row);
+        } catch (error) {
+            console.error("Error in sequential email delivery:", error);
+        }
     });
 }
 
@@ -284,7 +290,7 @@ function sendPublicSessionJoinEmails(bookingId, userId) {
         JOIN users u_player ON psp.user_id = u_player.id
         WHERE psp.booking_id = ? AND psp.user_id = ? AND psp.payment_status = 'paid'
     `;
-    db.get(q, [bookingId, userId], (err, row) => {
+    db.get(q, [bookingId, userId], async (err, row) => {
         if (err || !row) return;
         const total = (row.quantity_adult * (row.participant_price || 0)) + (row.quantity_kid * (row.participant_kid_price || 0));
         const emailDetails = {
@@ -299,8 +305,13 @@ function sendPublicSessionJoinEmails(bookingId, userId) {
             total_price: total,
             booking_id: row.booking_id
         };
-        emailService.sendPlayerConfirmation(emailDetails);
-        emailService.sendHostConfirmation(emailDetails);
+        try {
+            await emailService.sendPlayerConfirmation(emailDetails);
+            await new Promise(r => setTimeout(r, 1000));
+            await emailService.sendHostConfirmation(emailDetails);
+        } catch (error) {
+            console.error("Error in sequential public session email delivery:", error);
+        }
     });
 }
 
@@ -1730,10 +1741,11 @@ app.get('/api/host/bookings', (req, res) => {
     }
     
     const query = `
-        SELECT b.*, f.name as facility_name, u.name as player_name, u.email as player_email, u.phone_number as player_phone_number,
+        SELECT b.*, f.name as facility_name, s.name as surface_name, u.name as player_name, u.email as player_email, u.phone_number as player_phone_number,
         (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
         FROM bookings b
         JOIN facilities f ON b.facility_id = f.id
+        LEFT JOIN surfaces s ON b.surface_id = s.id
         LEFT JOIN users u ON b.user_id = u.id
         WHERE (f.host_id = ? OR f.co_host_emails LIKE ?) AND b.status != 'cancelled'
         ORDER BY b.booking_date ASC, b.time_slots ASC
@@ -3084,7 +3096,28 @@ app.post('/api/create-checkout-session', (req, res) => {
     `, [facility_id], (err, facility) => {
         if (err || !facility) return res.status(404).json({ error: "Facility not found" });
 
-        db.all("SELECT * FROM discounts WHERE facility_id = ? OR facility_id IS NULL", [facility_id], (err, allDiscounts) => {
+        const requestSurfaceId = req.body.surface_id || null;
+
+        const fetchSurfacePricing = (cb) => {
+            if (requestSurfaceId) {
+                db.get("SELECT name as surface_name, base_price, pricing_rules FROM surfaces WHERE id = ?", [requestSurfaceId], (err, surface) => {
+                    if (err || !surface) {
+                        return cb(facility);
+                    }
+                    cb({
+                        ...facility,
+                        name: `${facility.name} - ${surface.surface_name}`,
+                        base_price: surface.base_price,
+                        pricing_rules: surface.pricing_rules
+                    });
+                });
+            } else {
+                cb(facility);
+            }
+        };
+
+        fetchSurfacePricing((facility) => {
+            db.all("SELECT * FROM discounts WHERE facility_id = ? OR facility_id IS NULL", [facility_id], (err, allDiscounts) => {
             if (err) return res.status(500).json({ error: "DB Error" });
             
             const requestSurfaceId = req.body.surface_id || null;
@@ -3141,6 +3174,7 @@ app.post('/api/create-checkout-session', (req, res) => {
                     const payloadToStore = JSON.stringify({
                         user_id,
                         facility_id,
+                        surface_id: requestSurfaceId,
                         multi_day_slots: parsedMultiDaySlots
                     });
 
@@ -3204,7 +3238,7 @@ app.post('/api/create-checkout-session', (req, res) => {
                             line_items: lineItems,
                             mode: 'payment',
                             success_url: `${sessionUrl}/player-dashboard.html?success=true&session_id={CHECKOUT_SESSION_ID}`,
-                            cancel_url: `${sessionUrl}/facility.html?id=${facility_id}&canceled=true`,
+                            cancel_url: requestSurfaceId ? `${sessionUrl}/surface.html?id=${requestSurfaceId}&canceled=true` : `${sessionUrl}/facility.html?id=${facility_id}&canceled=true`,
                             metadata: {
                                 checkout_token: checkoutToken
                             }
@@ -3231,6 +3265,7 @@ app.post('/api/create-checkout-session', (req, res) => {
                     }); // END pending_checkouts insert callback
                 }
             );
+        });
         });
     });
 });

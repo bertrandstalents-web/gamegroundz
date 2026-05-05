@@ -1361,6 +1361,7 @@
                         },
                         body: JSON.stringify({
                             facility_id: currentFacilityId || 1,
+                            surface_id: window.currentSurfaceId,
                             multi_day_slots: multiDayPayload,
                             // Send booking_date for single-day fallback compatibility if needed anywhere
                             booking_date: selectedDateStr,

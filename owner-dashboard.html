@@ -2495,10 +2495,12 @@
                         `<div class="w-12 h-12 ${isPastOrArchived ? 'bg-slate-100 text-slate-400' : 'bg-slate-100 text-slate-500'} rounded-xl flex items-center justify-center text-xl flex-shrink-0"><i class="fa-solid fa-calendar-xmark"></i></div>` :
                         `<div class="w-12 h-12 ${isPastOrArchived ? 'bg-slate-100 text-slate-400' : 'bg-primary/10 text-primary'} rounded-xl flex items-center justify-center text-xl flex-shrink-0"><i class="fa-solid fa-calendar-check"></i></div>`;
                     
-                    let phoneHtml = booking.player_phone_number ? `<span class="opacity-75 ml-1">&bull; <i class="fa-solid fa-phone mr-1"></i>${booking.player_phone_number}</span>` : '';
+                    let phoneHtml = booking.player_phone_number ? `<div class="mt-0.5 text-sm"><span class="opacity-75"><i class="fa-solid fa-phone fa-fw mr-1"></i>${booking.player_phone_number}</span></div>` : '';
+                    let facNameHtml = `<p class="text-[10px] font-bold ${isPastOrArchived ? 'text-slate-400' : 'text-slate-500'} mb-1 uppercase tracking-wider"><i class="fa-solid fa-building mr-1"></i> ${booking.facility_name}</p>`;
+                    let titleName = booking.surface_name ? booking.surface_name : booking.facility_name;
                     let detailBlock = isManual ? 
-                        `<h4 class="font-bold ${isPastOrArchived ? 'text-slate-500' : 'text-slate-700'}">${booking.facility_name}</h4><p class="text-sm ${isPastOrArchived ? 'text-slate-400' : 'text-slate-500'}"><i class="fa-solid fa-lock mr-1"></i> Blocked: ${booking.manual_notes}</p>` :
-                        `<h4 class="font-bold ${isPastOrArchived ? 'text-slate-600' : 'text-dark'}">${booking.facility_name}</h4><p class="text-sm ${isPastOrArchived ? 'text-slate-400' : 'text-slate-500'}"><i class="fa-regular fa-user mr-1"></i> ${booking.player_name || 'Guest'} <span class="opacity-75">(${booking.player_email || ''})</span>${phoneHtml}</p>`;
+                        `${facNameHtml}<h4 class="font-bold ${isPastOrArchived ? 'text-slate-500' : 'text-slate-700'}">${titleName}</h4><div class="text-sm mt-0.5 ${isPastOrArchived ? 'text-slate-400' : 'text-slate-500'}"><i class="fa-solid fa-lock fa-fw mr-1"></i> Blocked: ${booking.manual_notes}</div>` :
+                        `${facNameHtml}<h4 class="font-bold ${isPastOrArchived ? 'text-slate-600' : 'text-dark'}">${titleName}</h4><div class="text-sm mt-0.5 ${isPastOrArchived ? 'text-slate-400' : 'text-slate-500'} flex flex-col"><div><i class="fa-regular fa-user fa-fw mr-1"></i> ${booking.player_name || 'Guest'} <span class="opacity-75">(${booking.player_email || ''})</span></div>${phoneHtml}</div>`;
                         
                     let priceBlock = isManual ? 
                         `<div class="text-sm font-bold text-slate-400">Offline</div>` :
