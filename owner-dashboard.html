@@ -6534,8 +6534,8 @@
                 if (window.updateSizeOptions) window.updateSizeOptions('ice');
                 
                 document.getElementById('surface-modal-title').textContent = 'Add New Surface';
-                document.getElementById('surf-image-preview').classList.add('hidden');
-                window.localSurfaceImage = '';
+                window.localSurfaceImages = [];
+                if(window.renderSurfaceImages) window.renderSurfaceImages();
                 
                 if (document.getElementById('surf-capacity')) document.getElementById('surf-capacity').textContent = '0';
                 if (document.getElementById('surf-locker-rooms')) document.getElementById('surf-locker-rooms').textContent = '0';
@@ -6599,12 +6599,14 @@
                 } catch(e) {}
             }
             
-            if (surf.image_url) {
-                const prev = document.getElementById('surf-image-preview');
-                prev.src = surf.image_url;
-                prev.classList.remove('hidden');
-                window.localSurfaceImage = surf.image_url;
+            window.localSurfaceImages = [];
+            if (surf.images && surf.images.length > 0) {
+                // Ensure they are ordered with primary first if possible, but they usually come sorted
+                window.localSurfaceImages = surf.images.map(img => img.image_url);
+            } else if (surf.image_url) {
+                window.localSurfaceImages = [surf.image_url];
             }
+            if(window.renderSurfaceImages) window.renderSurfaceImages();
 
             if (document.getElementById('fac-pricing-unit')) document.getElementById('fac-pricing-unit').value = surf.pricing_unit || 'hour';
             if (document.getElementById('fac-has-processing-fee')) {
@@ -6636,18 +6638,60 @@
             }
         };
 
+        window.localSurfaceImages = [];
+        
+        window.handleSurfaceDrop = function(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('border-primary', 'bg-primary/5');
+            if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+                processSurfaceFiles(event.dataTransfer.files);
+            }
+        };
+
         window.previewSurfaceImage = function(event) {
-            const file = event.target.files[0];
-            if (file) {
+            if (event.target.files && event.target.files.length > 0) {
+                processSurfaceFiles(event.target.files);
+            }
+            event.target.value = '';
+        };
+
+        window.processSurfaceFiles = function(files) {
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) return;
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    window.localSurfaceImage = e.target.result;
-                    const preview = document.getElementById('surf-image-preview');
-                    preview.src = e.target.result;
-                    preview.classList.remove('hidden');
+                    window.localSurfaceImages.push(e.target.result);
+                    window.renderSurfaceImages();
                 };
                 reader.readAsDataURL(file);
+            });
+        };
+
+        window.renderSurfaceImages = function() {
+            const container = document.getElementById('surf-image-preview-container');
+            if (!container) return;
+            
+            if (!window.localSurfaceImages || window.localSurfaceImages.length === 0) {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                return;
             }
+            
+            container.classList.remove('hidden');
+            container.innerHTML = window.localSurfaceImages.map((imgSrc, idx) => `
+                <div class="relative aspect-[4/3] rounded-xl overflow-hidden border border-slate-200 group">
+                    <img src="${imgSrc}" class="w-full h-full object-cover">
+                    <button type="button" onclick="window.removeSurfaceImage(${idx}); event.stopPropagation();" class="absolute top-2 right-2 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 hover:text-red-600 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                    ${idx === 0 ? '<div class="absolute bottom-2 left-2 bg-dark/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">Cover</div>' : ''}
+                </div>
+            `).join('');
+        };
+
+        window.removeSurfaceImage = function(index) {
+            window.localSurfaceImages.splice(index, 1);
+            window.renderSurfaceImages();
         };
 
         // Handle Surface Form Submit
@@ -6683,7 +6727,8 @@
                     base_price: basePrice,
                     pricing_unit: document.getElementById('fac-pricing-unit') ? document.getElementById('fac-pricing-unit').value : 'hour',
                     pricing_rules: pricingRules,
-                    image_url: window.localSurfaceImage || null,
+                    image_url: window.localSurfaceImages && window.localSurfaceImages.length > 0 ? window.localSurfaceImages[0] : null,
+                    images: window.localSurfaceImages || [],
                     is_instant_book: document.getElementById('fac-instant') && document.getElementById('fac-instant').checked ? 1 : 0,
                     advance_booking_days: document.getElementById('fac-advance-booking') && document.getElementById('fac-advance-booking').value ? parseInt(document.getElementById('fac-advance-booking').value, 10) : 180,
                     has_processing_fee: document.getElementById('fac-has-processing-fee') && document.getElementById('fac-has-processing-fee').checked ? 1 : 0,
@@ -6973,14 +7018,18 @@
 
                 <!-- Surface Image Upload -->
                 <div>
-                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">Surface Image</h2>
-                    <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:border-primary hover:bg-primary/5 transition-custom cursor-pointer" onclick="document.getElementById('surf-image-file').click()">
-                        <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-400 mb-3"></i>
-                        <p class="font-bold text-slate-700">Click to upload surface image</p>
-                        <p class="text-xs text-slate-500 mt-1">PNG, JPG up to 10MB</p>
-                        <input type="file" id="surf-image-file" accept="image/*" class="hidden" onchange="previewSurfaceImage(event)">
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">Surface Images</h2>
+                    <div id="surf-drop-zone" class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:border-primary hover:bg-primary/5 transition-custom cursor-pointer relative" 
+                         onclick="document.getElementById('surf-image-file').click()"
+                         ondragover="event.preventDefault(); this.classList.add('border-primary', 'bg-primary/5')" 
+                         ondragleave="event.preventDefault(); this.classList.remove('border-primary', 'bg-primary/5')" 
+                         ondrop="handleSurfaceDrop(event)">
+                        <i class="fa-solid fa-images text-4xl text-slate-400 mb-3 pointer-events-none"></i>
+                        <p class="font-bold text-slate-700 pointer-events-none">Click or drag multiple images here</p>
+                        <p class="text-xs text-slate-500 mt-1 pointer-events-none">PNG, JPG up to 10MB per image</p>
+                        <input type="file" id="surf-image-file" accept="image/*" multiple class="hidden" onchange="previewSurfaceImage(event)">
                     </div>
-                    <img id="surf-image-preview" src="" class="hidden mt-4 rounded-xl max-h-[300px] object-cover w-full">
+                    <div id="surf-image-preview-container" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4 hidden"></div>
                 </div>
 
                 <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
