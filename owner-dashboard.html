@@ -6518,7 +6518,7 @@
         window.openSurfaceModal = function() {
             try {
                 if (!window.currentFacilityId) {
-                    showAlertModal("Action Required", "Please select a facility first before adding a surface.", "Understood", true);
+                    showAlertModal("Action Required", "<span class='lang-en-only'>Please select a facility first before adding a surface.</span><span class='lang-fr-only notranslate'>Veuillez sélectionner un établissement avant d'ajouter une surface.</span>", "Understood", true);
                     return;
                 }
                 document.getElementById('surface-form').reset();
