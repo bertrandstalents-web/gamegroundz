@@ -1827,48 +1827,52 @@
             const surfaceVal = surfaceFilter ? surfaceFilter.value : 'all';
 
             facilities.forEach(fac => {
-                let displayImage = 'https://placehold.co/600x400/f8fafc/64748b?text=No+Image'; // Safe fallback
-                if (fac.image_url) {
-                    try {
-                        const parsed = JSON.parse(fac.image_url);
-                        if (Array.isArray(parsed) && parsed.length > 0) {
-                            displayImage = parsed[0];
-                        } else if (typeof parsed === 'string') {
-                            displayImage = parsed;
-                        } else {
-                            displayImage = fac.image_url;
+                try {
+                    let displayImage = 'https://placehold.co/600x400/f8fafc/64748b?text=No+Image'; // Safe fallback
+                    if (fac.image_url) {
+                        try {
+                            const parsed = JSON.parse(fac.image_url);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                displayImage = parsed[0];
+                            } else if (typeof parsed === 'string') {
+                                displayImage = parsed;
+                            } else {
+                                displayImage = fac.image_url;
+                            }
+                        } catch (e) {
+                            displayImage = fac.image_url; // Not JSON, use raw
                         }
-                } catch (e) {
-                        displayImage = fac.image_url; // Not JSON, use raw
                     }
-                }
-                
-                if (resFacFilter) {
-                    resFacFilter.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
-                }
-                
-                if (surfaceVal !== 'all' && fac.type !== surfaceVal) return;
-                
-                const dragClasses = surfaceVal === 'all' ? 'cursor-grab active:cursor-grabbing' : '';
+                    
+                    if (resFacFilter) {
+                        resFacFilter.innerHTML += `<option value="${fac.id}">${fac.name || 'Unnamed'}</option>`;
+                    }
+                    
+                    if (surfaceVal !== 'all' && fac.type !== surfaceVal) return;
+                    
+                    const dragClasses = surfaceVal === 'all' ? 'cursor-grab active:cursor-grabbing' : '';
 
-                container.innerHTML += `
-                    <div data-id="${fac.id}" class="flex flex-col border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-custom bg-white ${dragClasses}">
-                        <div class="h-40 w-full overflow-hidden relative">
-                            <img src="${displayImage}" alt="${fac.name}" class="w-full h-full object-cover">
-                            ${fac.is_instant_book ? '<span class="absolute top-3 left-3 bg-white text-primary text-xs font-bold px-2 py-1 rounded-md shadow-sm"><i class="fa-solid fa-bolt text-yellow-500 mr-1"></i> Instant Book</span>' : ''}
-                        </div>
-                        <div class="p-4 flex flex-col flex-1">
-                            <h3 class="font-bold text-lg text-dark mb-1 truncate">${fac.name}</h3>
-                            <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${fac.location ? fac.location.split(',')[0] : 'Location not set'}</p>
-                            <div class="mt-auto flex justify-end items-center pt-3 border-t border-slate-100">
-                                <div>
-                                    <button data-fac-id="${fac.id}" onclick="handleEditClick(this)" class="text-slate-500 text-sm font-bold hover:text-dark mr-3 transition-custom">Edit</button>
-                                    <button data-fac-id="${fac.id}" onclick="manageSurfaces(${fac.id})" class="text-primary text-sm font-bold hover:underline">Manage Surfaces</button>
+                    container.innerHTML += `
+                        <div data-id="${fac.id}" class="flex flex-col border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-custom bg-white ${dragClasses}">
+                            <div class="h-40 w-full overflow-hidden relative">
+                                <img src="${displayImage}" alt="${fac.name || 'Facility'}" class="w-full h-full object-cover">
+                                ${fac.is_instant_book ? '<span class="absolute top-3 left-3 bg-white text-primary text-xs font-bold px-2 py-1 rounded-md shadow-sm"><i class="fa-solid fa-bolt text-yellow-500 mr-1"></i> Instant Book</span>' : ''}
+                            </div>
+                            <div class="p-4 flex flex-col flex-1">
+                                <h3 class="font-bold text-lg text-dark mb-1 truncate">${fac.name || 'Unnamed Facility'}</h3>
+                                <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${fac.location ? fac.location.split(',')[0] : 'Location not set'}</p>
+                                <div class="mt-auto flex justify-end items-center pt-3 border-t border-slate-100">
+                                    <div>
+                                        <button data-fac-id="${fac.id}" onclick="handleEditClick(this)" class="text-slate-500 text-sm font-bold hover:text-dark mr-3 transition-custom">Edit</button>
+                                        <button data-fac-id="${fac.id}" onclick="manageSurfaces(${fac.id})" class="text-primary text-sm font-bold hover:underline">Manage Surfaces</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                } catch (err) {
+                    console.error("Error rendering facility", fac, err);
+                }
             });
 
             // Populate Calendar form select and Discount form select
@@ -1887,48 +1891,55 @@
             if(dispatchListEl) dispatchListEl.innerHTML = '';
 
             facilities.forEach(fac => {
-                if (dispatchListEl) {
-                    let li = document.createElement('li');
-                    li.className = 'px-4 py-2.5 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 transition-colors flex items-center justify-between';
-                    li.innerHTML = `<span>${fac.name}</span>`;
-                    li.onclick = (e) => {
-                        e.stopPropagation();
-                        selectDispatchFacility(fac.id, fac.name);
-                    };
-                    dispatchListEl.appendChild(li);
-                }
+                try {
+                    if (dispatchListEl) {
+                        let li = document.createElement('li');
+                        li.className = 'px-4 py-2.5 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 transition-colors flex items-center justify-between';
+                        li.innerHTML = `<span>${fac.name || 'Unnamed Facility'}</span>`;
+                        li.onclick = (e) => {
+                            e.stopPropagation();
+                            selectDispatchFacility(fac.id, fac.name);
+                        };
+                        dispatchListEl.appendChild(li);
+                    }
 
-                if (fac.surfaces && fac.surfaces.length > 0) {
-                    let optgroup = document.createElement('optgroup');
-                    optgroup.label = fac.name;
-                    let discOptgroup = document.createElement('optgroup');
-                    discOptgroup.label = fac.name;
-                    discOptgroup.innerHTML += `<option value="all" data-fac-id="${fac.id}">All Surfaces (Entire Facility)</option>`;
+                    if (fac.surfaces && fac.surfaces.length > 0) {
+                        let optgroup = document.createElement('optgroup');
+                        optgroup.label = fac.name || 'Unnamed Facility';
+                        let discOptgroup = document.createElement('optgroup');
+                        discOptgroup.label = fac.name || 'Unnamed Facility';
+                        discOptgroup.innerHTML += `<option value="all" data-fac-id="${fac.id}">All Surfaces (Entire Facility)</option>`;
 
-                    fac.surfaces.forEach(surf => {
-                        let displayName = surf.name;
-                        if (displayName.startsWith(fac.name + ' - ')) {
-                            displayName = displayName.substring(fac.name.length + 3);
-                        } else if (displayName.startsWith(fac.name + ' ')) {
-                            displayName = displayName.substring(fac.name.length + 1);
-                        } else if (displayName.startsWith(fac.name)) {
-                            displayName = displayName.substring(fac.name.length).trim() || displayName;
-                        }
-                        optgroup.innerHTML += `<option value="${surf.id}" data-fac-id="${fac.id}">${displayName}</option>`;
-                        discOptgroup.innerHTML += `<option value="${surf.id}" data-fac-id="${fac.id}">${displayName}</option>`;
-                    });
-                    selectEl.appendChild(optgroup);
-                    if(discSelectEl) discSelectEl.appendChild(discOptgroup);
-                } else {
-                    let optgroup = document.createElement('optgroup');
-                    optgroup.label = fac.name;
-                    optgroup.innerHTML += `<option value="" disabled>No surfaces available</option>`;
-                    selectEl.appendChild(optgroup);
+                        fac.surfaces.forEach(surf => {
+                            let displayName = surf.name || 'Unnamed Surface';
+                            let fName = fac.name || '';
+                            
+                            if (fName && displayName.startsWith(fName + ' - ')) {
+                                displayName = displayName.substring(fName.length + 3);
+                            } else if (fName && displayName.startsWith(fName + ' ')) {
+                                displayName = displayName.substring(fName.length + 1);
+                            } else if (fName && displayName.startsWith(fName)) {
+                                displayName = displayName.substring(fName.length).trim() || displayName;
+                            }
+                            
+                            optgroup.innerHTML += `<option value="${surf.id}" data-fac-id="${fac.id}">${displayName}</option>`;
+                            discOptgroup.innerHTML += `<option value="${surf.id}" data-fac-id="${fac.id}">${displayName}</option>`;
+                        });
+                        selectEl.appendChild(optgroup);
+                        if(discSelectEl) discSelectEl.appendChild(discOptgroup);
+                    } else {
+                        let optgroup = document.createElement('optgroup');
+                        optgroup.label = fac.name || 'Unnamed Facility';
+                        optgroup.innerHTML += `<option value="" disabled>No surfaces available</option>`;
+                        selectEl.appendChild(optgroup);
 
-                    let discOptgroup = document.createElement('optgroup');
-                    discOptgroup.label = fac.name;
-                    discOptgroup.innerHTML += `<option value="" disabled>No surfaces available</option>`;
-                    if(discSelectEl) discSelectEl.appendChild(discOptgroup);
+                        let discOptgroup = document.createElement('optgroup');
+                        discOptgroup.label = fac.name || 'Unnamed Facility';
+                        discOptgroup.innerHTML += `<option value="" disabled>No surfaces available</option>`;
+                        if(discSelectEl) discSelectEl.appendChild(discOptgroup);
+                    }
+                } catch(err) {
+                    console.error("Error populating dropdowns for facility:", fac, err);
                 }
             });
 
