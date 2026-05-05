@@ -4419,7 +4419,7 @@
                     throw new Error(data.error || 'Failed to create onboarding link');
                 }
             } catch (error) {
-                alert("Stripe error: " + error.message);
+                showAlertModal("Stripe Error", error.message, "OK", true);
                 if (btn) btn.innerHTML = '<i class="fa-brands fa-stripe mr-2 text-2xl"></i> Set up Payouts';
             }
         }
@@ -4448,7 +4448,7 @@
                     throw new Error(data.error || 'Failed to create dashboard link');
                 }
             } catch (error) {
-                alert("Stripe error: " + error.message);
+                showAlertModal("Stripe Error", error.message, "OK", true);
                 if (btn) btn.innerHTML = '<i class="fa-solid fa-chart-line mr-2"></i> View your Stripe Dashboard';
             }
         }
@@ -4519,7 +4519,7 @@
 
         window.handleAddTimeSlot = function() {
             if (typeof window.createRuleRow !== 'function') {
-                alert('Still loading script, please wait a second.');
+                showAlertModal("Notice", "Still loading script, please wait a second.");
                 return;
             }
             
@@ -5314,7 +5314,7 @@
                 btn.disabled = true;
 
                 if (!facId || isNaN(parseInt(facId, 10))) {
-                    alert("Error: Facility ID is missing or invalid. Please refresh the page.");
+                    showAlertModal("Error", "Facility ID is missing or invalid. Please refresh the page.", "OK", true);
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     return;
@@ -5322,7 +5322,7 @@
 
                 let parsedSurfaceId = surfaceId === 'all' ? 'all' : parseInt(surfaceId, 10);
                 if (surfaceId !== 'all' && isNaN(parsedSurfaceId)) {
-                    alert("Error: Surface ID is missing or invalid. Please select a valid surface or 'All Surfaces' and try again.");
+                    showAlertModal("Error", "Surface ID is missing or invalid. Please select a valid surface or 'All Surfaces' and try again.", "OK", true);
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     return;
@@ -5516,15 +5516,15 @@
                     emailInput.value = '';
                     renderCoHosts(data.emails);
                     if(typeof showAlertModal === 'function') showAlertModal('Success', 'Co-host invited successfully!');
-                    else alert('Co-host invited successfully!');
+                    else showAlertModal("Success", "Co-host invited successfully!");
                 } else {
                     const errData = await res.json();
                     if(typeof showAlertModal === 'function') showAlertModal('Error', errData.error || 'Failed to add co-host');
-                    else alert(errData.error || 'Failed to add co-host');
+                    else showAlertModal("Error", errData.error || "Failed to add co-host", "OK", true);
                 }
             } catch (e) {
                 if(typeof showAlertModal === 'function') showAlertModal('Error', 'Communication error. Please try again.');
-                else alert('Communication error');
+                else showAlertModal("Error", "Communication error", "OK", true);
             }
         }
 
@@ -5548,7 +5548,7 @@
                 }
             } catch (e) {
                 if(typeof showAlertModal === 'function') showAlertModal('Error', 'Failed to remove co-host');
-                else alert('Failed to remove co-host');
+                else showAlertModal("Error", "Failed to remove co-host", "OK", true);
             }
         }
 
@@ -5579,7 +5579,7 @@
                 
                 if (res.ok) {
                     if(typeof showAlertModal === 'function') showAlertModal('Success', 'Booking archived successfully');
-                    else alert('Booking archived successfully');
+                    else showAlertModal("Success", "Booking archived successfully");
                     
                     // Reload the host dashboard to refresh the reservations list
                     if (typeof loadHostData === 'function') {
@@ -5590,11 +5590,11 @@
                 } else {
                     const errData = await res.json();
                     if(typeof showAlertModal === 'function') showAlertModal('Error', errData.error || 'Failed to archive booking');
-                    else alert(errData.error || 'Failed to archive booking');
+                    else showAlertModal("Error", errData.error || "Failed to archive booking", "OK", true);
                 }
             } catch (e) {
                 if(typeof showAlertModal === 'function') showAlertModal('Error', 'Communication error. Please try again.');
-                else alert('Communication error');
+                else showAlertModal("Error", "Communication error", "OK", true);
             }
         }
 
@@ -5788,7 +5788,7 @@
                             throw new Error("Failed to accept terms");
                         }
                     } catch (error) {
-                        alert("There was an error saving your acceptance. Please try again.");
+                        showAlertModal("Error", "There was an error saving your acceptance. Please try again.", "OK", true);
                         tcAcceptBtn.innerHTML = '<span>Accept & Continue</span><i class="fa-solid fa-arrow-right ml-2"></i>';
                     }
                 });
@@ -6237,7 +6237,7 @@
                 if (typeof window.showAlertModal === 'function') {
                     window.showAlertModal('Success', `Resident successfully ${action}d.`);
                 } else {
-                    alert(`Resident successfully ${action}d.`);
+                    showAlertModal("Success", `Resident successfully ${action}d.`);
                 }
                 
                 loadOurPeople();
@@ -6245,7 +6245,7 @@
                 if (typeof window.showAlertModal === 'function') {
                     window.showAlertModal('Error', "Error scheduling residency update: " + err.message);
                 } else {
-                    alert("Error scheduling residency update: " + err.message);
+                    showAlertModal("Error", "Error scheduling residency update: " + err.message, "OK", true);
                 }
             }
         }
@@ -6301,7 +6301,7 @@
                     
                 } catch(e) {
                     console.error(e);
-                    alert('Error updating locker room.');
+                    showAlertModal("Error", "Error updating locker room.", "OK", true);
                 } finally {
                     btn.disabled = false;
                     btn.innerHTML = origHTML;
@@ -6518,7 +6518,7 @@
         window.openSurfaceModal = function() {
             try {
                 if (!window.currentFacilityId) {
-                    alert("Please select a facility first before adding a surface.");
+                    showAlertModal("Action Required", "Please select a facility first before adding a surface.", "Understood", true);
                     return;
                 }
                 document.getElementById('surface-form').reset();
@@ -6555,7 +6555,7 @@
 
                 document.getElementById('add-surface-modal').classList.remove('hidden');
             } catch (e) {
-                alert("Error in openSurfaceModal: " + e.message + "\n" + e.stack);
+                showAlertModal("Error", "Error in openSurfaceModal: " + e.message, "OK", true);
             }
         };
 
@@ -6716,7 +6716,7 @@
                     }
                 } catch (err) {
                     console.error(err);
-                    alert("Error saving surface: " + err.message);
+                    showAlertModal("Error", "Error saving surface: " + err.message, "OK", true);
                 } finally {
                     if (btn) {
                         btn.innerHTML = origText;

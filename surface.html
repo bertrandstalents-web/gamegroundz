@@ -1240,7 +1240,7 @@
                     if (data.url) {
                         window.location.href = data.url;
                     } else if (data.redirectUrl) {
-                        alert("You've successfully joined the public session!");
+                        showAlertModal("Success", "You've successfully joined the public session!");
                         window.location.href = data.redirectUrl;
                     }
                 } catch(e) {

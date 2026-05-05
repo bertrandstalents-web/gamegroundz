@@ -423,12 +423,20 @@
                             document.getElementById('apply-filters-btn').click();
                         },
                         (error) => {
-                            alert("Location access denied or unavailable. Falling back to approximate location.");
+                            if (window.showAlertModal) {
+                                showAlertModal("Location Error", "Location access denied or unavailable. Falling back to approximate location.", "OK", true);
+                            } else {
+                                alert("Location access denied or unavailable. Falling back to approximate location.");
+                            }
                             ipLocationFallback();
                         }
                     );
                 } else {
-                    alert("Exact GPS location is blocked by your browser on this connection. Ensure you are using HTTPS. Falling back to approximate location.");
+                    if (window.showAlertModal) {
+                        showAlertModal("Location Error", "Exact GPS location is blocked by your browser on this connection. Ensure you are using HTTPS. Falling back to approximate location.", "OK", true);
+                    } else {
+                        alert("Exact GPS location is blocked by your browser on this connection. Ensure you are using HTTPS. Falling back to approximate location.");
+                    }
                     ipLocationFallback();
                 }
             });
@@ -1131,6 +1139,7 @@
         });
 
     </script>
+    <script src="js/modals.js"></script>
     <script src="js/i18n.js"></script>
 
     <!-- Mobile FABs for Map & Filters -->

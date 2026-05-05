@@ -1155,12 +1155,20 @@
                             }
                         },
                         (error) => {
-                            alert("Location access denied or unavailable. Please enter your location manually.");
+                            if (window.showAlertModal) {
+                                showAlertModal("Location Error", "Location access denied or unavailable. Please enter your location manually.", "OK", true);
+                            } else {
+                                alert("Location access denied or unavailable. Please enter your location manually.");
+                            }
                             icon.className = 'fa-solid fa-location-crosshairs';
                         }
                     );
                 } else {
-                    alert("Exact GPS location is blocked by your browser on this connection. Please enter your location manually.");
+                    if (window.showAlertModal) {
+                        showAlertModal("Location Error", "Exact GPS location is blocked by your browser on this connection. Please enter your location manually.", "OK", true);
+                    } else {
+                        alert("Exact GPS location is blocked by your browser on this connection. Please enter your location manually.");
+                    }
                 }
             });
         }
@@ -1847,6 +1855,7 @@
         }
 
     </script>
+        <script src="js/modals.js"></script>
         <script src="js/i18n.js"></script>
 
     <script>
