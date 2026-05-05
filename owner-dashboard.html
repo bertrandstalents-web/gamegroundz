@@ -1882,11 +1882,11 @@
             const dispatchListEl = document.getElementById('dispatch-dropdown-list');
             const dispatchTextEl = document.getElementById('dispatch-dropdown-text');
             
-            const prevVal = selectEl.value;
+            const prevVal = selectEl ? selectEl.value : '';
             const prevDiscVal = discSelectEl ? discSelectEl.value : '';
             const prevDispatchVal = dispatchInputEl ? dispatchInputEl.value : '';
             
-            selectEl.innerHTML = '<option value="" disabled selected>Choose a surface</option>';
+            if(selectEl) selectEl.innerHTML = '<option value="" disabled selected>Choose a surface</option>';
             if(discSelectEl) discSelectEl.innerHTML = '<option value="" disabled selected>Choose a surface</option>';
             if(dispatchListEl) dispatchListEl.innerHTML = '';
 
@@ -1943,10 +1943,21 @@
                 }
             });
 
-            if (prevVal && selectEl && Array.from(selectEl.options).some(o => o.value === prevVal)) {
+            if (selectEl && prevVal && Array.from(selectEl.options).some(o => o.value === prevVal)) {
                 selectEl.value = prevVal;
             } else if (selectEl) {
                 selectEl.value = "";
+            }
+            
+            // Refresh Choices.js UI if it's already initialized
+            if (window.choicesInstances) {
+                ['calendar-facility-select', 'discount-facility-select'].forEach(id => {
+                    const select = document.getElementById(id);
+                    if (select && window.choicesInstances[id]) {
+                        window.choicesInstances[id].destroy();
+                        window.choicesInstances[id] = new Choices(select, { searchEnabled: false, itemSelectText: '', shouldSort: false });
+                    }
+                });
             }
 
             if (prevDiscVal && discSelectEl && Array.from(discSelectEl.options).some(o => o.value === prevDiscVal)) {
@@ -2050,9 +2061,20 @@
                             if (resFacFilter) {
                                 resFacFilter.innerHTML = '<option value="all">All Facilities</option>';
                                 ownerFacilities.forEach(fac => {
-                                    resFacFilter.innerHTML += `<option value="${fac.id}">${fac.name}</option>`;
+                                    resFacFilter.innerHTML += `<option value="${fac.id}">${fac.name || 'Unnamed'}</option>`;
                                 });
                                 if (prevResVal) resFacFilter.value = prevResVal;
+                            }
+                            
+                            // Refresh Choices.js UI
+                            if (window.choicesInstances) {
+                                ['calendar-facility-select', 'discount-facility-select'].forEach(id => {
+                                    const select = document.getElementById(id);
+                                    if (select && window.choicesInstances[id]) {
+                                        window.choicesInstances[id].destroy();
+                                        window.choicesInstances[id] = new Choices(select, { searchEnabled: false, itemSelectText: '', shouldSort: false });
+                                    }
+                                });
                             }
                         }
 
