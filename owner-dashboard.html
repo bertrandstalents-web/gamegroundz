@@ -1859,7 +1859,7 @@
                         </div>
                         <div class="p-4 flex flex-col flex-1">
                             <h3 class="font-bold text-lg text-dark mb-1 truncate">${fac.name}</h3>
-                            <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${fac.location.split(',')[0]}</p>
+                            <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${fac.location ? fac.location.split(',')[0] : 'Location not set'}</p>
                             <div class="mt-auto flex justify-end items-center pt-3 border-t border-slate-100">
                                 <div>
                                     <button data-fac-id="${fac.id}" onclick="handleEditClick(this)" class="text-slate-500 text-sm font-bold hover:text-dark mr-3 transition-custom">Edit</button>
