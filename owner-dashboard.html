@@ -242,17 +242,17 @@
                 <!-- Sidebar Navigation -->
                 <div class="col-span-1 lg:w-[280px] flex-shrink-0">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 md:p-4 sticky top-28 h-full lg:h-auto">
-                        <ul class="space-y-0.5 md:space-y-1">
-                            <li><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-list w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">My Facilities</span><span class="lang-fr-only notranslate">Mes installations</span></button></li>
-                            <li><button id="tab-btn-surfaces" onclick="switchTab('surfaces')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-layer-group w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Surfaces</span><span class="lang-fr-only notranslate">Surfaces</span></button></li>
-                            <li><button id="tab-btn-analytics" onclick="switchTab('analytics')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-chart-pie w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Analytics</span><span class="lang-fr-only notranslate">Statistiques</span></button></li>
-                            <li><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Reservations</span><span class="lang-fr-only notranslate">Réservations</span></button></li>
-                            <li><button id="tab-btn-calendar" onclick="switchTab('calendar')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-regular fa-calendar w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Calendar</span><span class="lang-fr-only notranslate">Calendrier</span></button></li>
-                            <li><button id="tab-btn-discounts" onclick="switchTab('discounts')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tags w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Discounts</span><span class="lang-fr-only notranslate">Rabais</span></button></li>
-                            <li><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Wallet &amp; Payouts</span><span class="lang-fr-only notranslate">Portefeuille et paiements</span></button></li>
-                            <li><button id="tab-btn-profile" onclick="switchTab('profile')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-user w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></button></li>
-                            <li><button id="tab-btn-add-new" onclick="switchTab('add-new')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-plus w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Add New Facility</span><span class="lang-fr-only notranslate">Ajouter une installation</span></button></li>
-                            <li id="nav-item-our-people" class="hidden"><button id="tab-btn-our-people" onclick="switchTab('our-people')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-users w-6 mr-2 md:mr-3"></i> <span class="lang-en-only">Our People</span><span class="lang-fr-only notranslate">Notre équipe</span></button></li>
+                        <ul class="space-y-0.5 md:space-y-1" id="sidebar-menu">
+                            <li data-tab="facilities"><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-list w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">My Facilities</span><span class="lang-fr-only notranslate">Mes installations</span></button></li>
+                            <li data-tab="surfaces"><button id="tab-btn-surfaces" onclick="switchTab('surfaces')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-layer-group w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Surfaces</span><span class="lang-fr-only notranslate">Surfaces</span></button></li>
+                            <li data-tab="analytics"><button id="tab-btn-analytics" onclick="switchTab('analytics')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-chart-pie w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Analytics</span><span class="lang-fr-only notranslate">Statistiques</span></button></li>
+                            <li data-tab="reservations"><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Reservations</span><span class="lang-fr-only notranslate">Réservations</span></button></li>
+                            <li data-tab="calendar"><button id="tab-btn-calendar" onclick="switchTab('calendar')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-regular fa-calendar w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Calendar</span><span class="lang-fr-only notranslate">Calendrier</span></button></li>
+                            <li data-tab="discounts"><button id="tab-btn-discounts" onclick="switchTab('discounts')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tags w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Discounts</span><span class="lang-fr-only notranslate">Rabais</span></button></li>
+                            <li data-tab="wallet"><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Wallet &amp; Payouts</span><span class="lang-fr-only notranslate">Portefeuille et paiements</span></button></li>
+                            <li data-tab="profile"><button id="tab-btn-profile" onclick="switchTab('profile')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-user w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></button></li>
+                            <li data-tab="add-new"><button id="tab-btn-add-new" onclick="switchTab('add-new')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-plus w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Add New Facility</span><span class="lang-fr-only notranslate">Ajouter une installation</span></button></li>
+                            <li id="nav-item-our-people" class="hidden" data-tab="our-people"><button id="tab-btn-our-people" onclick="switchTab('our-people')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-users w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Our People</span><span class="lang-fr-only notranslate">Notre équipe</span></button></li>
                         </ul>
                     </div>
                 </div>
@@ -7012,5 +7012,72 @@
     
     // Initial call
     updateDashboardTranslations(document.documentElement.getAttribute('data-lang') || 'en');
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Apply saved tab order if available
+        try {
+            const userStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
+            if (userStr) {
+                const u = JSON.parse(userStr);
+                if (u.dashboard_preferences) {
+                    const prefs = typeof u.dashboard_preferences === 'string' ? JSON.parse(u.dashboard_preferences) : u.dashboard_preferences;
+                    const sidebarMenu = document.getElementById('sidebar-menu');
+                    if (prefs && Array.isArray(prefs) && sidebarMenu) {
+                        // Reorder DOM elements based on saved preferences
+                        const tabs = Array.from(sidebarMenu.children);
+                        prefs.forEach(tabId => {
+                            const el = tabs.find(t => t.getAttribute('data-tab') === tabId);
+                            if (el) {
+                                sidebarMenu.appendChild(el);
+                            }
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Failed to load dashboard preferences:", e);
+        }
+
+        // Initialize SortableJS
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        if (sidebarMenu) {
+            new Sortable(sidebarMenu, {
+                animation: 150,
+                ghostClass: 'opacity-50',
+                handle: '.sort-handle',
+                onEnd: async function () {
+                    // Gather new order
+                    const newOrder = Array.from(sidebarMenu.children).map(li => li.getAttribute('data-tab')).filter(Boolean);
+                    
+                    // Update local cache
+                    try {
+                        const userStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
+                        if (userStr) {
+                            const u = JSON.parse(userStr);
+                            u.dashboard_preferences = JSON.stringify(newOrder);
+                            localStorage.setItem('gg_user', JSON.stringify(u));
+                            localStorage.setItem('user', JSON.stringify(u));
+                        }
+                    } catch (e) {
+                        console.error("Error updating local user preferences:", e);
+                    }
+
+                    // Send to server
+                    try {
+                        const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                        await fetch(`${API_BASE_URL}/api/user/preferences`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ preferences: newOrder })
+                        });
+                    } catch (err) {
+                        console.error("Failed to save dashboard preferences:", err);
+                    }
+                }
+            });
+        }
+    });
 </script>
 </body></html>

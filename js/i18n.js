@@ -14,14 +14,15 @@ document.documentElement.setAttribute('data-lang', savedLang);
 
     // Initialization callback
     window.googleTranslateElementInit = function() {
-        new window.google.translate.TranslateElement({
-            pageLanguage: 'en',
-            includedLanguages: 'en,fr',
-            autoDisplay: false
-        }, 'google_translate_element');
-        
-        // Update UI to match current state
-        updateToggleUI(savedLang);
+        try {
+            new window.google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,fr',
+                autoDisplay: false
+            }, 'google_translate_element');
+        } catch (e) {
+            console.warn('Google Translate initialization failed:', e);
+        }
     };
 
     // Load external script securely
@@ -32,7 +33,7 @@ document.documentElement.setAttribute('data-lang', savedLang);
 
     // Inject CSS to hide the Google Translate top banner, floating icons & keep body in place
     const style = document.createElement('style');
-    style.innerHTML = \`
+    style.innerHTML = `
         .goog-te-banner-frame.skiptranslate { display: none !important; }
         body { top: 0px !important; }
         #goog-gt-tt { display: none !important; opacity: 0 !important; }
@@ -46,7 +47,7 @@ document.documentElement.setAttribute('data-lang', savedLang);
         .goog-te-spinner-pos { display: none !important; }
         iframe.skiptranslate { display: none !important; }
         div.skiptranslate:not(#google_translate_element) { display: none !important; visibility: hidden !important; }
-    \`;
+    `;
     document.head.appendChild(style);
 })();
 
@@ -56,6 +57,7 @@ window.switchLanguage = function(lang) {
     
     // Store preference
     localStorage.setItem('gg_language', lang);
+    document.documentElement.setAttribute('data-lang', lang);
     
     // Update local UI
     updateToggleUI(lang);
@@ -131,3 +133,8 @@ function updateToggleUI(currentLang) {
         }
     }
 }
+
+// Initialize UI on load
+document.addEventListener('DOMContentLoaded', () => {
+    updateToggleUI(localStorage.getItem('gg_language') || 'en');
+});

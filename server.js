@@ -594,8 +594,28 @@ app.post('/api/auth/login', (req, res) => {
 
         res.json({ 
             message: "Logged in successfully", 
-            user: { id: user.id, name: user.name, email: user.email, role: user.role, profile_picture: user.profile_picture } 
+            user: { 
+                id: user.id, 
+                name: user.name, 
+                email: user.email, 
+                role: user.role, 
+                profile_picture: user.profile_picture,
+                dashboard_preferences: user.dashboard_preferences
+            } 
         });
+    });
+});
+
+// Update Dashboard Preferences
+app.patch('/api/user/preferences', requireAuth, (req, res) => {
+    const { preferences } = req.body;
+    if (!preferences) return res.status(400).json({ error: "Preferences required" });
+    
+    // Store as JSON string in database
+    const prefString = JSON.stringify(preferences);
+    db.run("UPDATE users SET dashboard_preferences = ? WHERE id = ?", [prefString, req.session.userId], function(err) {
+        if (err) return res.status(500).json({ error: "Database error" });
+        res.json({ message: "Preferences updated successfully" });
     });
 });
 
@@ -676,7 +696,7 @@ app.get('/api/auth/me', (req, res) => {
         return res.status(401).json({ error: "Not authenticated" });
     }
     
-    db.get("SELECT id, name, first_name, last_name, email, phone_number, company_name, profile_picture, role, stripe_account_id, stripe_onboarding_complete, terms_accepted, terms_accepted_at, residency_city, residency_document_url, residency_status FROM users WHERE id = ?", [req.session.userId], (err, user) => {
+    db.get("SELECT id, name, first_name, last_name, email, phone_number, company_name, profile_picture, role, stripe_account_id, stripe_onboarding_complete, terms_accepted, terms_accepted_at, residency_city, residency_document_url, residency_status, dashboard_preferences FROM users WHERE id = ?", [req.session.userId], (err, user) => {
         if (err) return res.status(500).json({ error: "Database error" });
         if (!user) return res.status(404).json({ error: "User not found" });
         res.json({ user });
