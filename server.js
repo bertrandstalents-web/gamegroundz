@@ -1289,7 +1289,7 @@ app.put('/api/host/facilities/:id', (req, res) => {
 
 // GET all public surfaces (with fallback to facility location/info)
 app.get('/api/public/surfaces', (req, res) => {
-    const { limit, search } = req.query;
+    const { limit, search, types, environment, maxPrice } = req.query;
     
     let query = `
         SELECT 
@@ -1311,6 +1311,25 @@ app.get('/api/public/surfaces', (req, res) => {
         const primarySearchTerm = search.split(',')[0].trim();
         query += " AND (s.name LIKE ? OR f.name LIKE ? OR COALESCE(s.location, f.location) LIKE ?)";
         params.push(`%${primarySearchTerm}%`, `%${primarySearchTerm}%`, `%${primarySearchTerm}%`);
+    }
+
+    if (types) {
+        const typeArray = types.split(',').map(t => t.trim()).filter(Boolean);
+        if (typeArray.length > 0) {
+            const placeholders = typeArray.map(() => '?').join(',');
+            query += ` AND s.type IN (${placeholders})`;
+            params.push(...typeArray);
+        }
+    }
+
+    if (environment && environment.trim() !== '') {
+        query += " AND s.environment = ?";
+        params.push(environment.trim());
+    }
+
+    if (maxPrice && !isNaN(maxPrice)) {
+        query += " AND s.base_price <= ?";
+        params.push(Number(maxPrice));
     }
 
     query += " ORDER BY s.id DESC";
