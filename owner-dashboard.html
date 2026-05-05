@@ -124,6 +124,8 @@
             }
         }
     </style>
+    <!-- Choices.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
 
@@ -7080,4 +7082,27 @@
         }
     });
 </script>
+    <!-- Choices.js JS -->
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Target all selects that should be upgraded (appearance-none or explicit classes)
+            const selects = document.querySelectorAll('select.appearance-none, select#fac-host-type, select#fac-env, select#fac-listing-status, select#fac-pricing-unit');
+            
+            window.choicesInstances = {}; // Store instances if we need to access them later
+
+            selects.forEach(select => {
+                // Initialize Choices
+                const choice = new Choices(select, {
+                    searchEnabled: false,
+                    itemSelectText: '',
+                    shouldSort: false,
+                });
+                // Store by ID if available
+                if (select.id) {
+                    window.choicesInstances[select.id] = choice;
+                }
+            });
+        });
+    </script>
 </body></html>
