@@ -878,6 +878,9 @@
                         images = ['https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80'];
                     }
 
+                    // Save globally for the lightbox
+                    window.surfaceGalleryImages = images;
+
                     // Dynamically build the gallery
                     galleryContainer.innerHTML = '';
                     const baseClass = "flex overflow-x-auto snap-x snap-mandatory hide-scrollbar md:grid gap-2 h-64 md:h-[450px] mb-8 md:mb-12 md:rounded-2xl md:overflow-hidden cursor-pointer group w-[100vw] -ml-4 sm:-ml-6 lg:ml-0 lg:w-full px-4 sm:px-6 lg:px-0";
@@ -887,60 +890,60 @@
                         galleryContainer.className = `${baseClass} md:grid-cols-1 w-full mt-4 md:mt-0`;
                         galleryContainer.innerHTML = `
                             <div class="${mobileImgClass} w-full pr-4 md:pr-0">
-                                <img src="${images[0]}" class="w-full h-full object-cover transition duration-500">
+                                <img src="${images[0]}" class="w-full h-full object-cover transition duration-500 cursor-pointer" onclick="openLightbox(0)">
                             </div>
                         `;
                     } else if (images.length === 2) {
                         galleryContainer.className = `${baseClass} md:grid-cols-2 mt-4 md:mt-0`;
                         galleryContainer.innerHTML = `
                             <div class="${mobileImgClass}">
-                                <img src="${images[0]}" class="w-full h-full object-cover transition duration-500">
+                                <img src="${images[0]}" class="w-full h-full object-cover transition duration-500 cursor-pointer hover:scale-105" onclick="openLightbox(0)">
                             </div>
                             <div class="${mobileImgClass} pr-4 md:pr-0">
-                                <img src="${images[1]}" class="w-full h-full object-cover transition duration-500">
+                                <img src="${images[1]}" class="w-full h-full object-cover transition duration-500 cursor-pointer hover:scale-105" onclick="openLightbox(1)">
                             </div>
                         `;
                     } else if (images.length === 3) {
                         galleryContainer.className = `${baseClass} md:grid-cols-3 mt-4 md:mt-0`;
                         galleryContainer.innerHTML = `
                             <div class="${mobileImgClass} md:col-span-2">
-                                <img src="${images[0]}" class="w-full h-full object-cover transition duration-500">
+                                <img src="${images[0]}" class="w-full h-full object-cover transition duration-500 cursor-pointer hover:scale-105" onclick="openLightbox(0)">
                             </div>
                             <div class="hidden md:flex flex-col gap-2 h-full w-[85vw] md:w-auto flex-shrink-0 snap-center">
                                 <div class="relative flex-1 overflow-hidden bg-slate-100 block">
-                                    <img src="${images[1]}" class="w-full h-full object-cover transition duration-500">
+                                    <img src="${images[1]}" class="w-full h-full object-cover transition duration-500 cursor-pointer hover:scale-105" onclick="openLightbox(1)">
                                 </div>
                                 <div class="relative flex-1 overflow-hidden bg-slate-100 block">
-                                    <img src="${images[2]}" class="w-full h-full object-cover transition duration-500">
+                                    <img src="${images[2]}" class="w-full h-full object-cover transition duration-500 cursor-pointer hover:scale-105" onclick="openLightbox(2)">
                                 </div>
                             </div>
-                            <div class="md:hidden ${mobileImgClass}"><img src="${images[1]}" class="w-full h-full object-cover transition duration-500"></div>
-                            <div class="md:hidden ${mobileImgClass} pr-4 md:pr-0"><img src="${images[2]}" class="w-full h-full object-cover transition duration-500"></div>
+                            <div class="md:hidden ${mobileImgClass}"><img src="${images[1]}" class="w-full h-full object-cover transition duration-500 cursor-pointer" onclick="openLightbox(1)"></div>
+                            <div class="md:hidden ${mobileImgClass} pr-4 md:pr-0"><img src="${images[2]}" class="w-full h-full object-cover transition duration-500 cursor-pointer" onclick="openLightbox(2)"></div>
                         `;
                     } else if (images.length >= 4) {
                         galleryContainer.className = `${baseClass} md:grid-cols-4 mt-4 md:mt-0`;
                         
                         let html = `
                             <div class="${mobileImgClass} md:col-span-2 md:row-span-2">
-                                <img src="${images[0]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                                <img src="${images[0]}" class="w-full h-full object-cover hover:scale-105 transition duration-500 cursor-pointer" onclick="openLightbox(0)">
                             </div>
                             <div class="${mobileImgClass}">
-                                <img src="${images[1]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                                <img src="${images[1]}" class="w-full h-full object-cover hover:scale-105 transition duration-500 cursor-pointer" onclick="openLightbox(1)">
                             </div>
                             <div class="${mobileImgClass}">
-                                <img src="${images[2]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                                <img src="${images[2]}" class="w-full h-full object-cover hover:scale-105 transition duration-500 cursor-pointer" onclick="openLightbox(2)">
                             </div>
                             <div class="${mobileImgClass} md:block">
-                                <img src="${images[3]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                                <img src="${images[3]}" class="w-full h-full object-cover hover:scale-105 transition duration-500 cursor-pointer" onclick="openLightbox(3)">
                             </div>
                         `;
                         
                         if (images.length >= 5) {
                             html += `
                                 <div class="${mobileImgClass} md:block ${images.length === 5 ? 'pr-4 md:pr-0' : ''}">
-                                    <img src="${images[4]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                                    <img src="${images[4]}" class="w-full h-full object-cover hover:scale-105 transition duration-500 cursor-pointer" onclick="openLightbox(4)">
                                     ${images.length > 5 ? `
-                                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center transition-custom hover:bg-black/50">
+                                    <div onclick="openLightbox(5)" class="absolute inset-0 bg-black/40 flex items-center justify-center transition-custom hover:bg-black/50 cursor-pointer">
                                         <button class="bg-white/90 backdrop-blur text-dark px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-white transition-custom text-sm flex items-center transform hover:scale-105">
                                             <i class="fa-solid fa-images mr-2"></i> Showcase All
                                         </button>
@@ -950,7 +953,7 @@
                             `;
                             for (let i = 5; i < images.length; i++) {
                                 html += `<div class="${mobileImgClass} md:hidden ${i === images.length - 1 ? 'pr-4' : ''}">
-                                            <img src="${images[i]}" class="w-full h-full object-cover">
+                                            <img src="${images[i]}" class="w-full h-full object-cover cursor-pointer" onclick="openLightbox(${i})">
                                          </div>`;
                             }
                         }
@@ -2938,6 +2941,101 @@
                         }
                     }
                 } catch(e) {}
+            }
+        });
+    </script>
+    <!-- Image Lightbox Modal -->
+    <div id="image-lightbox" class="fixed inset-0 bg-black/95 z-[100] hidden flex flex-col justify-center items-center opacity-0 transition-opacity duration-300">
+        <button onclick="closeLightbox()" class="absolute top-4 right-4 md:top-8 md:right-8 text-white/70 hover:text-white transition-colors p-2 z-[110]">
+            <i class="fa-solid fa-xmark text-3xl md:text-4xl"></i>
+        </button>
+        
+        <div class="absolute top-6 text-white/50 text-sm font-medium tracking-widest z-[105]" id="lightbox-counter">1 / 1</div>
+
+        <button onclick="changeLightboxImage(-1)" class="absolute left-2 md:left-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-all p-3 hover:bg-white/10 rounded-full z-[110] transform hover:scale-110">
+            <i class="fa-solid fa-chevron-left text-2xl md:text-4xl"></i>
+        </button>
+
+        <div class="w-full max-w-7xl px-4 md:px-16 flex justify-center items-center h-full max-h-[85vh]">
+            <img id="lightbox-image" src="" alt="Gallery Image" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-transform duration-300">
+        </div>
+
+        <button onclick="changeLightboxImage(1)" class="absolute right-2 md:right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-all p-3 hover:bg-white/10 rounded-full z-[110] transform hover:scale-110">
+            <i class="fa-solid fa-chevron-right text-2xl md:text-4xl"></i>
+        </button>
+    </div>
+
+    <script>
+        let currentLightboxIndex = 0;
+
+        function openLightbox(index) {
+            if (!window.surfaceGalleryImages || window.surfaceGalleryImages.length === 0) return;
+            currentLightboxIndex = index;
+            updateLightboxUI();
+            
+            const lightbox = document.getElementById('image-lightbox');
+            lightbox.classList.remove('hidden');
+            // Trigger reflow to apply transition
+            void lightbox.offsetWidth;
+            lightbox.classList.remove('opacity-0');
+            lightbox.classList.add('opacity-100');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('image-lightbox');
+            lightbox.classList.remove('opacity-100');
+            lightbox.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                lightbox.classList.add('hidden');
+                document.body.style.overflow = ''; // Restore scrolling
+            }, 300);
+        }
+
+        function changeLightboxImage(direction) {
+            if (!window.surfaceGalleryImages || window.surfaceGalleryImages.length === 0) return;
+            
+            const imgEl = document.getElementById('lightbox-image');
+            // Quick fade out
+            imgEl.style.opacity = '0.5';
+            imgEl.style.transform = direction > 0 ? 'translateX(20px)' : 'translateX(-20px)';
+            
+            setTimeout(() => {
+                currentLightboxIndex += direction;
+                
+                // Wrap around logic
+                if (currentLightboxIndex >= window.surfaceGalleryImages.length) {
+                    currentLightboxIndex = 0;
+                } else if (currentLightboxIndex < 0) {
+                    currentLightboxIndex = window.surfaceGalleryImages.length - 1;
+                }
+                
+                updateLightboxUI();
+                
+                // Fade back in
+                imgEl.style.transform = 'translateX(0)';
+                imgEl.style.opacity = '1';
+            }, 150);
+        }
+
+        function updateLightboxUI() {
+            const imgEl = document.getElementById('lightbox-image');
+            const counterEl = document.getElementById('lightbox-counter');
+            
+            if (window.surfaceGalleryImages[currentLightboxIndex]) {
+                imgEl.src = window.surfaceGalleryImages[currentLightboxIndex];
+                counterEl.textContent = `${currentLightboxIndex + 1} / ${window.surfaceGalleryImages.length}`;
+            }
+        }
+
+        // Keyboard navigation for lightbox
+        document.addEventListener('keydown', (e) => {
+            const lightbox = document.getElementById('image-lightbox');
+            if (!lightbox.classList.contains('hidden')) {
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowRight') changeLightboxImage(1);
+                if (e.key === 'ArrowLeft') changeLightboxImage(-1);
             }
         });
     </script>
