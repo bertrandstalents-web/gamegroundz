@@ -594,33 +594,35 @@
                     window.currentSurfaceId = null;
 
                     if (window.currentSurfaces.length > 0) {
-                        surfaceContainer.classList.remove('hidden');
+                        if (surfaceContainer) surfaceContainer.classList.remove('hidden');
                         
                         let optionsHtml = '';
                         window.currentSurfaces.forEach((s, index) => {
                             optionsHtml += `<option value="${s.id}">${s.name} - ${s.type}</option>`;
                         });
                         
-                        surfaceSelect.innerHTML = optionsHtml;
+                        if (surfaceSelect) surfaceSelect.innerHTML = optionsHtml;
                         window.currentSurfaceId = window.currentSurfaces[0].id;
                         
                         // Update UI with first surface details
                         updateSurfaceUI(window.currentSurfaces[0]);
                         
-                        surfaceSelect.addEventListener('change', (e) => {
-                            const selectedId = e.target.value;
-                            window.currentSurfaceId = selectedId;
-                            const selectedSurface = window.currentSurfaces.find(s => s.id == selectedId);
-                            if (selectedSurface) {
-                                updateSurfaceUI(selectedSurface);
-                                // Refresh calendar
-                                selectedSlotIds.clear();
-                                updateBookingUI();
-                                fetchBookedSlots().then(bookedIds => {
-                                    renderCalendar(currentDate);
-                                });
-                            }
-                        });
+                        if (surfaceSelect) {
+                            surfaceSelect.addEventListener('change', (e) => {
+                                const selectedId = e.target.value;
+                                window.currentSurfaceId = selectedId;
+                                const selectedSurface = window.currentSurfaces.find(s => s.id == selectedId);
+                                if (selectedSurface) {
+                                    updateSurfaceUI(selectedSurface);
+                                    // Refresh calendar
+                                    selectedSlotIds.clear();
+                                    updateBookingUI();
+                                    fetchBookedSlots().then(bookedIds => {
+                                        renderCalendar(currentDate);
+                                    });
+                                }
+                            });
+                        }
                     }
 
                     function updateSurfaceUI(surface) {
@@ -638,7 +640,8 @@
                         if (widgetPriceContainer) {
                             widgetPriceContainer.innerHTML = getTieredPriceHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
                         }
-                        document.getElementById('mobile-footer-price').innerHTML = getTieredPriceMobileHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
+                        const mobileFooterPrice = document.getElementById('mobile-footer-price');
+                        if (mobileFooterPrice) mobileFooterPrice.innerHTML = getTieredPriceMobileHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
                         
                         // Update amenities and features if needed
                         // For now we just update pricing for the widget.
@@ -651,7 +654,8 @@
                         if (widgetPriceContainer) {
                             widgetPriceContainer.innerHTML = getTieredPriceHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
                         }
-                        document.getElementById('mobile-footer-price').innerHTML = getTieredPriceMobileHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
+                        const fallbackMobileFooterPrice = document.getElementById('mobile-footer-price');
+                        if (fallbackMobileFooterPrice) fallbackMobileFooterPrice.innerHTML = getTieredPriceMobileHTML(hourlyRate, pricingRules, pricingUnitLabelShort);
                     }
 
                     // Expose it globally for render
@@ -1274,6 +1278,17 @@
                     }
                 }
             });
+            // --- CALENDAR LOGIC ---
+            const today = new Date();
+            let currentDate = new Date(today.getFullYear(), today.getMonth(), 1); 
+            
+            const calYear = today.getFullYear();
+            const calMonth = String(today.getMonth() + 1).padStart(2, '0');
+            const calDay = String(today.getDate()).padStart(2, '0');
+            
+            let selectedDateStr = `${calYear}-${calMonth}-${calDay}`; 
+            const bookingDateInput = document.getElementById('booking-date');
+
             function render() {
                 // Determine weekend status based on selectedDateStr
                 const dateObj = new Date(selectedDateStr + 'T12:00:00');
@@ -1793,16 +1808,7 @@
              }
             } // End of render function
 
-            // --- CALENDAR LOGIC ---
-            const today = new Date();
-            let currentDate = new Date(today.getFullYear(), today.getMonth(), 1); 
-            
-            const calYear = today.getFullYear();
-            const calMonth = String(today.getMonth() + 1).padStart(2, '0');
-            const calDay = String(today.getDate()).padStart(2, '0');
-            
-            let selectedDateStr = `${calYear}-${calMonth}-${calDay}`; 
-            const bookingDateInput = document.getElementById('booking-date');
+            // Calendar vars moved above render()
 
             // Restore pending state if any (e.g. after login redirect)
             const pendingDate = sessionStorage.getItem('pending_booking_date');
