@@ -736,6 +736,47 @@
             let currentFacilityName = "Loading Facility..."; // Default
             let currentFacilityId = null;
 
+            // --- CALENDAR LOGIC ---
+            const today = new Date();
+            let currentDate = new Date(today.getFullYear(), today.getMonth(), 1); 
+            
+            const calYear = today.getFullYear();
+            const calMonth = String(today.getMonth() + 1).padStart(2, '0');
+            const calDay = String(today.getDate()).padStart(2, '0');
+            
+            let selectedDateStr = `${calYear}-${calMonth}-${calDay}`; 
+            const bookingDateInput = document.getElementById('booking-date');
+
+            // Restore pending state if any (e.g. after login redirect)
+            const pendingDate = sessionStorage.getItem('pending_booking_date');
+            if (pendingDate) {
+                selectedDateStr = pendingDate;
+                const pd = new Date(selectedDateStr + 'T00:00:00');
+                if (!isNaN(pd.getTime())) {
+                    currentDate = new Date(pd.getFullYear(), pd.getMonth(), 1);
+                }
+                sessionStorage.removeItem('pending_booking_date');
+            }
+
+            const pendingSlots = sessionStorage.getItem('pending_booking_slots');
+            if (pendingSlots) {
+                try {
+                    const parsedSlots = JSON.parse(pendingSlots);
+                    if (Array.isArray(parsedSlots)) {
+                        parsedSlots.forEach(id => selectedSlotIds.add(String(id)));
+                    }
+                } catch(e) {}
+                sessionStorage.removeItem('pending_booking_slots');
+            }
+
+            
+            // Sync initial state if bookingDateInput exists
+            if (bookingDateInput) {
+                // Remove hardcoded HTML value and set to today
+                bookingDateInput.value = selectedDateStr;
+            }
+            
+
             const urlParams = new URLSearchParams(window.location.search);
             const surfaceIdParam = urlParams.get('id');
 
@@ -1901,46 +1942,6 @@
              }
             } // End of render function
 
-            // --- CALENDAR LOGIC ---
-            const today = new Date();
-            let currentDate = new Date(today.getFullYear(), today.getMonth(), 1); 
-            
-            const calYear = today.getFullYear();
-            const calMonth = String(today.getMonth() + 1).padStart(2, '0');
-            const calDay = String(today.getDate()).padStart(2, '0');
-            
-            let selectedDateStr = `${calYear}-${calMonth}-${calDay}`; 
-            const bookingDateInput = document.getElementById('booking-date');
-
-            // Restore pending state if any (e.g. after login redirect)
-            const pendingDate = sessionStorage.getItem('pending_booking_date');
-            if (pendingDate) {
-                selectedDateStr = pendingDate;
-                const pd = new Date(selectedDateStr + 'T00:00:00');
-                if (!isNaN(pd.getTime())) {
-                    currentDate = new Date(pd.getFullYear(), pd.getMonth(), 1);
-                }
-                sessionStorage.removeItem('pending_booking_date');
-            }
-
-            const pendingSlots = sessionStorage.getItem('pending_booking_slots');
-            if (pendingSlots) {
-                try {
-                    const parsedSlots = JSON.parse(pendingSlots);
-                    if (Array.isArray(parsedSlots)) {
-                        parsedSlots.forEach(id => selectedSlotIds.add(String(id)));
-                    }
-                } catch(e) {}
-                sessionStorage.removeItem('pending_booking_slots');
-            }
-
-            
-            // Sync initial state if bookingDateInput exists
-            if (bookingDateInput) {
-                // Remove hardcoded HTML value and set to today
-                bookingDateInput.value = selectedDateStr;
-            }
-            
             const calendarGrid = document.getElementById('calendar-grid');
             const monthDisplay = document.getElementById('current-period-display');
             const prevMonthBtn = document.getElementById('prev-month-btn');
