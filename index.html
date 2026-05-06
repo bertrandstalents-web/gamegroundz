@@ -1221,10 +1221,17 @@
                         <p class="text-slate-500 mb-3 flex items-center text-xs truncate">
                             <i class="fa-solid fa-location-dot mr-2 text-slate-400"></i> ${facility.effective_location || facility.location}
                         </p>
-                        <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-3 mt-3">
-                            <span class="text-[11px] font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded">${typeDisplay}</span>
+                        <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-3 mt-3 gap-2">
+                            <div class="flex items-center flex-wrap gap-2">
+                                <span class="text-[11px] font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded">${typeDisplay}</span>
+                                ${facility.display_slots_today && facility.display_slots_today.length > 0 ? facility.display_slots_today.slice(0, 3).map(slot => `
+                                    <div class="px-1.5 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold ${slot.discount ? 'text-red-600 bg-red-50 border-red-200' : 'text-slate-600'}">
+                                        ${slot.time}${slot.discount ? '<i class="fa-solid fa-tag text-[8px] ml-0.5"></i>' : ''}
+                                    </div>
+                                `).join('') : ''}
+                            </div>
                             ${facility.display_slots_today && facility.display_slots_today.length > 0 ? `
-                                <span class="text-[11px] font-semibold ${isInstantBook ? 'text-primary' : 'text-slate-500'}"><i class="fa-solid fa-bolt mr-1"></i> Available Today</span>
+                                <span class="text-[11px] font-semibold ${isInstantBook ? 'text-primary' : 'text-slate-500'} whitespace-nowrap"><i class="fa-solid fa-bolt mr-1"></i> Available Today</span>
                             ` : ''}
                         </div>
                     </div>
