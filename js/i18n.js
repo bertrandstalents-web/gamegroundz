@@ -138,3 +138,22 @@ function updateToggleUI(currentLang) {
 document.addEventListener('DOMContentLoaded', () => {
     updateToggleUI(localStorage.getItem('gg_language') || 'en');
 });
+
+// Global helper to format location as City, Province
+window.formatShortLocation = function(loc) {
+    if (!loc) return 'Location unavailable';
+    let parts = loc.split(',').map(p => p.trim());
+    
+    // Remove country if it exists
+    if (parts.length >= 3 && (parts[parts.length - 1].toLowerCase() === 'canada' || parts[parts.length - 1].toLowerCase() === 'usa' || parts[parts.length - 1].toLowerCase() === 'united states' || parts[parts.length - 1].toLowerCase() === 'états-unis')) {
+        parts.pop();
+    }
+    
+    if (parts.length >= 2) {
+        let city = parts[parts.length - 2];
+        let provPostal = parts[parts.length - 1];
+        let prov = provPostal.split(' ')[0]; 
+        return `${city}, ${prov}`;
+    }
+    return loc;
+};

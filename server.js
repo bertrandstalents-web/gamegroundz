@@ -547,7 +547,7 @@ app.post('/api/users/signup', async (req, res) => {
                         
                         res.status(201).json({ 
                             message: "User registered successfully", 
-                            user: { id: this.lastID, name: name, email: email, role: userRole, profile_picture: profile_picture, residency_city, residency_status } 
+                            user: { id: this.lastID, name: name, email: email, role: userRole, profile_picture: profile_picture, residency_city, residency_status, interested_surfaces: surfacesJSON } 
                         });
                     }
                 );
@@ -600,7 +600,8 @@ app.post('/api/auth/login', (req, res) => {
                 email: user.email, 
                 role: user.role, 
                 profile_picture: user.profile_picture,
-                dashboard_preferences: user.dashboard_preferences
+                dashboard_preferences: user.dashboard_preferences,
+                interested_surfaces: user.interested_surfaces
             } 
         });
     });
@@ -697,7 +698,7 @@ app.get('/api/auth/me', (req, res) => {
         return res.status(401).json({ error: "Not authenticated" });
     }
     
-    db.get("SELECT id, name, first_name, last_name, email, phone_number, company_name, profile_picture, role, stripe_account_id, stripe_onboarding_complete, terms_accepted, terms_accepted_at, residency_city, residency_document_url, residency_status, dashboard_preferences FROM users WHERE id = ?", [req.session.userId], (err, user) => {
+    db.get("SELECT id, name, first_name, last_name, email, phone_number, company_name, profile_picture, role, stripe_account_id, stripe_onboarding_complete, terms_accepted, terms_accepted_at, residency_city, residency_document_url, residency_status, dashboard_preferences, interested_surfaces FROM users WHERE id = ?", [req.session.userId], (err, user) => {
         if (err) return res.status(500).json({ error: "Database error" });
         if (!user) return res.status(404).json({ error: "User not found" });
         res.json({ user });

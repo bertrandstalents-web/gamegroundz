@@ -92,7 +92,7 @@
                                     <span class="lang-en-only">Home</span>
                                     <span class="lang-fr-only notranslate">Accueil</span>
                                 </a>
-                                <a href="player-dashboard.html" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('-dashboard.html')){ try{ switchNav('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); return false;}catch(e){} }"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></a>
+                                <a href="player-dashboard.html#profile" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('-dashboard.html')){ try{ switchNav('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); return false;}catch(e){} }"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></a>
                                 <button id="nav-logout-btn" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom"><span class="lang-en-only">Log out</span><span class="lang-fr-only notranslate">Se déconnecter</span></button>
                             </div>
                         </div>
@@ -717,7 +717,7 @@
                                         </button>
                                     </div>
                                     <div class="text-xs font-medium text-slate-500 mb-2">${f.subtitle || 'Premium Sports Facility'}</div>
-                                    <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> <span class="notranslate">${f.location}</span></p>
+                                    <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> <span class="notranslate">${typeof formatShortLocation === 'function' ? formatShortLocation(f.location) : f.location}</span></p>
                                 </div>
                                 <div class="flex justify-between items-end">
                                     <div class="font-bold text-sm text-dark">${ratingStars}</div>
@@ -1007,14 +1007,24 @@
 
                 const updatedName = payload.first_name.trim() + ' ' + payload.last_name.trim();
                 document.getElementById('dashboard-title').textContent = `Welcome, ${updatedName}`;
-                
                 const storedUser = localStorage.getItem('user');
                 if (storedUser) {
                     try {
                         const userObj = JSON.parse(storedUser);
                         userObj.name = updatedName;
                         userObj.email = payload.email;
+                        userObj.interested_surfaces = payload.interestedSurfaces;
                         localStorage.setItem('user', JSON.stringify(userObj));
+                    } catch(e) {}
+                }
+                const storedGgUser = localStorage.getItem('gg_user');
+                if (storedGgUser) {
+                    try {
+                        const userObj = JSON.parse(storedGgUser);
+                        userObj.name = updatedName;
+                        userObj.email = payload.email;
+                        userObj.interested_surfaces = payload.interestedSurfaces;
+                        localStorage.setItem('gg_user', JSON.stringify(userObj));
                     } catch(e) {}
                 }
             } catch (err) {
@@ -1184,7 +1194,7 @@
                                         ${booking.facility_name} 
                                         ${booking.booking_type === 'public_session' ? `<span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-md">Public Session <span class="font-black">(x${booking.quantity || 1} Spots)</span></span>` : ''}
                                     </h3>
-                                    <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${booking.location}</p>
+                                    <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${typeof formatShortLocation === 'function' ? formatShortLocation(booking.location) : booking.location}</p>
                                     
                                     <div class="flex flex-wrap gap-4 text-sm font-medium text-slate-700">
                                         <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><i class="fa-regular fa-calendar mr-2 text-slate-400"></i>${formattedDate}</div>
@@ -1379,7 +1389,7 @@
                         }
                     } else {
                         if (puckDashboard) puckDashboard.href = 'player-dashboard.html';
-                        if (puckProfile) puckProfile.href = 'player-dashboard.html';
+                        if (puckProfile) puckProfile.href = 'player-dashboard.html#profile';
                     }
                 } catch(e) {}
             }
@@ -1410,7 +1420,7 @@
                     } else {
                         if (puckDashboard) puckDashboard.href = 'player-dashboard.html';
                         if (puckProfile) {
-                            puckProfile.href = 'player-dashboard.html';
+                            puckProfile.href = 'player-dashboard.html#profile';
                             // puckProfile.removeAttribute('onclick');
                         }
                     }

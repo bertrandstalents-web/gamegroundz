@@ -82,7 +82,7 @@
                                         <span class="block text-xs text-slate-500 truncate" id="puck-email">user@example.com</span>
                                     </div>
                                     <a href="#" id="puck-dashboard" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord</span></a>
-                                    <a href="player-dashboard.html" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('player-dashboard.html')){ try{ switchNav('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); return false;}catch(e){} }"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></a>
+                                    <a href="player-dashboard.html#profile" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('player-dashboard.html')){ try{ switchNav('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); return false;}catch(e){} }"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></a>
                                     <button id="puck-logout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom"><span class="lang-en-only">Log out</span><span class="lang-fr-only notranslate">Se déconnecter</span></button>
                                 </div>
                             </div>
@@ -980,15 +980,54 @@
                     }, nearYouFacilities.slice(0, 10));
                 }
 
-                // Define the categories to display
+                let interestedSurfaces = [];
+                const userStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
+                if (userStr) {
+                    try {
+                        const u = JSON.parse(userStr);
+                        if (u.interested_surfaces) {
+                            interestedSurfaces = typeof u.interested_surfaces === 'string' ? JSON.parse(u.interested_surfaces) : u.interested_surfaces;
+                        }
+                    } catch(e) {}
+                }
+
+                const allCategoriesMap = {
+                    'ice': { id: 'ice', titleEn: 'Ice Rinks', titleFr: 'Patinoires', link: 'search.html?type=ice', filterFn: (f) => f.type === 'ice' },
+                    'pool': { id: 'pool', titleEn: 'Swimming Pools', titleFr: 'Piscines', link: 'search.html?type=pool', filterFn: (f) => f.type === 'pool' },
+                    'soccer': { id: 'soccer', titleEn: 'Soccer Fields', titleFr: 'Terrains de soccer', link: 'search.html?type=soccer', filterFn: (f) => f.type === 'soccer' },
+                    'tennis': { id: 'tennis', titleEn: 'Tennis Courts', titleFr: 'Terrains de tennis', link: 'search.html?type=tennis', filterFn: (f) => f.type === 'tennis' },
+                    'basketball': { id: 'basketball', titleEn: 'Basketball Courts', titleFr: 'Terrains de basketball', link: 'search.html?type=basketball', filterFn: (f) => f.type === 'basketball' },
+                    'deck-hockey': { id: 'deck-hockey', titleEn: 'Deck Hockey', titleFr: 'Hockey balle', link: 'search.html?type=deck-hockey', filterFn: (f) => f.type === 'deck-hockey' },
+                    'football': { id: 'football', titleEn: 'Football Fields', titleFr: 'Terrains de football', link: 'search.html?type=football', filterFn: (f) => f.type === 'football' },
+                    'gym': { id: 'gym', titleEn: 'Training Gyms', titleFr: 'Salles d\'entraînement', link: 'search.html?type=gym', filterFn: (f) => f.type === 'gym' },
+                    'pickleball': { id: 'pickleball', titleEn: 'Pickleball Courts', titleFr: 'Terrains de pickleball', link: 'search.html?type=pickleball', filterFn: (f) => f.type === 'pickleball' },
+                    'squash': { id: 'squash', titleEn: 'Squash', titleFr: 'Squash', link: 'search.html?type=squash', filterFn: (f) => f.type === 'squash' },
+                    'badminton': { id: 'badminton', titleEn: 'Badminton', titleFr: 'Badminton', link: 'search.html?type=badminton', filterFn: (f) => f.type === 'badminton' }
+                };
+
                 const categories = [
-                    { id: 'featured', titleEn: 'Recommended for you', titleFr: 'Recommandé pour vous', link: 'search.html', filterFn: () => true },
-                    { id: 'ice', titleEn: 'Ice Rinks', titleFr: 'Patinoires', link: 'search.html?type=ice', filterFn: (f) => f.type === 'ice' },
-                    { id: 'pool', titleEn: 'Swimming Pools', titleFr: 'Piscines', link: 'search.html?type=pool', filterFn: (f) => f.type === 'pool' },
-                    { id: 'soccer', titleEn: 'Soccer Fields', titleFr: 'Terrains de soccer', link: 'search.html?type=soccer', filterFn: (f) => f.type === 'soccer' },
-                    { id: 'tennis', titleEn: 'Tennis Courts', titleFr: 'Terrains de tennis', link: 'search.html?type=tennis', filterFn: (f) => f.type === 'tennis' },
-                    { id: 'basketball', titleEn: 'Basketball Courts', titleFr: 'Terrains de basketball', link: 'search.html?type=basketball', filterFn: (f) => f.type === 'basketball' }
+                    { id: 'featured', titleEn: 'Recommended for you', titleFr: 'Recommandé pour vous', link: 'search.html', filterFn: () => true }
                 ];
+                
+                const addedCats = new Set();
+                
+                if (interestedSurfaces && Array.isArray(interestedSurfaces)) {
+                    interestedSurfaces.forEach(surf => {
+                        if (allCategoriesMap[surf] && !addedCats.has(surf)) {
+                            categories.push(allCategoriesMap[surf]);
+                            addedCats.add(surf);
+                        }
+                    });
+                }
+                
+                const defaultCats = ['ice', 'pool', 'soccer', 'tennis', 'basketball'];
+                for (const surf of defaultCats) {
+                    if (categories.length >= 6) break;
+                    if (!addedCats.has(surf) && allCategoriesMap[surf]) {
+                        categories.push(allCategoriesMap[surf]);
+                        addedCats.add(surf);
+                    }
+                }
 
                 categories.forEach(category => {
                     let catFacilities = facilities.filter(category.filterFn);
@@ -996,6 +1035,10 @@
                     // Specific sorting for "Recommended"
                     if (category.id === 'featured') {
                         catFacilities.sort((a, b) => {
+                            const aInterested = interestedSurfaces.includes(a.type) ? 1 : 0;
+                            const bInterested = interestedSurfaces.includes(b.type) ? 1 : 0;
+                            if (aInterested !== bInterested) return bInterested - aInterested;
+
                             if (userLat && userLng) {
                                 const bucketA = Math.floor(a.distance / 10);
                                 const bucketB = Math.floor(b.distance / 10);
@@ -1152,7 +1195,7 @@
                         
                         <div class="flex items-center text-sm text-slate-500 mb-3">
                             <i class="fa-solid fa-location-dot w-4 text-center text-slate-400 mr-1.5"></i>
-                            <span class="truncate">${facility.location || 'Location unavailable'}</span>
+                            <span class="truncate">${typeof formatShortLocation === 'function' ? formatShortLocation(facility.location) : (facility.location || 'Location unavailable')}</span>
                             ${facility.distance !== undefined && facility.distance !== null ? `<span class="ml-2 text-xs font-semibold text-primary/80 bg-primary/5 px-2 py-0.5 rounded-full whitespace-nowrap">${facility.distance.toFixed(1)} km</span>` : ''}
                         </div>
 
@@ -1229,7 +1272,7 @@
                         </div>
                         ${facility.facility_name ? `<p class="text-[11px] font-semibold text-slate-500 mb-2 uppercase tracking-wide truncate"><i class="fa-solid fa-building mr-1"></i> ${facility.facility_name}</p>` : ''}
                         <p class="text-slate-500 mb-3 flex items-center text-xs truncate">
-                            <i class="fa-solid fa-location-dot mr-2 text-slate-400"></i> ${facility.effective_location || facility.location}
+                            <i class="fa-solid fa-location-dot mr-2 text-slate-400"></i> ${typeof formatShortLocation === 'function' ? formatShortLocation(facility.effective_location || facility.location) : (facility.effective_location || facility.location)}
                         </p>
                         <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-3 mt-3 gap-2">
                             <div class="flex items-center flex-wrap gap-2">
@@ -2030,7 +2073,7 @@
                         }
                     } else {
                         if (puckDashboard) puckDashboard.href = 'player-dashboard.html';
-                        if (puckProfile) puckProfile.href = 'player-dashboard.html';
+                        if (puckProfile) puckProfile.href = 'player-dashboard.html#profile';
                     }
                 } catch(e) {}
             }
@@ -2114,7 +2157,7 @@
                             <h3 class="text-lg font-bold text-dark group-hover:text-primary transition-custom truncate">${session.facility_name}</h3>
                         </div>
                         <p class="text-slate-500 text-xs mb-3 flex items-center">
-                            <i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> ${session.location}
+                            <i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> ${typeof formatShortLocation === 'function' ? formatShortLocation(session.location) : session.location}
                         </p>
                         <div class="mt-auto flex flex-wrap items-center justify-between border-t border-slate-100 pt-3 gap-y-2 text-xs">
                             <div class="flex gap-2">
@@ -2187,7 +2230,7 @@
                     } else {
                         if (puckDashboard) puckDashboard.href = 'player-dashboard.html';
                         if (puckProfile) {
-                            puckProfile.href = 'player-dashboard.html';
+                            puckProfile.href = 'player-dashboard.html#profile';
                             puckProfile.removeAttribute('onclick');
                         }
                     }
