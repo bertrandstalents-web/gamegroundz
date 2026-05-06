@@ -257,48 +257,17 @@
         </div>
     </section>
 
-    <!-- Mobile Quick Navigation Tabs -->
-    <div class="md:hidden flex w-full relative z-30 bg-white shadow-sm">
-        <button id="mobile-tab-surfaces" onclick="switchMobileView('surfaces')" class="flex-1 py-4 text-center bg-white text-dark font-bold text-[17px] border-r border-slate-200 transition-custom focus:outline-none">
-            <span class="lang-en-only">Find a Surface</span><span class="lang-fr-only notranslate">Trouver une surface</span>
-        </button>
-        <button id="mobile-tab-sessions" onclick="switchMobileView('sessions')" class="flex-1 py-4 text-center bg-slate-100 text-slate-500 font-bold text-[17px] border-b border-slate-300 transition-custom focus:outline-none">
-            <span class="lang-en-only">Public Sessions</span><span class="lang-fr-only notranslate">Séances publiques</span>
-        </button>
-    </div>
-
     <!-- Featured Facilities Section (Now following hero directly) -->
     <section class="py-24 bg-light shadow-[0_-10px_40px_rgba(0,0,0,0.1)] relative z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Dynamic Feed Container (Replaces old single grid) -->
-            <div id="discovery-feed-container" class="space-y-12">
+            <div id="discovery-feed-container" class="space-y-12 min-h-[80vh] md:min-h-[1200px]">
                 <!-- Loading State -->
                 <div class="w-full flex justify-center py-12" id="discovery-feed-loader">
                      <i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i>
                 </div>
             </div>
             
-            <!-- Mobile tab header for "Public Sessions" only (dynamically shown) -->
-            <div id="mobile-sessions-header" class="hidden justify-between items-end mb-12">
-                <div class="pr-2">
-                    <h2 id="featured-title" class="text-3xl md:text-4xl font-extrabold text-dark mb-2 md:mb-4"><span class="lang-en-only">Upcoming Public Sessions</span><span class="lang-fr-only notranslate">Séances publiques à venir</span></h2>
-                    <p class="text-base md:text-lg text-slate-500">
-                        <span id="featured-subtitle-text">
-                            <span class="lang-en-only">Find and join drop-in activities near you.</span><span class="lang-fr-only notranslate">Trouvez et rejoignez des activités près de chez vous.</span>
-                        </span>
-                        <a id="featured-view-all" href="public-sessions.html" class="inline-flex md:hidden items-center text-primary font-bold hover:text-primaryHover transition-custom ml-1 relative z-10 text-sm whitespace-nowrap">
-                            <span class="lang-en-only">View all</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-1 text-xs"></i>
-                        </a>
-                    </p>
-                </div>
-                <a id="featured-view-all-desktop" href="public-sessions.html" class="hidden md:flex flex-shrink-0 items-center text-primary font-bold hover:text-primaryHover transition-custom mb-2 relative z-10 text-base">
-                    <span class="lang-en-only">View All</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-2"></i>
-                </a>
-            </div>
-
-            <div id="featured-public-sessions-grid" class="hidden flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0 md:px-0 md:mx-0 transition-opacity duration-300">
-                <!-- Public sessions will be injected here by JavaScript -->
-            </div>
         </div>
     </section>
 
@@ -1057,6 +1026,28 @@
                     }
                 });
 
+
+                // Fetch and render Public Sessions as the last row
+                try {
+                    const sessionsRes = await fetch(`${API_BASE_URL}/api/public_sessions/upcoming/all`, { 
+                        method: 'GET',
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (sessionsRes.ok) {
+                        let sessions = await sessionsRes.json();
+                        if (sessions && sessions.length > 0) {
+                            sessions = sessions.slice(0, 10); // show up to 10 upcoming public sessions
+                            renderPublicSessionRow(feedContainer, {
+                                titleEn: 'Public Sessions',
+                                titleFr: 'Séances publiques',
+                                link: 'public-sessions.html'
+                            }, sessions);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Failed to load public sessions row', err);
+                }
+
                 if (feedContainer.innerHTML === '') {
                     // Fallback if absolutely no categories rendered
                     feedContainer.innerHTML = '<div class="w-full text-center text-slate-500 py-12">No surfaces available at the moment.</div>';
@@ -1089,6 +1080,25 @@
                     </div>
                 `;
             }
+        }
+
+        
+        function renderPublicSessionRow(container, category, sessions) {
+            const rowHtml = `
+                <div class="category-row relative">
+                    <div class="flex justify-between items-end mb-4 px-1">
+                        <h2 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight"><span class="lang-en-only">${category.titleEn}</span><span class="lang-fr-only notranslate">${category.titleFr}</span></h2>
+                        <a href="${category.link}" class="flex items-center text-primary font-bold hover:text-primaryHover transition-custom text-sm relative z-10 whitespace-nowrap bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-full">
+                            <span class="lang-en-only">View all</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:gap-6">
+                        ${sessions.map(session => createPublicSessionCard(session)).join('')}
+                    </div>
+                </div>
+            `;
+            container.innerHTML += rowHtml;
         }
 
         function renderFacilityRow(container, category, facilities) {
@@ -2057,44 +2067,16 @@
         
         // Initial call
         updateHeroTranslations(document.documentElement.getAttribute('data-lang') || 'en');
-        // Mobile Toggle Logic
-        window.publicSessionsFetched = false;
-        
-        function switchMobileView(viewType) {
-            const tabSurfaces = document.getElementById('mobile-tab-surfaces');
-            const tabSessions = document.getElementById('mobile-tab-sessions');
-            const feedContainer = document.getElementById('discovery-feed-container');
-            const sessionsHeader = document.getElementById('mobile-sessions-header');
-            const gridSessions = document.getElementById('featured-public-sessions-grid');
-
-            if (viewType === 'surfaces') {
-                tabSurfaces.className = "flex-1 py-4 text-center bg-white text-dark font-bold text-[17px] border-r border-slate-200 transition-custom focus:outline-none";
-                tabSessions.className = "flex-1 py-4 text-center bg-slate-100 text-slate-500 font-bold text-[17px] border-b border-slate-300 transition-custom focus:outline-none";
-                
-                if (feedContainer) feedContainer.classList.remove('hidden');
-                if (sessionsHeader) { sessionsHeader.classList.add('hidden'); sessionsHeader.classList.remove('flex'); }
-                if (gridSessions) gridSessions.classList.add('hidden');
-            } else {
-                tabSessions.className = "flex-1 py-4 text-center bg-white text-dark font-bold text-[17px] border-l border-slate-200 transition-custom focus:outline-none";
-                tabSurfaces.className = "flex-1 py-4 text-center bg-slate-100 text-slate-500 font-bold text-[17px] border-b border-slate-300 transition-custom focus:outline-none";
-
-                if (feedContainer) feedContainer.classList.add('hidden');
-                if (sessionsHeader) { sessionsHeader.classList.remove('hidden'); sessionsHeader.classList.add('flex'); }
-                if (gridSessions) gridSessions.classList.remove('hidden');
-                
-                if (!window.publicSessionsFetched) {
-                    fetchFeaturedPublicSessions();
-                }
-            }
-        }
-            
-            // Re-apply language if needed
-            if (typeof updateLanguage === 'function') {
-                updateLanguage(window.currentLang || 'en');
-            }
-        }
 
         function getSessionImage(notes, facilityType, originalUrl) {
+            try {
+                const parsed = JSON.parse(originalUrl);
+                if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]) return parsed[0];
+            } catch (e) {}
+            if (originalUrl && typeof originalUrl === 'string' && (originalUrl.startsWith('http') || originalUrl.startsWith('data:image/'))) {
+                return originalUrl;
+            }
+
             const text = (notes || '').toLowerCase();
             if (text.includes('hockey')) return 'https://images.unsplash.com/photo-1515523110800-9415d13b84a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
             if (text.includes('skat') || text.includes('patinage') || text.includes('glace')) return 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
@@ -2102,11 +2084,8 @@
             if (text.includes('soccer') || facilityType === 'turf') return 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
             if (text.includes('basketball') || facilityType === 'court') return 'https://images.unsplash.com/photo-1546519638-68e109498ffc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
             if (text.includes('pickleball')) return 'https://images.unsplash.com/photo-1622228514120-1a1200fa889c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
-            try {
-                const parsed = JSON.parse(originalUrl);
-                if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
-            } catch (e) {}
-            return originalUrl || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            
+            return 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
         }
 
         function createPublicSessionCard(session) {
@@ -2115,42 +2094,43 @@
             const slots = (typeof session.time_slots === 'string') ? JSON.parse(session.time_slots) : session.time_slots;
             const timeDisplay = slots && slots.length > 0 ? slots[0] : '';
             const slotKeys = slots ? slots.map(s => `${session.booking_date}|${s}`) : [];
+            
             const spotsRemaining = Math.max(0, (session.capacity || 0) - (session.joined_count || 0));
             const activityName = session.manual_notes || 'Public Session';
             const displayImage = getSessionImage(session.manual_notes, session.facility_type, session.image_url);
 
             return `
-                <div class="w-[85vw] flex-shrink-0 snap-start md:w-auto bg-white rounded-3xl overflow-hidden shadow-soft border border-slate-100 hover:shadow-md transition-custom group cursor-pointer" onclick='sessionStorage.setItem("pending_booking_date", "${session.booking_date}"); sessionStorage.setItem("pending_booking_slots", ${JSON.stringify(JSON.stringify(slotKeys))}); window.location.href="facility.html?id=${session.facility_id}"'>
-                    <div class="relative h-64 hover-zoom-img-container">
+                <div class="facility-card snap-start shrink-0 w-[280px] md:w-[320px] bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer flex flex-col" onclick='sessionStorage.setItem("pending_booking_date", "${session.booking_date}"); sessionStorage.setItem("pending_booking_slots", ${JSON.stringify(JSON.stringify(slotKeys))}); window.location.href="facility.html?id=${session.facility_id}"'>
+                    <div class="relative h-48 hover-zoom-img-container">
                         <img src="${displayImage}" alt="${session.facility_name}" class="w-full h-full object-cover bg-slate-100">
-                        <div class="absolute top-4 left-4 flex flex-wrap gap-2 z-20">
-                            <div class="bg-primary/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-sm flex items-center">
+                        <div class="absolute top-3 left-3 flex flex-wrap gap-2 z-20">
+                            <div class="bg-primary/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-white shadow-sm flex items-center">
                                 <i class="fa-solid fa-users mr-1"></i> ${activityName}
                             </div>
                         </div>
                     </div>
-                    <div class="p-6">
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="text-xl font-bold text-dark group-hover:text-primary transition-custom truncate pr-4">${session.facility_name}</h3>
-                            <span class="font-bold text-lg text-dark whitespace-nowrap">From $${session.participant_price || 0}<span class="text-sm font-normal text-slate-500">/pp</span></span>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-1 gap-2">
+                            <h3 class="text-lg font-bold text-dark group-hover:text-primary transition-custom truncate">${session.facility_name}</h3>
                         </div>
-                        <p class="text-slate-500 mb-4 flex items-center text-sm">
-                            <i class="fa-solid fa-location-dot mr-2 text-slate-400"></i> ${session.location}
+                        <p class="text-slate-500 text-xs mb-3 flex items-center">
+                            <i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> ${session.location}
                         </p>
-                        <div class="flex flex-wrap gap-2 mb-6">
-                            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold whitespace-nowrap">${typeDisplay}</span>
-                        </div>
-                        <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-4 gap-y-2">
-                            <div class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-600">
-                                ${session.booking_date} ${timeDisplay}
+                        <div class="mt-auto flex flex-wrap items-center justify-between border-t border-slate-100 pt-3 gap-y-2 text-xs">
+                            <div class="flex gap-2">
+                                <div class="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold text-slate-600">
+                                    ${session.booking_date}
+                                </div>
+                                <div class="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold text-slate-600">
+                                    ${timeDisplay}
+                                </div>
                             </div>
-                            <span class="text-sm font-bold ${spotsRemaining > 0 ? 'text-primary' : 'text-red-500'}">${spotsRemaining} spots left</span>
+                            <span class="text-xs font-semibold ${spotsRemaining > 0 ? 'text-primary' : 'text-red-500'}">${spotsRemaining} spots left</span>
                         </div>
                     </div>
                 </div>
             `;
         }
-
         async function fetchFeaturedPublicSessions() {
             const grid = document.getElementById('featured-public-sessions-grid');
             if (!grid) return;

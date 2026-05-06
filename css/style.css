@@ -5,7 +5,7 @@ html[data-lang="fr"] .lang-en-only { display: none !important; }
 html:not([data-lang="fr"]) .lang-fr-only { display: none !important; }
 
 html {
-    scroll-behavior: smooth;
+    /* Removed scroll-behavior: smooth to fix page reload jump animation */
 }
 
 body {

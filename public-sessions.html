@@ -59,11 +59,15 @@
                     </div>
                 </div>
 
-                <!-- Desktop Menu -->
-                <div class="hidden md:flex items-center space-x-6" id="nav-actions">
-                    <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
-                    <div class="h-6 w-px bg-slate-300"></div>
-                    <!-- Profile Puck -->
+                <!-- Desktop & Mobile Navigation Actions -->
+                <div class="flex items-center gap-4 md:gap-6" id="nav-actions">
+                    <!-- Desktop-only Links -->
+                    <div class="hidden md:flex items-center space-x-6">
+                        <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom">Find a Surface</a>
+                        <div class="h-6 w-px bg-slate-300"></div>
+                    </div>
+                    
+                    <!-- Profile Puck (Visible on both) -->
                                         <div class="relative flex items-center">
                                             <button id="profile-puck-btn" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-custom shadow-sm overflow-hidden focus:outline-none z-10">
                                                 <i class="fa-solid fa-user text-lg text-slate-400" id="puck-icon"></i>
@@ -97,28 +101,14 @@
                                                 </div>
                                             </div>
                                         </div>
-                    
-                    
 
-                    <a href="owner-dashboard.html" id="list-facility-btn" class="bg-dark hover:bg-slate-800 text-white px-5 py-2 rounded-full font-medium transition-custom shadow-sm text-sm"><span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span></a>
-                </div>
-
-                <div class="hidden md:hidden items-center">
-                    <button class="text-slate-600 hover:text-dark focus:outline-none"><i class="fa-solid fa-bars text-2xl"></i></button>
+                    <a href="owner-dashboard.html" id="list-facility-btn" class="hidden md:inline-block bg-dark hover:bg-slate-800 text-white px-5 py-2 rounded-full font-medium transition-custom shadow-sm text-sm"><span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span></a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Mobile Quick Navigation Tabs -->
-    <div class="md:hidden flex w-full relative z-30 bg-white shadow-sm">
-        <a href="search.html" class="flex-1 py-4 text-center bg-slate-200 text-dark font-bold text-[17px] border-r border-b border-slate-300 active:bg-slate-300 transition-custom">
-            <span class="lang-en-only">Find a Surface</span><span class="lang-fr-only notranslate">Trouver une surface</span>
-        </a>
-        <a href="public-sessions.html" class="flex-1 py-4 text-center bg-white text-dark font-bold text-[17px] active:bg-slate-50 transition-custom">
-            <span class="lang-en-only">Public Sessions</span><span class="lang-fr-only notranslate">Séances publiques</span>
-        </a>
-    </div>
+
 
     <!-- Main Content -->
     <div class="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
@@ -129,58 +119,63 @@
 
         <!-- Search Results -->
         <div class="flex-1">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                        <h1 class="text-2xl font-bold text-dark">Public Sessions in your area</h1>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 sm:gap-0">
+                <div class="w-full sm:w-auto">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-3">
+                        <h1 class="text-[28px] sm:text-2xl font-bold text-dark leading-tight">Public Sessions<br class="sm:hidden"> in your area</h1>
                         
-                        <div class="flex flex-wrap items-center gap-2 relative">
-                            <!-- Custom Date Dropdown -->
-                            <div class="relative inline-block text-left text-sm font-normal">
-                                <button id="custom-date-btn" class="flex items-center justify-between bg-white border border-slate-200 hover:border-primary text-slate-700 font-semibold rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm transition-custom min-w-[120px]">
-                                    <span id="custom-date-label">Today</span>
-                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-2"></i>
-                                </button>
-                                <div id="custom-date-menu" class="hidden absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 overflow-hidden transform origin-top-left transition-all">
-                                    <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="">Any Date</div>
-                                    <div class="date-option px-4 py-2 bg-slate-50 text-primary font-bold cursor-pointer transition-custom" data-value="today">Today</div>
-                                    <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="tomorrow">Tomorrow</div>
-                                    <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="week">This Week</div>
-                                    <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom border-t border-slate-50 mt-1 pt-2" data-value="custom">
-                                        <i class="fa-regular fa-calendar mr-2"></i>Custom Date...
+                        <div class="flex justify-between w-full sm:w-auto items-start sm:items-center">
+                            <div class="flex flex-col sm:flex-row gap-2 relative">
+                                <!-- Custom Date Dropdown -->
+                                <div class="relative inline-block text-left text-sm font-normal">
+                                    <button id="custom-date-btn" class="flex items-center justify-between bg-white border border-slate-200 hover:border-primary text-slate-700 font-semibold rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm transition-custom min-w-[120px]">
+                                        <span id="custom-date-label">Today</span>
+                                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-2"></i>
+                                    </button>
+                                    <div id="custom-date-menu" class="hidden absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 overflow-hidden transform origin-top-left transition-all">
+                                        <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="">Any Date</div>
+                                        <div class="date-option px-4 py-2 bg-slate-50 text-primary font-bold cursor-pointer transition-custom" data-value="today">Today</div>
+                                        <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="tomorrow">Tomorrow</div>
+                                        <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="week">This Week</div>
+                                        <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom border-t border-slate-50 mt-1 pt-2" data-value="custom">
+                                            <i class="fa-regular fa-calendar mr-2"></i>Custom Date...
+                                        </div>
                                     </div>
+                                    <input type="date" id="inline-custom-date" class="absolute opacity-0 w-0 h-0 p-0 pointer-events-none" style="bottom: 0; left: 50%;">
+                                    <input type="hidden" id="inline-date-filter" value="today">
                                 </div>
-                                <input type="date" id="inline-custom-date" class="absolute opacity-0 w-0 h-0 p-0 pointer-events-none" style="bottom: 0; left: 50%;">
-                                <input type="hidden" id="inline-date-filter" value="today">
+
+                                <!-- Custom Activity Dropdown -->
+                                <div class="relative inline-block text-left text-sm font-normal">
+                                    <button id="custom-activity-btn" class="flex items-center justify-between bg-white border border-slate-200 hover:border-primary text-slate-700 font-semibold rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm transition-custom max-w-[200px]">
+                                        <span id="custom-activity-label" class="truncate">Activity Type</span>
+                                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-2"></i>
+                                    </button>
+                                    <div id="custom-activity-menu" class="hidden absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 overflow-y-auto max-h-[60vh] transform origin-top-left transition-all custom-scrollbar">
+                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom font-bold" data-value="" data-label="Activity Type">Any Activity</div>
+                                        
+                                        <div class="px-4 py-1.5 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ice Rink</div>
+                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free skating" data-label="Free Skating">Free Skating</div>
+                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free hockey" data-label="Free Hockey">Free Hockey</div>
+                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free hockey (18+)" data-label="Free Hockey (18+)">Free Hockey (18+)</div>
+                                        
+                                        <div class="px-4 py-1.5 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-t border-slate-50 pt-3">Swimming Pool</div>
+                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="swimming lane" data-label="Swimming Lane">Swimming Lane</div>
+                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="open swim and diving board" data-label="Open Swim & Dive">Open Swim and Diving Board</div>
+                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="recreational and family pool" data-label="Rec & Family Pool">Recreational and Family Pool</div>
+                                    </div>
+                                    <input type="hidden" id="inline-activity-filter" value="">
+                                </div>
                             </div>
 
-                            <!-- Custom Activity Dropdown -->
-                            <div class="relative inline-block text-left text-sm font-normal">
-                                <button id="custom-activity-btn" class="flex items-center justify-between bg-white border border-slate-200 hover:border-primary text-slate-700 font-semibold rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm transition-custom max-w-[200px]">
-                                    <span id="custom-activity-label" class="truncate">Activity Type</span>
-                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-2"></i>
-                                </button>
-                                <div id="custom-activity-menu" class="hidden absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 overflow-y-auto max-h-[60vh] transform origin-top-left transition-all custom-scrollbar">
-                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom font-bold" data-value="" data-label="Activity Type">Any Activity</div>
-                                    
-                                    <div class="px-4 py-1.5 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ice Rink</div>
-                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free skating" data-label="Free Skating">Free Skating</div>
-                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free hockey" data-label="Free Hockey">Free Hockey</div>
-                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free hockey (18+)" data-label="Free Hockey (18+)">Free Hockey (18+)</div>
-                                    
-                                    <div class="px-4 py-1.5 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-t border-slate-50 pt-3">Swimming Pool</div>
-                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="swimming lane" data-label="Swimming Lane">Swimming Lane</div>
-                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="open swim and diving board" data-label="Open Swim & Dive">Open Swim and Diving Board</div>
-                                    <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="recreational and family pool" data-label="Rec & Family Pool">Recreational and Family Pool</div>
-                                </div>
-                                <input type="hidden" id="inline-activity-filter" value="">
-                            </div>
+
                         </div>
                     </div>
-                    <p class="text-slate-500 text-sm mt-1" id="results-count">Showing 24 upcoming sessions</p>
+                    <p class="text-slate-500 text-sm mt-3 sm:mt-1" id="results-count">Showing 24 upcoming sessions</p>
                 </div>
                 
-                <div class="flex items-center space-x-2">
+                <!-- Desktop Sort -->
+                <div class="hidden sm:flex items-center space-x-2">
                     <span class="text-sm font-medium text-slate-500">Sort by:</span>
                     <select class="border-none bg-transparent font-semibold text-dark outline-none cursor-pointer focus:ring-0 text-sm">
                         <option>Recommended</option>
