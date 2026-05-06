@@ -2376,7 +2376,7 @@ app.post('/api/public_sessions/join', async (req, res) => {
                     payment_method_types: ['card'],
                     mode: 'payment',
                     success_url: `${process.env.APP_URL || 'http://localhost:3000'}/player-dashboard.html?session_joined=success&session_id={CHECKOUT_SESSION_ID}`,
-                    cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}/facility.html?id=${session.facility_id}&session_joined=cancel`,
+                    cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}/surface.html?id=${session.surface_id}&session_joined=cancel`,
                     client_reference_id: req.session.userId.toString(),
                     metadata: {
                         booking_id: booking_id.toString(),
