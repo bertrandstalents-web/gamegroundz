@@ -283,14 +283,27 @@ app.use((req, res, next) => {
         const cookies = req.headers.cookie || '';
         const authToken = cookies.split(';').map(c => c.trim()).find(c => c.startsWith('auth_token='));
         
-        if (!authToken) {
+        if (!authToken || !req.session || !req.session.userId) {
             return res.redirect('/index.html?login=true');
         }
         
-        // Also ensure session has the correct role (since we still use sessions for role check internally)
-        if (req.session && req.session.userRole && req.session.userRole !== requiredRole && req.session.userRole !== 'admin') {
-            return res.redirect('/index.html');
-        }
+        db.get("SELECT status, role FROM users WHERE id = ?", [req.session.userId], (err, user) => {
+            if (err || !user) {
+                return res.redirect('/index.html?login=true');
+            }
+            if (user.status === 'suspended') {
+                req.session.destroy();
+                res.clearCookie('auth_token');
+                return res.redirect('/index.html?login=true');
+            }
+            if (user.role !== requiredRole && requiredRole !== 'admin') {
+                if (!(user.role === 'admin' && requiredRole === 'host')) {
+                    return res.redirect('/index.html');
+                }
+            }
+            next();
+        });
+        return;
     }
     next();
 });
@@ -574,6 +587,10 @@ app.post('/api/auth/login', (req, res) => {
         if (err) return res.status(500).json({ error: "Database error" });
         if (!user) return res.status(401).json({ error: "Invalid email or password" });
 
+        if (user.status === 'suspended') {
+            return res.status(403).json({ error: "This account has been suspended. Please contact support." });
+        }
+
         // Compare password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ error: "Invalid email or password" });
@@ -698,9 +715,16 @@ app.get('/api/auth/me', (req, res) => {
         return res.status(401).json({ error: "Not authenticated" });
     }
     
-    db.get("SELECT id, name, first_name, last_name, email, phone_number, company_name, profile_picture, role, stripe_account_id, stripe_onboarding_complete, terms_accepted, terms_accepted_at, residency_city, residency_document_url, residency_status, dashboard_preferences, interested_surfaces FROM users WHERE id = ?", [req.session.userId], (err, user) => {
+    db.get("SELECT id, name, first_name, last_name, email, phone_number, company_name, profile_picture, role, status, stripe_account_id, stripe_onboarding_complete, terms_accepted, terms_accepted_at, residency_city, residency_document_url, residency_status, dashboard_preferences, interested_surfaces FROM users WHERE id = ?", [req.session.userId], (err, user) => {
         if (err) return res.status(500).json({ error: "Database error" });
         if (!user) return res.status(404).json({ error: "User not found" });
+        
+        if (user.status === 'suspended') {
+            req.session.destroy();
+            res.clearCookie('auth_token');
+            return res.status(403).json({ error: "Account suspended" });
+        }
+        
         res.json({ user });
     });
 });
@@ -2996,6 +3020,51 @@ app.put('/api/admin/users/:id/status', requireAdmin, (req, res) => {
         if (this.changes === 0) return res.status(404).json({ error: "User not found" });
         res.json({ message: "User status updated successfully" });
     });
+});
+
+// DELETE user
+app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) return res.status(400).json({ error: "Invalid user ID" });
+
+    if (userId === req.session.userId) {
+        return res.status(400).json({ error: "Cannot delete yourself" });
+    }
+
+    try {
+        await db.transaction(async (client) => {
+            // Check if user is a host with active facilities
+            const { rows: facilities } = await client.query("SELECT id FROM facilities WHERE host_id = $1", [userId]);
+            if (facilities.length > 0) {
+                const err = new Error("This user is a host with active facilities. Please delete or reassign their facilities before deleting the account.");
+                err.status = 400;
+                throw err;
+            }
+
+            // Cleanup related data
+            await client.query("DELETE FROM password_reset_tokens WHERE user_id = $1", [userId]);
+            await client.query("DELETE FROM saved_facilities WHERE user_id = $1", [userId]);
+            await client.query("DELETE FROM reviews WHERE user_id = $1", [userId]);
+            await client.query("DELETE FROM public_session_participants WHERE user_id = $1", [userId]);
+            
+            // Clean up bookings (where the user was the booker)
+            await client.query("DELETE FROM bookings WHERE user_id = $1", [userId]);
+            // Nullify cancelled_by_user_id for bookings they cancelled
+            await client.query("UPDATE bookings SET cancelled_by_user_id = NULL WHERE cancelled_by_user_id = $1", [userId]);
+
+            // Finally, delete the user
+            const result = await client.query("DELETE FROM users WHERE id = $1", [userId]);
+            if (result.rowCount === 0) {
+                const err = new Error("User not found");
+                err.status = 404;
+                throw err;
+            }
+        });
+
+        res.json({ message: "User deleted successfully" });
+    } catch (err) {
+        res.status(err.status || 500).json({ error: err.message });
+    }
 });
 
 // GET platform-wide discounts

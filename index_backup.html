@@ -94,167 +94,82 @@
         </div>
 
         <!-- Horizontal Categories Bar (Sticky with Navbar) -->
-        <div class="w-full bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-sm z-40 relative group">
-            <!-- Left Arrow -->
-            <div id="cat-scroll-left-wrapper" class="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white via-white/80 to-transparent z-50 flex items-center justify-start pl-2 sm:pl-4 opacity-0 transition-opacity duration-300 pointer-events-none hidden md:flex">
-                <button id="cat-scroll-left" class="bg-white shadow-md rounded-full w-8 h-8 flex items-center justify-center text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-primary pointer-events-auto transition-custom focus:outline-none">
-                    <i class="fa-solid fa-chevron-left text-sm"></i>
-                </button>
-            </div>
-
-            <!-- Scrollable Container -->
-            <div id="cat-scroll-container" class="w-full overflow-x-auto hide-scrollbar scroll-smooth relative">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex items-center xl:justify-center gap-8 py-3 min-w-max">
-                        <a href="search.html?type=ice" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
-                            <svg class="w-7 h-7 text-slate-700 group-hover:text-dark transition-custom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                                <path d="M4 19h16" />
-                                <path d="M7 19v-3" />
-                                <path d="M17 19v-3" />
-                                <path d="M18 16H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l3 4h4a3 3 0 0 1 3 3v4Z" />
-                            </svg>
-                            <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1"><span class="lang-en-only">Ice Rinks</span><span class="lang-fr-only notranslate">Patinoires</span></span>
-                        </a>
-                        <a href="search.html?type=soccer" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
-                            <i class="fa-solid fa-futbol text-2xl text-slate-700 group-hover:text-dark"></i>
-                            <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate"><span class="lang-en-only">Soccer</span><span class="lang-fr-only notranslate">Soccer</span></span>
-                        </a>
-                        <a href="search.html?type=basketball" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
-                            <i class="fa-solid fa-basketball text-2xl text-slate-700 group-hover:text-dark"></i>
-                            <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate"><span class="lang-en-only">Basketball</span><span class="lang-fr-only notranslate">Basketball</span></span>
-                        </a>
-                        <a href="search.html?type=tennis" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
-                            <i class="fa-solid fa-baseball text-2xl text-slate-700 group-hover:text-dark"></i>
-                            <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate"><span class="lang-en-only">Tennis</span><span class="lang-fr-only notranslate">Tennis</span></span>
-                        </a>
-                        <a href="search.html?type=football" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
-                            <i class="fa-solid fa-football text-2xl text-slate-700 group-hover:text-dark"></i>
-                            <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate"><span class="lang-en-only">Football</span><span class="lang-fr-only notranslate">Football</span></span>
-                        </a>
-                        <a href="search.html?type=gym" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
-                            <i class="fa-solid fa-dumbbell text-2xl text-slate-700 group-hover:text-dark"></i>
-                            <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1"><span class="lang-en-only">Gyms</span><span class="lang-fr-only notranslate">Gymnases</span></span>
-                        </a>
-                        <a href="search.html?type=pickleball" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
-                            <i class="fa-solid fa-table-tennis-paddle-ball text-2xl text-slate-700 group-hover:text-dark"></i>
-                            <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate"><span class="lang-en-only">Pickleball</span><span class="lang-fr-only notranslate">Pickleball</span></span>
-                        </a>
-                        <a href="search.html?type=pool" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
-                            <i class="fa-solid fa-person-swimming text-2xl text-slate-700 group-hover:text-dark"></i>
-                            <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1"><span class="lang-en-only">Pools</span><span class="lang-fr-only notranslate">Piscines</span></span>
-                        </a>
-                        <a href="search.html?type=deck-hockey" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
-                            <svg class="w-6 h-6 text-slate-700 group-hover:text-dark transition-custom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 18V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10" stroke-width="2" />
-                                <path d="M2 18h20" stroke-width="2" />
-                                <path d="M3 10h18M3 14h18M7 6v12M12 6v12M17 6v12" stroke-width="1" />
-                            </svg>
-                            <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 text-center leading-tight notranslate"><span class="lang-en-only">Deck<br>Hockey</span><span class="lang-fr-only notranslate">Deck<br>Hockey</span></span>
-                        </a>
-                        <a href="search.html?type=squash" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
-                            <svg class="w-6 h-6 text-slate-700 group-hover:text-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12.5 11.5L4 20" stroke-width="3"/>
-                                <path d="M3 19L5 21" stroke-width="3"/>
-                                <ellipse cx="16" cy="8" rx="5" ry="7" transform="rotate(45 16 8)" />
-                                <path d="M13.5 5.5L18.5 10.5M12 7L17 12M14.5 4.5L19.5 9.5" stroke-width="1"/>
-                                <path d="M18.5 5.5L13.5 10.5M17 4.5L12 9.5M19.5 7L14.5 12" stroke-width="1"/>
-                            </svg>
-                            <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate">Squash</span>
-                        </a>
-                        <a href="search.html?type=badminton" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
-                            <svg class="w-6 h-6 text-slate-700 group-hover:text-dark transform rotate-[35deg] transition-custom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M6 15L4 4l4 3 4-5 4 5 4-3-2 11" />
-                                <path d="M12 2v13" />
-                                <path d="M8 7l4 8" />
-                                <path d="M16 7l-4 8" />
-                                <path d="M6 15a6 6 0 0 0 12 0" />
-                                <path d="M4 15h16" />
-                                <path d="M5 11h14" />
-                            </svg>
-                            <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate">Badminton</span>
-                        </a>
-                    </div>
+        <div class="w-full bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-sm overflow-x-auto hide-scrollbar z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center xl:justify-center gap-8 py-3 min-w-max">
+                <a href="search.html?type=ice" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <svg class="w-7 h-7 text-slate-700 group-hover:text-dark transition-custom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                            <path d="M4 19h16" />
+                            <path d="M7 19v-3" />
+                            <path d="M17 19v-3" />
+                            <path d="M18 16H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l3 4h4a3 3 0 0 1 3 3v4Z" />
+                        </svg>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1"><span class="lang-en-only">Ice Rinks</span><span class="lang-fr-only notranslate">Patinoires</span></span>
+                    </a>
+                    <a href="search.html?type=soccer" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-futbol text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate"><span class="lang-en-only">Soccer</span><span class="lang-fr-only notranslate">Soccer</span></span>
+                    </a>
+                    <a href="search.html?type=basketball" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-basketball text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate"><span class="lang-en-only">Basketball</span><span class="lang-fr-only notranslate">Basketball</span></span>
+                    </a>
+                    <a href="search.html?type=tennis" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-baseball text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate"><span class="lang-en-only">Tennis</span><span class="lang-fr-only notranslate">Tennis</span></span>
+                    </a>
+                    <a href="search.html?type=football" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-football text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate"><span class="lang-en-only">Football</span><span class="lang-fr-only notranslate">Football</span></span>
+                    </a>
+                    <a href="search.html?type=gym" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-dumbbell text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1"><span class="lang-en-only">Gyms</span><span class="lang-fr-only notranslate">Gymnases</span></span>
+                    </a>
+                    <a href="search.html?type=pickleball" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-table-tennis-paddle-ball text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate"><span class="lang-en-only">Pickleball</span><span class="lang-fr-only notranslate">Pickleball</span></span>
+                    </a>
+                    <a href="search.html?type=pool" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-person-swimming text-2xl text-slate-700 group-hover:text-dark"></i>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1"><span class="lang-en-only">Pools</span><span class="lang-fr-only notranslate">Piscines</span></span>
+                    </a>
+                    <a href="search.html?type=deck-hockey" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <svg class="w-6 h-6 text-slate-700 group-hover:text-dark transition-custom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 18V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10" stroke-width="2" />
+                            <path d="M2 18h20" stroke-width="2" />
+                            <path d="M3 10h18M3 14h18M7 6v12M12 6v12M17 6v12" stroke-width="1" />
+                        </svg>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 text-center leading-tight notranslate"><span class="lang-en-only">Deck<br>Hockey</span><span class="lang-fr-only notranslate">Deck<br>Hockey</span></span>
+                    </a>
+                    <a href="search.html?type=squash" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <svg class="w-6 h-6 text-slate-700 group-hover:text-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12.5 11.5L4 20" stroke-width="3"/>
+                            <path d="M3 19L5 21" stroke-width="3"/>
+                            <ellipse cx="16" cy="8" rx="5" ry="7" transform="rotate(45 16 8)" />
+                            <path d="M13.5 5.5L18.5 10.5M12 7L17 12M14.5 4.5L19.5 9.5" stroke-width="1"/>
+                            <path d="M18.5 5.5L13.5 10.5M17 4.5L12 9.5M19.5 7L14.5 12" stroke-width="1"/>
+                        </svg>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate">Squash</span>
+                    </a>
+                    <a href="search.html?type=badminton" class="flex flex-col items-center justify-center group gap-1 min-w-[60px] opacity-60 hover:opacity-100 hover:-translate-y-0.5 transition-all">
+                        <svg class="w-6 h-6 text-slate-700 group-hover:text-dark transform rotate-[35deg] transition-custom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 15L4 4l4 3 4-5 4 5 4-3-2 11" />
+                            <path d="M12 2v13" />
+                            <path d="M8 7l4 8" />
+                            <path d="M16 7l-4 8" />
+                            <path d="M6 15a6 6 0 0 0 12 0" />
+                            <path d="M4 15h16" />
+                            <path d="M5 11h14" />
+                        </svg>
+                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate">Badminton</span>
+                    </a>
                 </div>
             </div>
-
-            <!-- Right Arrow -->
-            <div id="cat-scroll-right-wrapper" class="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white via-white/80 to-transparent z-50 flex items-center justify-end pr-2 sm:pr-4 opacity-0 transition-opacity duration-300 pointer-events-none hidden md:flex">
-                <button id="cat-scroll-right" class="bg-white shadow-md rounded-full w-8 h-8 flex items-center justify-center text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-primary pointer-events-auto transition-custom focus:outline-none">
-                    <i class="fa-solid fa-chevron-right text-sm"></i>
-                </button>
-            </div>
-
             <style>
                 .hide-scrollbar::-webkit-scrollbar { display: none; }
                 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             </style>
-            
-            <script>
-                // Category Scroll Logic
-                document.addEventListener('DOMContentLoaded', () => {
-                    const container = document.getElementById('cat-scroll-container');
-                    const leftWrapper = document.getElementById('cat-scroll-left-wrapper');
-                    const rightWrapper = document.getElementById('cat-scroll-right-wrapper');
-                    const leftBtn = document.getElementById('cat-scroll-left');
-                    const rightBtn = document.getElementById('cat-scroll-right');
-                    const scrollAmount = 300;
-
-                    const updateArrows = () => {
-                        if (!container) return;
-                        
-                        // Check if scrollable
-                        if (container.scrollWidth > container.clientWidth) {
-                            // Show/hide left arrow based on scroll position
-                            if (container.scrollLeft > 5) {
-                                leftWrapper.classList.replace('opacity-0', 'opacity-100');
-                                leftWrapper.classList.replace('pointer-events-none', 'pointer-events-auto');
-                            } else {
-                                leftWrapper.classList.replace('opacity-100', 'opacity-0');
-                                leftWrapper.classList.replace('pointer-events-auto', 'pointer-events-none');
-                            }
-                            
-                            // Show/hide right arrow based on scroll position
-                            if (container.scrollLeft + container.clientWidth < container.scrollWidth - 5) {
-                                rightWrapper.classList.replace('opacity-0', 'opacity-100');
-                                rightWrapper.classList.replace('pointer-events-none', 'pointer-events-auto');
-                            } else {
-                                rightWrapper.classList.replace('opacity-100', 'opacity-0');
-                                rightWrapper.classList.replace('pointer-events-auto', 'pointer-events-none');
-                            }
-                        } else {
-                            // Not scrollable, hide both
-                            leftWrapper.classList.replace('opacity-100', 'opacity-0');
-                            leftWrapper.classList.replace('pointer-events-auto', 'pointer-events-none');
-                            rightWrapper.classList.replace('opacity-100', 'opacity-0');
-                            rightWrapper.classList.replace('pointer-events-auto', 'pointer-events-none');
-                        }
-                    };
-
-                    if (container && leftBtn && rightBtn) {
-                        leftBtn.addEventListener('click', () => {
-                            container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-                        });
-                        
-                        rightBtn.addEventListener('click', () => {
-                            container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-                        });
-
-                        container.addEventListener('scroll', updateArrows);
-                        window.addEventListener('resize', updateArrows);
-                        
-                        // Translate vertical wheel scroll to horizontal
-                        container.addEventListener('wheel', (e) => {
-                            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-                                e.preventDefault();
-                                container.scrollLeft += e.deltaY;
-                            }
-                        }, { passive: false });
-
-                        // Initial check
-                        setTimeout(updateArrows, 100);
-                    }
-                });
-            </script>
         </div>
     </nav>
 
@@ -342,17 +257,47 @@
         </div>
     </section>
 
+    <!-- Mobile Quick Navigation Tabs -->
+    <div class="md:hidden flex w-full relative z-30 bg-white shadow-sm">
+        <button id="mobile-tab-surfaces" onclick="switchMobileView('surfaces')" class="flex-1 py-4 text-center bg-white text-dark font-bold text-[17px] border-r border-slate-200 transition-custom focus:outline-none">
+            <span class="lang-en-only">Find a Surface</span><span class="lang-fr-only notranslate">Trouver une surface</span>
+        </button>
+        <button id="mobile-tab-sessions" onclick="switchMobileView('sessions')" class="flex-1 py-4 text-center bg-slate-100 text-slate-500 font-bold text-[17px] border-b border-slate-300 transition-custom focus:outline-none">
+            <span class="lang-en-only">Public Activities</span><span class="lang-fr-only notranslate">Activités publiques</span>
+        </button>
+    </div>
+
     <!-- Featured Facilities Section (Now following hero directly) -->
     <section class="py-24 bg-light shadow-[0_-10px_40px_rgba(0,0,0,0.1)] relative z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Dynamic Feed Container (Replaces old single grid) -->
-            <div id="discovery-feed-container" class="space-y-12 min-h-[80vh] md:min-h-[1200px]">
-                <!-- Loading State -->
-                <div class="w-full flex justify-center py-12" id="discovery-feed-loader">
+            <div class="flex justify-between items-end mb-12">
+                <div class="pr-2">
+                    <h2 id="featured-title" class="text-3xl md:text-4xl font-extrabold text-dark mb-2 md:mb-4"><span class="lang-en-only">Featured Surfaces</span><span class="lang-fr-only notranslate">Surfaces en vedette</span></h2>
+                    <p class="text-base md:text-lg text-slate-500">
+                        <span id="featured-subtitle-text">
+                            <span class="lang-en-only">Discover top-rated spaces available for booking right now.</span>
+                            <span class="lang-fr-only notranslate">Découvrez des espaces très bien notés disponibles en ce moment.</span>
+                        </span>
+                        <a id="featured-view-all" href="search.html" class="inline-flex md:hidden items-center text-primary font-bold hover:text-primaryHover transition-custom ml-1 relative z-10 text-sm whitespace-nowrap">
+                            <span class="lang-en-only">View all</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-1 text-xs"></i>
+                        </a>
+                    </p>
+                </div>
+                <a id="featured-view-all-desktop" href="search.html" class="hidden md:flex flex-shrink-0 items-center text-primary font-bold hover:text-primaryHover transition-custom mb-2 relative z-10 text-base">
+                    <span class="lang-en-only">View All</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+            
+            <div id="featured-facilities-grid" class="flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0 md:px-0 md:mx-0 transition-opacity duration-300">
+                <!-- Facilities will be injected here by JavaScript -->
+                <div class="w-full md:col-span-full flex justify-center py-12">
                      <i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i>
                 </div>
             </div>
-            
+
+            <div id="featured-public-sessions-grid" class="hidden flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0 md:px-0 md:mx-0 transition-opacity duration-300">
+                <!-- Public activities will be injected here by JavaScript -->
+            </div>
         </div>
     </section>
 
@@ -555,9 +500,9 @@
                     <h4 class="font-bold text-lg mb-6">Discover</h4>
                     <ul class="space-y-4 text-slate-400">
                         <li><a href="#" class="hover:text-primary transition-custom">Ice Rinks</a></li>
-                        <li><a href="#" class="hover:text-primary transition-custom"><span class="lang-en-only">Soccer Fields</span><span class="lang-fr-only notranslate">Terrains de soccer</span></a></li>
-                        <li><a href="#" class="hover:text-primary transition-custom"><span class="lang-en-only">Basketball Courts</span><span class="lang-fr-only notranslate">Terrains de basketball</span></a></li>
-                        <li><a href="#" class="hover:text-primary transition-custom"><span class="lang-en-only">Tennis Courts</span><span class="lang-fr-only notranslate">Courts de tennis</span></a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom"><span class="notranslate">Soccer</span> Fields</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom"><span class="notranslate">Basketball</span> Courts</a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom"><span class="notranslate">Tennis</span> Courts</a></li>
                         <li><a href="#" class="hover:text-primary transition-custom">View All</a></li>
                     </ul>
                 </div>
@@ -581,7 +526,7 @@
                         <li><a href="how-it-works.html" class="hover:text-primary transition-custom">How it Works</a></li>
                         <li><a href="#" class="hover:text-primary transition-custom">Contact</a></li>
                         <li><a href="#" class="hover:text-primary transition-custom">Terms of Service</a></li>
-                        <li><a href="#" class="hover:text-primary transition-custom"><span class="lang-en-only">Privacy Policy</span><span class="lang-fr-only notranslate">Politique de confidentialité</span></a></li>
+                        <li><a href="#" class="hover:text-primary transition-custom">Privacy Policy</a></li>
                     </ul>
                 </div>
             </div>
@@ -740,7 +685,7 @@
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
                                         <i class="fa-solid fa-futbol text-lg"></i>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight"><span class="lang-en-only">Soccer Fields</span><span class="lang-fr-only notranslate">Terrains de soccer</span></span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight"><span class="notranslate">Soccer</span> Fields</span>
                                 </div>
                                 <!-- Box 3 -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="basketball">
@@ -982,17 +927,18 @@
                 }
                 return null;
             } catch (e) {
+                return null;
             }
         };
 
-        // Fetch Featured Surfaces & Categories Feed
+        // Fetch Featured Surfaces
         async function fetchFeaturedFacilities(retryCount = 0) {
-            const feedContainer = document.getElementById('discovery-feed-container');
-            if (!feedContainer) return;
+            const grid = document.getElementById('featured-facilities-grid');
+            if (!grid) return;
 
             // Only show spinner on first load
             if (retryCount === 0) {
-                feedContainer.innerHTML = '<div class="w-full flex justify-center py-12" id="discovery-feed-loader"><i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i></div>';
+                grid.innerHTML = '<div class="col-span-full flex justify-center py-12"><i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i></div>';
             }
 
             try {
@@ -1018,6 +964,7 @@
                     console.error("Payload that failed to parse:", text.substring(0, 500));
                     throw new Error("Invalid format received from server.");
                 }
+                grid.innerHTML = ''; // clear loading state
                 
                 // Fetch user location without aggressive prompting
                 const loc = await getUserLocationSilently();
@@ -1026,360 +973,130 @@
 
                 // Compute distances
                 facilities.forEach(f => {
-                    f.distance = getDistance(userLat, userLng, f.effective_lat || f.lat, f.effective_lng || f.lng);
+                    f.distance = getDistance(userLat, userLng, f.lat, f.lng);
                 });
 
-                feedContainer.innerHTML = ''; // clear loading state
-                
-                // --- CATEGORY: Near you (Facilities) ---
-                const uniqueFacMap = new Map();
-                facilities.forEach(s => {
-                    if (s.facility_id && !uniqueFacMap.has(s.facility_id)) {
-                        uniqueFacMap.set(s.facility_id, {
-                            id: s.facility_id,
-                            name: s.facility_name || "Unknown Facility",
-                            location: s.effective_location,
-                            lat: s.effective_lat,
-                            lng: s.effective_lng,
-                            distance: s.distance,
-                            rating: s.rating,
-                            reviews_count: s.reviews_count,
-                            primary_image: s.facility_image_url || s.primary_image,
-                            active_promotions: s.active_promotions
-                        });
+                // Sort facilities based on business rules
+                facilities.sort((a, b) => {
+                    if (userLat && userLng) {
+                        // Priority 1: Distance grouped into 10km radius buckets
+                        const bucketA = Math.floor(a.distance / 10);
+                        const bucketB = Math.floor(b.distance / 10);
+                        if (bucketA !== bucketB) {
+                            return bucketA - bucketB;
+                        }
                     }
+
+                    // Priority 2: Has a discount
+                    const aDiscount = a.active_promotions ? 1 : 0;
+                    const bDiscount = b.active_promotions ? 1 : 0;
+                    if (aDiscount !== bDiscount) {
+                        return bDiscount - aDiscount; 
+                    }
+
+                    // Priority 3: Base price (cheapest first)
+                    return a.base_price - b.base_price;
                 });
                 
-                let nearYouFacilities = Array.from(uniqueFacMap.values());
-                if (userLat && userLng) {
-                    let nearby = nearYouFacilities.filter(f => f.distance <= 150).sort((a, b) => a.distance - b.distance);
-                    if (nearby.length > 0) {
-                        nearYouFacilities = nearby;
-                    } else {
-                        nearYouFacilities = nearYouFacilities.slice(0, 10);
-                    }
-                } else {
-                    nearYouFacilities = nearYouFacilities.slice(0, 10);
-                }
-
-                if (nearYouFacilities.length > 0) {
-                    renderFacilityRow(feedContainer, {
-                        titleEn: 'Near you',
-                        titleFr: 'Près de chez vous',
-                        link: 'search.html' 
-                    }, nearYouFacilities.slice(0, 10));
-                }
-
-                let interestedSurfaces = [];
-                const userStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
-                if (userStr) {
-                    try {
-                        const u = JSON.parse(userStr);
-                        if (u.interested_surfaces) {
-                            interestedSurfaces = typeof u.interested_surfaces === 'string' ? JSON.parse(u.interested_surfaces) : u.interested_surfaces;
-                        }
-                    } catch(e) {}
-                }
-
-                const allCategoriesMap = {
-                    'ice': { id: 'ice', titleEn: 'Ice Rinks', titleFr: 'Patinoires', link: 'search.html?type=ice', filterFn: (f) => f.type === 'ice' },
-                    'pool': { id: 'pool', titleEn: 'Swimming Pools', titleFr: 'Piscines', link: 'search.html?type=pool', filterFn: (f) => f.type === 'pool' },
-                    'soccer': { id: 'soccer', titleEn: 'Soccer Fields', titleFr: 'Terrains de soccer', link: 'search.html?type=soccer', filterFn: (f) => f.type === 'soccer' },
-                    'tennis': { id: 'tennis', titleEn: 'Tennis Courts', titleFr: 'Terrains de tennis', link: 'search.html?type=tennis', filterFn: (f) => f.type === 'tennis' },
-                    'basketball': { id: 'basketball', titleEn: 'Basketball Courts', titleFr: 'Terrains de basketball', link: 'search.html?type=basketball', filterFn: (f) => f.type === 'basketball' },
-                    'deck-hockey': { id: 'deck-hockey', titleEn: 'Deck Hockey', titleFr: 'Hockey balle', link: 'search.html?type=deck-hockey', filterFn: (f) => f.type === 'deck-hockey' },
-                    'football': { id: 'football', titleEn: 'Football Fields', titleFr: 'Terrains de football', link: 'search.html?type=football', filterFn: (f) => f.type === 'football' },
-                    'gym': { id: 'gym', titleEn: 'Training Gyms', titleFr: 'Salles d\'entraînement', link: 'search.html?type=gym', filterFn: (f) => f.type === 'gym' },
-                    'pickleball': { id: 'pickleball', titleEn: 'Pickleball Courts', titleFr: 'Terrains de pickleball', link: 'search.html?type=pickleball', filterFn: (f) => f.type === 'pickleball' },
-                    'squash': { id: 'squash', titleEn: 'Squash', titleFr: 'Squash', link: 'search.html?type=squash', filterFn: (f) => f.type === 'squash' },
-                    'badminton': { id: 'badminton', titleEn: 'Badminton', titleFr: 'Badminton', link: 'search.html?type=badminton', filterFn: (f) => f.type === 'badminton' }
-                };
-
-                const categories = [
-                    { id: 'featured', titleEn: 'Recommended for you', titleFr: 'Recommandé pour vous', link: 'search.html', filterFn: () => true }
-                ];
+                // Get dynamically ordered listings
+                const featured = facilities.slice(0, 6);
                 
-                const addedCats = new Set();
-                
-                if (interestedSurfaces && Array.isArray(interestedSurfaces)) {
-                    interestedSurfaces.forEach(surf => {
-                        if (allCategoriesMap[surf] && !addedCats.has(surf)) {
-                            categories.push(allCategoriesMap[surf]);
-                            addedCats.add(surf);
-                        }
-                    });
-                }
-                
-                const defaultCats = ['ice', 'pool', 'soccer', 'tennis', 'basketball'];
-                for (const surf of defaultCats) {
-                    if (categories.length >= 6) break;
-                    if (!addedCats.has(surf) && allCategoriesMap[surf]) {
-                        categories.push(allCategoriesMap[surf]);
-                        addedCats.add(surf);
-                    }
-                }
-
-                categories.forEach(category => {
-                    let catFacilities = facilities.filter(category.filterFn);
+                featured.forEach(facility => {
+                    const isInstantBook = facility.is_instant_book === 1;
                     
-                    // Specific sorting for "Recommended"
-                    if (category.id === 'featured') {
-                        catFacilities.sort((a, b) => {
-                            const aInterested = interestedSurfaces.includes(a.type) ? 1 : 0;
-                            const bInterested = interestedSurfaces.includes(b.type) ? 1 : 0;
-                            if (aInterested !== bInterested) return bInterested - aInterested;
-
-                            if (userLat && userLng) {
-                                const bucketA = Math.floor(a.distance / 10);
-                                const bucketB = Math.floor(b.distance / 10);
-                                if (bucketA !== bucketB) return bucketA - bucketB;
-                            }
-                            const aDiscount = a.active_promotions ? 1 : 0;
-                            const bDiscount = b.active_promotions ? 1 : 0;
-                            if (aDiscount !== bDiscount) return bDiscount - aDiscount; 
-                            return a.base_price - b.base_price;
-                        });
-                        catFacilities = catFacilities.slice(0, 8); // Top 8 recommended
-                    } else {
-                        // For other sports, prioritize by distance and discount
-                        catFacilities.sort((a, b) => {
-                            const aDiscount = a.active_promotions ? 1 : 0;
-                            const bDiscount = b.active_promotions ? 1 : 0;
-                            if (aDiscount !== bDiscount) return bDiscount - aDiscount; 
-                            if (userLat && userLng) {
-                                return a.distance - b.distance;
-                            }
-                            return a.base_price - b.base_price;
-                        });
+                    let topBadges = '';
+                    if (facility.active_promotions) {
+                        topBadges += `<div class="bg-red-500/90 backdrop-blur px-2 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center"><i class="fa-solid fa-tag mr-1"></i> Promo</div>`;
                     }
-
-                    // Only render row if we have at least 2 facilities
-                    if (catFacilities.length >= 2 || (category.id === 'featured' && catFacilities.length > 0)) {
-                        renderCategoryRow(feedContainer, category, catFacilities);
+                    if (isInstantBook) {
+                        topBadges += `<div class="bg-primary/90 backdrop-blur px-2 py-1 rounded-full text-xs font-bold text-white shadow-sm">Instant Book</div>`;
                     }
-                });
+                    const typeDisplay = facility.type.charAt(0).toUpperCase() + facility.type.slice(1);
+                    const envDisplay = facility.environment.charAt(0).toUpperCase() + facility.environment.slice(1);
 
-
-                // Fetch and render Public Activities as the last row
-                try {
-                    const sessionsRes = await fetch(`${API_BASE_URL}/api/public_sessions/upcoming/all`, { 
-                        method: 'GET',
-                        headers: { 'Accept': 'application/json' }
-                    });
-                    if (sessionsRes.ok) {
-                        let sessions = await sessionsRes.json();
-                        if (sessions && sessions.length > 0) {
-                            sessions = sessions.slice(0, 10); // show up to 10 upcoming public activities
-                            renderPublicSessionRow(feedContainer, {
-                                titleEn: 'Public Activities',
-                                titleFr: 'Activités publiques',
-                                link: 'public-sessions.html'
-                            }, sessions);
+                    function getPrimaryImageUrl(urlStr) {
+                        if (!urlStr || urlStr === '[]' || urlStr === '') return 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+                        if (urlStr.startsWith('[')) {
+                            try {
+                                const arr = JSON.parse(urlStr);
+                                if (arr.length > 0) return arr[0];
+                            } catch(e) {}
                         }
+                        return urlStr || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
                     }
-                } catch (err) {
-                    console.error('Failed to load public activities row', err);
-                }
 
-                if (feedContainer.innerHTML === '') {
-                    // Fallback if absolutely no categories rendered
-                    feedContainer.innerHTML = '<div class="w-full text-center text-slate-500 py-12">No surfaces available at the moment.</div>';
-                }
-                
-                // Trigger translation for dynamically added content if needed
-                if (typeof updateLanguage === 'function') {
-                    updateLanguage(document.documentElement.getAttribute('data-lang') || 'en');
-                }
+                    const card = `
+                        <!-- Surface Card -->
+                        <div class="w-[85vw] flex-shrink-0 snap-start md:w-auto bg-white rounded-3xl overflow-hidden shadow-soft border border-slate-100 group cursor-pointer" onclick="window.location.href='surface.html?id=${facility.id}'">
+                            <div class="relative h-64 hover-zoom-img-container">
+                                <img src="${getPrimaryImageUrl(facility.image_url)}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
+                                <div class="absolute top-4 left-4 right-4 flex flex-wrap gap-2 z-20 max-w-[calc(100%-2rem)]">
+                                    <div class="bg-white/90 backdrop-blur px-2 py-1 rounded-full text-xs font-bold text-slate-800 shadow-sm">
+                                        <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating || 'New'} ${facility.reviews_count ? `(${facility.reviews_count})` : ''}
+                                    </div>
+                                    ${topBadges}
+                                </div>
+                                <button class="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md text-slate-400 hover:text-red-500 hover:scale-110 transition-custom z-10">
+                                    <i class="fa-regular fa-heart"></i>
+                                </button>
+                            </div>
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="text-xl font-bold text-dark group-hover:text-primary transition-custom notranslate">${facility.name}</h3>
+                                    <span class="font-bold text-lg text-dark">From $${facility.base_price}<span class="text-sm font-normal text-slate-500">/hr</span></span>
+                                </div>
+                                ${facility.facility_name ? `<p class="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide"><i class="fa-solid fa-building mr-1"></i> ${facility.facility_name}</p>` : ''}
+                                <p class="text-slate-500 mb-4 flex items-center text-sm">
+                                    <i class="fa-solid fa-location-dot mr-2 text-slate-400"></i> ${typeof formatShortLocation === 'function' ? formatShortLocation(facility.effective_location || facility.location) : (facility.effective_location || facility.location)}
+                                </p>
+                                <div class="flex flex-wrap gap-2 mb-6">
+                                    <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">${typeDisplay}</span>
+                                    <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">${envDisplay}</span>
+                                </div>
+                                <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-4 gap-y-2">
+                                    <div class="flex flex-wrap gap-2">
+                                        ${facility.display_slots_today && facility.display_slots_today.length > 0 ? facility.display_slots_today.map(slot => `
+                                            <div class="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold ${slot.discount ? 'text-red-600 bg-red-50 border-red-200' : 'text-slate-600'}">
+                                                ${slot.time}${slot.discount ? '<i class="fa-solid fa-tag text-[10px] ml-1"></i>' : ''}
+                                            </div>
+                                        `).join('') : `
+                                            <div class="text-xs font-medium text-slate-400">Fully booked for today</div>
+                                        `}
+                                    </div>
+                                    ${facility.display_slots_today && facility.display_slots_today.length > 0 ? `
+                                        <span class="text-xs font-semibold ${isInstantBook ? 'text-primary' : 'text-slate-500'}">Available Today</span>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    grid.innerHTML += card;
+                });
 
             } catch (error) {
-                console.error(`Failed to load facilities (Attempt ${retryCount + 1}):`, error);
+                console.error(`Failed to load featured facilities (Attempt ${retryCount + 1}):`, error);
                 
                 const MAX_RETRIES = 3;
                 if (retryCount < MAX_RETRIES) {
-                    const delay = (retryCount + 1) * 2000;
+                    const delay = (retryCount + 1) * 2000; // 2s, 4s, 6s
+                    console.log(`Retrying in ${delay/1000}s...`);
+                    // Create subtle loading pulse while retrying silently
                     if (retryCount === 0) {
-                        feedContainer.innerHTML = '<div class="w-full flex flex-col items-center justify-center py-12 text-slate-400"><i class="fa-solid fa-cloud-arrow-down animate-bounce text-xl mb-3"></i><p class="text-sm font-medium">Waking up server...</p></div>';
+                        grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center py-12 text-slate-400"><i class="fa-solid fa-cloud-arrow-down animate-bounce text-xl mb-3"></i><p class="text-sm font-medium">Waking up server...</p></div>';
                     }
                     setTimeout(() => fetchFeaturedFacilities(retryCount + 1), delay);
                     return;
                 }
 
-                 feedContainer.innerHTML = `
-                    <div class="w-full bg-slate-50 border border-slate-100 text-slate-500 p-8 rounded-2xl text-center">
+                 grid.innerHTML = `
+                    <div class="col-span-full bg-slate-50 border border-slate-100 text-slate-500 p-8 rounded-2xl text-center">
                         <i class="fa-solid fa-calendar-xmark text-4xl mb-3 text-slate-300"></i>
                         <h3 class="text-xl font-bold text-dark mb-2">Temporarily Unavailable</h3>
-                        <p>We're having trouble connecting to the database right now.</p>
+                        <p>We're having trouble connecting to the database right now (server timeout or network policy).</p>
                         <button onclick="fetchFeaturedFacilities(0)" class="mt-4 px-6 py-2 bg-white border border-slate-200 rounded-lg font-semibold hover:bg-slate-50 transition-custom shadow-sm text-sm">Try Again</button>
                     </div>
                 `;
             }
-        }
-
-        
-        function renderPublicSessionRow(container, category, sessions) {
-            const rowHtml = `
-                <div class="category-row relative">
-                    <div class="flex justify-between items-end mb-4 px-1">
-                        <h2 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight"><span class="lang-en-only">${category.titleEn}</span><span class="lang-fr-only notranslate">${category.titleFr}</span></h2>
-                        <a href="${category.link}" class="flex items-center text-primary font-bold hover:text-primaryHover transition-custom text-sm relative z-10 whitespace-nowrap bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-full">
-                            <span class="lang-en-only">View all</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-1"></i>
-                        </a>
-                    </div>
-                    
-                    <div class="flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:gap-6">
-                        ${sessions.map(session => createPublicSessionCard(session)).join('')}
-                    </div>
-                </div>
-            `;
-            container.innerHTML += rowHtml;
-        }
-
-        function renderFacilityRow(container, category, facilities) {
-            const rowHtml = `
-                <div class="category-row relative">
-                    <div class="flex justify-between items-end mb-4 px-1">
-                        <h2 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight"><span class="lang-en-only">${category.titleEn}</span><span class="lang-fr-only notranslate">${category.titleFr}</span></h2>
-                        <a href="${category.link}" class="flex items-center text-primary font-bold hover:text-primaryHover transition-custom text-sm relative z-10 whitespace-nowrap bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-full">
-                            <span class="lang-en-only">View all</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-1"></i>
-                        </a>
-                    </div>
-                    
-                    <div class="flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:gap-6">
-                        ${facilities.map(facility => generateFacilityCard(facility)).join('')}
-                    </div>
-                </div>
-            `;
-            container.innerHTML += rowHtml;
-        }
-
-        function generateFacilityCard(facility) {
-            let topBadges = '';
-            if (facility.active_promotions) {
-                topBadges += `<div class="bg-red-500/90 backdrop-blur px-2 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center"><i class="fa-solid fa-tag mr-1"></i> Promo</div>`;
-            }
-
-            function getPrimaryImageUrl(urlStr) {
-                if (!urlStr || urlStr === '[]' || urlStr === '') return 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
-                if (urlStr.startsWith('[')) {
-                    try {
-                        const arr = JSON.parse(urlStr);
-                        if (arr.length > 0) return arr[0];
-                    } catch(e) {}
-                }
-                return urlStr || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
-            }
-
-            return `
-                <a href="facility.html?id=${facility.id}" class="facility-card snap-start shrink-0 w-[280px] md:w-[320px] bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg border border-slate-100 transition-all duration-300 group flex flex-col no-underline text-inherit block hover:-translate-y-1">
-                    <div class="h-44 bg-slate-200 relative overflow-hidden">
-                        <img src="${getPrimaryImageUrl(facility.primary_image)}" alt="${facility.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80'">
-                        <div class="absolute top-3 left-3 flex flex-col gap-1 items-start z-10">
-                            ${topBadges}
-                        </div>
-                    </div>
-                    
-                    <div class="p-4 flex flex-col flex-grow">
-                        <div class="flex justify-between items-start mb-2 gap-2">
-                            <h3 class="text-lg font-bold text-dark truncate group-hover:text-primary transition-colors">${facility.name}</h3>
-                        </div>
-                        
-                        <div class="flex items-center text-sm text-slate-500 mb-3">
-                            <i class="fa-solid fa-location-dot w-4 text-center text-slate-400 mr-1.5"></i>
-                            <span class="truncate">${typeof formatShortLocation === 'function' ? formatShortLocation(facility.location) : (facility.location || 'Location unavailable')}</span>
-                            ${facility.distance !== undefined && facility.distance !== null && facility.distance < 150 ? `<span class="ml-2 text-xs font-semibold text-primary/80 bg-primary/5 px-2 py-0.5 rounded-full whitespace-nowrap">${facility.distance.toFixed(1)} km</span>` : ''}
-                        </div>
-
-                        ${facility.rating > 0 ? `
-                        <div class="flex items-center mt-auto pt-3 border-t border-slate-50">
-                            <div class="flex items-center text-amber-400 text-sm font-bold">
-                                <i class="fa-solid fa-star mr-1"></i> ${facility.rating} <span class="text-slate-400 font-normal ml-1">(${facility.reviews_count || 0})</span>
-                            </div>
-                        </div>
-                        ` : '<div class="mt-auto"></div>'}
-                    </div>
-                </a>
-            `;
-        }
-
-        function renderCategoryRow(container, category, facilities) {
-            const rowHtml = `
-                <div class="category-row relative">
-                    <div class="flex justify-between items-end mb-4 px-1">
-                        <h2 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight"><span class="lang-en-only">${category.titleEn}</span><span class="lang-fr-only notranslate">${category.titleFr}</span></h2>
-                        <a href="${category.link}" class="flex items-center text-primary font-bold hover:text-primaryHover transition-custom text-sm relative z-10 whitespace-nowrap bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-full">
-                            <span class="lang-en-only">View all</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-1"></i>
-                        </a>
-                    </div>
-                    
-                    <div class="flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:gap-6">
-                        ${facilities.map(facility => generateSurfaceCard(facility)).join('')}
-                    </div>
-                </div>
-            `;
-            container.innerHTML += rowHtml;
-        }
-
-        function generateSurfaceCard(facility) {
-            const isInstantBook = facility.is_instant_book === 1;
-            let topBadges = '';
-            if (facility.active_promotions) {
-                topBadges += `<div class="bg-red-500/90 backdrop-blur px-2 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center"><i class="fa-solid fa-tag mr-1"></i> Promo</div>`;
-            }
-            if (isInstantBook) {
-                topBadges += `<div class="bg-primary/90 backdrop-blur px-2 py-1 rounded-full text-xs font-bold text-white shadow-sm">Instant Book</div>`;
-            }
-            const typeDisplay = facility.type.charAt(0).toUpperCase() + facility.type.slice(1);
-
-            function getPrimaryImageUrl(urlStr) {
-                if (!urlStr || urlStr === '[]' || urlStr === '') return 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
-                if (urlStr.startsWith('[')) {
-                    try {
-                        const arr = JSON.parse(urlStr);
-                        if (arr.length > 0) return arr[0];
-                    } catch(e) {}
-                }
-                return urlStr || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
-            }
-
-            return `
-                <div class="w-[85vw] sm:w-[320px] lg:w-[360px] flex-shrink-0 snap-start bg-white rounded-3xl overflow-hidden shadow-soft border border-slate-100 group cursor-pointer" onclick="window.location.href='surface.html?id=${facility.id}'">
-                    <div class="relative h-48 sm:h-56 hover-zoom-img-container">
-                        <img src="${getPrimaryImageUrl(facility.image_url)}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
-                        <div class="absolute top-4 left-4 right-4 flex flex-wrap gap-2 z-20 max-w-[calc(100%-2rem)]">
-                            <div class="bg-white/90 backdrop-blur px-2 py-1 rounded-full text-xs font-bold text-slate-800 shadow-sm">
-                                <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating || 'New'} ${facility.reviews_count ? '(' + facility.reviews_count + ')' : ''}
-                            </div>
-                            ${topBadges}
-                        </div>
-                        <button class="absolute bottom-4 right-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-md text-slate-400 hover:text-red-500 hover:scale-110 transition-custom z-10">
-                            <i class="fa-regular fa-heart"></i>
-                        </button>
-                    </div>
-                    <div class="p-5">
-                        <div class="flex justify-between items-start mb-2 gap-2">
-                            <h3 class="text-lg font-bold text-dark group-hover:text-primary transition-custom notranslate truncate">${facility.name}</h3>
-                            <span class="font-bold text-base text-dark whitespace-nowrap">$${facility.base_price}<span class="text-xs font-normal text-slate-500">/hr</span></span>
-                        </div>
-                        ${facility.facility_name ? `<p class="text-[11px] font-semibold text-slate-500 mb-2 uppercase tracking-wide truncate"><i class="fa-solid fa-building mr-1"></i> ${facility.facility_name}</p>` : ''}
-                        <p class="text-slate-500 mb-3 flex items-center text-xs truncate">
-                            <i class="fa-solid fa-location-dot mr-2 text-slate-400"></i> ${typeof formatShortLocation === 'function' ? formatShortLocation(facility.effective_location || facility.location) : (facility.effective_location || facility.location)}
-                        </p>
-                        <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-3 mt-3 gap-2">
-                            <div class="flex items-center flex-wrap gap-2">
-                                <span class="text-[11px] font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded">${typeDisplay}</span>
-                                ${facility.display_slots_today && facility.display_slots_today.length > 0 ? facility.display_slots_today.slice(0, 3).map(slot => `
-                                    <div class="px-1.5 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold ${slot.discount ? 'text-red-600 bg-red-50 border-red-200' : 'text-slate-600'}">
-                                        ${slot.time}${slot.discount ? '<i class="fa-solid fa-tag text-[8px] ml-0.5"></i>' : ''}
-                                    </div>
-                                `).join('') : ''}
-                            </div>
-                            ${facility.display_slots_today && facility.display_slots_today.length > 0 ? `
-                                <span class="text-[11px] font-semibold ${isInstantBook ? 'text-primary' : 'text-slate-500'} whitespace-nowrap"><i class="fa-solid fa-bolt mr-1"></i> Available Today</span>
-                            ` : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
         }
 
 
@@ -1921,11 +1638,7 @@
                     const errorDiv = document.getElementById('login-error');
                     if (errorDiv) {
                         const isFR = window.currentLang === 'fr';
-                        if (err.message && err.message.toLowerCase().includes('suspended')) {
-                            errorDiv.textContent = isFR ? 'Ce compte a été suspendu. Veuillez contacter le support.' : 'This account has been suspended. Please contact support.';
-                        } else {
-                            errorDiv.textContent = isFR ? 'Courriel ou mot de passe incorrect.' : 'Incorrect email or password.';
-                        }
+                        errorDiv.textContent = isFR ? 'Courriel ou mot de passe incorrect.' : 'Incorrect email or password.';
                         errorDiv.style.display = 'block';
                     }
                 } else {
@@ -2204,16 +1917,54 @@
         
         // Initial call
         updateHeroTranslations(document.documentElement.getAttribute('data-lang') || 'en');
+        // Mobile Toggle Logic
+        window.publicSessionsFetched = false;
+        
+        function switchMobileView(viewType) {
+            const tabSurfaces = document.getElementById('mobile-tab-surfaces');
+            const tabSessions = document.getElementById('mobile-tab-sessions');
+            const title = document.getElementById('featured-title');
+            const subtitleText = document.getElementById('featured-subtitle-text');
+            const viewAllLink = document.getElementById('featured-view-all');
+            const viewAllDesktop = document.getElementById('featured-view-all-desktop');
+            const gridSurfaces = document.getElementById('featured-facilities-grid');
+            const gridSessions = document.getElementById('featured-public-sessions-grid');
+
+            if (viewType === 'surfaces') {
+                tabSurfaces.className = "flex-1 py-4 text-center bg-white text-dark font-bold text-[17px] border-r border-slate-200 transition-custom focus:outline-none";
+                tabSessions.className = "flex-1 py-4 text-center bg-slate-100 text-slate-500 font-bold text-[17px] border-b border-slate-300 transition-custom focus:outline-none";
+                
+                if (title) title.innerHTML = '<span class="lang-en-only">Featured Surfaces</span><span class="lang-fr-only notranslate">Surfaces en vedette</span>';
+                if (subtitleText) subtitleText.innerHTML = '<span class="lang-en-only">Discover top-rated spaces available for booking right now.</span><span class="lang-fr-only notranslate">Découvrez des espaces très bien notés disponibles en ce moment.</span>';
+                if (viewAllLink) viewAllLink.href = 'search.html';
+                if (viewAllDesktop) viewAllDesktop.href = 'search.html';
+                
+                if (gridSurfaces) gridSurfaces.classList.remove('hidden');
+                if (gridSessions) gridSessions.classList.add('hidden');
+            } else {
+                tabSessions.className = "flex-1 py-4 text-center bg-white text-dark font-bold text-[17px] border-l border-slate-200 transition-custom focus:outline-none";
+                tabSurfaces.className = "flex-1 py-4 text-center bg-slate-100 text-slate-500 font-bold text-[17px] border-b border-slate-300 transition-custom focus:outline-none";
+
+                if (title) title.innerHTML = '<span class="lang-en-only">Upcoming Public Activities</span><span class="lang-fr-only notranslate">Activités publiques à venir</span>';
+                if (subtitleText) subtitleText.innerHTML = '<span class="lang-en-only">Find and join drop-in activities near you.</span><span class="lang-fr-only notranslate">Trouvez et rejoignez des activités près de chez vous.</span>';
+                if (viewAllLink) viewAllLink.href = 'public-sessions.html';
+                if (viewAllDesktop) viewAllDesktop.href = 'public-sessions.html';
+                
+                if (gridSurfaces) gridSurfaces.classList.add('hidden');
+                if (gridSessions) gridSessions.classList.remove('hidden');
+                
+                if (!window.publicSessionsFetched) {
+                    fetchFeaturedPublicSessions();
+                }
+            }
+            
+            // Re-apply language if needed
+            if (typeof updateLanguage === 'function') {
+                updateLanguage(window.currentLang || 'en');
+            }
+        }
 
         function getSessionImage(notes, facilityType, originalUrl) {
-            try {
-                const parsed = JSON.parse(originalUrl);
-                if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]) return parsed[0];
-            } catch (e) {}
-            if (originalUrl && typeof originalUrl === 'string' && (originalUrl.startsWith('http') || originalUrl.startsWith('data:image/'))) {
-                return originalUrl;
-            }
-
             const text = (notes || '').toLowerCase();
             if (text.includes('hockey')) return 'https://images.unsplash.com/photo-1515523110800-9415d13b84a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
             if (text.includes('skat') || text.includes('patinage') || text.includes('glace')) return 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
@@ -2221,21 +1972,11 @@
             if (text.includes('soccer') || facilityType === 'turf') return 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
             if (text.includes('basketball') || facilityType === 'court') return 'https://images.unsplash.com/photo-1546519638-68e109498ffc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
             if (text.includes('pickleball')) return 'https://images.unsplash.com/photo-1622228514120-1a1200fa889c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
-            
-            return 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
-        }
-        function formatBilingualDate(dateStr) {
-            if (!dateStr) return '';
-            const parts = dateStr.split('-');
-            if (parts.length !== 3) return dateStr;
-            const year = parts[0];
-            const month = parseInt(parts[1], 10);
-            const day = parseInt(parts[2], 10);
-            const enMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const frMonths = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
-            const enDate = `${enMonths[month-1]} ${day}, ${year}`;
-            const frDate = `${day} ${frMonths[month-1]} ${year}`;
-            return `<span class="lang-en-only notranslate">${enDate}</span><span class="lang-fr-only notranslate">${frDate}</span>`;
+            try {
+                const parsed = JSON.parse(originalUrl);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+            } catch (e) {}
+            return originalUrl || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
         }
 
         function createPublicSessionCard(session) {
@@ -2244,44 +1985,42 @@
             const slots = (typeof session.time_slots === 'string') ? JSON.parse(session.time_slots) : session.time_slots;
             const timeDisplay = slots && slots.length > 0 ? slots[0] : '';
             const slotKeys = slots ? slots.map(s => `${session.booking_date}|${s}`) : [];
-            
             const spotsRemaining = Math.max(0, (session.capacity || 0) - (session.joined_count || 0));
             const activityName = session.manual_notes || 'Public Activity';
             const displayImage = getSessionImage(session.manual_notes, session.facility_type, session.image_url);
-            const displayDate = formatBilingualDate(session.booking_date);
 
             return `
-                <div class="facility-card snap-start shrink-0 w-[280px] md:w-[320px] bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer flex flex-col" onclick='sessionStorage.setItem("pending_booking_date", "${session.booking_date}"); sessionStorage.setItem("pending_booking_slots", ${JSON.stringify(JSON.stringify(slotKeys))}); window.location.href="surface.html?id=${session.surface_id}"'>
-                    <div class="relative h-48 hover-zoom-img-container">
+                <div class="w-[85vw] flex-shrink-0 snap-start md:w-auto bg-white rounded-3xl overflow-hidden shadow-soft border border-slate-100 hover:shadow-md transition-custom group cursor-pointer" onclick='sessionStorage.setItem("pending_booking_date", "${session.booking_date}"); sessionStorage.setItem("pending_booking_slots", ${JSON.stringify(JSON.stringify(slotKeys))}); window.location.href="facility.html?id=${session.facility_id}"'>
+                    <div class="relative h-64 hover-zoom-img-container">
                         <img src="${displayImage}" alt="${session.facility_name}" class="w-full h-full object-cover bg-slate-100">
-                        <div class="absolute top-3 left-3 flex flex-wrap gap-2 z-20">
-                            <div class="bg-primary/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-white shadow-sm flex items-center">
+                        <div class="absolute top-4 left-4 flex flex-wrap gap-2 z-20">
+                            <div class="bg-primary/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-sm flex items-center">
                                 <i class="fa-solid fa-users mr-1"></i> ${activityName}
                             </div>
                         </div>
                     </div>
-                    <div class="p-5 flex flex-col flex-grow">
-                        <div class="flex justify-between items-start mb-1 gap-2">
-                            <h3 class="text-lg font-bold text-dark group-hover:text-primary transition-custom truncate">${session.facility_name}</h3>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-dark group-hover:text-primary transition-custom truncate pr-4">${session.facility_name}</h3>
+                            <span class="font-bold text-lg text-dark whitespace-nowrap">From $${session.participant_price || 0}<span class="text-sm font-normal text-slate-500">/pp</span></span>
                         </div>
-                        <p class="text-slate-500 text-xs mb-3 flex items-center">
-                            <i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> ${typeof formatShortLocation === 'function' ? formatShortLocation(session.location) : session.location}
+                        <p class="text-slate-500 mb-4 flex items-center text-sm">
+                            <i class="fa-solid fa-location-dot mr-2 text-slate-400"></i> ${typeof formatShortLocation === 'function' ? formatShortLocation(session.location) : session.location}
                         </p>
-                        <div class="mt-auto flex flex-wrap items-center justify-between border-t border-slate-100 pt-3 gap-y-2 text-xs">
-                            <div class="flex gap-2">
-                                <div class="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold text-slate-600">
-                                    ${displayDate}
-                                </div>
-                                <div class="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold text-slate-600">
-                                    ${timeDisplay}
-                                </div>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold whitespace-nowrap">${typeDisplay}</span>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-4 gap-y-2">
+                            <div class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-600">
+                                ${session.booking_date} ${timeDisplay}
                             </div>
-                            <span class="text-xs font-semibold ${spotsRemaining > 0 ? 'text-primary' : 'text-red-500'}">${spotsRemaining} spots left</span>
+                            <span class="text-sm font-bold ${spotsRemaining > 0 ? 'text-primary' : 'text-red-500'}">${spotsRemaining} spots left</span>
                         </div>
                     </div>
                 </div>
             `;
         }
+
         async function fetchFeaturedPublicSessions() {
             const grid = document.getElementById('featured-public-sessions-grid');
             if (!grid) return;

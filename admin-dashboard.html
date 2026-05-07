@@ -669,9 +669,13 @@
 
                     let actionBtn = u.status === 'suspended'
                         ? `<button onclick="updateUserStatus(${u.id}, 'active')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-green-50 hover:text-green-600 transition-custom">Reactivate</button>`
-                        : `<button onclick="updateUserStatus(${u.id}, 'suspended')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-red-50 hover:text-red-600 transition-custom">Suspend Account</button>`;
+                        : `<button onclick="updateUserStatus(${u.id}, 'suspended')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-yellow-50 hover:text-yellow-600 transition-custom">Suspend Account</button>`;
 
-                    if (u.role === 'admin') actionBtn = `<span class="text-xs text-slate-400 italic">No actions</span>`; // Cannot suspend other admins
+                    if (u.role !== 'admin') {
+                        actionBtn += `<button onclick="deleteUser(${u.id})" class="text-xs font-bold bg-red-100 text-red-600 px-3 py-1.5 rounded hover:bg-red-200 transition-custom">Delete</button>`;
+                    } else {
+                        actionBtn = `<span class="text-xs text-slate-400 italic">No actions</span>`;
+                    }
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition-custom group">
@@ -699,8 +703,10 @@
                             <td class="py-4 px-4 border-b border-slate-100">
                                 ${statusBadge}
                             </td>
-                            <td class="py-4 px-8 border-b border-slate-100 text-right opacity-80 group-hover:opacity-100 transition-opacity">
-                                ${actionBtn}
+                            <td class="py-4 px-8 border-b border-slate-100 text-right opacity-80 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-2">
+                                    ${actionBtn}
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -851,6 +857,26 @@
                 } else {
                     const data = await res.json();
                     await showAlertModal('Error', data.error || 'Failed to update status', 'OK', true);
+                }
+            } catch (err) {
+                await showAlertModal('Error', 'Network error', 'OK', true);
+            }
+        }
+
+        async function deleteUser(id) {
+            const confirmed = await showConfirmModal('Delete User', 'Are you sure you want to fully delete this account? This action cannot be undone and will delete all their data.', 'Delete', 'Cancel', true);
+            if(!confirmed) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/admin/users/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                if(res.ok) {
+                    loadAdminUsers();
+                    loadDashboardStats();
+                } else {
+                    const data = await res.json();
+                    await showAlertModal('Error', data.error || 'Failed to delete user', 'OK', true);
                 }
             } catch (err) {
                 await showAlertModal('Error', 'Network error', 'OK', true);
