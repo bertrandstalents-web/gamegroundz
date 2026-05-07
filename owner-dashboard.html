@@ -7127,10 +7127,11 @@
         // Initialize SortableJS
         const sidebarMenu = document.getElementById('sidebar-menu');
         if (sidebarMenu) {
-            new Sortable(sidebarMenu, {
+            const sidebarSortable = new Sortable(sidebarMenu, {
                 animation: 150,
                 ghostClass: 'opacity-50',
                 handle: '.sort-handle',
+                disabled: window.innerWidth <= 768,
                 onEnd: async function () {
                     // Gather new order
                     const newOrder = Array.from(sidebarMenu.children).map(li => li.getAttribute('data-tab')).filter(Boolean);
@@ -7160,6 +7161,11 @@
                         console.error("Failed to save dashboard preferences:", err);
                     }
                 }
+            });
+
+            // Re-evaluate on window resize
+            window.addEventListener('resize', () => {
+                sidebarSortable.option('disabled', window.innerWidth <= 768);
             });
         }
     });
