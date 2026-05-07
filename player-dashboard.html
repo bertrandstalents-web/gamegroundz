@@ -1072,13 +1072,13 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Successfully Joined!',
-                                text: 'You have been added to the public session. An email receipt will be sent shortly.',
+                                text: 'You have been added to the public activity. An email receipt will be sent shortly.',
                                 confirmButtonColor: '#10b981'
                             });
                         }, 500);
                     } else if (typeof showAlertModal === 'function') {
                         setTimeout(() => {
-                            showAlertModal('Successfully Joined!', 'You have been added to the public session. An email receipt will be sent shortly.');
+                            showAlertModal('Successfully Joined!', 'You have been added to the public activity. An email receipt will be sent shortly.');
                         }, 500);
                     }
                     window.history.replaceState({}, document.title, window.location.pathname);
@@ -1192,7 +1192,7 @@
                                 <div>
                                     <h3 class="text-xl font-bold text-dark mb-1 cursor-pointer hover:text-primary transition-custom flex items-center flex-wrap gap-2" onclick="window.location.href='facility.html?id=${booking.facility_id}'">
                                         ${booking.facility_name} 
-                                        ${booking.booking_type === 'public_session' ? `<span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-md">Public Session <span class="font-black">(x${booking.quantity || 1} Spots)</span></span>` : ''}
+                                        ${booking.booking_type === 'public_session' ? `<span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-md">Public Activity <span class="font-black">(x${booking.quantity || 1} Spots)</span></span>` : ''}
                                     </h3>
                                     <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${typeof formatShortLocation === 'function' ? formatShortLocation(booking.location) : booking.location}</p>
                                     

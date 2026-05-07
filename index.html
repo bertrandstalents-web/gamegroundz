@@ -48,7 +48,7 @@
                     <!-- Desktop Only Links -->
                     <div class="hidden md:flex items-center space-x-4 lg:space-x-8">
                         <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom whitespace-nowrap text-sm lg:text-base"><span class="lang-en-only">Find a Surface</span><span class="lang-fr-only notranslate">Trouver une surface</span></a>
-                        <a href="public-sessions.html" class="text-slate-600 hover:text-primary font-medium transition-custom whitespace-nowrap text-sm lg:text-base"><span class="lang-en-only">Public Sessions</span><span class="lang-fr-only notranslate">Séances publiques</span></a>
+                        <a href="public-sessions.html" class="text-slate-600 hover:text-primary font-medium transition-custom whitespace-nowrap text-sm lg:text-base"><span class="lang-en-only">Public Activities</span><span class="lang-fr-only notranslate">Activités publiques</span></a>
                         
                         <div class="h-6 w-px bg-slate-300"></div>
                     </div>
@@ -1075,7 +1075,7 @@
                 });
 
 
-                // Fetch and render Public Sessions as the last row
+                // Fetch and render Public Activities as the last row
                 try {
                     const sessionsRes = await fetch(`${API_BASE_URL}/api/public_sessions/upcoming/all`, { 
                         method: 'GET',
@@ -1084,16 +1084,16 @@
                     if (sessionsRes.ok) {
                         let sessions = await sessionsRes.json();
                         if (sessions && sessions.length > 0) {
-                            sessions = sessions.slice(0, 10); // show up to 10 upcoming public sessions
+                            sessions = sessions.slice(0, 10); // show up to 10 upcoming public activities
                             renderPublicSessionRow(feedContainer, {
-                                titleEn: 'Public Sessions',
-                                titleFr: 'Séances publiques',
+                                titleEn: 'Public Activities',
+                                titleFr: 'Activités publiques',
                                 link: 'public-sessions.html'
                             }, sessions);
                         }
                     }
                 } catch (err) {
-                    console.error('Failed to load public sessions row', err);
+                    console.error('Failed to load public activities row', err);
                 }
 
                 if (feedContainer.innerHTML === '') {
@@ -2157,7 +2157,7 @@
             const slotKeys = slots ? slots.map(s => `${session.booking_date}|${s}`) : [];
             
             const spotsRemaining = Math.max(0, (session.capacity || 0) - (session.joined_count || 0));
-            const activityName = session.manual_notes || 'Public Session';
+            const activityName = session.manual_notes || 'Public Activity';
             const displayImage = getSessionImage(session.manual_notes, session.facility_type, session.image_url);
             const displayDate = formatBilingualDate(session.booking_date);
 
@@ -2211,7 +2211,7 @@
                 
                 grid.innerHTML = '';
                 if (sessions.length === 0) {
-                    grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 font-medium text-lg">No public sessions found.</div>';
+                    grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 font-medium text-lg">No public activities found.</div>';
                     return;
                 }
                 

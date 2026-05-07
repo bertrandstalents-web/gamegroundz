@@ -210,7 +210,7 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
                         function(err) {
                             if (err) reject(err);
                             else {
-                                console.log("Public session joined via Stripe! Booking ID:", bookingId);
+                                console.log("Public activity joined via Stripe! Booking ID:", bookingId);
                                 sendPublicSessionJoinEmails(bookingId, userId);
                                 resolve();
                             }
@@ -368,7 +368,7 @@ function sendPublicSessionJoinEmails(bookingId, userId) {
             await new Promise(r => setTimeout(r, 1000));
             await emailService.sendHostConfirmation(emailDetails);
         } catch (error) {
-            console.error("Error in sequential public session email delivery:", error);
+            console.error("Error in sequential public activity email delivery:", error);
         }
     });
 }
@@ -2042,7 +2042,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
         return res.status(400).json({ error: "Missing required fields" });
     }
     
-    // Process public session fields securely
+    // Process public activity fields securely
     const isPublic = booking_type === 'public_session';
     const numCap = isPublic ? (parseInt(capacity, 10) || 0) : 0;
     const numPrice = isPublic ? (parseFloat(participant_price) || 0.0) : 0.0;
@@ -2231,9 +2231,9 @@ app.get('/api/bookings/:facility_id', (req, res) => {
     });
 });
 
-// GET upcoming public sessions across all facilities
+// GET upcoming public activities across all facilities
 app.get('/api/public_sessions/upcoming/all', (req, res) => {
-    // We only want future public sessions or today's
+    // We only want future public activities or today's
     const serverNow = new Date();
     const tzStr = serverNow.toLocaleString('en-US', { timeZone: 'America/New_York' }); 
     const now = new Date(tzStr);
@@ -2258,7 +2258,7 @@ app.get('/api/public_sessions/upcoming/all', (req, res) => {
     });
 });
 
-// GET public sessions for a facility
+// GET public activities for a facility
 app.get('/api/public_sessions/:facility_id', (req, res) => {
     const { facility_id } = req.params;
     
@@ -2267,7 +2267,7 @@ app.get('/api/public_sessions/:facility_id', (req, res) => {
     const now = new Date(tzStr);
     const todayStr = now.toISOString().split('T')[0];
 
-    // We only want future public sessions or today's
+    // We only want future public activities or today's
     const query = `
         SELECT b.*, 
         (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
@@ -2283,10 +2283,10 @@ app.get('/api/public_sessions/:facility_id', (req, res) => {
     });
 });
 
-// POST join a public session
+// POST join a public activity
 app.post('/api/public_sessions/join', async (req, res) => {
     if (!req.session.userId) {
-        return res.status(401).json({ error: "You must be logged in to join a public session." });
+        return res.status(401).json({ error: "You must be logged in to join a public activity." });
     }
 
     const { booking_id } = req.body;
@@ -2350,7 +2350,7 @@ app.post('/api/public_sessions/join', async (req, res) => {
                         price_data: {
                             currency: 'cad',
                             product_data: {
-                                name: `Public Session (Adult): ${session.manual_notes || 'Open Session'}`,
+                                name: `Public Activity (Adult): ${session.manual_notes || 'Open Session'}`,
                                 description: `${session.facility_name} - ${session.booking_date}`,
                             },
                             unit_amount: unitAmountAdult,
@@ -2363,7 +2363,7 @@ app.post('/api/public_sessions/join', async (req, res) => {
                         price_data: {
                             currency: 'cad',
                             product_data: {
-                                name: `Public Session (Kid): ${session.manual_notes || 'Open Session'}`,
+                                name: `Public Activity (Kid): ${session.manual_notes || 'Open Session'}`,
                                 description: `${session.facility_name} - ${session.booking_date}`,
                             },
                             unit_amount: unitAmountKid,
@@ -3489,11 +3489,11 @@ app.post('/api/bookings/confirm', async (req, res) => {
                             [bookingId, userId, session.id],
                             function(err) {
                                 if (err) {
-                                    res.status(500).json({ error: "Failed to confirm public session" });
+                                    res.status(500).json({ error: "Failed to confirm public activity" });
                                     reject(err);
                                 } else {
                                     sendPublicSessionJoinEmails(bookingId, userId);
-                                    res.json({ success: true, message: "Public session confirmed" });
+                                    res.json({ success: true, message: "Public activity confirmed" });
                                     resolve();
                                 }
                             }

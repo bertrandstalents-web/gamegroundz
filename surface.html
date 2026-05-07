@@ -665,7 +665,7 @@
 
             window.publicSessionSlots = new Map(); // "YYYY-MM-DD|HH:MM" -> public_session object
 
-            let bookedSlotIds = new Set(); // Stores IDs of private slots AND fully loaded public sessions
+            let bookedSlotIds = new Set(); // Stores IDs of private slots AND fully loaded public activities
 
             async function fetchBookedSlots() {
                 if (!currentFacilityId) return new Set();
@@ -1288,7 +1288,7 @@
                     if (data.url) {
                         window.location.href = data.url;
                     } else if (data.redirectUrl) {
-                        showAlertModal("Success", "You've successfully joined the public session!");
+                        showAlertModal("Success", "You've successfully joined the public activity!");
                         window.location.href = data.redirectUrl;
                     }
                 } catch(e) {
@@ -1329,7 +1329,7 @@
 
                 if (selectedSlotIds.size === 0) return;
 
-                // Hijack for public session join
+                // Hijack for public activity join
                 const isPublicSessionCheckout = selectedSlotIds.size > 0 && window.publicSessionSlots && window.publicSessionSlots.has(Array.from(selectedSlotIds)[0]);
                 if (isPublicSessionCheckout) {
                     const bookingId = window.publicSessionSlots.get(Array.from(selectedSlotIds)[0]).id;
@@ -1585,7 +1585,7 @@
                             <div class="flex flex-col w-full pr-2">
                                 <span class="flex items-center flex-wrap gap-y-1">
                                     <span class="shrink-0">${slot.time}</span> 
-                                    <span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-indigo-500 text-white border-indigo-400' : 'bg-white text-indigo-600 border-indigo-100'} border shrink-0">Public Session</span>
+                                    <span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-indigo-500 text-white border-indigo-400' : 'bg-white text-indigo-600 border-indigo-100'} border shrink-0">Public Activity</span>
                                     ${resOnlyTag}
                                 </span>
                                 <span class="text-xs font-medium ${isSelected ? 'text-indigo-200' : 'text-indigo-500'} mt-0.5 truncate">${pubSess.manual_notes || 'Open Session'} • ${pubSess.joined_count || 0}/${pubSess.capacity} joined • ${priceText}</span>
@@ -1595,7 +1595,7 @@
                         div.onclick = (e) => {
                             e.stopPropagation();
                             if (!isSelected) {
-                                // Select all slots that belong to this public session
+                                // Select all slots that belong to this public activity
                                 selectedSlotIds.clear();
                                 window.publicSessionSlots.forEach((ps, key) => {
                                     if (ps.id === pubSess.id) {
@@ -1603,7 +1603,7 @@
                                     }
                                 });
                             } else {
-                                // Deselect all slots that belong to this public session
+                                // Deselect all slots that belong to this public activity
                                 window.publicSessionSlots.forEach((ps, key) => {
                                     if (ps.id === pubSess.id) {
                                         selectedSlotIds.delete(key);
@@ -1639,7 +1639,7 @@
                             div.onclick = (e) => {
                                 e.stopPropagation();
                                 
-                                // Prevent mixing private standard blocks with public sessions
+                                // Prevent mixing private standard blocks with public activities
                                 const currentHasPub = Array.from(selectedSlotIds).some(s => window.publicSessionSlots && window.publicSessionSlots.has(s));
                                 if (!isSelected && currentHasPub) {
                                     selectedSlotIds.clear();
@@ -1765,7 +1765,7 @@
 
                     const totalPrice = (adultPrice * window.publicSessionAdults) + (kidPrice * window.publicSessionKids);
                     currentTotal = totalPrice;
-                    priceCalcEl.innerHTML = `Public Session Ticket${window.publicSessionAdults+window.publicSessionKids>1?'s':''}`;
+                    priceCalcEl.innerHTML = `Public Activity Ticket${window.publicSessionAdults+window.publicSessionKids>1?'s':''}`;
                     subtotalEl.textContent = `$${totalPrice.toFixed(2)}`;
                     taxEl.textContent = `$0.00`;
                     totalEl.textContent = `$${totalPrice.toFixed(2)}`;
@@ -2280,11 +2280,11 @@
                          if (isSelected) {
                              row.className += "bg-indigo-600 border-indigo-700 shadow-sm shadow-indigo-600/30 text-white";
                              const resOnlyBadgeSel = (pubSess.residents_only === 1 || pubSess.residents_only === true) ? `<span class="ml-2 text-[10px] uppercase font-bold text-white px-1.5 py-0.5 rounded-md bg-orange-500"><i class="fa-solid fa-house-user mr-1"></i>Residents Only</span>` : '';
-                             row.innerHTML = `<span class="font-bold text-white flex flex-wrap items-center">${slot.time.split(' - ')[0]} - Public Session ${resOnlyBadgeSel}</span> <div class="w-6 h-6 rounded-full bg-white text-indigo-600 flex items-center justify-center shadow-sm shrink-0"><i class="fa-solid fa-users text-xs"></i></div>`;
+                             row.innerHTML = `<span class="font-bold text-white flex flex-wrap items-center">${slot.time.split(' - ')[0]} - Public Activity ${resOnlyBadgeSel}</span> <div class="w-6 h-6 rounded-full bg-white text-indigo-600 flex items-center justify-center shadow-sm shrink-0"><i class="fa-solid fa-users text-xs"></i></div>`;
                          } else {
                              row.className += "bg-indigo-50 border-indigo-200 hover:border-indigo-400 hover:shadow-sm";
                              const resOnlyBadge = (pubSess.residents_only === 1 || pubSess.residents_only === true) ? `<span class="ml-2 text-[10px] uppercase font-bold text-orange-600 px-1.5 py-0.5 rounded-md bg-orange-100"><i class="fa-solid fa-house-user mr-1"></i>Residents Only</span>` : '';
-                             row.innerHTML = `<span class="font-bold text-indigo-700 flex flex-wrap items-center">${slot.time.split(' - ')[0]} - ${pubSess.manual_notes || 'Public Session'} ${resOnlyBadge}</span> <span class="text-xs font-bold text-indigo-600 bg-white px-2 rounded-full border border-indigo-100 shadow-sm shrink-0">${pubSess.joined_count || 0}/${pubSess.capacity} joined</span>`;
+                             row.innerHTML = `<span class="font-bold text-indigo-700 flex flex-wrap items-center">${slot.time.split(' - ')[0]} - ${pubSess.manual_notes || 'Public Activity'} ${resOnlyBadge}</span> <span class="text-xs font-bold text-indigo-600 bg-white px-2 rounded-full border border-indigo-100 shadow-sm shrink-0">${pubSess.joined_count || 0}/${pubSess.capacity} joined</span>`;
                          }
                     } else if (isSelected) {
                          row.className += "bg-primary/10 border-primary/30 shadow-sm shadow-primary/10";

@@ -513,12 +513,12 @@
                                         </label>
                                         <label class="flex items-center cursor-pointer border border-primary/20 bg-primary/5 px-3 py-1.5 rounded-lg transition-custom hover:bg-primary/10">
                                             <input type="radio" name="modal-block-type" value="public_session" class="w-4 h-4 text-primary focus:ring-primary border-slate-300" onchange="toggleModalBlockType()">
-                                            <span class="ml-2 text-sm font-bold text-primary">Public Session</span>
+                                            <span class="ml-2 text-sm font-bold text-primary">Public Activity</span>
                                         </label>
                                     </div>
                                 </div>
 
-                                <!-- Offline / Public Session Fields -->
+                                <!-- Offline / Public Activity Fields -->
                                 <div id="modal-offline-fields" class="space-y-4">
                                     <div id="public-session-extra" class="hidden space-y-4 pb-2 border-b border-slate-100">
                                         <div>
@@ -1488,12 +1488,12 @@
  <!-- End lg:col-span-3 -->
             </div> <!-- End Dashboard Content Grid -->
         </div> <!-- End dashboard-content -->
-    <!-- Public Session Details Modal -->
+    <!-- Public Activity Details Modal -->
     <div id="public-session-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-indigo-50/50 shrink-0">
                 <h3 class="text-lg font-bold text-slate-800 flex items-center">
-                    <i class="fa-solid fa-users text-indigo-600 mr-2"></i> Public Session
+                    <i class="fa-solid fa-users text-indigo-600 mr-2"></i> Public Activity
                 </h3>
                 <button type="button" onclick="closePublicSessionModal()" class="text-slate-400 hover:text-slate-600 transition-custom w-8 h-8 rounded-full hover:bg-white flex items-center justify-center">
                     <i class="fa-solid fa-xmark text-lg"></i>
@@ -2904,7 +2904,7 @@
                 let isEditable = false;
 
                 if (b.booking_type === 'public_session') {
-                    evTitle = `👥 Public Session: ${b.manual_notes} (${b.joined_count || 0}/${b.capacity})`;
+                    evTitle = `👥 Public Activity: ${b.manual_notes} (${b.joined_count || 0}/${b.capacity})`;
                     evClass = 'g-event-public-session bg-indigo-600 border border-indigo-700 text-white font-semibold shadow-sm rounded overflow-hidden';
                     isEditable = true; // allow dragging if we want, but let's say true like manual
                 } else if (b.booking_type === 'manual') {
@@ -3369,7 +3369,7 @@
                 } else if (surfaceType === 'pool') {
                     optionsData = ['Swimming Lane', 'Open Swim and Diving Board', 'Recreational and Family Pool'];
                 } else {
-                    optionsData = ['Public Session'];
+                    optionsData = ['Public Activity'];
                 }
 
                 const customWrapper = document.getElementById('modal-block-notes-custom-wrapper');
@@ -3404,7 +3404,7 @@
                     }
                 }
 
-                if(submitBtn) submitBtn.innerHTML = isEditMode ? 'Save Changes' : 'Create Public Session';
+                if(submitBtn) submitBtn.innerHTML = isEditMode ? 'Save Changes' : 'Create Public Activity';
             } else {
                 if(offlineFields) offlineFields.classList.remove('hidden');
                 if(notesInput) { notesInput.required = true; notesInput.classList.remove('hidden'); }
@@ -3438,7 +3438,7 @@
             const blockType = blockTypeEl ? blockTypeEl.value : 'offline';
 
             if (blockType === 'offline' || blockType === 'public_session') {
-                priceDisplay.innerHTML = blockType === 'public_session' ? 'Public Session' : 'Offline';
+                priceDisplay.innerHTML = blockType === 'public_session' ? 'Public Activity' : 'Offline';
                 return;
             }
 
@@ -5640,7 +5640,7 @@
             if (booking.booking_type === 'public_session') {
                 openPublicSessionModal({
                     id: booking.id,
-                    title: `👥 Public Session: ${booking.manual_notes || 'Host'} (${booking.joined_count || 0}/${booking.capacity})`,
+                    title: `👥 Public Activity: ${booking.manual_notes || 'Host'} (${booking.joined_count || 0}/${booking.capacity})`,
                     extendedProps: {
                         joined_count: booking.joined_count || 0,
                         capacity: booking.capacity || 0

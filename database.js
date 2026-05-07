@@ -310,7 +310,7 @@ async function initDatabase() {
         try { await client.query(`ALTER TABLE bookings ADD COLUMN participant_kid_price REAL DEFAULT 0.0`); } catch(e) {}
 
 
-        // Public Session Participants Table
+        // Public Activity Participants Table
         await client.query(`CREATE TABLE IF NOT EXISTS public_session_participants (
             id SERIAL PRIMARY KEY,
             booking_id INTEGER REFERENCES bookings(id),

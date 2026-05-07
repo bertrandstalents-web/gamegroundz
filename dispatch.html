@@ -372,7 +372,7 @@
                         // Display activity name or notes
                         let activityName = '';
                         if (b.booking_type === 'public_session') {
-                            activityName = b.manual_notes ? `Public Session - ${b.manual_notes}` : 'Public Session';
+                            activityName = b.manual_notes ? `Public Activity - ${b.manual_notes}` : 'Public Activity';
                         } else if (b.booking_type === 'manual') {
                             activityName = b.manual_notes || 'Private Booking';
                         } else {

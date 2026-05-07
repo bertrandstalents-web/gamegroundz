@@ -323,7 +323,7 @@ Check this condition server-side when loading wallet data and return a `needsPay
 
 **Files:** `index.html` (navbar CSS), `style.css`
 
-At 768px in French mode, "Trouver une surface", "Séances publiques", and "Tableau de bord d'administration" each wrap to 2–3 lines, making the navbar extremely tall and pushing all content far down the page.
+At 768px in French mode, "Trouver une surface", "Activités publiques", and "Tableau de bord d'administration" each wrap to 2–3 lines, making the navbar extremely tall and pushing all content far down the page.
 
 Fix: At `max-width: 1024px`, use shorter FR nav labels or move the nav into the hamburger drawer (see TASK 5). Quick fix for the button specifically:
 
@@ -337,7 +337,7 @@ Fix: At `max-width: 1024px`, use shorter FR nav labels or move the nav into the 
 
 Or shorten the FR nav strings in `fr.json`:
 - `"Trouver une surface"` → `"Trouver"`
-- `"Séances publiques"` → `"Sessions"`  
+- `"Activités publiques"` → `"Sessions"`  
 - `"Tableau de bord d'administration"` → `"Admin"`
 
 Add `white-space: nowrap` to nav link elements so they collapse to hamburger before wrapping.

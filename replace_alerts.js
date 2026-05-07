@@ -26,7 +26,7 @@ function processFile(filename) {
         content = content.replace(/alert\('Residency removed successfully\.'\);/g, 'showAlertModal("Success", "Residency removed successfully.");');
         content = content.replace(/alert\('Error: ' \+ err\.message\);/g, 'showAlertModal("Error", err.message, "OK", true);');
     } else if (filename === 'surface.html' || filename === 'facility.html') {
-        content = content.replace(/alert\("You've successfully joined the public session!"\);/g, 'showAlertModal("Success", "You\'ve successfully joined the public session!");');
+        content = content.replace(/alert\("You've successfully joined the public activity!"\);/g, 'showAlertModal("Success", "You\'ve successfully joined the public activity!");');
     }
     
     fs.writeFileSync(filename, content, 'utf8');
