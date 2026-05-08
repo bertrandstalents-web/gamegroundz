@@ -1216,41 +1216,9 @@
         }
 
         
-        function scrollCategoryRow(btn, direction) {
-            const wrapper = btn.closest('.category-row');
-            if (!wrapper) return;
-            const scrollContainer = wrapper.querySelector('.row-scroll-container');
-            if (!scrollContainer) return;
-            const scrollAmount = Math.max(300, scrollContainer.clientWidth * 0.75);
-            scrollContainer.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
-        }
-
-        function updateRowArrows(container) {
-            const wrapper = container.closest('.category-row');
-            if (!wrapper) return;
-            const leftArrow = wrapper.querySelector('.row-arrow-left');
-            const rightArrow = wrapper.querySelector('.row-arrow-right');
-            
-            if (leftArrow) {
-                if (container.scrollLeft > 5) {
-                    leftArrow.style.visibility = 'visible';
-                } else {
-                    leftArrow.style.visibility = 'hidden';
-                }
-            }
-            
-            if (rightArrow) {
-                if (container.scrollLeft + container.clientWidth < container.scrollWidth - 5) {
-                    rightArrow.style.visibility = 'visible';
-                } else {
-                    rightArrow.style.visibility = 'hidden';
-                }
-            }
-        }
-
         function renderPublicSessionRow(container, category, sessions) {
             const rowHtml = `
-                <div class="category-row relative group/row">
+                <div class="category-row relative">
                     <div class="flex justify-between items-end mb-4 px-1">
                         <h2 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight"><span class="lang-en-only">${category.titleEn}</span><span class="lang-fr-only notranslate">${category.titleFr}</span></h2>
                         <a href="${category.link}" class="flex items-center text-primary font-bold hover:text-primaryHover transition-custom text-sm relative z-10 whitespace-nowrap bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-full">
@@ -1258,39 +1226,17 @@
                         </a>
                     </div>
                     
-                    <div class="relative">
-                        <!-- Left Arrow -->
-                        <div class="row-arrow-left absolute left-0 top-0 bottom-6 w-16 z-10 flex items-center justify-start pl-0 sm:pl-2 opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 hidden md:flex pointer-events-none" style="visibility: hidden;">
-                            <button class="bg-white shadow-md rounded-full w-10 h-10 flex items-center justify-center text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-primary pointer-events-auto transition-custom focus:outline-none" onclick="scrollCategoryRow(this, -1)">
-                                <i class="fa-solid fa-chevron-left text-lg"></i>
-                            </button>
-                        </div>
-
-                        <div class="row-scroll-container flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:gap-6" onscroll="updateRowArrows(this)">
-                            ${sessions.map(session => createPublicSessionCard(session)).join('')}
-                        </div>
-
-                        <!-- Right Arrow -->
-                        <div class="row-arrow-right absolute right-0 top-0 bottom-6 w-16 z-10 flex items-center justify-end pr-0 sm:pr-2 opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 hidden md:flex pointer-events-none">
-                            <button class="bg-white shadow-md rounded-full w-10 h-10 flex items-center justify-center text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-primary pointer-events-auto transition-custom focus:outline-none" onclick="scrollCategoryRow(this, 1)">
-                                <i class="fa-solid fa-chevron-right text-lg"></i>
-                            </button>
-                        </div>
+                    <div class="flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:gap-6">
+                        ${sessions.map(session => createPublicSessionCard(session)).join('')}
                     </div>
                 </div>
             `;
             container.innerHTML += rowHtml;
-            setTimeout(() => {
-                const containers = container.querySelectorAll('.row-scroll-container');
-                if (containers.length > 0) {
-                    updateRowArrows(containers[containers.length - 1]);
-                }
-            }, 100);
         }
 
         function renderFacilityRow(container, category, facilities) {
             const rowHtml = `
-                <div class="category-row relative group/row">
+                <div class="category-row relative">
                     <div class="flex justify-between items-end mb-4 px-1">
                         <h2 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight"><span class="lang-en-only">${category.titleEn}</span><span class="lang-fr-only notranslate">${category.titleFr}</span></h2>
                         <a href="${category.link}" class="flex items-center text-primary font-bold hover:text-primaryHover transition-custom text-sm relative z-10 whitespace-nowrap bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-full">
@@ -1298,34 +1244,12 @@
                         </a>
                     </div>
                     
-                    <div class="relative">
-                        <!-- Left Arrow -->
-                        <div class="row-arrow-left absolute left-0 top-0 bottom-6 w-16 z-10 flex items-center justify-start pl-0 sm:pl-2 opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 hidden md:flex pointer-events-none" style="visibility: hidden;">
-                            <button class="bg-white shadow-md rounded-full w-10 h-10 flex items-center justify-center text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-primary pointer-events-auto transition-custom focus:outline-none" onclick="scrollCategoryRow(this, -1)">
-                                <i class="fa-solid fa-chevron-left text-lg"></i>
-                            </button>
-                        </div>
-
-                        <div class="row-scroll-container flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:gap-6" onscroll="updateRowArrows(this)">
-                            ${facilities.map(facility => generateFacilityCard(facility)).join('')}
-                        </div>
-
-                        <!-- Right Arrow -->
-                        <div class="row-arrow-right absolute right-0 top-0 bottom-6 w-16 z-10 flex items-center justify-end pr-0 sm:pr-2 opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 hidden md:flex pointer-events-none">
-                            <button class="bg-white shadow-md rounded-full w-10 h-10 flex items-center justify-center text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-primary pointer-events-auto transition-custom focus:outline-none" onclick="scrollCategoryRow(this, 1)">
-                                <i class="fa-solid fa-chevron-right text-lg"></i>
-                            </button>
-                        </div>
+                    <div class="flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:gap-6">
+                        ${facilities.map(facility => generateFacilityCard(facility)).join('')}
                     </div>
                 </div>
             `;
             container.innerHTML += rowHtml;
-            setTimeout(() => {
-                const containers = container.querySelectorAll('.row-scroll-container');
-                if (containers.length > 0) {
-                    updateRowArrows(containers[containers.length - 1]);
-                }
-            }, 100);
         }
 
         function generateFacilityCard(facility) {
@@ -1379,7 +1303,7 @@
 
         function renderCategoryRow(container, category, facilities) {
             const rowHtml = `
-                <div class="category-row relative group/row">
+                <div class="category-row relative">
                     <div class="flex justify-between items-end mb-4 px-1">
                         <h2 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight"><span class="lang-en-only">${category.titleEn}</span><span class="lang-fr-only notranslate">${category.titleFr}</span></h2>
                         <a href="${category.link}" class="flex items-center text-primary font-bold hover:text-primaryHover transition-custom text-sm relative z-10 whitespace-nowrap bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-full">
@@ -1387,34 +1311,12 @@
                         </a>
                     </div>
                     
-                    <div class="relative">
-                        <!-- Left Arrow -->
-                        <div class="row-arrow-left absolute left-0 top-0 bottom-6 w-16 z-10 flex items-center justify-start pl-0 sm:pl-2 opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 hidden md:flex pointer-events-none" style="visibility: hidden;">
-                            <button class="bg-white shadow-md rounded-full w-10 h-10 flex items-center justify-center text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-primary pointer-events-auto transition-custom focus:outline-none" onclick="scrollCategoryRow(this, -1)">
-                                <i class="fa-solid fa-chevron-left text-lg"></i>
-                            </button>
-                        </div>
-
-                        <div class="row-scroll-container flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:gap-6" onscroll="updateRowArrows(this)">
-                            ${facilities.map(facility => generateSurfaceCard(facility)).join('')}
-                        </div>
-
-                        <!-- Right Arrow -->
-                        <div class="row-arrow-right absolute right-0 top-0 bottom-6 w-16 z-10 flex items-center justify-end pr-0 sm:pr-2 opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 hidden md:flex pointer-events-none">
-                            <button class="bg-white shadow-md rounded-full w-10 h-10 flex items-center justify-center text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-primary pointer-events-auto transition-custom focus:outline-none" onclick="scrollCategoryRow(this, 1)">
-                                <i class="fa-solid fa-chevron-right text-lg"></i>
-                            </button>
-                        </div>
+                    <div class="flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:gap-6">
+                        ${facilities.map(facility => generateSurfaceCard(facility)).join('')}
                     </div>
                 </div>
             `;
             container.innerHTML += rowHtml;
-            setTimeout(() => {
-                const containers = container.querySelectorAll('.row-scroll-container');
-                if (containers.length > 0) {
-                    updateRowArrows(containers[containers.length - 1]);
-                }
-            }, 100);
         }
 
         function generateSurfaceCard(facility) {
@@ -1952,19 +1854,22 @@
                 
                 if (role_choice === 'player' && authMunicipalitySearch && authMunicipalitySearch.value.trim() !== '') {
                     const docInput = document.getElementById('auth-residency-doc');
-                    if (docInput && docInput.files.length > 0) {
-                        try {
-                            residency_document_url = await new Promise((resolve, reject) => {
-                                const reader = new FileReader();
-                                reader.onload = () => resolve(reader.result);
-                                reader.onerror = reject;
-                                reader.readAsDataURL(docInput.files[0]);
-                            });
-                        } catch (e) {
-                             authError.textContent = "Error reading residency document.";
-                             authError.classList.remove('hidden');
-                             return;
-                        }
+                    if (!docInput || docInput.files.length === 0) {
+                        authError.textContent = "Please upload a proof of residency document.";
+                        authError.classList.remove('hidden');
+                        return;
+                    }
+                    try {
+                        residency_document_url = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(docInput.files[0]);
+                        });
+                    } catch (e) {
+                         authError.textContent = "Error reading residency document.";
+                         authError.classList.remove('hidden');
+                         return;
                     }
                 }
             }
@@ -1998,34 +1903,18 @@
                     throw new Error(data.error || 'Authentication failed');
                 }
 
-                if (isLoginMode) {
-                    // Success - Since we might be on file://, we also save user in localStorage
-                    (function(){ const _u = {...data.user}; delete _u.profile_picture; localStorage.setItem('gg_user', JSON.stringify(_u)); })();
-                    
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const redirectUrl = urlParams.get('redirect');
-                    if (redirectUrl) {
-                        window.location.href = redirectUrl;
-                        return;
-                    }
-                    
-                    closeAuthModal();
-                    updateUserUI(data.user);
-                } else {
-                    // Signup mode
-                    authError.textContent = data.message || "Registration successful! Please check your email to verify your account before logging in.";
-                    authError.className = "mb-4 p-3 rounded-xl text-sm font-medium border bg-green-50 text-green-700 border-green-200";
-                    authError.classList.remove('hidden');
-                    
-                    authForm.reset();
-                    
-                    // Switch to login mode after a short delay
-                    setTimeout(() => {
-                        toggleAuthMode({ preventDefault: () => {} });
-                        authError.className = "hidden mb-4 p-3 rounded-xl text-sm font-medium bg-red-50 text-red-700 border border-red-200";
-                        authError.textContent = "";
-                    }, 5000);
+                // Success - Since we might be on file://, we also save user in localStorage
+                (function(){ const _u = {...data.user}; delete _u.profile_picture; localStorage.setItem('gg_user', JSON.stringify(_u)); })();
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectUrl = urlParams.get('redirect');
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                    return;
                 }
+                
+                closeAuthModal();
+                updateUserUI(data.user);
                 
             } catch (err) {
                 if (isLoginMode) {

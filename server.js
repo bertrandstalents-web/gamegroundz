@@ -547,20 +547,30 @@ app.post('/api/users/signup', async (req, res) => {
                 // Insert new user
                 db.run("INSERT INTO users (name, email, password, role, company_name, first_name, last_name, phone_number, profile_picture, residency_city, residency_document_url, residency_status, residency_applied_at, interested_surfaces) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
                     [name, email, hashedPassword, userRole, company_name, first_name.trim(), last_name.trim(), phone_number, profile_picture, residency_city || null, residency_document_url || null, residency_status, residency_applied_at, surfacesJSON], 
-                    function(err) {
+                    async function(err) {
                         if (err) return res.status(500).json({ error: "Could not create user" });
                         
-                        emailService.sendWelcomeEmail(email, name, userRole);
+                        await emailService.sendWelcomeEmail(email, name, userRole);
                         
-                        // Set session
-                        req.session.userId = this.lastID;
-                        req.session.userRole = userRole;
-                        req.session.userName = name;
-                        req.session.email = email;
+                        // Generate email verification token
+                        const token = crypto.randomBytes(32).toString('hex');
+                        const expiresAt = new Date(Date.now() + 7 * 24 * 3600000).toISOString(); // 7 days
+                        db.run("INSERT INTO verification_tokens (user_id, token, type, expires_at) VALUES (?, ?, ?, ?)", [this.lastID, token, 'registration', expiresAt]);
+                        
+                        // Delay before sending second email to prevent Office365 concurrent rate-limiting
+                        setTimeout(() => {
+                            emailService.sendEmailVerification(email, name, token);
+                        }, 2000);
+                        
+                        // Do not set session automatically. Require email verification first.
+                        // req.session.userId = this.lastID;
+                        // req.session.userRole = userRole;
+                        // req.session.userName = name;
+                        // req.session.email = email;
                         
                         res.status(201).json({ 
-                            message: "User registered successfully", 
-                            user: { id: this.lastID, name: name, email: email, role: userRole, profile_picture: profile_picture, residency_city, residency_status, interested_surfaces: surfacesJSON } 
+                            message: "User registered successfully. Please check your email to verify your account before logging in.", 
+                            user: { id: this.lastID, name: name, email: email, role: userRole, profile_picture: profile_picture, residency_city, residency_status, interested_surfaces: surfacesJSON, is_verified: 0 } 
                         });
                     }
                 );
@@ -589,6 +599,10 @@ app.post('/api/auth/login', (req, res) => {
 
         if (user.status === 'suspended') {
             return res.status(403).json({ error: "This account has been suspended. Please contact support." });
+        }
+
+        if (user.is_verified === 0) {
+            return res.status(403).json({ error: "Please verify your email address before logging in. Check your inbox for the verification link." });
         }
 
         // Compare password
@@ -700,6 +714,59 @@ app.post('/api/auth/reset-password', async (req, res) => {
     });
 });
 
+// Verify Email
+app.get('/api/auth/verify', (req, res) => {
+    const { token } = req.query;
+    if (!token) return res.redirect('/?error=invalid_token');
+
+    db.get("SELECT * FROM verification_tokens WHERE token = ? AND type = 'registration'", [token], (err, tokenRecord) => {
+        if (err || !tokenRecord) return res.redirect('/verify.html?status=invalid');
+        
+        if (new Date(tokenRecord.expires_at) < new Date()) {
+            return res.redirect('/verify.html?status=expired');
+        }
+
+        db.run("UPDATE users SET is_verified = 1 WHERE id = ?", [tokenRecord.user_id], (err) => {
+            if (err) return res.redirect('/verify.html?status=error');
+            
+            db.run("DELETE FROM verification_tokens WHERE id = ?", [tokenRecord.id]);
+            res.redirect('/verify.html?status=success');
+        });
+    });
+});
+
+// Verify Password Change
+app.get('/api/auth/verify-password-change', (req, res) => {
+    const { token } = req.query;
+    if (!token) return res.redirect('/?error=invalid_token');
+
+    db.get("SELECT * FROM verification_tokens WHERE token = ? AND type = 'password_change'", [token], (err, tokenRecord) => {
+        if (err || !tokenRecord) return res.redirect('/verify-password.html?status=invalid');
+        
+        if (new Date(tokenRecord.expires_at) < new Date()) {
+            return res.redirect('/verify-password.html?status=expired');
+        }
+
+        const newPasswordHash = tokenRecord.data;
+        if (!newPasswordHash) return res.redirect('/verify-password.html?status=error');
+
+        db.run("UPDATE users SET password = ? WHERE id = ?", [newPasswordHash, tokenRecord.user_id], (err) => {
+            if (err) return res.redirect('/verify-password.html?status=error');
+            
+            db.run("DELETE FROM verification_tokens WHERE id = ?", [tokenRecord.id]);
+            
+            // Optionally, send a confirmation that it was changed
+            db.get("SELECT email FROM users WHERE id = ?", [tokenRecord.user_id], (err, user) => {
+                if (user && user.email) {
+                    emailService.sendPasswordChangedConfirmation(user.email);
+                }
+            });
+
+            res.redirect('/verify-password.html?status=success');
+        });
+    });
+});
+
 // User Logout
 app.post('/api/auth/logout', (req, res) => {
     req.session.destroy((err) => {
@@ -765,6 +832,7 @@ app.put('/api/users/profile', async (req, res) => {
                 if (conflictUser) return res.status(400).json({ error: "Email is already in use by another account." });
 
                 let finalPassword = currentUser.password;
+                let passwordChangeRequested = false;
                 
                 // If trying to change password
                 if (old_password && new_password) {
@@ -779,7 +847,16 @@ app.put('/api/users/profile', async (req, res) => {
                     }
                     
                     const salt = await bcrypt.genSalt(10);
-                    finalPassword = await bcrypt.hash(new_password, salt);
+                    const hashedNewPassword = await bcrypt.hash(new_password, salt);
+                    
+                    // Generate verification token for password change
+                    const token = crypto.randomBytes(32).toString('hex');
+                    const expiresAt = new Date(Date.now() + 3600000).toISOString(); // 1 hour
+                    
+                    db.run("INSERT INTO verification_tokens (user_id, token, type, data, expires_at) VALUES (?, ?, ?, ?, ?)", [currentUser.id, token, 'password_change', hashedNewPassword, expiresAt]);
+                    
+                    emailService.sendPasswordChangeVerification(currentUser.email, currentUser.name, token);
+                    passwordChangeRequested = true;
                 }
 
                 let finalResidencyCity = currentUser.residency_city;
@@ -814,7 +891,11 @@ app.put('/api/users/profile', async (req, res) => {
                         
                         req.session.userName = name;
                         req.session.email = email;
-                        res.status(200).json({ message: "Profile updated successfully" });
+                        if (passwordChangeRequested) {
+                            res.status(200).json({ message: "Profile updated. A confirmation link has been sent to your email to finalize the password change." });
+                        } else {
+                            res.status(200).json({ message: "Profile updated successfully" });
+                        }
                     }
                 );
             });

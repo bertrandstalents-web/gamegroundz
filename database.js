@@ -146,6 +146,11 @@ async function initDatabase() {
             await client.query(`ALTER TABLE users ADD COLUMN terms_accepted_at TEXT`);
         } catch(e) {}
 
+        try {
+            await client.query(`ALTER TABLE users ADD COLUMN is_verified INTEGER DEFAULT 0`);
+        } catch(e) {}
+
+
         // Facility Images Table (Facility-wide images)
         await client.query(`CREATE TABLE IF NOT EXISTS facility_images (
             id SERIAL PRIMARY KEY,
@@ -370,6 +375,17 @@ async function initDatabase() {
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(id),
             token TEXT NOT NULL,
+            expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+
+        // Verification Tokens Table
+        await client.query(`CREATE TABLE IF NOT EXISTS verification_tokens (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id),
+            token TEXT NOT NULL,
+            type TEXT NOT NULL,
+            data TEXT,
             expires_at TIMESTAMP NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);

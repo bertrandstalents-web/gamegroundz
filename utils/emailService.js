@@ -297,6 +297,80 @@ async function sendPasswordResetEmail(email, token) {
     }
 }
 
+async function sendEmailVerification(email, name, token) {
+    if (!transporter) return;
+
+    try {
+        const verifyLink = `${process.env.APP_URL || 'http://localhost:3000'}/api/auth/verify?token=${token}`;
+        
+        const bodyContent = `
+            <h2>Verify Your Email</h2>
+            <p>Hi ${name},</p>
+            <p>Welcome to GameGroundz! Please click the button below to verify your email address and activate your account.</p>
+            
+            <center>
+                <a href="${verifyLink}" class="btn">Verify Email</a>
+            </center>
+            
+            <p style="margin-top: 24px; font-size: 14px; color: #6b7280;">If you didn't create an account, you can safely ignore this email.</p>
+        `;
+
+        const html = getBaseEmailTemplate('Verify Your Email', 'Welcome to GameGroundz! Verify your email to get started.', bodyContent);
+
+        let info = await transporter.sendMail({
+            from: '"GameGroundz Security" <support@gamegroundz.com>',
+            to: email,
+            subject: `Verify Your GameGroundz Account`,
+            html: html,
+        });
+
+        console.log("Verification email sent: %s", info.messageId);
+        if (info.messageId.includes('ethereal')) {
+            console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        }
+    } catch (error) {
+        console.error("Error sending verification email:", error);
+    }
+}
+
+async function sendPasswordChangeVerification(email, name, token) {
+    if (!transporter) return;
+
+    try {
+        const verifyLink = `${process.env.APP_URL || 'http://localhost:3000'}/api/auth/verify-password-change?token=${token}`;
+        
+        const bodyContent = `
+            <h2>Confirm Password Change</h2>
+            <p>Hi ${name},</p>
+            <p>We received a request to change the password for your GameGroundz profile.</p>
+            <p>Please click the button below to confirm and finalize your new password. This link is valid for 1 hour.</p>
+            
+            <center>
+                <a href="${verifyLink}" class="btn">Confirm Password Change</a>
+            </center>
+            
+            <p style="margin-top: 24px; font-size: 14px; color: #6b7280;">If you did not request a password change, please ignore this email or contact support immediately.</p>
+        `;
+
+        const html = getBaseEmailTemplate('Confirm Password Change', 'Confirm your new GameGroundz password.', bodyContent);
+
+        let info = await transporter.sendMail({
+            from: '"GameGroundz Security" <support@gamegroundz.com>',
+            to: email,
+            subject: `Confirm Your Password Change`,
+            html: html,
+        });
+
+        console.log("Password change verification email sent: %s", info.messageId);
+        if (info.messageId.includes('ethereal')) {
+            console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        }
+    } catch (error) {
+        console.error("Error sending password change verification email:", error);
+    }
+}
+
+
 async function sendWelcomeEmail(email, name, role) {
     if (!transporter) return;
 
@@ -458,5 +532,7 @@ module.exports = {
     sendWelcomeEmail,
     sendPasswordChangedConfirmation,
     sendCancellationEmail,
-    sendCoHostInvitationEmail
+    sendCoHostInvitationEmail,
+    sendEmailVerification,
+    sendPasswordChangeVerification
 };
