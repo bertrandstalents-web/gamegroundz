@@ -729,7 +729,28 @@ app.get('/api/auth/verify', (req, res) => {
             if (err) return res.redirect('/verify.html?status=error');
             
             db.run("DELETE FROM verification_tokens WHERE id = ?", [tokenRecord.id]);
-            res.redirect('/verify.html?status=success');
+            
+            // Auto-login the user for a smoother experience
+            db.get("SELECT * FROM users WHERE id = ?", [tokenRecord.user_id], (err, user) => {
+                if (!err && user) {
+                    req.session.userId = user.id;
+                    req.session.userRole = user.role;
+                    req.session.userName = user.name;
+                    req.session.email = user.email;
+                    
+                    res.cookie('auth_token', user.id.toString(), {
+                        httpOnly: true,
+                        secure: process.env.NODE_ENV === 'production',
+                        sameSite: 'lax',
+                        maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+                    });
+                    
+                    const redirectUrl = user.role === 'host' ? '/owner-dashboard.html' : '/index.html';
+                    res.redirect(`${redirectUrl}?verified=true`);
+                } else {
+                    res.redirect('/verify.html?status=success');
+                }
+            });
         });
     });
 });

@@ -1451,7 +1451,15 @@
             });
         });
     </script>
+    </script>
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('verified') === 'true') {
+                setTimeout(() => alert('Your email has been successfully verified! Welcome to GameGroundz.'), 500);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
     </script>
 </body>
 </html>
