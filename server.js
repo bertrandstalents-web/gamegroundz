@@ -569,8 +569,7 @@ app.post('/api/users/signup', async (req, res) => {
                         // req.session.email = email;
                         
                         res.status(201).json({ 
-                            message: "User registered successfully. Please check your email to verify your account before logging in.", 
-                            user: { id: this.lastID, name: name, email: email, role: userRole, profile_picture: profile_picture, residency_city, residency_status, interested_surfaces: surfacesJSON, is_verified: 0 } 
+                            message: "User registered successfully. Please check your email to verify your account before logging in."
                         });
                     }
                 );
