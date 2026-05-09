@@ -298,7 +298,7 @@ async function sendPasswordResetEmail(email, token) {
 }
 
 async function sendEmailVerification(email, name, token) {
-    if (!transporter) return;
+    if (!transporter) return false;
 
     try {
         const verifyLink = `${process.env.APP_URL || 'http://localhost:3000'}/api/auth/verify?token=${token}`;
@@ -328,8 +328,10 @@ async function sendEmailVerification(email, name, token) {
         if (info.messageId.includes('ethereal')) {
             console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
         }
+        return true;
     } catch (error) {
         console.error("Error sending verification email:", error);
+        return false;
     }
 }
 

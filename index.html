@@ -617,6 +617,22 @@
         </a>
     </div>
 
+    <!-- Email Verification Sent Modal -->
+    <div id="verify-sent-modal" class="fixed inset-0 z-[110] hidden items-center justify-center">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" id="verify-sent-backdrop"></div>
+        <div class="relative bg-white w-full max-w-md rounded-3xl shadow-xl flex flex-col max-h-[90vh] mx-4 animate-scale-in text-center p-8">
+            <button id="close-verify-sent-btn" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-dark transition-colors z-10">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-blue-500 text-4xl mb-6 mx-auto shadow-sm border-4 border-white ring-4 ring-blue-50">
+                <i class="fa-regular fa-paper-plane"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-dark mb-3"><span class="lang-en-only">Check Your Inbox!</span><span class="lang-fr-only notranslate">Vérifiez votre boîte de réception!</span></h2>
+            <p class="text-slate-600 mb-6 text-sm"><span class="lang-en-only">We've just sent a verification link to your email address. Please click the link to activate your account before logging in.</span><span class="lang-fr-only notranslate">Nous venons d'envoyer un lien de vérification à votre adresse courriel. Veuillez cliquer sur le lien pour activer votre compte avant de vous connecter.</span></p>
+            <button id="verify-sent-ok-btn" class="w-full bg-primary hover:bg-primaryHover text-white font-bold py-3.5 rounded-xl transition-custom shadow-glow text-lg"><span class="lang-en-only">Got it!</span><span class="lang-fr-only notranslate">Compris!</span></button>
+        </div>
+    </div>
+
     <!-- Auth Modal Overlay -->
     <div id="auth-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" id="auth-backdrop"></div>
@@ -1679,6 +1695,23 @@
         if (authBackdrop) authBackdrop.addEventListener('click', closeAuthModal);
         if (authToggleBtn) authToggleBtn.addEventListener('click', toggleAuthMode);
 
+        const verifySentModal = document.getElementById('verify-sent-modal');
+        const verifySentBackdrop = document.getElementById('verify-sent-backdrop');
+        const closeVerifySentBtn = document.getElementById('close-verify-sent-btn');
+        const verifySentOkBtn = document.getElementById('verify-sent-ok-btn');
+        
+        function closeVerifySentModal() {
+            if (verifySentModal) {
+                verifySentModal.classList.add('hidden');
+                verifySentModal.classList.remove('flex');
+                document.body.style.overflow = '';
+            }
+        }
+        
+        if (closeVerifySentBtn) closeVerifySentBtn.addEventListener('click', closeVerifySentModal);
+        if (verifySentBackdrop) verifySentBackdrop.addEventListener('click', closeVerifySentModal);
+        if (verifySentOkBtn) verifySentOkBtn.addEventListener('click', closeVerifySentModal);
+
         const authEmailInput = document.getElementById('auth-email');
         const authPasswordInput = document.getElementById('auth-password');
         if (authEmailInput) {
@@ -2013,18 +2046,17 @@
                     updateUserUI(data.user);
                 } else {
                     // Signup mode
-                    authError.textContent = data.message || "Registration successful! Please check your email to verify your account before logging in.";
-                    authError.className = "mb-4 p-3 rounded-xl text-sm font-medium border bg-green-50 text-green-700 border-green-200";
-                    authError.classList.remove('hidden');
+                    closeAuthModal();
+                    
+                    const vModal = document.getElementById('verify-sent-modal');
+                    if (vModal) {
+                        vModal.classList.remove('hidden');
+                        vModal.classList.add('flex');
+                        document.body.style.overflow = 'hidden';
+                    }
                     
                     authForm.reset();
-                    
-                    // Switch to login mode after a short delay
-                    setTimeout(() => {
-                        toggleAuthMode({ preventDefault: () => {} });
-                        authError.className = "hidden mb-4 p-3 rounded-xl text-sm font-medium bg-red-50 text-red-700 border border-red-200";
-                        authError.textContent = "";
-                    }, 5000);
+                    toggleAuthMode({ preventDefault: () => {} });
                 }
                 
             } catch (err) {

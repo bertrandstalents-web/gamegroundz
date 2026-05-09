@@ -70,8 +70,22 @@
                 iconContainer.className = 'w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-500 text-4xl mb-6 mx-auto';
                 iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
                 title.textContent = 'Email Verified!';
-                desc.textContent = 'Your email address has been successfully verified. You can now log in to your account.';
-                btn.classList.remove('hidden');
+                
+                const redirect = urlParams.get('redirect');
+                if (redirect) {
+                    desc.textContent = 'Your email address has been successfully verified. Redirecting you to your account...';
+                    btn.textContent = 'Redirecting...';
+                    btn.classList.add('opacity-75', 'cursor-wait');
+                    btn.href = 'javascript:void(0)';
+                    btn.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        window.location.href = redirect;
+                    }, 3000);
+                } else {
+                    desc.textContent = 'Your email address has been successfully verified. You can now log in to your account.';
+                    btn.classList.remove('hidden');
+                }
             } else if (status === 'expired') {
                 iconContainer.className = 'w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-500 text-4xl mb-6 mx-auto';
                 iconContainer.innerHTML = '<i class="fa-solid fa-clock"></i>';

@@ -549,24 +549,25 @@ app.post('/api/users/signup', async (req, res) => {
                     [name, email, hashedPassword, userRole, company_name, first_name.trim(), last_name.trim(), phone_number, profile_picture, residency_city || null, residency_document_url || null, residency_status, residency_applied_at, surfacesJSON], 
                     async function(err) {
                         if (err) return res.status(500).json({ error: "Could not create user" });
-                        
-                        await emailService.sendWelcomeEmail(email, name, userRole);
+                        const newUserId = this.lastID;
                         
                         // Generate email verification token
                         const token = crypto.randomBytes(32).toString('hex');
                         const expiresAt = new Date(Date.now() + 7 * 24 * 3600000).toISOString(); // 7 days
-                        db.run("INSERT INTO verification_tokens (user_id, token, type, expires_at) VALUES (?, ?, ?, ?)", [this.lastID, token, 'registration', expiresAt]);
+                        db.run("INSERT INTO verification_tokens (user_id, token, type, expires_at) VALUES (?, ?, ?, ?)", [newUserId, token, 'registration', expiresAt]);
+                        
+                        // Send verification email first and ensure it succeeds
+                        const sent = await emailService.sendEmailVerification(email, name, token);
+                        if (!sent) {
+                            db.run("DELETE FROM verification_tokens WHERE user_id = ?", [newUserId]);
+                            db.run("DELETE FROM users WHERE id = ?", [newUserId]);
+                            return res.status(500).json({ error: "Failed to send verification email. Please try again with a valid email address." });
+                        }
                         
                         // Delay before sending second email to prevent Office365 concurrent rate-limiting
                         setTimeout(() => {
-                            emailService.sendEmailVerification(email, name, token);
+                            emailService.sendWelcomeEmail(email, name, userRole);
                         }, 2000);
-                        
-                        // Do not set session automatically. Require email verification first.
-                        // req.session.userId = this.lastID;
-                        // req.session.userRole = userRole;
-                        // req.session.userName = name;
-                        // req.session.email = email;
                         
                         res.status(201).json({ 
                             message: "User registered successfully. Please check your email to verify your account before logging in."
@@ -746,7 +747,7 @@ app.get('/api/auth/verify', (req, res) => {
                     });
                     
                     const redirectUrl = user.role === 'host' ? '/owner-dashboard.html' : '/index.html';
-                    res.redirect(`${redirectUrl}?verified=true`);
+                    res.redirect(`/verify.html?status=success&redirect=${encodeURIComponent(redirectUrl)}`);
                 } else {
                     res.redirect('/verify.html?status=success');
                 }
