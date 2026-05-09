@@ -566,11 +566,6 @@ app.post('/api/users/signup', async (req, res) => {
                             return res.status(500).json({ error: "Failed to send verification email. Please try again with a valid email address." });
                         }
                         
-                        // Delay before sending second email to prevent Office365 concurrent rate-limiting
-                        setTimeout(() => {
-                            emailService.sendWelcomeEmail(email, name, userRole);
-                        }, 2000);
-                        
                         res.status(201).json({ 
                             message: "User registered successfully. Please check your email to verify your account before logging in."
                         });
@@ -774,6 +769,9 @@ app.get('/api/auth/verify', (req, res) => {
                         sameSite: 'lax',
                         maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
                     });
+                    
+                    // Send welcome/congratulations email after successful verification
+                    emailService.sendWelcomeEmail(user.email, user.name, user.role);
                     
                     const redirectUrl = user.role === 'host' ? '/owner-dashboard.html' : '/index.html';
                     res.redirect(`/verify.html?status=success&redirect=${encodeURIComponent(redirectUrl)}`);
