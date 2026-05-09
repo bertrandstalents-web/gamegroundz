@@ -554,7 +554,9 @@ app.post('/api/users/signup', async (req, res) => {
                         // Generate email verification token
                         const token = crypto.randomBytes(32).toString('hex');
                         const expiresAt = new Date(Date.now() + 7 * 24 * 3600000).toISOString(); // 7 days
-                        db.run("INSERT INTO verification_tokens (user_id, token, type, expires_at) VALUES (?, ?, ?, ?)", [newUserId, token, 'registration', expiresAt]);
+                        db.run("INSERT INTO verification_tokens (user_id, token, type, expires_at) VALUES (?, ?, ?, ?)", [newUserId, token, 'registration', expiresAt], (err) => {
+                            if (err) console.error("Error inserting verification token:", err);
+                        });
                         
                         // Send verification email first and ensure it succeeds
                         const sent = await emailService.sendEmailVerification(email, name, token);
