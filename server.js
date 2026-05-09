@@ -688,7 +688,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
         if (new Date(resetToken.expires_at) < new Date()) {
             return res.status(400).json({ error: "Token has expired" });
         }
-        db.get("SELECT password, email FROM users WHERE id = ?", [resetToken.user_id], async (err, user) => {
+        db.get("SELECT * FROM users WHERE id = ?", [resetToken.user_id], async (err, user) => {
             if (err || !user) return res.status(500).json({ error: "Database error" });
             
             // Check if the new password matches the current one
@@ -710,7 +710,34 @@ app.post('/api/auth/reset-password', async (req, res) => {
                     emailService.sendPasswordChangedConfirmation(user.email);
                 }
                 
-                res.json({ message: "Password updated successfully" });
+                // Auto-login the user
+                req.session.userId = user.id;
+                req.session.userRole = user.role;
+                req.session.userName = user.name;
+                req.session.email = user.email;
+                
+                res.cookie('auth_token', user.id.toString(), {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+                });
+
+                const redirectUrl = user.role === 'host' ? '/owner-dashboard.html' : (user.role === 'admin' ? '/admin-dashboard.html' : '/player-dashboard.html');
+                
+                res.json({ 
+                    message: "Password updated successfully",
+                    redirectUrl: redirectUrl,
+                    user: { 
+                        id: user.id, 
+                        name: user.name, 
+                        email: user.email, 
+                        role: user.role, 
+                        profile_picture: user.profile_picture,
+                        dashboard_preferences: user.dashboard_preferences,
+                        interested_surfaces: user.interested_surfaces
+                    }
+                });
             });
         });
     });
