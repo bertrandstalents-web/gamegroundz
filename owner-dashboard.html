@@ -5745,31 +5745,189 @@
     <!-- Terms and Conditions Modal -->
     <div id="tc-modal" class="hidden fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
                 <div>
-                    <h3 class="text-xl font-extrabold text-slate-800">GameGroundz Host Terms &amp; Conditions</h3>
-                    <p class="text-sm text-slate-500 mt-1">Please read and accept our updated terms to continue managing your facilities.</p>
+                    <h3 class="text-xl font-extrabold text-slate-800">
+                        <span class="lang-en-only">GameGroundz Host Terms &amp; Conditions</span>
+                        <span class="lang-fr-only notranslate">Termes &amp; Conditions du Partenaire Hôte</span>
+                    </h3>
+                    <p class="text-sm text-slate-500 mt-1">
+                        <span class="lang-en-only">Please read and accept our updated terms to continue managing your facilities.</span>
+                        <span class="lang-fr-only notranslate">Veuillez lire et accepter nos termes mis à jour pour continuer à gérer vos installations.</span>
+                    </p>
                 </div>
-                <a href="pdfs/GameGroundz_Terms_and_Conditions_v2.docx.pdf" target="_blank" class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-primary hover:bg-slate-50 hover:border-primary/30 transition-custom shadow-sm" title="Open Full Format in New Tab">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                </a>
             </div>
-            <div class="flex-1 overflow-hidden relative bg-slate-100 p-2">
-                <iframe src="pdfs/GameGroundz_Terms_and_Conditions_v2.docx.pdf" class="w-full h-full rounded-xl border border-slate-200" title="Terms and Conditions PDF"></iframe>
+            <div class="flex-1 overflow-y-auto relative bg-slate-50 p-6 sm:p-8 custom-scrollbar">
+                
+                <!-- English Terms -->
+                <div class="prose prose-slate max-w-none lang-en-only">
+                    <h1 class="text-3xl font-black text-dark mb-2 text-center">Facility Partner<br><span class="text-primary">Terms & Conditions</span></h1>
+                    <p class="text-center text-slate-500 italic mb-8">Effective as of June 1, 2026</p>
+
+                    <p>These Terms & Conditions (“Agreement”) govern the relationship between Gamegroundz (“Platform”) and the sports facility (“Facility”) using the Platform to list, market, and manage bookings for their spaces.</p>
+                    <p>By checking the box to agree, the Facility acknowledges that it has read, understood, and agrees to be bound by the terms outlined below.</p>
+
+                    <hr class="my-8 border-slate-200">
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">1. Platform Overview</h2>
+                    <p>Gamegroundz provides an online marketplace that allows sports facilities to list and rent out their spaces (including but not limited to ice rinks, fields, courts, and training areas) to users.</p>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">2. Commission Structure</h2>
+                    <p>All facilities using the Gamegroundz platform are subject to the following commission structure:</p>
+                    
+                    <div class="bg-primary/5 border border-primary/20 rounded-xl p-6 my-6">
+                        <h3 class="font-bold text-dark mb-3">Partner Commission Rate</h3>
+                        <ul class="list-disc pl-5 space-y-2 text-slate-700">
+                            <li>5% commission per completed booking processed through Gamegroundz</li>
+                            <li>Stripe processing fee: 2.9% + $0.30 per transaction (facility responsibility)</li>
+                        </ul>
+                        <div class="mt-4 flex items-start gap-3 text-sm text-primary font-medium">
+                            <i class="fa-regular fa-lightbulb mt-0.5"></i>
+                            <p>We recommend adding a processing fee to your listings to offset the Stripe fee.</p>
+                        </div>
+                    </div>
+
+                    <h3 class="font-bold text-dark mt-6 mb-3">2.1 Commission Application</h3>
+                    <ol class="list-decimal pl-5 space-y-2">
+                        <li>Commission is calculated as a percentage of the total booking value (excluding processing fees).</li>
+                        <li>Gamegroundz reserves the right to deduct commissions automatically at the time of transaction.</li>
+                    </ol>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">3. Payment Processing Fees</h2>
+                    <p>All transactions on the Platform are processed through Stripe.</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>A Stripe processing fee of 2.9% + $0.30 per transaction is applied to all bookings.</li>
+                        <li>This fee is the responsibility of the Facility. Gamegroundz strongly advises Facilities to incorporate this cost into their listing pricing.</li>
+                        <li>Gamegroundz is not responsible for any additional fees imposed by Stripe or other financial institutions.</li>
+                    </ul>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">4. Facility Responsibilities</h2>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>Provide accurate and up-to-date information regarding availability, pricing, and facility details.</li>
+                        <li>Honor all confirmed bookings made through the Platform.</li>
+                        <li>Maintain the facility in a safe and usable condition for customers.</li>
+                        <li>Comply with all applicable local laws, regulations, and safety standards.</li>
+                    </ul>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">5. Cancellations & Refunds</h2>
+                    <p>Facilities are responsible for clearly defining their cancellation and refund policies within their listings. Gamegroundz will facilitate transactions based on those policies but is not liable for disputes arising from them.</p>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">6. Limitation of Liability</h2>
+                    <p>Gamegroundz is not liable for:</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>Any injuries, damages, or losses occurring at the Facility.</li>
+                        <li>Disputes between Facilities and customers.</li>
+                        <li>Facility availability or service quality.</li>
+                    </ul>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">7. Modifications</h2>
+                    <p>Gamegroundz reserves the right to update or modify these Terms & Conditions at any time. Facilities will be notified of any material changes.</p>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">8. Acceptance of Terms</h2>
+                    <p>By agreeing, the Facility:</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>Confirms acceptance of the commission structure outlined above.</li>
+                        <li>Acknowledges the Stripe processing fee of 2.9% + $0.30 per transaction.</li>
+                        <li>Agrees to all terms stated in this Agreement.</li>
+                    </ul>
+                    <p class="mt-6 font-medium">If you do not agree to these Terms & Conditions, you may not use the Gamegroundz Platform.</p>
+                </div>
+
+                <!-- French Terms -->
+                <div class="prose prose-slate max-w-none lang-fr-only notranslate">
+                    <h1 class="text-3xl font-black text-dark mb-2 text-center">Partenaire Hôte<br><span class="text-primary">Termes & Conditions</span></h1>
+                    <p class="text-center text-slate-500 italic mb-8">En vigueur à compter du 1er juin 2026</p>
+
+                    <p>Les présents Termes & Conditions (« Accord ») régissent la relation entre Gamegroundz (« Plateforme ») et l’installation sportive (« Hôte ») utilisant la Plateforme pour lister, commercialiser et gérer les réservations de ses espaces.</p>
+                    <p>En cochant la case pour accepter, l’hôte reconnaît avoir lu, compris et accepté d’être liée par les termes énoncés ci-dessous.</p>
+
+                    <hr class="my-8 border-slate-200">
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">1. Aperçu de la Plateforme</h2>
+                    <p>Gamegroundz fournit une place de marché en ligne permettant aux installations sportives de lister et de louer leurs espaces (incluant, sans s’y limiter, les patinoires, terrains, courts et zones d’entraînement) à des utilisateurs.</p>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">2. Structure de commission</h2>
+                    <p>Toutes les hôtes utilisant la plateforme Gamegroundz sont soumises à la structure de commission suivante :</p>
+                    
+                    <div class="bg-primary/5 border border-primary/20 rounded-xl p-6 my-6">
+                        <h3 class="font-bold text-dark mb-3">Taux de commission Partenaire</h3>
+                        <ul class="list-disc pl-5 space-y-2 text-slate-700">
+                            <li>5 % de commission par réservation complétée traitée via Gamegroundz</li>
+                            <li>Frais de traitement Stripe : 2,9 % + 0,30 $ par transaction (responsabilité de l’hôte)</li>
+                        </ul>
+                        <div class="mt-4 flex items-start gap-3 text-sm text-primary font-medium">
+                            <i class="fa-regular fa-lightbulb mt-0.5"></i>
+                            <p>Nous recommandons d’ajouter des frais de traitement à vos annonces pour compenser les frais Stripe.</p>
+                        </div>
+                    </div>
+
+                    <h3 class="font-bold text-dark mt-6 mb-3">2.1 Application de la commission</h3>
+                    <ol class="list-decimal pl-5 space-y-2">
+                        <li>La commission est calculée en pourcentage de la valeur totale de la réservation (hors frais de traitement).</li>
+                        <li>Gamegroundz se réserve le droit de déduire automatiquement les commissions au moment de la transaction.</li>
+                    </ol>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">3. Frais de traitement des paiements</h2>
+                    <p>Toutes les transactions sur la Plateforme sont traitées via Stripe.</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>Des frais de traitement Stripe de 2,9 % + 0,30 $ par transaction s’appliquent à toutes les réservations.</li>
+                        <li>Ces frais sont à la charge de l’Hôte. Gamegroundz recommande vivement aux Hôtes d’intégrer ce coût dans leurs tarifs de mise en ligne.</li>
+                        <li>Gamegroundz n’est pas responsable des frais supplémentaires imposés par Stripe ou d’autres institutions financières.</li>
+                    </ul>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">4. Responsabilités de l’Hôte</h2>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>Fournir des informations exactes et à jour concernant les disponibilités, les tarifs et les détails de l’installation.</li>
+                        <li>Honorer toutes les réservations confirmées effectuées via la Plateforme.</li>
+                        <li>Maintenir l’installation dans un état sûr et utilisable pour les clients.</li>
+                        <li>Se conformer à toutes les lois, règlements et normes de sécurité locaux applicables.</li>
+                    </ul>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">5. Annulations & Remboursements</h2>
+                    <p>Les Hôtes sont responsables de définir clairement leurs politiques d’annulation et de remboursement dans leurs annonces. Gamegroundz facilitera les transactions conformément à ces politiques, mais n’est pas responsable des litiges en découlant.</p>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">6. Limitation de responsabilité</h2>
+                    <p>Gamegroundz n’est pas responsable de :</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>Tout blessure, dommage ou perte survenant à l’installation.</li>
+                        <li>Des litiges entre les Hôtes et les clients.</li>
+                        <li>La disponibilité de l’installation ou la qualité du service.</li>
+                    </ul>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">7. Modifications</h2>
+                    <p>Gamegroundz se réserve le droit de mettre à jour ou de modifier les présents Termes & Conditions à tout moment. Les Hôtes seront informées de tout changement important.</p>
+
+                    <h2 class="text-xl font-bold text-dark mt-8 mb-4">8. Acceptation des Termes</h2>
+                    <p>En acceptant, l’Hôte :</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>Confirme l’acceptation de la structure de commission énoncée ci-dessus.</li>
+                        <li>Reconnaît les frais de traitement Stripe de 2,9 % + 0,30 $ par transaction.</li>
+                        <li>Accepte tous les termes énoncés dans le présent Accord.</li>
+                    </ul>
+                    <p class="mt-6 font-medium">Si vous n’acceptez pas les présents Termes & Conditions, vous ne pouvez pas utiliser la Plateforme Gamegroundz.</p>
+                </div>
+
             </div>
-            <div class="p-6 border-t border-slate-100 bg-white">
+            <div class="p-6 border-t border-slate-100 bg-white shrink-0">
                 <div class="flex items-start gap-3 mb-6">
                     <div class="flex items-center h-5">
                         <input id="tc-agree-checkbox" aria-describedby="tc-agree-description" type="checkbox" class="w-5 h-5 bg-slate-100 border-slate-300 rounded text-primary focus:ring-primary focus:ring-2 cursor-pointer transition-custom">
                     </div>
                     <div class="ml-2 text-sm">
-                        <label for="tc-agree-checkbox" class="font-bold text-slate-700 cursor-pointer">I have read and agree to the Terms and Conditions.</label>
-                        <p id="tc-agree-description" class="text-xs font-normal text-slate-500 mt-1">By checking this box, you enter into a binding agreement with GameGroundz regarding your use of the host platform and payout structures.</p>
+                        <label for="tc-agree-checkbox" class="font-bold text-slate-700 cursor-pointer">
+                            <span class="lang-en-only">I have read and agree to the Terms and Conditions.</span>
+                            <span class="lang-fr-only notranslate">J'ai lu et j'accepte les Termes et Conditions.</span>
+                        </label>
+                        <p id="tc-agree-description" class="text-xs font-normal text-slate-500 mt-1">
+                            <span class="lang-en-only">By checking this box, you enter into a binding agreement with GameGroundz regarding your use of the host platform and payout structures.</span>
+                            <span class="lang-fr-only notranslate">En cochant cette case, vous concluez un accord contraignant avec GameGroundz concernant votre utilisation de la plateforme hôte et les structures de paiement.</span>
+                        </p>
                     </div>
                 </div>
                 <div class="flex justify-end">
                     <button id="tc-accept-btn" class="px-6 py-2.5 bg-slate-200 text-slate-500 rounded-xl font-bold transition-custom flex items-center shadow-sm cursor-not-allowed" disabled="">
-                        <span>Accept &amp; Continue</span>
+                        <span class="lang-en-only">Accept &amp; Continue</span>
+                        <span class="lang-fr-only notranslate">Accepter et continuer</span>
                         <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                     </button>
                 </div>
