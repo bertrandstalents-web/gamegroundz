@@ -6788,7 +6788,7 @@
                 if (firstRadio) firstRadio.checked = true;
                 if (window.updateSizeOptions) window.updateSizeOptions('ice');
                 
-                document.getElementById('surface-modal-title').textContent = 'Add New Surface';
+                document.getElementById('surface-modal-title').innerHTML = '<span class="lang-en-only">Add New Surface</span><span class="lang-fr-only notranslate">Ajouter une surface</span>';
                 window.localSurfaceImages = [];
                 if(window.renderSurfaceImages) window.renderSurfaceImages();
                 
@@ -6825,7 +6825,7 @@
             if (!surf) return;
             
             openSurfaceModal();
-            document.getElementById('surface-modal-title').textContent = 'Edit Surface';
+            document.getElementById('surface-modal-title').innerHTML = '<span class="lang-en-only">Edit Surface</span><span class="lang-fr-only notranslate">Modifier la surface</span>';
             document.getElementById('surf-id').value = surf.id;
             document.getElementById('surf-name').value = surf.name;
             
@@ -7074,8 +7074,13 @@
     <div class="bg-white rounded-3xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col relative">
         <div class="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-100 p-6 flex justify-between items-center z-10 rounded-t-3xl">
             <div>
-                <h2 class="text-2xl font-bold text-dark" id="surface-modal-title">Add New Surface</h2>
-                <p class="text-slate-500 text-sm">Configure pricing, amenities, and details for this specific playing surface.</p>
+                <h2 class="text-2xl font-bold text-dark" id="surface-modal-title">
+                    <span class="lang-en-only">Add New Surface</span><span class="lang-fr-only notranslate">Ajouter une surface</span>
+                </h2>
+                <p class="text-slate-500 text-sm">
+                    <span class="lang-en-only">Configure pricing, amenities, and details for this specific playing surface.</span>
+                    <span class="lang-fr-only notranslate">Configurez les tarifs, les équipements et les détails de cette surface de jeu spécifique.</span>
+                </p>
             </div>
             <button type="button" onclick="closeSurfaceModal()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-dark transition-custom flex items-center justify-center">
                 <i class="fa-solid fa-xmark text-xl"></i>
@@ -7086,78 +7091,88 @@
                 <input type="hidden" id="surf-id" value="">
                 
                 <div>
-                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">Surface Name</h2>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">
+                        <span class="lang-en-only">Surface Name</span><span class="lang-fr-only notranslate">Nom de la surface</span>
+                    </h2>
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Name (e.g. Rink A, Court 1)</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">
+                            <span class="lang-en-only">Name (e.g. Rink A, Court 1)</span><span class="lang-fr-only notranslate">Nom (ex. Patinoire A, Court 1)</span>
+                        </label>
                         <input type="text" id="surf-name" required="" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
                     </div>
                 </div>
 
                 <div class="mb-6">
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Surface Type</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        <span class="lang-en-only">Surface Type</span><span class="lang-fr-only notranslate">Type de surface</span>
+                    </label>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                         <label class="cursor-pointer">
                             <input type="radio" name="surf_type_radio" value="ice" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
-                                Ice Rink
+                                <span class="lang-en-only">Ice Rink</span><span class="lang-fr-only notranslate">Patinoire</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="surf_type_radio" value="soccer" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
-                                <span class="notranslate">Soccer</span> Field
+                                <span class="lang-en-only">Soccer Field</span><span class="lang-fr-only notranslate">Terrain de soccer (gazon)</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="surf_type_radio" value="basketball" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
-                                Basketball Court
+                                <span class="lang-en-only">Basketball Court</span><span class="lang-fr-only notranslate">Terrain de basketball</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="surf_type_radio" value="tennis" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
-                                <span class="notranslate">Tennis</span> Court
+                                <span class="lang-en-only">Tennis Court</span><span class="lang-fr-only notranslate">Court de tennis</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="surf_type_radio" value="pickleball" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
-                                <span class="notranslate">Pickleball</span> Court
+                                <span class="lang-en-only">Pickleball Court</span><span class="lang-fr-only notranslate">Terrain de pickleball</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="surf_type_radio" value="pool" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
-                                Swimming Pool
+                                <span class="lang-en-only">Swimming Pool</span><span class="lang-fr-only notranslate">Piscine</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="surf_type_radio" value="football" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
-                                <span class="notranslate">Football</span> Field
+                                <span class="lang-en-only">Football Field</span><span class="lang-fr-only notranslate">Terrain de football</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="surf_type_radio" value="gym" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
-                                Training Gym
+                                <span class="lang-en-only">Training Gym</span><span class="lang-fr-only notranslate">Gymnase</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="surf_type_radio" value="deck-hockey" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
-                                Deck-Hockey
+                                <span class="lang-en-only">Deck-Hockey</span><span class="lang-fr-only notranslate">Deck-Hockey</span>
                             </div>
                         </label>
                     </div>
                     <input type="hidden" id="surf-type" value="ice">
                     
                     <div class="mt-4 relative" id="fac-size-dropdown-wrapper">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Surface Size</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            <span class="lang-en-only">Surface Size</span><span class="lang-fr-only notranslate">Taille de la surface</span>
+                        </label>
                         <input type="hidden" id="fac-size" value="">
                         <button type="button" id="fac-size-trigger" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white flex justify-between items-center text-slate-700 font-medium shadow-sm hover:border-slate-400" onclick="if(window.toggleSizeDropdown) window.toggleSizeDropdown()">
-                            <span id="fac-size-display" class="text-slate-400">Select size...</span>
+                            <span id="fac-size-display" class="text-slate-400">
+                                <span class="lang-en-only">Select size...</span><span class="lang-fr-only notranslate">Sélectionner la taille...</span>
+                            </span>
                             <i class="fa-solid fa-chevron-down text-slate-400 text-sm transition-transform duration-200" id="fac-size-icon"></i>
                         </button>
                         
@@ -7171,12 +7186,16 @@
 
                 <!-- Surface Basics & Capacity -->
                 <div>
-                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">Share some basics about your place</h2>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">
+                        <span class="lang-en-only">Share some basics about your place</span><span class="lang-fr-only notranslate">Partagez quelques informations de base sur votre lieu</span>
+                    </h2>
                     
                     <div class="space-y-6">
                         <!-- Locker Rooms -->
                         <div class="flex items-center justify-between py-2 border-b border-slate-100 pb-4">
-                            <span class="text-slate-700 font-semibold">Locker Rooms</span>
+                            <span class="text-slate-700 font-semibold">
+                                <span class="lang-en-only">Locker Rooms</span><span class="lang-fr-only notranslate">Vestiaires</span>
+                            </span>
                             <div class="flex items-center gap-4">
                                 <button type="button" onclick="const p=this.nextElementSibling; p.textContent=Math.max(0, parseInt(p.textContent)-1)" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
                                     <i class="fa-solid fa-minus text-xs"></i>
@@ -7190,7 +7209,9 @@
 
                         <!-- Capacity -->
                         <div class="flex items-center justify-between py-2 border-b border-slate-100 pb-4">
-                            <span class="text-slate-700 font-semibold">Maximum capacity of individuals</span>
+                            <span class="text-slate-700 font-semibold">
+                                <span class="lang-en-only">Maximum capacity of individuals</span><span class="lang-fr-only notranslate">Capacité maximale d'individus</span>
+                            </span>
                             <div class="flex items-center gap-4">
                                 <button type="button" onclick="const p=this.nextElementSibling; p.textContent=Math.max(0, parseInt(p.textContent)-5)" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:border-slate-800 hover:text-slate-800 transition-custom">
                                     <i class="fa-solid fa-minus text-xs"></i>
@@ -7206,7 +7227,9 @@
 
                 <!-- Pricing & Booking -->
                 <div>
-                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">Pricing &amp; Booking</h2>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">
+                        <span class="lang-en-only">Pricing &amp; Booking</span><span class="lang-fr-only notranslate">Tarification et réservation</span>
+                    </h2>
                     
                     <div class="mb-5">
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Unit</label>
