@@ -297,13 +297,16 @@ async function sendPasswordResetEmail(email, token) {
     }
 }
 
-async function sendEmailVerification(email, name, token) {
+async function sendEmailVerification(email, name, token, lang = 'en') {
     if (!transporter) return false;
 
     try {
         const verifyLink = `${process.env.APP_URL || 'http://localhost:3000'}/api/auth/verify?token=${token}`;
         
-        const bodyContent = `
+        let title = 'Verify Your Email';
+        let preheader = 'Welcome to GameGroundz! Verify your email to get started.';
+        let subject = 'Verify Your GameGroundz Account';
+        let bodyContent = `
             <h2>Verify Your Email</h2>
             <p>Hi ${name},</p>
             <p>Welcome to GameGroundz! Please click the button below to verify your email address and activate your account.</p>
@@ -315,12 +318,29 @@ async function sendEmailVerification(email, name, token) {
             <p style="margin-top: 24px; font-size: 14px; color: #6b7280;">If you didn't create an account, you can safely ignore this email.</p>
         `;
 
-        const html = getBaseEmailTemplate('Verify Your Email', 'Welcome to GameGroundz! Verify your email to get started.', bodyContent);
+        if (lang === 'fr') {
+            title = 'Vérifiez votre courriel';
+            preheader = 'Bienvenue sur GameGroundz ! Vérifiez votre courriel pour commencer.';
+            subject = 'Vérifiez votre compte GameGroundz';
+            bodyContent = `
+                <h2>Vérifiez votre courriel</h2>
+                <p>Bonjour ${name},</p>
+                <p>Bienvenue sur GameGroundz ! Veuillez cliquer sur le bouton ci-dessous pour vérifier votre adresse courriel et activer votre compte.</p>
+                
+                <center>
+                    <a href="${verifyLink}" class="btn">Vérifier le courriel</a>
+                </center>
+                
+                <p style="margin-top: 24px; font-size: 14px; color: #6b7280;">Si vous n'avez pas créé de compte, vous pouvez ignorer ce courriel en toute sécurité.</p>
+            `;
+        }
+
+        const html = getBaseEmailTemplate(title, preheader, bodyContent);
 
         let info = await transporter.sendMail({
             from: '"GameGroundz Security" <support@gamegroundz.com>',
             to: email,
-            subject: `Verify Your GameGroundz Account`,
+            subject: subject,
             html: html,
         });
 
@@ -373,15 +393,18 @@ async function sendPasswordChangeVerification(email, name, token) {
 }
 
 
-async function sendWelcomeEmail(email, name, role) {
+async function sendWelcomeEmail(email, name, role, lang = 'en') {
     if (!transporter) return;
 
     try {
         const isHost = role === 'host';
         const dashboardLink = `${process.env.APP_URL || 'http://localhost:3000'}/${isHost ? 'owner-dashboard.html' : 'search.html'}`;
-        const actionText = isHost ? 'Go to Host Dashboard' : 'Find Facilities';
-
-        const bodyContent = `
+        
+        let actionText = isHost ? 'Go to Host Dashboard' : 'Find Facilities';
+        let title = 'Welcome to GameGroundz';
+        let preheader = 'Thanks for signing up!';
+        let subject = `Welcome to GameGroundz, ${name}!`;
+        let bodyContent = `
             <h2>Welcome to GameGroundz!</h2>
             <p>Hi ${name},</p>
             <p>We're thrilled to have you on board. GameGroundz is the easiest way to manage and book sports surfaces.</p>
@@ -391,12 +414,28 @@ async function sendWelcomeEmail(email, name, role) {
             </center>
         `;
 
-        const html = getBaseEmailTemplate('Welcome to GameGroundz', 'Thanks for signing up!', bodyContent);
+        if (lang === 'fr') {
+            actionText = isHost ? 'Aller au tableau de bord' : 'Trouver des installations';
+            title = 'Bienvenue sur GameGroundz';
+            preheader = 'Merci de vous être inscrit !';
+            subject = `Bienvenue sur GameGroundz, ${name} !`;
+            bodyContent = `
+                <h2>Bienvenue sur GameGroundz !</h2>
+                <p>Bonjour ${name},</p>
+                <p>Nous sommes ravis de vous compter parmi nous. GameGroundz est le moyen le plus simple de gérer et de réserver des surfaces sportives.</p>
+                
+                <center>
+                    <a href="${dashboardLink}" class="btn">${actionText}</a>
+                </center>
+            `;
+        }
+
+        const html = getBaseEmailTemplate(title, preheader, bodyContent);
 
         let info = await transporter.sendMail({
             from: '"GameGroundz Team" <welcome@gamegroundz.com>',
             to: email,
-            subject: `Welcome to GameGroundz, ${name}!`,
+            subject: subject,
             html: html,
         });
 

@@ -636,7 +636,7 @@
     </div>
 
     <!-- Auth Modal Overlay -->
-    <div id="auth-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+    <div id="auth-modal" class="fixed inset-0 z-[100] hidden items-center justify-center notranslate">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" id="auth-backdrop"></div>
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center p-6 border-b border-slate-100">
@@ -651,18 +651,36 @@
                 
                 <form id="auth-form" class="space-y-4" novalidate onsubmit="handleAuth(event)">
                     <div id="name-field-container" class="hidden space-y-4">
+                        <div class="mb-4">
+                            <label class="block text-sm font-bold text-slate-700 mb-2"><span class="lang-en-only">Preferred Language</span><span class="lang-fr-only notranslate">Langue préférée</span></label>
+                            <div class="flex gap-4">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="auth-language" value="en" class="peer sr-only" checked onchange="if(typeof switchLanguagePreserveModal === 'function') switchLanguagePreserveModal(this.value); else { localStorage.setItem('gg_language', this.value); window.location.reload(); }">
+                                    <div class="px-4 py-3 border border-slate-200 rounded-xl text-center text-sm font-semibold text-slate-500 peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:border-primary transition-custom" data-i18n="lang_en">
+                                        English
+                                    </div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="auth-language" value="fr" class="peer sr-only" onchange="if(typeof switchLanguagePreserveModal === 'function') switchLanguagePreserveModal(this.value); else { localStorage.setItem('gg_language', this.value); window.location.reload(); }">
+                                    <div class="px-4 py-3 border border-slate-200 rounded-xl text-center text-sm font-semibold text-slate-500 peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:border-primary transition-custom" data-i18n="lang_fr">
+                                        Français
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
                         <div class="mb-2">
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Account Type</label>
+                            <label class="block text-sm font-bold text-slate-700 mb-2" data-i18n="account_type">Account Type</label>
                             <div class="flex gap-4">
                                 <label class="flex-1 cursor-pointer">
                                     <input type="radio" name="auth-role" value="player" checked class="peer sr-only">
-                                    <div class="px-4 py-3 border border-slate-200 rounded-xl text-center text-sm font-semibold text-slate-500 peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:border-primary transition-custom">
+                                    <div class="px-4 py-3 border border-slate-200 rounded-xl text-center text-sm font-semibold text-slate-500 peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:border-primary transition-custom" data-i18n="customer">
                                         Customer
                                     </div>
                                 </label>
                                 <label class="flex-1 cursor-pointer">
                                     <input type="radio" name="auth-role" value="host" class="peer sr-only">
-                                    <div class="px-4 py-3 border border-slate-200 rounded-xl text-center text-sm font-semibold text-slate-500 peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:border-primary transition-custom">
+                                    <div class="px-4 py-3 border border-slate-200 rounded-xl text-center text-sm font-semibold text-slate-500 peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:border-primary transition-custom" data-i18n="facility_owner">
                                         Facility Owner
                                     </div>
                                 </label>
@@ -688,28 +706,12 @@
                                             <i class="fa-solid fa-check text-white text-[10px] invisible peer-checked:visible"></i>
                                         </div>
                                     </div>
-                                    <span class="text-xs font-semibold text-slate-600 group-hover:text-dark transition-custom leading-tight">I certify that I am the main administrator acting on behalf of this municipality.</span>
+                                    <span class="text-xs font-semibold text-slate-600 group-hover:text-dark transition-custom leading-tight" data-i18n="certify_admin">I certify that I am the main administrator acting on behalf of this municipality.</span>
                                 </label>
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="block text-sm font-bold text-slate-700 mb-2"><span class="lang-en-only">Preferred Language</span><span class="lang-fr-only notranslate">Langue préférée</span></label>
-                            <div class="flex gap-4">
-                                <label class="flex-1 cursor-pointer">
-                                    <input type="radio" name="auth-language" value="en" class="peer sr-only" checked>
-                                    <div class="px-4 py-3 border border-slate-200 rounded-xl text-center text-sm font-semibold text-slate-500 peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:border-primary transition-custom">
-                                        English
-                                    </div>
-                                </label>
-                                <label class="flex-1 cursor-pointer">
-                                    <input type="radio" name="auth-language" value="fr" class="peer sr-only">
-                                    <div class="px-4 py-3 border border-slate-200 rounded-xl text-center text-sm font-semibold text-slate-500 peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:border-primary transition-custom">
-                                        Français
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
+
 
                         <div class="flex gap-4">
                             <input type="text" id="auth-first-name" placeholder="First Name" class="w-1/2 px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
@@ -718,14 +720,14 @@
                         <input type="tel" id="auth-phone-number" placeholder="Phone Number" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
 
                         <div>
-                            <label class="block text-[0.8rem] font-bold text-slate-500 mb-2">Profile Picture (Optional)</label>
+                            <label class="block text-[0.8rem] font-bold text-slate-500 mb-2" data-i18n="profile_pic">Profile Picture (Optional)</label>
                             <div class="flex items-center gap-4">
                                 <div class="relative w-16 h-16 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 overflow-hidden cursor-pointer hover:bg-slate-100 transition-custom" id="profile-pic-preview-container" onclick="document.getElementById('auth-profile-pic').click()">
                                     <i class="fa-solid fa-camera text-slate-400 text-xl" id="profile-pic-icon"></i>
                                     <img id="profile-pic-preview" src="" class="absolute inset-0 w-full h-full object-cover hidden">
                                 </div>
                                 <div class="flex-1">
-                                    <button type="button" onclick="document.getElementById('auth-profile-pic').click()" class="text-sm font-semibold text-primary hover:text-primaryHover bg-primary/10 px-4 py-2 rounded-full transition-custom">
+                                    <button type="button" onclick="document.getElementById('auth-profile-pic').click()" class="text-sm font-semibold text-primary hover:text-primaryHover bg-primary/10 px-4 py-2 rounded-full transition-custom" data-i18n="choose_image">
                                         Choose Image
                                     </button>
                                 </div>
@@ -735,16 +737,16 @@
 
                         <!-- Municipality Residency Selection (Customer only) -->
                         <div id="auth-residency-container" class="mt-4 border-t border-slate-100 pt-4 hidden">
-                            <label class="block text-[0.8rem] font-bold text-slate-500 mb-2">Member of a Municipality / City (Optional)</label>
+                            <label class="block text-[0.8rem] font-bold text-slate-500 mb-2" data-i18n="member_muni">Member of a Municipality / City (Optional)</label>
                             <div class="relative">
                                 <input type="text" id="auth-municipality-search" placeholder="Type your city/town..." class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700 bg-white" autocomplete="off">
                             </div>
                             
                             <div id="auth-residency-doc-upload" class="hidden mt-4">
-                                <label class="block text-[0.8rem] font-bold text-slate-500 mb-2">Proof of Residency (JPG, PNG, PDF)</label>
+                                <label class="block text-[0.8rem] font-bold text-slate-500 mb-2" data-i18n="proof_res">Proof of Residency (JPG, PNG, PDF)</label>
                                 <div class="flex items-center gap-4">
                                     <div class="flex-1">
-                                        <button type="button" onclick="document.getElementById('auth-residency-doc').click()" class="text-sm font-semibold text-primary hover:text-primaryHover bg-primary/10 px-4 py-2 rounded-full transition-custom truncate w-full flex items-center justify-center" id="auth-residency-doc-btn">
+                                        <button type="button" onclick="document.getElementById('auth-residency-doc').click()" class="text-sm font-semibold text-primary hover:text-primaryHover bg-primary/10 px-4 py-2 rounded-full transition-custom truncate w-full flex items-center justify-center" id="auth-residency-doc-btn" data-i18n="upload_doc">
                                             <i class="fa-solid fa-file-arrow-up mr-2"></i> Upload Document
                                         </button>
                                     </div>
@@ -756,7 +758,7 @@
                         
                         <!-- Interested Surfaces (Customer only) -->
                         <div id="auth-surfaces-container" class="mt-4 border-t border-slate-100 pt-4 hidden">
-                            <label class="block text-[0.8rem] font-bold text-slate-500 mb-3">What kind of surfaces are you interested in?</label>
+                            <label class="block text-[0.8rem] font-bold text-slate-500 mb-3" data-i18n="what_kind_surfaces">What kind of surfaces are you interested in?</label>
                             <input type="hidden" id="auth-interested-surfaces" value="[]">
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                 <!-- Box 1 -->
@@ -769,77 +771,77 @@
                             <path d="M18 16H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l3 4h4a3 3 0 0 1 3 3v4Z" />
                         </svg>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Ice Rinks</span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight" data-i18n="surf_ice">Ice Rinks</span>
                                 </div>
                                 <!-- Box 2 -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="soccer">
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
                                         <i class="fa-solid fa-futbol text-lg"></i>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight"><span class="lang-en-only">Soccer Fields</span><span class="lang-fr-only notranslate">Terrains de soccer</span></span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight" data-i18n="surf_soccer">Soccer Fields</span>
                                 </div>
                                 <!-- Box 3 -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="basketball">
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
                                         <i class="fa-solid fa-basketball text-lg"></i>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight"><span class="notranslate">Basketball</span><br>Courts</span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight" data-i18n="surf_basketball">Basketball<br>Courts</span>
                                 </div>
                                 <!-- Box 4 -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="tennis">
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
                                         <i class="fa-solid fa-baseball text-lg"></i>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight"><span class="notranslate">Tennis</span><br>Courts</span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight" data-i18n="surf_tennis">Tennis<br>Courts</span>
                                 </div>
                                 <!-- Box 5 -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="football">
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
                                         <i class="fa-solid fa-football text-lg"></i>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight"><span class="notranslate">Football</span><br>Fields</span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight" data-i18n="surf_football">Football<br>Fields</span>
                                 </div>
                                 <!-- Box 6 -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="gym">
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
                                         <i class="fa-solid fa-dumbbell text-lg"></i>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Training<br>Gyms</span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight" data-i18n="surf_gym">Training<br>Gyms</span>
                                 </div>
                                 <!-- Box 7 (New) -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="pickleball">
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
                                         <i class="fa-solid fa-table-tennis-paddle-ball text-lg"></i>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight"><span class="notranslate">Pickleball</span><br>Courts</span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight" data-i18n="surf_pickleball">Pickleball<br>Courts</span>
                                 </div>
                                 <!-- Box 8 (New) -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="pool">
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
                                         <i class="fa-solid fa-person-swimming text-lg"></i>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight">Swimming<br>Pools</span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight" data-i18n="surf_pool">Swimming<br>Pools</span>
                                 </div>
                                 <!-- Box 9 (Deck Hockey) -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="deck-hockey">
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
                                         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10" stroke-width="2" /><path d="M2 18h20" stroke-width="2" /><path d="M3 10h18M3 14h18M7 6v12M12 6v12M17 6v12" stroke-width="1" /></svg>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight notranslate">Deck<br>Hockey</span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight" data-i18n="surf_deck">Deck<br>Hockey</span>
                                 </div>
                                 <!-- Box 10 (Squash) -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="squash">
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
                                         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 11.5L4 20" stroke-width="3"/><path d="M3 19L5 21" stroke-width="3"/><ellipse cx="16" cy="8" rx="5" ry="7" transform="rotate(45 16 8)" /><path d="M13.5 5.5L18.5 10.5M12 7L17 12M14.5 4.5L19.5 9.5" stroke-width="1"/><path d="M18.5 5.5L13.5 10.5M17 4.5L12 9.5M19.5 7L14.5 12" stroke-width="1"/></svg>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight notranslate">Squash</span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight" data-i18n="surf_squash">Squash</span>
                                 </div>
                                 <!-- Box 11 (Badminton) -->
                                 <div class="surface-box cursor-pointer flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary/50 transition-custom" data-surface="badminton">
                                     <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 mb-2">
                                         <svg class="w-6 h-6 transform rotate-[35deg]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15L4 4l4 3 4-5 4 5 4-3-2 11" /><path d="M12 2v13" /><path d="M8 7l4 8" /><path d="M16 7l-4 8" /><path d="M6 15a6 6 0 0 0 12 0" /><path d="M4 15h16" /><path d="M5 11h14" /></svg>
                                     </div>
-                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight notranslate">Badminton</span>
+                                    <span class="text-[0.65rem] font-semibold text-slate-700 text-center leading-tight" data-i18n="surf_badminton">Badminton</span>
                                 </div>
                             </div>
                         </div>
@@ -852,10 +854,10 @@
                         <button type="button" id="toggle-password-btn" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-custom focus:outline-none">
                             <i class="fa-solid fa-eye" id="toggle-password-icon"></i>
                         </button>
-                        <div id="password-requirements" class="hidden text-xs text-slate-500 mt-2 px-1">At least 8 characters, 1 number, 1 uppercase letter</div>
+                        <div id="password-requirements" class="hidden text-xs text-slate-500 mt-2 px-1" data-i18n="pwd_reqs">At least 8 characters, 1 number, 1 uppercase letter</div>
                     </div>
                     <div id="confirm-password-container" class="hidden relative mt-1">
-                        <input type="password" id="auth-confirm-password" placeholder="Confirm Password" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700 pr-12">
+                        <input type="password" id="auth-confirm-password" placeholder="Confirm Password" data-i18n="confirm_password_placeholder" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700 pr-12">
                         <button type="button" id="toggle-confirm-password-btn" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-custom focus:outline-none">
                             <i class="fa-solid fa-eye" id="toggle-confirm-password-icon"></i>
                         </button>
@@ -1602,7 +1604,39 @@
             'login_title_dynamic': { en: 'Log in or sign up', fr: 'Se connecter ou s\'inscrire' },
             'signup_title_dynamic': { en: 'Sign up', fr: "S'inscrire" },
             'already_have_account': { en: 'Already have an account?', fr: 'Déjà un compte ?' },
-            'log_in': { en: 'Log in', fr: 'Se connecter' }
+            'log_in': { en: 'Log in', fr: 'Se connecter' },
+            'lang_en': { en: 'English', fr: 'Anglais' },
+            'lang_fr': { en: 'Français', fr: 'Français' },
+            'first_name_placeholder': { en: 'First Name', fr: 'Prénom' },
+            'last_name_placeholder': { en: 'Last Name', fr: 'Nom de famille' },
+            'phone_placeholder': { en: 'Phone Number', fr: 'Numéro de téléphone' },
+            'company_placeholder': { en: 'Company / Facility Owner Name', fr: 'Nom de l\'entreprise / Propriétaire' },
+            'city_placeholder': { en: 'Type your Municipality / City...', fr: 'Entrez votre municipalité / ville...' },
+            'confirm_password_placeholder': { en: 'Confirm Password', fr: 'Confirmer le mot de passe' },
+            'host_private': { en: 'Sports Facility / Venue', fr: 'Installation sportive / Complexe' },
+            'host_public': { en: 'Public / Municipal', fr: 'Public / Municipal' },
+            'account_type': { en: 'Account Type', fr: 'Type de compte' },
+            'customer': { en: 'Customer', fr: 'Client' },
+            'facility_owner': { en: 'Facility Owner', fr: 'Hôte' },
+            'profile_pic': { en: 'Profile Picture (Optional)', fr: 'Photo de profil (facultatif)' },
+            'choose_image': { en: 'Choose Image', fr: 'Choisir une image' },
+            'member_muni': { en: 'Member of a Municipality / City (Optional)', fr: 'Membre d\'une municipalité / ville (facultatif)' },
+            'proof_res': { en: 'Proof of Residency (JPG, PNG, PDF)', fr: 'Preuve de résidence (JPG, PNG, PDF)' },
+            'upload_doc': { en: '<i class="fa-solid fa-file-arrow-up mr-2"></i> Upload Document', fr: '<i class="fa-solid fa-file-arrow-up mr-2"></i> Téléverser un document' },
+            'what_kind_surfaces': { en: 'What kind of surfaces are you interested in?', fr: 'Quels types de surfaces vous intéressent ?' },
+            'pwd_reqs': { en: 'At least 8 characters, 1 number, 1 uppercase letter', fr: 'Au moins 8 caractères, 1 chiffre, 1 majuscule' },
+            'certify_admin': { en: 'I certify that I am the main administrator acting on behalf of this municipality.', fr: 'Je certifie que je suis l\'administrateur principal agissant au nom de cette municipalité.' },
+            'surf_ice': { en: 'Ice Rinks', fr: 'Patinoires' },
+            'surf_soccer': { en: 'Soccer Fields', fr: 'Terrains de soccer' },
+            'surf_basketball': { en: 'Basketball<br>Courts', fr: 'Terrain de<br>basketball' },
+            'surf_tennis': { en: 'Tennis<br>Courts', fr: 'Court de<br>tennis' },
+            'surf_football': { en: 'Football<br>Fields', fr: 'Terrain de<br>football' },
+            'surf_gym': { en: 'Training<br>Gyms', fr: 'Salles<br>d\'entraînement' },
+            'surf_pickleball': { en: 'Pickleball<br>Courts', fr: 'Terrain de<br>pickleball' },
+            'surf_pool': { en: 'Swimming<br>Pools', fr: 'Piscines' },
+            'surf_deck': { en: 'Deck<br>Hockey', fr: 'Deck-Hockey' },
+            'surf_squash': { en: 'Squash', fr: 'Squash' },
+            'surf_badminton': { en: 'Badminton', fr: 'Badminton' }
         };
 
         function applyModalTranslations() {
@@ -1614,10 +1648,8 @@
                 if (modalTranslations[key]) {
                     if (el.tagName === 'INPUT') {
                         el.placeholder = modalTranslations[key][lang];
-                    } else if (key === 'login_title') {
-                        el.innerHTML = modalTranslations[key][lang];
                     } else {
-                        el.textContent = modalTranslations[key][lang];
+                        el.innerHTML = modalTranslations[key][lang];
                     }
                 }
             });
@@ -2537,7 +2569,27 @@
                 setTimeout(() => alert('Your email has been successfully verified! Welcome to GameGroundz.'), 500);
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
-        });
+    });
+
+    window.switchLanguagePreserveModal = function(lang) {
+        localStorage.setItem('gg_language', lang);
+        document.documentElement.setAttribute('data-lang', lang);
+        
+        if (typeof applyModalTranslations === 'function') {
+            applyModalTranslations();
+        }
+        
+        if (typeof updateToggleUI === 'function') {
+            updateToggleUI(lang);
+        }
+
+        // Dynamically trigger google translate for the background page
+        const select = document.querySelector('.goog-te-combo');
+        if (select) {
+            select.value = lang;
+            select.dispatchEvent(new Event('change'));
+        }
+    };
     </script>
 </body>
 </html>

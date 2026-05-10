@@ -560,7 +560,7 @@ app.post('/api/users/signup', async (req, res) => {
                         });
                         
                         // Send verification email first and ensure it succeeds
-                        const sent = await emailService.sendEmailVerification(email, name, token);
+                        const sent = await emailService.sendEmailVerification(email, name, token, prefLang);
                         if (!sent) {
                             db.run("DELETE FROM verification_tokens WHERE user_id = ?", [newUserId]);
                             db.run("DELETE FROM users WHERE id = ?", [newUserId]);
@@ -774,7 +774,7 @@ app.get('/api/auth/verify', (req, res) => {
                     });
                     
                     // Send welcome/congratulations email after successful verification
-                    emailService.sendWelcomeEmail(user.email, user.name, user.role);
+                    emailService.sendWelcomeEmail(user.email, user.name, user.role, user.preferred_language);
                     
                     const redirectUrl = user.role === 'host' ? '/owner-dashboard.html' : '/index.html';
                     res.redirect(`/verify.html?status=success&redirect=${encodeURIComponent(redirectUrl)}`);
