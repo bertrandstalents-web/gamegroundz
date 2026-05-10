@@ -944,9 +944,9 @@
                                     <h4 class="font-bold text-slate-800">GameGroundz Host Terms &amp; Conditions</h4>
                                     <p class="text-sm text-slate-500 mt-0.5">Accepted on: <strong id="prof-tc-date" class="text-slate-700"></strong></p>
                                 </div>
-                                <a href="pdfs/GameGroundz_Terms_and_Conditions_v2.docx.pdf" target="_blank" class="ml-auto px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50 hover:text-primary transition-custom">
-                                    View
-                                </a>
+                                <button type="button" onclick="viewTermsModal()" class="ml-auto px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50 hover:text-primary transition-custom">
+                                    <span class="lang-en-only">View</span><span class="lang-fr-only notranslate">Voir</span>
+                                </button>
                             </div>
                         </div>
                         <div class="pt-4 border-t border-slate-100">
@@ -5789,6 +5789,9 @@
                         <span class="lang-fr-only notranslate">Veuillez lire et accepter nos termes mis à jour pour continuer à gérer vos installations.</span>
                     </p>
                 </div>
+                <button id="tc-close-btn" class="hidden text-slate-400 hover:text-slate-600 transition-custom focus:outline-none" onclick="closeTermsModal()">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
             </div>
             <div class="flex-1 overflow-y-auto relative bg-slate-50 p-6 sm:p-8 custom-scrollbar">
                 
@@ -5941,7 +5944,7 @@
                 </div>
 
             </div>
-            <div class="p-6 border-t border-slate-100 bg-white shrink-0">
+            <div id="tc-footer" class="p-6 border-t border-slate-100 bg-white shrink-0">
                 <div class="flex items-start gap-3 mb-6">
                     <div class="flex items-center h-5">
                         <input id="tc-agree-checkbox" aria-describedby="tc-agree-description" type="checkbox" class="w-5 h-5 bg-slate-100 border-slate-300 rounded text-primary focus:ring-primary focus:ring-2 cursor-pointer transition-custom">
@@ -5970,6 +5973,28 @@
 
     <!-- Script overlay for T&C Logic -->
     <script>
+        function viewTermsModal() {
+            const tcModal = document.getElementById('tc-modal');
+            const tcCloseBtn = document.getElementById('tc-close-btn');
+            const tcFooter = document.getElementById('tc-footer');
+            
+            if (tcModal) {
+                if (tcCloseBtn) tcCloseBtn.classList.remove('hidden');
+                if (tcFooter) tcFooter.classList.add('hidden');
+                
+                tcModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeTermsModal() {
+            const tcModal = document.getElementById('tc-modal');
+            if (tcModal) {
+                tcModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const tcCheckbox = document.getElementById('tc-agree-checkbox');
             const tcAcceptBtn = document.getElementById('tc-accept-btn');
