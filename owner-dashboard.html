@@ -4393,8 +4393,12 @@
                         (function(){ const _u2 = {...userObj}; delete _u2.profile_picture; localStorage.setItem('gg_user', JSON.stringify(_u2)); })();
                         
                         if (payload.preferred_language && localStorage.getItem('gg_language') !== payload.preferred_language) {
-                            localStorage.setItem('gg_language', payload.preferred_language);
-                            window.location.reload();
+                            if (typeof window.switchLanguage === 'function') {
+                                window.switchLanguage(payload.preferred_language);
+                            } else {
+                                localStorage.setItem('gg_language', payload.preferred_language);
+                                window.location.reload();
+                            }
                         }
                     } catch(e) {}
                 }
