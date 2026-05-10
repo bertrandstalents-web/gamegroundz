@@ -3172,6 +3172,7 @@ app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
 
             // Cleanup related data
             await client.query("DELETE FROM password_reset_tokens WHERE user_id = $1", [userId]);
+            await client.query("DELETE FROM verification_tokens WHERE user_id = $1", [userId]);
             await client.query("DELETE FROM saved_facilities WHERE user_id = $1", [userId]);
             await client.query("DELETE FROM reviews WHERE user_id = $1", [userId]);
             await client.query("DELETE FROM public_session_participants WHERE user_id = $1", [userId]);
