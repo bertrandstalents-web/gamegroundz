@@ -102,7 +102,8 @@ async function initDatabase() {
             phone_number TEXT,
             profile_picture TEXT,
             terms_accepted INTEGER DEFAULT 0,
-            terms_accepted_at TEXT
+            terms_accepted_at TEXT,
+            preferred_language TEXT DEFAULT 'en'
         )`);
 
         // Facilities Table
@@ -144,6 +145,10 @@ async function initDatabase() {
         
         try {
             await client.query(`ALTER TABLE users ADD COLUMN terms_accepted_at TEXT`);
+        } catch(e) {}
+
+        try {
+            await client.query(`ALTER TABLE users ADD COLUMN preferred_language TEXT DEFAULT 'en'`);
         } catch(e) {}
 
         try {
