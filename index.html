@@ -689,16 +689,16 @@
 
                         <div id="company-name-container" class="hidden space-y-3">
                             <select id="auth-host-type" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700 bg-white">
-                                <option value="private">Sports Facility / Venue</option>
-                                <option value="public">Public / Municipal</option>
+                                <option value="private" data-i18n="host_private">Sports Facility / Venue</option>
+                                <option value="public" data-i18n="host_public">Public / Municipal</option>
                             </select>
                             
                             <div id="private-fields">
-                                <input type="text" id="auth-company-name" placeholder="Company / Facility Owner Name" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
+                                <input type="text" id="auth-company-name" placeholder="Company / Facility Owner Name" data-i18n="company_placeholder" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
                             </div>
                             
                             <div id="public-fields" class="hidden space-y-3">
-                                <input type="text" id="auth-host-city" placeholder="Type your Municipality / City..." class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700 bg-white" autocomplete="off">
+                                <input type="text" id="auth-host-city" placeholder="Type your Municipality / City..." data-i18n="city_placeholder" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700 bg-white" autocomplete="off">
                                 <label class="flex items-center gap-2 cursor-pointer pt-2 group">
                                     <div class="relative flex items-center">
                                         <input type="checkbox" id="auth-host-admin-check" class="peer sr-only">
@@ -714,10 +714,10 @@
 
 
                         <div class="flex gap-4">
-                            <input type="text" id="auth-first-name" placeholder="First Name" class="w-1/2 px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
-                            <input type="text" id="auth-last-name" placeholder="Last Name" class="w-1/2 px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
+                            <input type="text" id="auth-first-name" placeholder="First Name" data-i18n="first_name_placeholder" class="w-1/2 px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
+                            <input type="text" id="auth-last-name" placeholder="Last Name" data-i18n="last_name_placeholder" class="w-1/2 px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
                         </div>
-                        <input type="tel" id="auth-phone-number" placeholder="Phone Number" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
+                        <input type="tel" id="auth-phone-number" placeholder="Phone Number" data-i18n="phone_placeholder" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-700">
 
                         <div>
                             <label class="block text-[0.8rem] font-bold text-slate-500 mb-2" data-i18n="profile_pic">Profile Picture (Optional)</label>
