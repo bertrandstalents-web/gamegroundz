@@ -400,6 +400,60 @@
         </button>
     </div>
 
+    <!-- Surface Terms & Conditions Modal -->
+    <div id="surface-terms-modal" class="fixed inset-0 z-[110] hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeTermsModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl transform transition-all flex flex-col relative max-h-[90vh]">
+                <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-3xl">
+                    <h3 class="text-xl font-extrabold text-dark tracking-tight">
+                        <span class="lang-en-only">Surface Terms & Conditions</span><span class="lang-fr-only notranslate">Conditions de la surface</span>
+                    </h3>
+                    <button type="button" onclick="closeTermsModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none transition-custom w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                
+                <div class="px-6 py-6 overflow-y-auto">
+                    <div class="bg-primary/5 rounded-2xl p-6 text-center border border-primary/20 mb-6">
+                        <i class="fa-solid fa-file-contract text-4xl text-primary mb-3"></i>
+                        <h4 class="font-bold text-dark mb-2">
+                            <span class="lang-en-only">Host Requirements</span><span class="lang-fr-only notranslate">Exigences de l'hôte</span>
+                        </h4>
+                        <p class="text-sm text-slate-600 mb-4">
+                            <span class="lang-en-only">The host of this facility requires you to review and agree to their specific rules and policies before booking this surface.</span>
+                            <span class="lang-fr-only notranslate">L'hôte de cet établissement exige que vous lisiez et acceptiez ses règles et politiques spécifiques avant de réserver cette surface.</span>
+                        </p>
+                        <a href="#" id="surface-terms-view-link" target="_blank" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-primary font-bold hover:bg-primary/5 hover:border-primary/30 transition-custom shadow-sm">
+                            <i class="fa-solid fa-external-link-alt mr-2 text-sm"></i> 
+                            <span class="lang-en-only">View Document</span><span class="lang-fr-only notranslate">Voir le document</span>
+                        </a>
+                    </div>
+                    
+                    <label class="flex items-start gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-custom group">
+                        <div class="relative flex items-start mt-0.5">
+                            <input type="checkbox" id="surface-terms-checkbox" class="w-5 h-5 border-2 border-slate-300 rounded text-primary focus:ring-primary focus:ring-offset-0 transition-custom cursor-pointer peer">
+                        </div>
+                        <div class="text-sm text-slate-700 leading-relaxed font-medium select-none group-hover:text-dark">
+                            <span class="lang-en-only">I have read and agree to the Terms and Conditions specific to this surface. I understand that failure to comply may result in cancellation without refund.</span>
+                            <span class="lang-fr-only notranslate">J'ai lu et j'accepte les conditions générales spécifiques à cette surface. Je comprends que le non-respect de ces conditions peut entraîner une annulation sans remboursement.</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="px-6 py-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-3xl">
+                    <button type="button" onclick="closeTermsModal()" class="px-5 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition-custom">
+                        <span class="lang-en-only">Cancel</span><span class="lang-fr-only notranslate">Annuler</span>
+                    </button>
+                    <button type="button" onclick="resumeCheckoutAfterTerms()" class="bg-primary hover:bg-primaryHover text-white px-6 py-2.5 rounded-xl font-bold transition-custom shadow-sm flex items-center justify-center min-w-[140px]">
+                        <span class="lang-en-only">I Agree & Continue</span><span class="lang-fr-only notranslate">J'accepte et je continue</span>
+                        <i class="fa-solid fa-arrow-right ml-2 text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Checkout Modal Layout -->
     <div id="checkout-modal" class="fixed inset-0 z-[100] hidden">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" id="checkout-backdrop"></div>
@@ -799,6 +853,7 @@
                     }
                     
                     // Update global state
+                    window.currentSurface = facility;
                     window.pricingUnit = facility.pricing_unit || 'hour';
                     pricingUnitLabel = window.pricingUnit === 'half_day' ? '/ half-day' : (window.pricingUnit === 'full_day' ? '/ day' : '/ hour');
                     pricingUnitLabelShort = window.pricingUnit === 'half_day' ? '/ half-day' : (window.pricingUnit === 'full_day' ? '/ day' : '/hr');
@@ -1308,6 +1363,25 @@
                 }
             };
 
+            window.termsAccepted = false;
+            
+            window.resumeCheckoutAfterTerms = function() {
+                if (!document.getElementById('surface-terms-checkbox').checked) {
+                    const errorMsg = document.documentElement.getAttribute('data-lang') === 'fr' 
+                        ? "Vous devez accepter les conditions générales pour continuer." 
+                        : "You must agree to the Terms & Conditions to proceed.";
+                    showAlertModal("Required", errorMsg, "OK", true);
+                    return;
+                }
+                window.termsAccepted = true; // Set flag so we don't ask again this session
+                document.getElementById('surface-terms-modal').classList.add('hidden');
+                initiateCheckout();
+            };
+
+            window.closeTermsModal = function() {
+                document.getElementById('surface-terms-modal').classList.add('hidden');
+            };
+
             async function initiateCheckout() {
                 // Check if user is logged in
                 const storedUser = localStorage.getItem('gg_user');
@@ -1342,6 +1416,14 @@
                 if (selectedSlotIds.size < 2) {
                     await showAlertModal('Minimum Duration', 'Please select at least two time slots (1 hour minimum).', 'OK', true);
                     return;
+                }
+
+                // Terms & Conditions Hijack
+                if (window.currentSurface && window.currentSurface.terms_document_url && !window.termsAccepted) {
+                    document.getElementById('surface-terms-view-link').href = window.currentSurface.terms_document_url;
+                    document.getElementById('surface-terms-checkbox').checked = false;
+                    document.getElementById('surface-terms-modal').classList.remove('hidden');
+                    return; // Pause checkout flow until agreed
                 }
                 
                 // Check for slots within 48 hours

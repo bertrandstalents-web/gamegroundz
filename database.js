@@ -191,6 +191,7 @@ async function initDatabase() {
             processing_fee_amount REAL DEFAULT 15.00,
             pricing_unit TEXT DEFAULT 'hour',
             locker_rooms INTEGER DEFAULT 0,
+            terms_document_url TEXT DEFAULT '',
             status TEXT DEFAULT 'active',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
@@ -222,6 +223,10 @@ async function initDatabase() {
             await client.query(`ALTER TABLE surfaces ADD COLUMN lat REAL`);
             await client.query(`ALTER TABLE surfaces ADD COLUMN lng REAL`);
             await client.query(`ALTER TABLE surfaces ADD COLUMN image_url TEXT DEFAULT ''`);
+        } catch(e) {}
+
+        try {
+            await client.query(`ALTER TABLE surfaces ADD COLUMN terms_document_url TEXT DEFAULT ''`);
         } catch(e) {}
 
         try {

@@ -4254,11 +4254,24 @@
                 if (!u) return;
                 
                 // Show T&C Modal if host has not accepted
-                if (u.role === 'host' && (u.terms_accepted === 0 || u.terms_accepted == null)) {
-                    const tcModal = document.getElementById('tc-modal');
-                    if (tcModal) {
-                        tcModal.classList.remove('hidden');
-                        document.body.style.overflow = 'hidden'; // prevent interacting behind it
+                const tcModal = document.getElementById('tc-modal');
+                if (u.role === 'host') {
+                    if (u.terms_accepted === 0 || u.terms_accepted == null) {
+                        if (tcModal) {
+                            tcModal.classList.remove('hidden');
+                            document.body.style.overflow = 'hidden'; // prevent interacting behind it
+                        }
+                    } else if (u.terms_accepted === 1) {
+                        if (tcModal) {
+                            tcModal.classList.add('hidden');
+                            document.body.style.overflow = 'auto';
+                        }
+                        // Update local storage to fix stale cache
+                        try {
+                            const storedUser = JSON.parse(localStorage.getItem('gg_user') || '{}');
+                            storedUser.terms_accepted = 1;
+                            localStorage.setItem('gg_user', JSON.stringify(storedUser));
+                        } catch(e) {}
                     }
                 }
 
@@ -6792,6 +6805,13 @@
                 window.localSurfaceImages = [];
                 if(window.renderSurfaceImages) window.renderSurfaceImages();
                 
+                // Reset Terms Doc
+                if(document.getElementById('surf-terms-doc')) {
+                    document.getElementById('surf-terms-doc').value = '';
+                    document.getElementById('surf-terms-preview-area').classList.add('hidden');
+                    document.getElementById('surf-terms-upload-area').classList.remove('hidden');
+                }
+                
                 if (document.getElementById('surf-capacity')) document.getElementById('surf-capacity').textContent = '0';
                 if (document.getElementById('surf-locker-rooms')) document.getElementById('surf-locker-rooms').textContent = '0';
                 
@@ -6863,6 +6883,21 @@
             }
             if(window.renderSurfaceImages) window.renderSurfaceImages();
 
+            // Handle Terms Doc
+            if(document.getElementById('surf-terms-doc')) {
+                if (surf.terms_document_url) {
+                    document.getElementById('surf-terms-doc').value = surf.terms_document_url;
+                    document.getElementById('surf-terms-upload-area').classList.add('hidden');
+                    document.getElementById('surf-terms-preview-area').classList.remove('hidden');
+                    document.getElementById('surf-terms-filename').textContent = 'Terms & Conditions Document';
+                    document.getElementById('surf-terms-view-link').href = surf.terms_document_url;
+                } else {
+                    document.getElementById('surf-terms-doc').value = '';
+                    document.getElementById('surf-terms-preview-area').classList.add('hidden');
+                    document.getElementById('surf-terms-upload-area').classList.remove('hidden');
+                }
+            }
+
             if (document.getElementById('fac-pricing-unit')) document.getElementById('fac-pricing-unit').value = surf.pricing_unit || 'hour';
             if (document.getElementById('fac-has-processing-fee')) {
                 document.getElementById('fac-has-processing-fee').checked = surf.has_processing_fee == 1;
@@ -6891,6 +6926,35 @@
                     if (typeof window.createRuleRow === 'function') window.createRuleRow();
                 }
             }
+        };
+
+        window.handleSurfTermsDocUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                showAlertModal("File too large", "Please select a file smaller than 5MB.", "OK", true);
+                event.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('surf-terms-doc').value = e.target.result;
+                document.getElementById('surf-terms-upload-area').classList.add('hidden');
+                document.getElementById('surf-terms-preview-area').classList.remove('hidden');
+                document.getElementById('surf-terms-filename').textContent = file.name;
+                document.getElementById('surf-terms-view-link').href = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        };
+
+        window.removeSurfTermsDoc = function(event) {
+            if(event) event.stopPropagation();
+            document.getElementById('surf-terms-doc').value = '';
+            document.getElementById('surf-terms-preview-area').classList.add('hidden');
+            document.getElementById('surf-terms-upload-area').classList.remove('hidden');
         };
 
         window.localSurfaceImages = [];
@@ -6987,7 +7051,8 @@
                     is_instant_book: document.getElementById('fac-instant') && document.getElementById('fac-instant').checked ? 1 : 0,
                     advance_booking_days: document.getElementById('fac-advance-booking') && document.getElementById('fac-advance-booking').value ? parseInt(document.getElementById('fac-advance-booking').value, 10) : 180,
                     has_processing_fee: document.getElementById('fac-has-processing-fee') && document.getElementById('fac-has-processing-fee').checked ? 1 : 0,
-                    processing_fee_amount: document.getElementById('fac-processing-fee-amount') ? parseFloat(document.getElementById('fac-processing-fee-amount').value) : 15.00
+                    processing_fee_amount: document.getElementById('fac-processing-fee-amount') ? parseFloat(document.getElementById('fac-processing-fee-amount').value) : 15.00,
+                    terms_document_url: document.getElementById('surf-terms-doc') ? document.getElementById('surf-terms-doc').value : ''
                 };
 
                 try {
@@ -7294,8 +7359,46 @@
                     </div>
                 </div>
 
-                <!-- Surface Image Upload -->
+                <!-- Terms and Conditions Upload -->
                 <div>
+                    <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">
+                        <span class="lang-en-only">Terms & Conditions (Optional)</span><span class="lang-fr-only notranslate">Conditions générales (Optionnel)</span>
+                    </h2>
+                    <p class="text-slate-500 text-sm mb-4">
+                        <span class="lang-en-only">Upload a PDF or Image containing the rules, policies, and terms specific to this surface. Players must agree to this document before finalizing their booking.</span>
+                        <span class="lang-fr-only notranslate">Téléchargez un PDF ou une image contenant les règles, politiques et conditions spécifiques à cette surface. Les joueurs devront accepter ce document avant de finaliser leur réservation.</span>
+                    </p>
+                    <input type="hidden" id="surf-terms-doc" value="">
+                    
+                    <div id="surf-terms-upload-area" class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-primary hover:bg-primary/5 transition-custom cursor-pointer relative flex flex-col items-center justify-center gap-2" onclick="document.getElementById('surf-terms-file').click()">
+                        <i class="fa-solid fa-file-contract text-3xl text-slate-400"></i>
+                        <span class="font-bold text-slate-700 text-sm">
+                            <span class="lang-en-only">Click to upload document</span><span class="lang-fr-only notranslate">Cliquez pour télécharger le document</span>
+                        </span>
+                        <span class="text-xs text-slate-500">PDF, JPG, PNG (Max 5MB)</span>
+                        <input type="file" id="surf-terms-file" class="hidden" accept=".pdf,image/png,image/jpeg" onchange="window.handleSurfTermsDocUpload(event)">
+                    </div>
+
+                    <div id="surf-terms-preview-area" class="hidden mt-4 p-4 border border-slate-200 rounded-xl flex items-center justify-between bg-slate-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <p class="font-bold text-sm text-dark truncate" id="surf-terms-filename">document.pdf</p>
+                                <a href="#" target="_blank" id="surf-terms-view-link" class="text-xs text-primary hover:underline font-semibold flex items-center gap-1 mt-0.5" onclick="event.stopPropagation()">
+                                    <i class="fa-solid fa-external-link-alt text-[10px]"></i> <span class="lang-en-only">View Document</span><span class="lang-fr-only notranslate">Voir le document</span>
+                                </a>
+                            </div>
+                        </div>
+                        <button type="button" onclick="window.removeSurfTermsDoc(event)" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-red-500 hover:bg-red-50 hover:border-red-200 transition-custom flex items-center justify-center flex-shrink-0" title="Remove Document">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Surface Image Upload -->
+                <div class="mt-8">
                     <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">Surface Images</h2>
                     <div id="surf-drop-zone" class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:border-primary hover:bg-primary/5 transition-custom cursor-pointer relative" 
                          onclick="document.getElementById('surf-image-file').click()"
@@ -7312,7 +7415,9 @@
 
                 <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
                     <button type="button" onclick="closeSurfaceModal()" class="px-6 py-3 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-custom font-bold">Cancel</button>
-                    <button type="submit" id="surf-submit-btn" class="bg-primary hover:bg-primaryHover text-white px-8 py-3 rounded-xl font-bold transition-custom shadow-glow">Save Surface</button>
+                    <button type="submit" id="surf-submit-btn" class="bg-primary hover:bg-primaryHover text-white px-8 py-3 rounded-xl font-bold transition-custom shadow-glow">
+                        <span class="lang-en-only">Save Surface</span><span class="lang-fr-only notranslate">Enregistrer la surface</span>
+                    </button>
                 </div>
             </form>
         </div>
