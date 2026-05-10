@@ -211,7 +211,7 @@
                 <div class="relative custom-select-wrapper" id="dispatch-dropdown-wrapper">
                     <input type="hidden" id="dispatch-facility-select" value="">
                     <div id="dispatch-dropdown-button" class="w-[240px] px-4 py-2.5 border border-slate-200 rounded-xl bg-white cursor-pointer flex justify-between items-center text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" onclick="toggleDispatchDropdown(event)">
-                        <span id="dispatch-dropdown-text" class="truncate mr-2">Select facility...</span>
+                        <span id="dispatch-dropdown-text" class="truncate mr-2"><span class="lang-en-only">Select facility...</span><span class="lang-fr-only notranslate">Sélectionnez une installation...</span></span>
                         <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" id="dispatch-dropdown-icon"></i>
                     </div>
                     <!-- Dropdown Menu -->
@@ -222,7 +222,7 @@
                     </div>
                 </div>
                 <button onclick="launchDispatch()" class="flex items-center bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold transition-custom shadow-sm text-sm whitespace-nowrap">
-                    <i class="fa-solid fa-tv mr-2"></i> Launch Dispatch TV
+                    <i class="fa-solid fa-tv mr-2"></i> <span class="lang-en-only">Launch Dispatch TV</span><span class="lang-fr-only notranslate">Lancer Dispatch TV</span>
                 </button>
             </div>
         </div>
@@ -316,7 +316,7 @@
                                 <option value="badminton">Badminton</option>
                             </select>
                             <button onclick="switchTab('add-new')" class="w-full sm:w-auto bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl font-bold transition-custom text-sm flex items-center justify-center">
-                                <i class="fa-solid fa-plus mr-1"></i> Add Facility
+                                <i class="fa-solid fa-plus mr-1"></i> <span class="lang-en-only">Add Facility</span><span class="lang-fr-only notranslate">Ajouter</span>
                             </button>
                         </div>
                     </div>
@@ -880,11 +880,11 @@
             <!-- Tab: Profile -->
             <div id="tab-profile" class="col-span-2 lg:col-span-none hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
-                    <h2 class="text-2xl font-bold text-dark mb-6">My Profile</h2>
+                    <h2 class="text-2xl font-bold text-dark mb-6"><span class="lang-en-only">My Profile</span><span class="lang-fr-only notranslate">Mon profil</span></h2>
                     <form id="profile-form" class="space-y-6 max-w-2xl">
                         <!-- Profile Picture Section -->
                         <div class="mb-4">
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Profile Picture</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2"><span class="lang-en-only">Profile Picture</span><span class="lang-fr-only notranslate">Photo de profil</span></label>
                             <div class="flex items-center gap-4">
                                 <div class="relative w-20 h-20 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 overflow-hidden cursor-pointer hover:bg-slate-100 transition-custom group" id="edit-profile-pic-container" onclick="document.getElementById('prof-image-file').click()">
                                     <i class="fa-solid fa-camera text-slate-400 text-2xl group-hover:text-primary transition-custom" id="edit-profile-pic-icon"></i>
@@ -892,7 +892,7 @@
                                 </div>
                                 <div class="flex flex-col gap-2">
                                     <button type="button" onclick="document.getElementById('prof-image-file').click()" class="text-sm font-semibold text-primary hover:text-primaryHover bg-primary/10 px-4 py-2 rounded-full transition-custom w-max">
-                                        Change Picture
+                                        <span class="lang-en-only">Change Picture</span><span class="lang-fr-only notranslate">Changer d'image</span>
                                     </button>
                                     <button type="button" id="remove-prof-pic-btn" onclick="removeProfilePic()" class="text-sm font-semibold text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-full transition-custom w-max hidden">
                                         Remove Picture
@@ -904,21 +904,21 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">First Name</label>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1"><span class="lang-en-only">First Name</span><span class="lang-fr-only notranslate">Prénom</span></label>
                                 <input type="text" id="prof-first-name" required="" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Last Name</label>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1"><span class="lang-en-only">Last Name</span><span class="lang-fr-only notranslate">Nom de famille</span></label>
                                 <input type="text" id="prof-last-name" required="" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Email Address</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1"><span class="lang-en-only">Email Address</span><span class="lang-fr-only notranslate">Courriel</span></label>
                             <input type="email" id="prof-email" required="" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Phone Number</label>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1"><span class="lang-en-only">Phone Number</span><span class="lang-fr-only notranslate">Numéro de téléphone</span></label>
                                 <input type="tel" id="prof-phone" required="" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
                             </div>
                             <div>
@@ -930,7 +930,7 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Company / Facility Owner Name / Municipality</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1"><span class="lang-en-only">Company / Facility Owner Name / Municipality</span><span class="lang-fr-only notranslate">Nom de l'entreprise / Propriétaire / Municipalité</span></label>
                             <input type="text" id="prof-company" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
                         </div>
                         
@@ -950,10 +950,10 @@
                             </div>
                         </div>
                         <div class="pt-4 border-t border-slate-100">
-                            <h3 class="text-lg font-bold text-dark mb-4">Change Password (Optional)</h3>
+                            <h3 class="text-lg font-bold text-dark mb-4"><span class="lang-en-only">Change Password (Optional)</span><span class="lang-fr-only notranslate">Changer le mot de passe (facultatif)</span></h3>
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1">Current Password</label>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1"><span class="lang-en-only">Current Password</span><span class="lang-fr-only notranslate">Mot de passe actuel</span></label>
                                     <div class="relative">
                                         <input type="password" id="prof-old-pass" class="pr-12 w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
                                         <button type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-custom focus:outline-none" onclick="const input = document.getElementById('prof-old-pass'); input.type = input.type === 'password' ? 'text' : 'password'; this.innerHTML = input.type === 'password' ? '<i class=\'fa-regular fa-eye\'></i>' : '<i class=\'fa-regular fa-eye-slash\'></i>';">
@@ -962,7 +962,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1">New Password</label>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1"><span class="lang-en-only">New Password</span><span class="lang-fr-only notranslate">Nouveau mot de passe</span></label>
                                     <div class="relative">
                                         <input type="password" id="prof-new-pass" class="pr-12 w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
                                         <button type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-custom focus:outline-none" onclick="const input = document.getElementById('prof-new-pass'); input.type = input.type === 'password' ? 'text' : 'password'; this.innerHTML = input.type === 'password' ? '<i class=\'fa-regular fa-eye\'></i>' : '<i class=\'fa-regular fa-eye-slash\'></i>';">
@@ -971,7 +971,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1">Confirm New Password</label>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1"><span class="lang-en-only">Confirm New Password</span><span class="lang-fr-only notranslate">Confirmer le nouveau mot de passe</span></label>
                                     <div class="relative">
                                         <input type="password" id="prof-confirm-pass" class="pr-12 w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
                                         <button type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-custom focus:outline-none" onclick="const input = document.getElementById('prof-confirm-pass'); input.type = input.type === 'password' ? 'text' : 'password'; this.innerHTML = input.type === 'password' ? '<i class=\'fa-regular fa-eye\'></i>' : '<i class=\'fa-regular fa-eye-slash\'></i>';">
@@ -984,7 +984,7 @@
                         <div id="prof-msg" class="hidden p-4 rounded-xl text-sm font-medium border"></div>
                         <div class="pt-4 border-t border-slate-100 flex justify-end">
                             <button type="submit" id="prof-submit-btn" class="bg-primary hover:bg-primaryHover text-white px-8 py-3 rounded-xl font-bold transition-custom shadow-glow flex items-center">
-                                Save Profile
+                                <span class="lang-en-only">Save Profile</span><span class="lang-fr-only notranslate">Enregistrer le profil</span>
                             </button>
                         </div>
                     </form>
@@ -1538,6 +1538,22 @@
     </div></main>
 
     <script>
+        // Check T&C synchronously immediately on page load to prevent UI access
+        (function() {
+            try {
+                const storedUser = JSON.parse(localStorage.getItem('gg_user'));
+                if (storedUser && storedUser.role === 'host' && (storedUser.terms_accepted === 0 || storedUser.terms_accepted == null)) {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const tcModal = document.getElementById('tc-modal');
+                        if (tcModal) {
+                            tcModal.classList.remove('hidden');
+                            document.body.style.overflow = 'hidden';
+                        }
+                    });
+                }
+            } catch (e) {}
+        })();
+
         function formatTimeSlots(slotsArray) {
             if (!slotsArray || slotsArray.length === 0) return '';
             
@@ -1814,8 +1830,8 @@
                 container.innerHTML = `
                     <div class="text-center py-12 text-slate-500 col-span-full bg-slate-50 rounded-2xl border border-slate-200">
                         <i class="fa-solid fa-house-chimney text-4xl mb-4 text-slate-300"></i>
-                        <p class="text-lg font-medium">You haven't listed any facilities yet.</p>
-                        <button onclick="switchTab('add-new')" class="mt-4 text-primary font-bold hover:underline">Create your first listing</button>
+                        <p class="text-lg font-medium"><span class="lang-en-only">You haven't listed any facilities yet.</span><span class="lang-fr-only notranslate">Vous n'avez pas encore listé d'installations.</span></p>
+                        <button onclick="switchTab('add-new')" class="mt-4 text-primary font-bold hover:underline"><span class="lang-en-only">Create your first listing</span><span class="lang-fr-only notranslate">Créez votre première annonce</span></button>
                     </div>`;
                 return;
             } else {
@@ -1983,7 +1999,7 @@
             } else if (dispatchInputEl) {
                 dispatchInputEl.value = "";
                 if(dispatchTextEl) {
-                    dispatchTextEl.textContent = "Select facility...";
+                    dispatchTextEl.innerHTML = '<span class="lang-en-only">Select facility...</span><span class="lang-fr-only notranslate">Sélectionnez une installation...</span>';
                     dispatchTextEl.classList.remove('text-dark');
                 }
             }
