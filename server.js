@@ -155,7 +155,7 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
 
                             const result = await client.query(
                                 "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment, surface_terms_accepted) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9, $10) RETURNING id",
-                                [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers, payloadObj.surface_terms_accepted || 0]
+                                [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers, payload.surface_terms_accepted || 0]
                             );
                             sendBookingEmails(result.rows[0].id);
                         }
@@ -2351,15 +2351,17 @@ app.get('/api/bookings/my', (req, res) => {
 
     // Join with facilities to get facility name and image
     const query = `
-        SELECT b.id, b.user_id, b.facility_id, b.booking_date, b.time_slots, b.total_price, b.status, b.booking_type, b.manual_notes, b.payment_status, b.stripe_session_id, b.review_email_sent, b.recurring_group_id, b.is_read, b.is_archived, b.capacity, b.participant_price, f.name as facility_name, f.image_url, f.location, 1 as quantity
+        SELECT b.id, b.user_id, b.facility_id, b.booking_date, b.time_slots, b.total_price, b.status, b.booking_type, b.manual_notes, b.payment_status, b.stripe_session_id, b.review_email_sent, b.recurring_group_id, b.is_read, b.is_archived, b.capacity, b.participant_price, f.name as facility_name, f.image_url, f.location, 1 as quantity, s.name as surface_name
         FROM bookings b
         JOIN facilities f ON b.facility_id = f.id
+        LEFT JOIN surfaces s ON b.surface_id = s.id
         WHERE b.user_id = ? AND b.booking_type != 'public_session' AND b.status != 'cancelled'
         UNION ALL
-        SELECT b.id, psp.user_id, b.facility_id, b.booking_date, b.time_slots, (psp.quantity * b.participant_price) as total_price, b.status, b.booking_type, b.manual_notes, psp.payment_status, psp.stripe_session_id, b.review_email_sent, b.recurring_group_id, b.is_read, b.is_archived, b.capacity, b.participant_price, f.name as facility_name, f.image_url, f.location, psp.quantity
+        SELECT b.id, psp.user_id, b.facility_id, b.booking_date, b.time_slots, (psp.quantity * b.participant_price) as total_price, b.status, b.booking_type, b.manual_notes, psp.payment_status, psp.stripe_session_id, b.review_email_sent, b.recurring_group_id, b.is_read, b.is_archived, b.capacity, b.participant_price, f.name as facility_name, f.image_url, f.location, psp.quantity, s.name as surface_name
         FROM public_session_participants psp
         JOIN bookings b ON psp.booking_id = b.id
         JOIN facilities f ON b.facility_id = f.id
+        LEFT JOIN surfaces s ON b.surface_id = s.id
         WHERE psp.user_id = ? AND psp.payment_status = 'paid' AND b.status != 'cancelled'
         ORDER BY booking_date DESC
     `;
@@ -3678,7 +3680,7 @@ app.post('/api/bookings/confirm', async (req, res) => {
 
                                 const result = await client.query(
                                     "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment, surface_terms_accepted) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9, $10) RETURNING id",
-                                    [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers, payloadObj.surface_terms_accepted || 0]
+                                    [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers, payload.surface_terms_accepted || 0]
                                 );
                                 sendBookingEmails(result.rows[0].id);
                             }

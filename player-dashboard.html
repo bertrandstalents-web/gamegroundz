@@ -1203,9 +1203,10 @@
                             <div class="flex-1 flex flex-col justify-between">
                                 <div>
                                     <h3 class="text-xl font-bold text-dark mb-1 cursor-pointer hover:text-primary transition-custom flex items-center flex-wrap gap-2" onclick="window.location.href='facility.html?id=${booking.facility_id}'">
-                                        ${booking.facility_name} 
+                                        ${booking.surface_name ? booking.surface_name : booking.facility_name} 
                                         ${booking.booking_type === 'public_session' ? `<span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-md">Public Activity <span class="font-black">(x${booking.quantity || 1} Spots)</span></span>` : ''}
                                     </h3>
+                                    <p class="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider"><i class="fa-solid fa-building mr-1"></i> ${booking.facility_name}</p>
                                     <p class="text-sm text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${typeof formatShortLocation === 'function' ? formatShortLocation(booking.location) : booking.location}</p>
                                     
                                     <div class="flex flex-wrap gap-4 text-sm font-medium text-slate-700">
