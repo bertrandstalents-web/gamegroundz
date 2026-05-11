@@ -291,11 +291,15 @@ async function initDatabase() {
             is_read INTEGER DEFAULT 0,
             is_archived INTEGER DEFAULT 0,
             capacity INTEGER DEFAULT 0,
-            participant_price REAL DEFAULT 0.0
+            participant_price REAL DEFAULT 0.0,
+            surface_terms_accepted INTEGER DEFAULT 0
         )`);
 
         try {
             await client.query(`ALTER TABLE bookings ADD COLUMN review_email_sent INTEGER DEFAULT 0`);
+        } catch(e) {}
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN surface_terms_accepted INTEGER DEFAULT 0`);
         } catch(e) {}
         try {
             await client.query(`ALTER TABLE bookings ADD COLUMN recurring_group_id TEXT`);

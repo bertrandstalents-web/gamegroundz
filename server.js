@@ -154,8 +154,8 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
                             const lockers = await allocateLockerRooms(client, surface_id, date, slots);
 
                             const result = await client.query(
-                                "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9) RETURNING id",
-                                [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers]
+                                "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment, surface_terms_accepted) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9, $10) RETURNING id",
+                                [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers, payloadObj.surface_terms_accepted || 0]
                             );
                             sendBookingEmails(result.rows[0].id);
                         }
@@ -3395,7 +3395,7 @@ app.post('/api/bookings/calculate', (req, res) => {
 });
 
 app.post('/api/create-checkout-session', (req, res) => {
-    const { facility_id, booking_date, time_slots, multi_day_slots } = req.body;
+    const { facility_id, booking_date, time_slots, multi_day_slots, surface_terms_accepted } = req.body;
     
     // In a real app we would get the user_id from an auth token or session
     const user_id = req.session.userId; 
@@ -3520,7 +3520,8 @@ app.post('/api/create-checkout-session', (req, res) => {
                         user_id,
                         facility_id,
                         surface_id: requestSurfaceId,
-                        multi_day_slots: parsedMultiDaySlots
+                        multi_day_slots: parsedMultiDaySlots,
+                        surface_terms_accepted: surface_terms_accepted ? 1 : 0
                     });
 
                     db.run("INSERT INTO pending_checkouts (id, payload) VALUES (?, ?)", [checkoutToken, payloadToStore], async function(err) {
@@ -3676,8 +3677,8 @@ app.post('/api/bookings/confirm', async (req, res) => {
                                 const lockers = await allocateLockerRooms(client, surface_id, date, slots);
 
                                 const result = await client.query(
-                                    "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9) RETURNING id",
-                                    [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers]
+                                    "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment, surface_terms_accepted) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9, $10) RETURNING id",
+                                    [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers, payloadObj.surface_terms_accepted || 0]
                                 );
                                 sendBookingEmails(result.rows[0].id);
                             }

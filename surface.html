@@ -404,8 +404,8 @@
     <div id="surface-terms-modal" class="fixed inset-0 z-[110] hidden">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeTermsModal()"></div>
         <div class="fixed inset-0 flex items-center justify-center p-4">
-            <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl transform transition-all flex flex-col relative max-h-[90vh]">
-                <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-3xl">
+            <div class="bg-white rounded-3xl w-full max-w-4xl shadow-2xl transform transition-all flex flex-col relative max-h-[90vh]">
+                <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-3xl shrink-0">
                     <h3 class="text-xl font-extrabold text-dark tracking-tight">
                         <span class="lang-en-only">Surface Terms & Conditions</span><span class="lang-fr-only notranslate">Conditions de la surface</span>
                     </h3>
@@ -414,23 +414,24 @@
                     </button>
                 </div>
                 
-                <div class="px-6 py-6 overflow-y-auto">
-                    <div class="bg-primary/5 rounded-2xl p-6 text-center border border-primary/20 mb-6">
-                        <i class="fa-solid fa-file-contract text-4xl text-primary mb-3"></i>
-                        <h4 class="font-bold text-dark mb-2">
-                            <span class="lang-en-only">Host Requirements</span><span class="lang-fr-only notranslate">Exigences de l'hôte</span>
-                        </h4>
-                        <p class="text-sm text-slate-600 mb-4">
-                            <span class="lang-en-only">The host of this facility requires you to review and agree to their specific rules and policies before booking this surface.</span>
-                            <span class="lang-fr-only notranslate">L'hôte de cet établissement exige que vous lisiez et acceptiez ses règles et politiques spécifiques avant de réserver cette surface.</span>
-                        </p>
-                        <a href="#" id="surface-terms-view-link" target="_blank" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-primary font-bold hover:bg-primary/5 hover:border-primary/30 transition-custom shadow-sm">
-                            <i class="fa-solid fa-external-link-alt mr-2 text-sm"></i> 
-                            <span class="lang-en-only">View Document</span><span class="lang-fr-only notranslate">Voir le document</span>
+                <div class="px-6 py-6 overflow-y-auto flex-1 flex flex-col gap-4">
+                    <p class="text-sm text-slate-600">
+                        <span class="lang-en-only">The host of this facility requires you to review and agree to their specific rules and policies before booking this surface.</span>
+                        <span class="lang-fr-only notranslate">L'hôte de cet établissement exige que vous lisiez et acceptiez ses règles et politiques spécifiques avant de réserver cette surface.</span>
+                    </p>
+                    
+                    <div class="flex justify-end">
+                        <a href="#" id="surface-terms-view-link" target="_blank" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-primary font-bold hover:bg-primary/5 hover:border-primary/30 transition-custom shadow-sm text-sm">
+                            <i class="fa-solid fa-external-link-alt mr-2"></i> 
+                            <span class="lang-en-only">Open in New Tab</span><span class="lang-fr-only notranslate">Ouvrir dans un nouvel onglet</span>
                         </a>
                     </div>
                     
-                    <label class="flex items-start gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-custom group">
+                    <div id="surface-terms-embed-container" class="bg-slate-50 rounded-xl overflow-hidden min-h-[300px] relative border border-slate-200 flex items-center justify-center">
+                        <i class="fa-solid fa-spinner fa-spin text-slate-400 text-3xl"></i>
+                    </div>
+                    
+                    <label class="flex items-start gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-custom group mt-2">
                         <div class="relative flex items-start mt-0.5">
                             <input type="checkbox" id="surface-terms-checkbox" class="w-5 h-5 border-2 border-slate-300 rounded text-primary focus:ring-primary focus:ring-offset-0 transition-custom cursor-pointer peer">
                         </div>
@@ -441,7 +442,7 @@
                     </label>
                 </div>
 
-                <div class="px-6 py-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-3xl">
+                <div class="px-6 py-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-3xl shrink-0">
                     <button type="button" onclick="closeTermsModal()" class="px-5 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition-custom">
                         <span class="lang-en-only">Cancel</span><span class="lang-fr-only notranslate">Annuler</span>
                     </button>
@@ -1420,7 +1421,36 @@
 
                 // Terms & Conditions Hijack
                 if (window.currentSurface && window.currentSurface.terms_document_url && !window.termsAccepted) {
-                    document.getElementById('surface-terms-view-link').href = window.currentSurface.terms_document_url;
+                    const dataUrl = window.currentSurface.terms_document_url;
+                    
+                    // Create Blob URL for safer embedding and linking
+                    let blobUrl = dataUrl;
+                    try {
+                        const parts = dataUrl.split(',');
+                        const mime = parts[0].match(/:(.*?);/)[1];
+                        const bstr = atob(parts[1]);
+                        let n = bstr.length;
+                        const u8arr = new Uint8Array(n);
+                        while(n--) {
+                            u8arr[n] = bstr.charCodeAt(n);
+                        }
+                        const blob = new Blob([u8arr], {type: mime});
+                        blobUrl = URL.createObjectURL(blob);
+                    } catch(e) {
+                        console.error("Error creating blob from base64 terms document:", e);
+                    }
+
+                    document.getElementById('surface-terms-view-link').href = blobUrl;
+                    
+                    // Embed document
+                    const embedContainer = document.getElementById('surface-terms-embed-container');
+                    embedContainer.innerHTML = '';
+                    if (dataUrl.startsWith('data:image/')) {
+                        embedContainer.innerHTML = `<img src="${blobUrl}" class="w-full h-auto rounded-xl border border-slate-200 object-contain max-h-[60vh]">`;
+                    } else {
+                        embedContainer.innerHTML = `<iframe src="${blobUrl}" class="w-full h-[60vh] rounded-xl border border-slate-200 bg-white"></iframe>`;
+                    }
+
                     document.getElementById('surface-terms-checkbox').checked = false;
                     document.getElementById('surface-terms-modal').classList.remove('hidden');
                     return; // Pause checkout flow until agreed
@@ -1497,7 +1527,8 @@
                             multi_day_slots: multiDayPayload,
                             // Send booking_date for single-day fallback compatibility if needed anywhere
                             booking_date: selectedDateStr,
-                            time_slots: []
+                            time_slots: [],
+                            surface_terms_accepted: window.termsAccepted ? true : false
                         })
                      });
 

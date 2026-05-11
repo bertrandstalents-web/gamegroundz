@@ -2700,6 +2700,10 @@
                         `${facNameHtml}<h4 class="font-bold ${isPastOrArchived ? 'text-slate-500' : 'text-slate-700'}">${titleName}</h4><div class="text-sm mt-0.5 ${isPastOrArchived ? 'text-slate-400' : 'text-slate-500'}"><i class="fa-solid fa-lock fa-fw mr-1"></i> Blocked: ${booking.manual_notes}</div>` :
                         `${facNameHtml}<h4 class="font-bold ${isPastOrArchived ? 'text-slate-600' : 'text-dark'}">${titleName}</h4><div class="text-sm mt-0.5 ${isPastOrArchived ? 'text-slate-400' : 'text-slate-500'} flex flex-col"><div><i class="fa-regular fa-user fa-fw mr-1"></i> ${booking.player_name || 'Guest'} <span class="opacity-75">(${booking.player_email || ''})</span></div>${phoneHtml}</div>`;
                         
+                    if (booking.surface_terms_accepted === 1) {
+                        detailBlock += `<div class="mt-2 inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-[10px] uppercase tracking-wide font-extrabold px-2 py-0.5 rounded border border-green-200"><i class="fa-solid fa-file-signature"></i> Terms Agreed</div>`;
+                    }
+                        
                     let priceBlock = isManual ? 
                         `<div class="text-sm font-bold text-slate-400">Offline</div>` :
                         `<div class="text-lg font-bold ${isPastOrArchived ? 'text-slate-500' : 'text-primary'}">$${Number(booking.total_price).toFixed(2)}</div>`;
