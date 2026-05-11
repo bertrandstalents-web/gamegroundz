@@ -138,43 +138,8 @@
             <!-- Left Column: Details -->
             <div class="flex-1 lg:max-w-[700px]">
                 
-                <!-- Host Info and Quick Specs -->
-                <div class="flex justify-between items-center pb-8 border-b border-slate-200">
-                    <div>
-                        <h2 class="text-2xl font-bold text-dark mb-2 border-b-0 pb-0 notranslate" id="header-subtitle"><div class="h-8 w-64 bg-slate-200 rounded animate-pulse"></div></h2>
-                        <div class="flex flex-wrap gap-2 text-sm text-slate-600 font-medium" id="header-basics">
-                            <div class="h-5 w-48 bg-slate-200 rounded animate-pulse mt-1"></div>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-14 h-14 rounded-full border border-slate-200 mb-1 bg-slate-200 animate-pulse relative overflow-hidden">
-                            <img id="host-profile-picture" src="" alt="Host" class="w-full h-full object-cover absolute inset-0 opacity-0 transition-opacity duration-300" onload="this.classList.remove('opacity-0'); this.parentElement.classList.remove('animate-pulse', 'bg-slate-200')">
-                        </div>
-                        <span class="text-xs text-slate-500 font-medium text-center">Operated by <br><strong id="operator-name" class="notranslate"><div class="h-3 w-16 mx-auto mt-1 bg-slate-200 rounded animate-pulse"></div></strong></span>
-                    </div>
-                </div>
-
-                <!-- Description -->
-                <div class="py-8 border-b border-slate-200">
-                    <h2 class="text-2xl font-bold text-dark mb-4">About this facility</h2>
-                    <div id="facility-description-container" class="text-slate-600 leading-relaxed font-light space-y-4 text-[17px]">
-                        <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
-                        <div class="h-4 w-11/12 bg-slate-200 rounded animate-pulse"></div>
-                        <div class="h-4 w-4/5 bg-slate-200 rounded animate-pulse"></div>
-                    </div>
-                    <button class="mt-4 font-bold text-primary hover:text-dark transition-custom underline">Show more <i class="fa-solid fa-chevron-down text-xs ml-1"></i></button>
-                </div>
-
-                <!-- Amenities -->
-                <div class="py-8 border-b border-slate-200">
-                    <h2 class="text-2xl font-bold text-dark mb-6">What this place offers</h2>
-                    <div class="grid grid-cols-2 gap-y-4 gap-x-8 text-slate-600" id="standard-amenities-container">
-                        <!-- Dynamic Amenities -->
-                    </div>
-                </div>
-
                 <!-- Availability Calendar Mockup -->
-                <div class="py-8 border-b border-slate-200" id="availability-section">
+                <div class="pb-8 border-b border-slate-200" id="availability-section">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-6 gap-4">
                         <div>
                             <h2 class="text-2xl font-bold text-dark mb-2">Availability</h2>
@@ -223,6 +188,42 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Host Info and Quick Specs -->
+                <div class="flex justify-between items-center py-8 border-b border-slate-200">
+                    <div>
+                        <h2 class="text-2xl font-bold text-dark mb-2 border-b-0 pb-0 notranslate" id="header-subtitle"><div class="h-8 w-64 bg-slate-200 rounded animate-pulse"></div></h2>
+                        <div class="flex flex-wrap gap-2 text-sm text-slate-600 font-medium" id="header-basics">
+                            <div class="h-5 w-48 bg-slate-200 rounded animate-pulse mt-1"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full border border-slate-200 mb-1 bg-slate-200 animate-pulse relative overflow-hidden">
+                            <img id="host-profile-picture" src="" alt="Host" class="w-full h-full object-cover absolute inset-0 opacity-0 transition-opacity duration-300" onload="this.classList.remove('opacity-0'); this.parentElement.classList.remove('animate-pulse', 'bg-slate-200')">
+                        </div>
+                        <span class="text-xs text-slate-500 font-medium text-center">Operated by <br><strong id="operator-name" class="notranslate"><div class="h-3 w-16 mx-auto mt-1 bg-slate-200 rounded animate-pulse"></div></strong></span>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="py-8 border-b border-slate-200">
+                    <h2 class="text-2xl font-bold text-dark mb-4">About this facility</h2>
+                    <div id="facility-description-container" class="text-slate-600 leading-relaxed font-light space-y-4 text-[17px]">
+                        <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+                        <div class="h-4 w-11/12 bg-slate-200 rounded animate-pulse"></div>
+                        <div class="h-4 w-4/5 bg-slate-200 rounded animate-pulse"></div>
+                    </div>
+                    <button class="mt-4 font-bold text-primary hover:text-dark transition-custom underline">Show more <i class="fa-solid fa-chevron-down text-xs ml-1"></i></button>
+                </div>
+
+                <!-- Amenities -->
+                <div class="py-8 border-b border-slate-200">
+                    <h2 class="text-2xl font-bold text-dark mb-6">What this place offers</h2>
+                    <div class="grid grid-cols-2 gap-y-4 gap-x-8 text-slate-600" id="standard-amenities-container">
+                        <!-- Dynamic Amenities -->
+                    </div>
+                </div>
+
 
                 <!-- Features Details -->
                 <div id="facility-features-container" class="py-8 border-b border-slate-200 space-y-6">
