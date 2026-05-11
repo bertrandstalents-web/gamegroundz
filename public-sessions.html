@@ -157,9 +157,9 @@
                                         <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom font-bold" data-value="" data-label="Activity Type">Any Activity</div>
                                         
                                         <div class="px-4 py-1.5 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ice Rink</div>
-                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free skating" data-label="Free Skating">Free Skating</div>
-                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free hockey" data-label="Free Hockey">Free Hockey</div>
-                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free hockey (18+)" data-label="Free Hockey (18+)">Free Hockey (18+)</div>
+                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free skating" data-label="Free Skating"><span class="lang-en-only">Free Skating</span><span class="lang-fr-only notranslate">Patinage libre</span></div>
+                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="open hockey" data-label="Open Hockey"><span class="lang-en-only">Open Hockey</span><span class="lang-fr-only notranslate">Hockey libre</span></div>
+                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="open hockey (18+)" data-label="Open Hockey (18+)"><span class="lang-en-only">Open Hockey (18+)</span><span class="lang-fr-only notranslate">Hockey libre (18+)</span></div>
                                         
                                         <div class="px-4 py-1.5 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-t border-slate-50 pt-3">Swimming Pool</div>
                                         <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="swimming lane" data-label="Swimming Lane">Swimming Lane</div>
@@ -472,7 +472,16 @@
             const slotKeys = slots ? slots.map(s => `${session.booking_date}|${s}`) : [];
             
             const spotsRemaining = Math.max(0, (session.capacity || 0) - (session.joined_count || 0));
-            const activityName = session.manual_notes || 'Public Activity';
+            let activityName = session.manual_notes || 'Public Activity';
+            
+            if (activityName === 'Open Hockey' || activityName === 'Free Hockey') {
+                activityName = '<span class="lang-en-only">Open Hockey</span><span class="lang-fr-only notranslate">Hockey libre</span>';
+            } else if (activityName === 'Open Hockey (18+)' || activityName === 'Free Hockey (18+)') {
+                activityName = '<span class="lang-en-only">Open Hockey (18+)</span><span class="lang-fr-only notranslate">Hockey libre (18+)</span>';
+            } else if (activityName === 'Free Skating') {
+                activityName = '<span class="lang-en-only">Free Skating</span><span class="lang-fr-only notranslate">Patinage libre</span>';
+            }
+            
             const displayImage = getActivityImage(session.manual_notes, session.facility_type, session.image_url);
             const displayDate = formatBilingualDate(session.booking_date);
 
@@ -709,10 +718,10 @@
                 const inlineActivity = document.getElementById('inline-activity-filter')?.value;
                 if (inlineActivity) {
                     const actLower = inlineActivity.toLowerCase();
-                    // Some notes might use french equivalents, so we should map them loosely if needed
                     data = data.filter(s => s.manual_notes && s.manual_notes.toLowerCase().includes(actLower) || 
-                        (actLower === 'free skating' && s.manual_notes && (s.manual_notes.toLowerCase().includes('patinage') || s.manual_notes.toLowerCase().includes('libre'))) ||
-                        (actLower === 'free hockey' && s.manual_notes && (s.manual_notes.toLowerCase().includes('hockey libre') || s.manual_notes.toLowerCase().includes('bâton'))) ||
+                        (actLower === 'free skating' && s.manual_notes && (s.manual_notes.toLowerCase().includes('patinage') || s.manual_notes.toLowerCase().includes('libre') || s.manual_notes.toLowerCase().includes('free skating'))) ||
+                        (actLower === 'open hockey' && s.manual_notes && (s.manual_notes.toLowerCase().includes('hockey libre') || s.manual_notes.toLowerCase().includes('bâton') || s.manual_notes.toLowerCase().includes('open hockey') || s.manual_notes.toLowerCase().includes('free hockey'))) ||
+                        (actLower === 'open hockey (18+)' && s.manual_notes && (s.manual_notes.toLowerCase().includes('18+') || s.manual_notes.toLowerCase().includes('open hockey'))) ||
                         (actLower === 'swimming lane' && s.manual_notes && (s.manual_notes.toLowerCase().includes('corridor') || s.manual_notes.toLowerCase().includes('longueur'))) ||
                         (actLower === 'recreational and family pool' && s.manual_notes && (s.manual_notes.toLowerCase().includes('bain libre') || s.manual_notes.toLowerCase().includes('récréatif')))
                     );

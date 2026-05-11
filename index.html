@@ -2463,7 +2463,16 @@
             const slotKeys = slots ? slots.map(s => `${session.booking_date}|${s}`) : [];
             
             const spotsRemaining = Math.max(0, (session.capacity || 0) - (session.joined_count || 0));
-            const activityName = session.manual_notes || 'Public Activity';
+            let activityName = session.manual_notes || 'Public Activity';
+            
+            if (activityName === 'Open Hockey' || activityName === 'Free Hockey') {
+                activityName = '<span class="lang-en-only">Open Hockey</span><span class="lang-fr-only notranslate">Hockey libre</span>';
+            } else if (activityName === 'Open Hockey (18+)' || activityName === 'Free Hockey (18+)') {
+                activityName = '<span class="lang-en-only">Open Hockey (18+)</span><span class="lang-fr-only notranslate">Hockey libre (18+)</span>';
+            } else if (activityName === 'Free Skating') {
+                activityName = '<span class="lang-en-only">Free Skating</span><span class="lang-fr-only notranslate">Patinage libre</span>';
+            }
+            
             const displayImage = getSessionImage(session.manual_notes, session.facility_type, session.image_url);
             const displayDate = formatBilingualDate(session.booking_date);
 
