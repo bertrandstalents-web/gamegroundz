@@ -1460,17 +1460,15 @@ app.put('/api/host/facilities/:id', (req, res) => {
         connectedFacilitiesStr = JSON.stringify(connected_facilities);
     }
 
-    const statusToSave = listing_status || 'pending';
-
     // Include host_id in the WHERE clause so users can only edit their own facilities
     db.run(
         `UPDATE facilities SET 
             name = ?, subtitle = ?, description = ?, features = ?, locker_rooms = ?, 
             capacity = ?, size_info = ?, amenities = ?, type = ?, facility_type = ?, environment = ?, 
             base_price = ?, pricing_rules = ?, location = ?, lat = COALESCE(?, lat), lng = COALESCE(?, lng), image_url = ?, 
-            is_instant_book = ?, operating_hours = ?, listing_status = ?, advance_booking_days = ?, has_processing_fee = ?, processing_fee_amount = ?, connected_facilities = ?, pricing_unit = ? 
+            is_instant_book = ?, operating_hours = ?, listing_status = COALESCE(?, listing_status), advance_booking_days = ?, has_processing_fee = ?, processing_fee_amount = ?, connected_facilities = ?, pricing_unit = ? 
          WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)`,
-        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, facility_type || 'Other', environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, hoursStr, statusToSave, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00, connectedFacilitiesStr, pricing_unit || 'hour', facilityId, req.session.userId, `%"${req.session.email}"%` ],
+        [name, subtitle || '', description || '', featuresStr, locker_rooms || 0, capacity || 0, size_info || '', amenitiesStr, type, facility_type || 'Other', environment, base_price, rulesStr, location, lat || null, lng || null, image_url, is_instant_book ? 1 : 0, hoursStr, listing_status || null, advance_booking_days ? parseInt(advance_booking_days, 10) : 180, has_processing_fee !== undefined ? (has_processing_fee ? 1 : 0) : 1, processing_fee_amount !== undefined ? parseFloat(processing_fee_amount) : 15.00, connectedFacilitiesStr, pricing_unit || 'hour', facilityId, req.session.userId, `%"${req.session.email}"%` ],
         function(err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
