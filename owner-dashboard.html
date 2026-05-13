@@ -316,7 +316,7 @@
                                 <option value="squash">Squash</option>
                                 <option value="badminton">Badminton</option>
                             </select>
-                            <button onclick="switchTab('add-new')" class="w-full sm:w-auto bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl font-bold transition-custom text-sm flex items-center justify-center">
+                            <button onclick="cancelEditModal(); switchTab('add-new');" class="w-full sm:w-auto bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl font-bold transition-custom text-sm flex items-center justify-center">
                                 <i class="fa-solid fa-plus mr-1"></i> <span class="lang-en-only">Add Facility</span><span class="lang-fr-only notranslate">Ajouter</span>
                             </button>
                         </div>
@@ -1860,7 +1860,7 @@
                     <div class="text-center py-12 text-slate-500 col-span-full bg-slate-50 rounded-2xl border border-slate-200">
                         <i class="fa-solid fa-house-chimney text-4xl mb-4 text-slate-300"></i>
                         <p class="text-lg font-medium"><span class="lang-en-only">You haven't listed any facilities yet.</span><span class="lang-fr-only notranslate">Vous n'avez pas encore listé d'installations.</span></p>
-                        <button onclick="switchTab('add-new')" class="mt-4 text-primary font-bold hover:underline"><span class="lang-en-only">Create your first listing</span><span class="lang-fr-only notranslate">Créez votre première annonce</span></button>
+                        <button onclick="cancelEditModal(); switchTab('add-new');" class="mt-4 text-primary font-bold hover:underline"><span class="lang-en-only">Create your first listing</span><span class="lang-fr-only notranslate">Créez votre première annonce</span></button>
                     </div>`;
                 return;
             } else {
@@ -2183,9 +2183,14 @@
 
         function cancelEditModal() {
             // Reset tab and headers
-            document.querySelector('#tab-btn-add-new').textContent = 'Add New Facility';
-            document.querySelector('#tab-add-new h2').textContent = '1. The Basics';
-            document.getElementById('submit-btn').innerHTML = '<i class="fa-solid fa-plus mr-2"></i> Create Listing';
+            const tabBtn = document.querySelector('#tab-btn-add-new');
+            if (tabBtn) tabBtn.textContent = 'Add New Facility';
+            
+            const mainTitle = document.querySelector('#tab-add-new h2');
+            if (mainTitle) mainTitle.textContent = 'Create New Facility';
+            
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-plus mr-2"></i> Create Listing';
             
             // Reset cancel button
             const cancelBtn = document.getElementById('cancel-btn');
@@ -2263,9 +2268,14 @@
             switchTab('add-new');
             
             // Change title and button text for editing
-            document.querySelector('#tab-btn-add-new').innerHTML = '<i class="fa-solid fa-pen mr-2"></i>Edit Facility';
-            document.querySelector('#tab-add-new h2').textContent = 'Edit Facility';
-            document.getElementById('submit-btn').innerHTML = '<i class="fa-solid fa-save mr-2"></i> Save Changes';
+            const tabBtn = document.querySelector('#tab-btn-add-new');
+            if (tabBtn) tabBtn.innerHTML = '<i class="fa-solid fa-pen mr-2"></i>Edit Facility';
+            
+            const mainTitle = document.querySelector('#tab-add-new h2');
+            if (mainTitle) mainTitle.textContent = 'Edit Facility';
+            
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-save mr-2"></i> Save Changes';
             
             const cancelBtn = document.getElementById('cancel-btn');
             cancelBtn.textContent = 'Cancel Editing';
