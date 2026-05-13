@@ -1645,6 +1645,11 @@ app.get('/api/public/surfaces', (req, res) => {
                         }
 
                         s.display_slots_today = availableSlots.slice(0, 3);
+
+                        // Optimize payload: delete massive base64 arrays and strings once primary_image is set
+                        delete s.images;
+                        delete s.image_url;
+                        delete s.facility_image_url;
                     });
                     
                     res.json(surfaces);
