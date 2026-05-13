@@ -3155,6 +3155,13 @@
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
+                buttonText: {
+                    today: localStorage.getItem('gg_language') === 'fr' ? "Aujourd'hui" : 'Today',
+                    month: localStorage.getItem('gg_language') === 'fr' ? 'Mois' : 'Month',
+                    week: localStorage.getItem('gg_language') === 'fr' ? 'Semaine' : 'Week',
+                    day: localStorage.getItem('gg_language') === 'fr' ? 'Jour' : 'Day'
+                },
+                allDayText: localStorage.getItem('gg_language') === 'fr' ? 'toute la journée' : 'all-day',
                 nowIndicator: true,
                 slotMinTime: '06:00:00', // start day at 6 AM
                 slotMaxTime: '24:00:00', // end day at midnight
