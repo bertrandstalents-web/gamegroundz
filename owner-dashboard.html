@@ -4507,9 +4507,13 @@
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Failed to update profile');
                 
-                msgDiv.textContent = data.message || 'Profile updated successfully!';
-                msgDiv.classList.add('bg-green-50', 'text-green-700', 'border-green-200');
-                msgDiv.classList.remove('hidden');
+                if (typeof window.showAlertModal === 'function') {
+                    await window.showAlertModal("Success", "<span class='lang-en-only'>Profile updated successfully!</span><span class='lang-fr-only notranslate'>Profil mis à jour avec succès!</span>", "OK", false);
+                } else {
+                    msgDiv.textContent = data.message || 'Profile updated successfully!';
+                    msgDiv.classList.add('bg-green-50', 'text-green-700', 'border-green-200');
+                    msgDiv.classList.remove('hidden');
+                }
                 
                 // Clear password fields
                 document.getElementById('prof-old-pass').value = '';
@@ -4522,6 +4526,7 @@
                 
                 // Update localStorage
                 const storedUser = localStorage.getItem('gg_user');
+                let languageChanged = false;
                 if (storedUser) {
                     try {
                         const userObj = JSON.parse(storedUser);
@@ -4532,6 +4537,7 @@
                         (function(){ const _u2 = {...userObj}; delete _u2.profile_picture; localStorage.setItem('gg_user', JSON.stringify(_u2)); })();
                         
                         if (payload.preferred_language && localStorage.getItem('gg_language') !== payload.preferred_language) {
+                            languageChanged = true;
                             if (typeof window.switchLanguage === 'function') {
                                 window.switchLanguage(payload.preferred_language);
                             } else {
@@ -4540,6 +4546,10 @@
                             }
                         }
                     } catch(e) {}
+                }
+
+                if (!languageChanged) {
+                    switchTab('facilities');
                 }
 
             } catch (err) {
