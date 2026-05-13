@@ -552,7 +552,7 @@
                         <img src="${getPrimaryImageUrl(facility.primary_image || facility.image_url)}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
                         <div class="absolute top-3 left-3 right-3 flex flex-wrap gap-2 z-20 max-w-[calc(100%-1.5rem)]">
                             <div class="bg-white/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-slate-800 border border-slate-200">
-                                <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating || 'New'} ${facility.reviews_count ? \`(\${facility.reviews_count})\` : ''}
+                                <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating || 'New'} ${facility.reviews_count ? `(${facility.reviews_count})` : ''}
                             </div>
                             ${topBadges}
                         </div>
