@@ -865,10 +865,15 @@
                     hourlyRate = facility.base_price || facility.price || 197;
                     let hasProcessingFee = (facility.has_processing_fee == 1 || facility.has_processing_fee === true || facility.has_processing_fee === '1' || facility.has_processing_fee === undefined);
                     processingFee = hasProcessingFee ? (facility.processing_fee_amount !== undefined ? Number(facility.processing_fee_amount) : 15.00) : 0;
-                    try {
-                        pricingRules = JSON.parse(facility.pricing_rules || '[]');
-                    } catch (e) {
-                        pricingRules = [];
+                    try { 
+                        let parsed = JSON.parse(facility.pricing_rules || '[]');
+                        if (parsed && !Array.isArray(parsed) && parsed.time_slots) {
+                            pricingRules = parsed.time_slots;
+                        } else {
+                            pricingRules = parsed;
+                        }
+                    } catch(e) { 
+                        pricingRules = []; 
                     }
                     try {
                         facilityOperatingHours = JSON.parse(facility.effective_operating_hours || facility.operating_hours || '{"open": "06:00", "close": "23:00"}');
@@ -887,7 +892,16 @@
                     hourlyRate = facility.base_price || 0;
 
                     
-                    try { pricingRules = JSON.parse(facility.pricing_rules || '[]'); } catch(e) { pricingRules = []; }
+                    try { 
+                        let parsed = JSON.parse(facility.pricing_rules || '[]');
+                        if (parsed && !Array.isArray(parsed) && parsed.time_slots) {
+                            pricingRules = parsed.time_slots;
+                        } else {
+                            pricingRules = parsed;
+                        }
+                    } catch(e) { 
+                        pricingRules = []; 
+                    }
                     
                     window.pricingUnit = facility.pricing_unit || 'hour';
                     pricingUnitLabel = window.pricingUnit === 'half_day' ? '/ half-day' : (window.pricingUnit === 'full_day' ? '/ day' : '/ hour');

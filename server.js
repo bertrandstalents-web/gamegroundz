@@ -601,6 +601,10 @@ app.post('/api/auth/login', (req, res) => {
             return res.status(403).json({ error: "This account has been suspended. Please contact support." });
         }
 
+        if (user.status === 'archived') {
+            return res.status(403).json({ error: "This account has been archived." });
+        }
+
         if (user.is_verified === 0) {
             return res.status(403).json({ error: "Please verify your email address before logging in. Check your inbox for the verification link." });
         }
@@ -3317,20 +3321,40 @@ app.get('/api/admin/users', requireAdmin, (req, res) => {
     });
 });
 
-// Update user status (active/suspended)
-app.put('/api/admin/users/:id/status', requireAdmin, (req, res) => {
+// Update user status (active/suspended/archived)
+app.put('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
     const { status } = req.body;
+    const userId = parseInt(req.params.id);
     if (!status) return res.status(400).json({ error: "Missing status" });
 
-    if (parseInt(req.params.id) === req.session.userId && status === 'suspended') {
-        return res.status(400).json({ error: "Cannot suspend yourself" });
+    if (userId === req.session.userId && (status === 'suspended' || status === 'archived')) {
+        return res.status(400).json({ error: `Cannot ${status} yourself` });
     }
 
-    db.run("UPDATE users SET status = ? WHERE id = ?", [status, req.params.id], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        if (this.changes === 0) return res.status(404).json({ error: "User not found" });
+    try {
+        await db.transaction(async (client) => {
+            const result = await client.query("UPDATE users SET status = $1 WHERE id = $2", [status, userId]);
+            if (result.rowCount === 0) {
+                const err = new Error("User not found");
+                err.status = 404;
+                throw err;
+            }
+
+            if (status === 'archived') {
+                // Cascade archive to facilities and surfaces
+                const { rows: facilities } = await client.query("SELECT id FROM facilities WHERE host_id = $1", [userId]);
+                const facilityIds = facilities.map(f => f.id);
+
+                if (facilityIds.length > 0) {
+                    await client.query("UPDATE facilities SET listing_status = 'archived' WHERE host_id = $1", [userId]);
+                    await client.query("UPDATE surfaces SET status = 'archived' WHERE facility_id = ANY($1::int[]) OR host_id = $2", [facilityIds, userId]);
+                }
+            }
+        });
         res.json({ message: "User status updated successfully" });
-    });
+    } catch (err) {
+        res.status(err.status || 500).json({ error: err.message });
+    }
 });
 
 // DELETE user
@@ -3346,10 +3370,32 @@ app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
         await db.transaction(async (client) => {
             // Check if user is a host with active facilities
             const { rows: facilities } = await client.query("SELECT id FROM facilities WHERE host_id = $1", [userId]);
-            if (facilities.length > 0) {
-                const err = new Error("This user is a host with active facilities. Please delete or reassign their facilities before deleting the account.");
-                err.status = 400;
-                throw err;
+            const facilityIds = facilities.map(f => f.id);
+
+            if (facilityIds.length > 0) {
+                // Perform cascading delete for all host's facilities and related data
+                
+                // 1. Remove users' municipality references to these facilities
+                await client.query("UPDATE users SET municipality_id = NULL WHERE municipality_id = ANY($1::int[])", [facilityIds]);
+
+                // 2. Delete images
+                await client.query("DELETE FROM surface_images WHERE surface_id IN (SELECT id FROM surfaces WHERE facility_id = ANY($1::int[]))", [facilityIds]);
+                await client.query("DELETE FROM facility_images WHERE facility_id = ANY($1::int[])", [facilityIds]);
+
+                // 3. Delete discounts and saved facilities
+                await client.query("DELETE FROM discounts WHERE facility_id = ANY($1::int[])", [facilityIds]);
+                await client.query("DELETE FROM saved_facilities WHERE facility_id = ANY($1::int[])", [facilityIds]);
+
+                // 4. Delete bookings and related participants/reviews
+                await client.query("DELETE FROM public_session_participants WHERE booking_id IN (SELECT id FROM bookings WHERE facility_id = ANY($1::int[]))", [facilityIds]);
+                await client.query("DELETE FROM reviews WHERE facility_id = ANY($1::int[])", [facilityIds]);
+                await client.query("DELETE FROM bookings WHERE facility_id = ANY($1::int[])", [facilityIds]);
+
+                // 5. Delete surfaces
+                await client.query("DELETE FROM surfaces WHERE facility_id = ANY($1::int[]) OR host_id = $2", [facilityIds, userId]);
+
+                // 6. Delete facilities
+                await client.query("DELETE FROM facilities WHERE host_id = $1", [userId]);
             }
 
             // Cleanup related data

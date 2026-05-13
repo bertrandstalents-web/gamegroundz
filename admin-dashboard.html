@@ -560,6 +560,7 @@
                         case 'approved': statusBadge = '<span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold uppercase whitespace-nowrap"><i class="fa-solid fa-check mr-1"></i>Approved</span>'; break;
                         case 'paused': 
                         case 'hidden': statusBadge = `<span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-xs font-bold uppercase whitespace-nowrap"><i class="fa-solid fa-eye-slash mr-1"></i>${f.listing_status}</span>`; break;
+                        case 'archived': statusBadge = `<span class="px-2.5 py-1 bg-slate-200 text-slate-700 rounded-md text-xs font-bold uppercase whitespace-nowrap"><i class="fa-solid fa-box-archive mr-1"></i>Archived</span>`; break;
                         default: statusBadge = `<span class="px-2.5 py-1 bg-red-100 text-red-700 rounded-md text-xs font-bold uppercase whitespace-nowrap"><i class="fa-solid fa-ban mr-1"></i>${f.listing_status}</span>`; break;
                     }
 
@@ -575,6 +576,11 @@
                     } else if (f.listing_status === 'approved' || f.listing_status === 'paused') {
                         actionsHtml += `
                             <button onclick="updateFacilityStatus(${f.id}, 'suspended')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-red-50 hover:text-red-600 transition-custom">Suspend Listing</button>
+                        `;
+                    } else if (f.listing_status === 'archived') {
+                        // For archived facilities, just show a badge in actions
+                        actionsHtml += `
+                            <span class="text-xs text-slate-400 italic">Archived (Via Host)</span>
                         `;
                     } else {
                         actionsHtml += `
@@ -658,9 +664,14 @@
                 }
 
                 users.forEach(u => {
-                    let statusBadge = u.status === 'suspended' 
-                        ? '<span class="px-2.5 py-1 bg-red-100 text-red-700 rounded-md text-xs font-bold uppercase">Suspended</span>'
-                        : '<span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold uppercase">Active</span>';
+                    let statusBadge = '';
+                    if (u.status === 'suspended') {
+                        statusBadge = '<span class="px-2.5 py-1 bg-red-100 text-red-700 rounded-md text-xs font-bold uppercase">Suspended</span>';
+                    } else if (u.status === 'archived') {
+                        statusBadge = '<span class="px-2.5 py-1 bg-slate-200 text-slate-700 rounded-md text-xs font-bold uppercase"><i class="fa-solid fa-box-archive mr-1"></i>Archived</span>';
+                    } else {
+                        statusBadge = '<span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold uppercase">Active</span>';
+                    }
                     
                     let roleBadge = '';
                     switch(u.role) {
@@ -669,11 +680,19 @@
                         default: roleBadge = '<span class="text-slate-600 font-bold">Player</span>'; break;
                     }
 
-                    let actionBtn = u.status === 'suspended'
-                        ? `<button onclick="updateUserStatus(${u.id}, 'active')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-green-50 hover:text-green-600 transition-custom">Reactivate</button>`
-                        : `<button onclick="updateUserStatus(${u.id}, 'suspended')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-yellow-50 hover:text-yellow-600 transition-custom">Suspend Account</button>`;
+                    let actionBtn = '';
+                    if (u.status === 'suspended') {
+                        actionBtn = `<button onclick="updateUserStatus(${u.id}, 'active')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-green-50 hover:text-green-600 transition-custom mr-1">Reactivate</button>`;
+                    } else if (u.status === 'archived') {
+                        actionBtn = `<button onclick="updateUserStatus(${u.id}, 'active')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-green-50 hover:text-green-600 transition-custom mr-1">Unarchive</button>`;
+                    } else {
+                        actionBtn = `<button onclick="updateUserStatus(${u.id}, 'suspended')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-yellow-50 hover:text-yellow-600 transition-custom mr-1">Suspend</button>`;
+                    }
 
                     if (u.role !== 'admin') {
+                        if (u.status !== 'archived') {
+                            actionBtn += `<button onclick="updateUserStatus(${u.id}, 'archived')" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded hover:bg-slate-200 hover:text-slate-700 transition-custom mr-1">Archive</button>`;
+                        }
                         actionBtn += `<button onclick="deleteUser(${u.id})" class="text-xs font-bold bg-red-100 text-red-600 px-3 py-1.5 rounded hover:bg-red-200 transition-custom">Delete</button>`;
                     } else {
                         actionBtn = `<span class="text-xs text-slate-400 italic">No actions</span>`;
