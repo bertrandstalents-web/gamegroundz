@@ -420,11 +420,11 @@
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8 relative">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-100 pb-6 gap-4">
                         <div>
-                            <h2 class="text-2xl font-bold text-dark mb-2">Calendar Manager</h2>
-                            <p class="text-slate-500">Click and drag on the calendar to block out offline rentals (e.g., City Leagues).</p>
+                            <h2 class="text-2xl font-bold text-dark mb-2"><span class="lang-en-only">Calendar Manager</span><span class="lang-fr-only notranslate">Gestionnaire de calendrier</span></h2>
+                            <p class="text-slate-500"><span class="lang-en-only">Click and drag on the calendar to block out offline rentals (e.g., City Leagues).</span><span class="lang-fr-only notranslate">Cliquez et glissez sur le calendrier pour bloquer des locations hors ligne (ex: Ligues de la ville).</span></p>
                         </div>
                         <div class="w-full md:w-auto md:min-w-[16rem] max-w-full">
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Select Facility to Manage</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1"><span class="lang-en-only">Select Facility to Manage</span><span class="lang-fr-only notranslate">Sélectionner l'installation à gérer</span></label>
                             <select id="calendar-facility-select" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white appearance-none cursor-pointer font-medium text-slate-800 shadow-sm" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em;">
                                 <!-- Populated dynamically -->
                                 <option value="" disabled="" selected="">Loading facilities...</option>
@@ -443,7 +443,7 @@
                             <div class="bg-primary p-6 flex justify-between items-center text-white">
                                 <h3 class="font-bold text-lg flex items-center tracking-wide uppercase">
                                     <i class="fa-regular fa-calendar-plus mr-3 text-xl"></i>
-                                    New Booking
+                                    <span class="lang-en-only">New Booking</span><span class="lang-fr-only notranslate">Nouvelle réservation</span>
                                 </h3>
                                 <button type="button" onclick="closeEventModal()" class="text-white/80 hover:text-white transition-custom w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center">
                                     <i class="fa-solid fa-xmark text-lg"></i>
@@ -460,29 +460,29 @@
                                 <!-- Date & Time Display -->
                                 <div class="space-y-4">
                                     <div>
-                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Date<span class="text-red-500">*</span></label>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Date</span><span class="lang-fr-only notranslate">Date</span><span class="text-red-500">*</span></label>
                                         <div id="modal-date-display" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-700 font-medium cursor-not-allowed"></div>
                                     </div>
                                     
                                     <div>
-                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Time<span class="text-red-500">*</span></label>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Time</span><span class="lang-fr-only notranslate">Heure</span><span class="text-red-500">*</span></label>
                                         <div class="flex items-center gap-2">
-                                            <span class="text-sm font-bold text-slate-500">From</span>
+                                            <span class="text-sm font-bold text-slate-500"><span class="lang-en-only">From</span><span class="lang-fr-only notranslate">De</span></span>
                                             <div class="relative flex-1" id="modal-start-time-wrapper">
                                                 <select id="modal-start-time" class="hidden"></select>
                                                 <button type="button" onclick="toggleTimeDropdown('modal-start-time-dropdown')" class="w-full flex items-center justify-between px-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white">
-                                                    <span id="modal-start-time-display">Select Time</span>
+                                                    <span id="modal-start-time-display"><span class="lang-en-only">Select Time</span><span class="lang-fr-only notranslate">Sélectionnez l'heure</span></span>
                                                     <i class="fa-solid fa-chevron-down text-slate-400"></i>
                                                 </button>
                                                 <div id="modal-start-time-dropdown" class="hidden absolute z-[120] w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar">
                                                     <!-- Populated by JS -->
                                                 </div>
                                             </div>
-                                            <span class="text-sm font-bold text-slate-500 mx-1">to</span>
+                                            <span class="text-sm font-bold text-slate-500 mx-1"><span class="lang-en-only">to</span><span class="lang-fr-only notranslate">à</span></span>
                                             <div class="relative flex-1" id="modal-end-time-wrapper">
                                                 <select id="modal-end-time" class="hidden"></select>
                                                 <button type="button" onclick="toggleTimeDropdown('modal-end-time-dropdown')" class="w-full flex items-center justify-between px-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white">
-                                                    <span id="modal-end-time-display">Select Time</span>
+                                                    <span id="modal-end-time-display"><span class="lang-en-only">Select Time</span><span class="lang-fr-only notranslate">Sélectionnez l'heure</span></span>
                                                     <i class="fa-solid fa-chevron-down text-slate-400"></i>
                                                 </button>
                                                 <div id="modal-end-time-dropdown" class="hidden absolute z-[120] w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar">
@@ -495,7 +495,7 @@
 
                                 <!-- Spaces / Facility -->
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Spaces<span class="text-red-500">*</span></label>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Spaces</span><span class="lang-fr-only notranslate">Espaces</span><span class="text-red-500">*</span></label>
                                     <div class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-700 font-medium flex items-center cursor-not-allowed">
                                         <i class="fa-solid fa-grip mr-3 text-slate-400"></i>
                                         <span id="modal-facility-display" class="flex-1"></span>
@@ -504,19 +504,19 @@
 
                                 <!-- Block Type -->
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Action Type<span class="text-red-500">*</span></label>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Action Type</span><span class="lang-fr-only notranslate">Type d'action</span><span class="text-red-500">*</span></label>
                                     <div class="flex flex-wrap items-center gap-4 mt-2">
                                         <label class="flex items-center cursor-pointer">
                                             <input type="radio" name="modal-block-type" value="offline" class="w-4 h-4 text-primary focus:ring-primary border-slate-300" checked="" onchange="toggleModalBlockType()">
-                                            <span class="ml-2 text-sm font-semibold text-slate-700">Offline Booking</span>
+                                            <span class="ml-2 text-sm font-semibold text-slate-700"><span class="lang-en-only">Offline Booking</span><span class="lang-fr-only notranslate">Réservation hors ligne</span></span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="radio" name="modal-block-type" value="discount" class="w-4 h-4 text-primary focus:ring-primary border-slate-300" onchange="toggleModalBlockType()">
-                                            <span class="ml-2 text-sm font-semibold text-slate-700">Add Discount</span>
+                                            <span class="ml-2 text-sm font-semibold text-slate-700"><span class="lang-en-only">Add Discount</span><span class="lang-fr-only notranslate">Ajouter un rabais</span></span>
                                         </label>
                                         <label class="flex items-center cursor-pointer border border-primary/20 bg-primary/5 px-3 py-1.5 rounded-lg transition-custom hover:bg-primary/10">
                                             <input type="radio" name="modal-block-type" value="public_session" class="w-4 h-4 text-primary focus:ring-primary border-slate-300" onchange="toggleModalBlockType()">
-                                            <span class="ml-2 text-sm font-bold text-primary">Public Activity</span>
+                                            <span class="ml-2 text-sm font-bold text-primary"><span class="lang-en-only">Public Activity</span><span class="lang-fr-only notranslate">Activité publique</span></span>
                                         </label>
                                     </div>
                                 </div>
@@ -525,30 +525,30 @@
                                 <div id="modal-offline-fields" class="space-y-4">
                                     <div id="public-session-extra" class="hidden space-y-4 pb-4 border-b border-slate-100">
                                         <div>
-                                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Information & Rules<span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top">OPTIONAL</span></label>
+                                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Information & Rules</span><span class="lang-fr-only notranslate">Informations et Règles</span><span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top"><span class="lang-en-only">OPTIONAL</span><span class="lang-fr-only notranslate">OPTIONNEL</span></span></label>
                                             <textarea id="modal-public-description" rows="3" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm custom-scrollbar" placeholder="e.g. Must bring own helmet. Swimming caps required."></textarea>
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Capacity Limit<span class="text-red-500">*</span></label>
+                                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Capacity Limit</span><span class="lang-fr-only notranslate">Limite de capacité</span><span class="text-red-500">*</span></label>
                                             <input type="number" id="modal-public-capacity" min="1" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
                                         </div>
                                         
                                         <div class="pt-2">
                                             <div class="flex items-center justify-between mb-2">
-                                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Pricing Tiers<span class="text-red-500">*</span></label>
+                                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider"><span class="lang-en-only">Pricing Tiers</span><span class="lang-fr-only notranslate">Niveaux de prix</span><span class="text-red-500">*</span></label>
                                                 <button type="button" onclick="addPricingTier()" class="text-xs font-bold text-primary hover:text-primaryHover transition-custom flex items-center bg-primary/5 px-2 py-1 rounded-md">
-                                                    <i class="fa-solid fa-plus mr-1"></i> Add Ticket Type
+                                                    <i class="fa-solid fa-plus mr-1"></i> <span class="lang-en-only">Add Ticket Type</span><span class="lang-fr-only notranslate">Ajouter un type de billet</span>
                                                 </button>
                                             </div>
                                             <div id="pricing-tiers-container" class="space-y-3">
                                                 <!-- Default Tier -->
                                                 <div class="flex items-end gap-3 pricing-tier-row">
                                                     <div class="flex-1">
-                                                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Ticket Name</label>
+                                                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase"><span class="lang-en-only">Ticket Name</span><span class="lang-fr-only notranslate">Nom du billet</span></label>
                                                         <input type="text" class="tier-name w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium" value="Adult (18+)" placeholder="e.g. Adult, Resident, Child" required>
                                                     </div>
                                                     <div class="w-32">
-                                                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Price ($)</label>
+                                                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase"><span class="lang-en-only">Price ($)</span><span class="lang-fr-only notranslate">Prix ($)</span></label>
                                                         <input type="number" step="0.01" min="0" class="tier-price w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium" placeholder="0.00" required>
                                                     </div>
                                                     <button type="button" class="text-slate-400 hover:text-red-500 transition-custom pb-2 w-8 text-center invisible"><i class="fa-solid fa-trash"></i></button>
@@ -557,11 +557,11 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Booking Title<span class="text-red-500">*</span></label>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Booking Title</span><span class="lang-fr-only notranslate">Titre de la réservation</span><span class="text-red-500">*</span></label>
                                         <input type="text" id="modal-block-notes" required="" placeholder="e.g. Private Lesson or Open Hockey" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
                                         <div id="modal-block-notes-custom-wrapper" class="relative hidden">
                                             <button type="button" id="modal-block-notes-btn" onclick="document.getElementById('modal-block-notes-dropdown').classList.toggle('hidden')" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm bg-white flex items-center justify-between">
-                                                <span id="modal-block-notes-display">Select an activity</span>
+                                                <span id="modal-block-notes-display"><span class="lang-en-only">Select an activity</span><span class="lang-fr-only notranslate">Sélectionnez une activité</span></span>
                                                 <i class="fa-solid fa-chevron-down text-slate-400"></i>
                                             </button>
                                             <div id="modal-block-notes-dropdown" class="hidden absolute z-[100] w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden py-1">
@@ -571,13 +571,13 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Locker Room <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top">OPTIONAL</span></label>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Locker Room</span><span class="lang-fr-only notranslate">Vestiaire</span> <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top"><span class="lang-en-only">OPTIONAL</span><span class="lang-fr-only notranslate">OPTIONNEL</span></span></label>
                                         <input type="hidden" id="modal-locker-room">
                                         <div id="modal-locker-boxes" class="flex flex-wrap gap-2"></div>
                                     </div>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Repeat</label>
+                                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Repeat</span><span class="lang-fr-only notranslate">Répéter</span></label>
                                             <select id="modal-repeat-option" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white transition-custom text-slate-800 font-medium" onchange="const isNone = this.value === 'none'; const isWeekly = this.value === 'weekly'; document.getElementById('modal-repeat-until-container').classList.toggle('hidden', isNone); document.getElementById('modal-repeat-until').required = !isNone; document.getElementById('modal-repeat-days-container').classList.toggle('hidden', !isWeekly);">
                                                 <option value="none">Does not repeat</option>
                                                 <option value="daily">Daily</option>
@@ -585,55 +585,55 @@
                                             </select>
                                         </div>
                                         <div id="modal-repeat-until-container" class="hidden">
-                                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Repeat Until<span class="text-red-500">*</span></label>
+                                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Repeat Until</span><span class="lang-fr-only notranslate">Répéter jusqu'au</span><span class="text-red-500">*</span></label>
                                             <input type="date" id="modal-repeat-until" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none shadow-sm text-slate-800 font-medium">
                                         </div>
                                     </div>
                                     
                                     <!-- Days of the week (Only shown if 'Weekly' is selected) -->
                                     <div id="modal-repeat-days-container" class="hidden">
-                                        <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Repeat On</label>
+                                        <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"><span class="lang-en-only">Repeat On</span><span class="lang-fr-only notranslate">Répéter le</span></label>
                                         <div class="flex flex-wrap gap-2">
                                             <label class="cursor-pointer">
                                                 <input type="checkbox" name="repeat_day" value="0" class="peer hidden">
                                                 <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
-                                                    <span class="text-sm font-semibold">Sun</span>
+                                                    <span class="text-sm font-semibold"><span class="lang-en-only">Sun</span><span class="lang-fr-only notranslate">Dim</span></span>
                                                 </div>
                                             </label>
                                             <label class="cursor-pointer">
                                                 <input type="checkbox" name="repeat_day" value="1" class="peer hidden">
                                                 <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
-                                                    <span class="text-sm font-semibold">Mon</span>
+                                                    <span class="text-sm font-semibold"><span class="lang-en-only">Mon</span><span class="lang-fr-only notranslate">Lun</span></span>
                                                 </div>
                                             </label>
                                             <label class="cursor-pointer">
                                                 <input type="checkbox" name="repeat_day" value="2" class="peer hidden">
                                                 <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
-                                                    <span class="text-sm font-semibold">Tue</span>
+                                                    <span class="text-sm font-semibold"><span class="lang-en-only">Tue</span><span class="lang-fr-only notranslate">Mar</span></span>
                                                 </div>
                                             </label>
                                             <label class="cursor-pointer">
                                                 <input type="checkbox" name="repeat_day" value="3" class="peer hidden">
                                                 <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
-                                                    <span class="text-sm font-semibold">Wed</span>
+                                                    <span class="text-sm font-semibold"><span class="lang-en-only">Wed</span><span class="lang-fr-only notranslate">Mer</span></span>
                                                 </div>
                                             </label>
                                             <label class="cursor-pointer">
                                                 <input type="checkbox" name="repeat_day" value="4" class="peer hidden">
                                                 <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
-                                                    <span class="text-sm font-semibold">Thu</span>
+                                                    <span class="text-sm font-semibold"><span class="lang-en-only">Thu</span><span class="lang-fr-only notranslate">Jeu</span></span>
                                                 </div>
                                             </label>
                                             <label class="cursor-pointer">
                                                 <input type="checkbox" name="repeat_day" value="5" class="peer hidden">
                                                 <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
-                                                    <span class="text-sm font-semibold">Fri</span>
+                                                    <span class="text-sm font-semibold"><span class="lang-en-only">Fri</span><span class="lang-fr-only notranslate">Ven</span></span>
                                                 </div>
                                             </label>
                                             <label class="cursor-pointer">
                                                 <input type="checkbox" name="repeat_day" value="6" class="peer hidden">
                                                 <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
-                                                    <span class="text-sm font-semibold">Sat</span>
+                                                    <span class="text-sm font-semibold"><span class="lang-en-only">Sat</span><span class="lang-fr-only notranslate">Sam</span></span>
                                                 </div>
                                             </label>
                                         </div>
@@ -643,14 +643,14 @@
                                 <!-- Discount Fields -->
                                 <div id="modal-discount-fields" class="hidden space-y-4">
                                     <div>
-                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Discount Type<span class="text-red-500">*</span></label>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Discount Type</span><span class="lang-fr-only notranslate">Type de rabais</span><span class="text-red-500">*</span></label>
                                         <select id="modal-disc-type" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white">
                                             <option value="percentage">Percentage (%)</option>
                                             <option value="fixed_amount">Fixed Amount ($)</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Discount Value<span class="text-red-500">*</span></label>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Discount Value</span><span class="lang-fr-only notranslate">Valeur du rabais</span><span class="text-red-500">*</span></label>
                                         <input type="number" id="modal-disc-value" min="1" step="0.01" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none shadow-sm" placeholder="e.g. 20">
                                     </div>
                                 </div>
@@ -658,13 +658,13 @@
                                 <div class="pt-4 border-t border-slate-100 flex justify-end gap-3 items-center">
                                     <!-- Price Display Mimicking Screenshot -->
                                     <div class="flex-1">
-                                         <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Booking Price</div>
+                                         <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider"><span class="lang-en-only">Booking Price</span><span class="lang-fr-only notranslate">Prix de réservation</span></div>
                                          <div class="text-xl font-bold text-slate-800 flex items-center" id="modal-price-display">Offline</div>
                                     </div>
                                     
-                                    <button type="button" id="modal-cancel-btn" onclick="handleModalCancelBtn()" class="px-5 py-2.5 border border-slate-200 text-red-600 rounded-lg hover:bg-slate-50 transition-custom font-bold shadow-sm bg-white">Cancel booking</button>
+                                    <button type="button" id="modal-cancel-btn" onclick="handleModalCancelBtn()" class="px-5 py-2.5 border border-slate-200 text-red-600 rounded-lg hover:bg-slate-50 transition-custom font-bold shadow-sm bg-white"><span class="lang-en-only">Cancel booking</span><span class="lang-fr-only notranslate">Annuler</span></button>
                                     <button type="submit" id="modal-submit-btn" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-bold transition-custom shadow-md flex items-center justify-center">
-                                        Confirm booking
+                                        <span class="lang-en-only">Confirm booking</span><span class="lang-fr-only notranslate">Confirmer</span>
                                     </button>
                                 </div>
                                 <div id="modal-block-error" class="hidden text-red-500 text-sm font-medium bg-red-50 p-3 rounded-xl border border-red-100 mt-2"></div>
