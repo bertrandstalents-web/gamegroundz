@@ -1744,6 +1744,13 @@
                 // Render facilities last so dropdown 'change' events can safely use the cache
                 renderFacilities(facilities);
 
+                // If the user refreshed directly to #surfaces, initialize the surfaces view
+                if (window.location.hash.replace('#', '') === 'surfaces') {
+                    if ((typeof currentFacilityId === 'undefined' || !currentFacilityId) && facilities.length > 0) {
+                        manageSurfaces(facilities[0].id);
+                    }
+                }
+
             } catch (error) {
                 console.error("Error loading host data:", error);
                 document.getElementById('host-facilities-list').innerHTML = `<p class="text-red-500 font-medium">Error loading facilities. Please refresh the page.</p>`;
