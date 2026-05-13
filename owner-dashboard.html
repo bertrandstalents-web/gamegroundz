@@ -1741,9 +1741,9 @@
                 if (!facRes.ok) throw new Error("Failed to fetch facilities");
                 const facilities = await facRes.json();
                 ownerFacilities = facilities; // Save globally for the edit button handler
-                renderFacilities(facilities);
 
-                // Fetch Bookings
+                // Fetch Bookings first to ensure allBookingsCache is populated
+                // before renderFacilities triggers any calendar initializations.
                 const bookRes = await fetch(`${API_BASE_URL}/api/host/bookings?_t=${Date.now()}`, { credentials: 'include', cache: 'no-store' });
                 if (bookRes.status === 401) {
                     localStorage.removeItem('gg_user');
@@ -1753,6 +1753,9 @@
                 if (!bookRes.ok) throw new Error("Failed to fetch bookings");
                 const bookings = await bookRes.json();
                 renderBookings(bookings);
+                
+                // Render facilities last so dropdown 'change' events can safely use the cache
+                renderFacilities(facilities);
 
             } catch (error) {
                 console.error("Error loading host data:", error);
@@ -2944,9 +2947,6 @@
                 calendarEl.innerHTML = '<div class="flex justify-center py-20"><i class="fa-solid fa-spinner fa-spin text-3xl text-slate-300"></i></div>';
             }
 
-            // Filter bookings for this surface
-            const surfaceBookings = allBookingsCache.filter(b => b.surface_id === parseInt(surfaceId, 10));
-
             // Determine facilityId from the selected option in order to fetch discounts
             const selectEl = document.getElementById('calendar-facility-select');
             const selectedOption = Array.from(selectEl.options).find(opt => opt.value == surfaceId);
@@ -2964,6 +2964,9 @@
             } catch (error) {
                 console.error("Failed to fetch discounts for calendar:", error);
             }
+
+            // Filter bookings for this surface AFTER the await to ensure allBookingsCache is fully updated
+            const surfaceBookings = allBookingsCache.filter(b => b.surface_id === parseInt(surfaceId, 10));
 
             // Destroy the old calendar AFTER our await safely resolves
             let previousDate = null;
