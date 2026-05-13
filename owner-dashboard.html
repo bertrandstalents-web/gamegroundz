@@ -2001,7 +2001,13 @@
             if (selectEl && prevVal && Array.from(selectEl.options).some(o => o.value === prevVal)) {
                 selectEl.value = prevVal;
             } else if (selectEl) {
-                selectEl.value = "";
+                const firstValidOpt = Array.from(selectEl.options).find(o => o.value && o.value !== "all");
+                if (firstValidOpt) {
+                    selectEl.value = firstValidOpt.value;
+                    setTimeout(() => selectEl.dispatchEvent(new Event('change')), 100);
+                } else {
+                    selectEl.value = "";
+                }
             }
             
             // Refresh Choices.js UI if it's already initialized
@@ -3431,6 +3437,10 @@
                 if(discountFields) discountFields.classList.remove('hidden');
                 const discValue = document.getElementById('modal-disc-value');
                 if(discValue) discValue.required = true;
+                
+                document.getElementById('modal-public-capacity').required = false;
+                document.querySelectorAll('#pricing-tiers-container .tier-name, #pricing-tiers-container .tier-price').forEach(el => el.required = false);
+
                 if(submitBtn) submitBtn.innerHTML = isDiscountEditMode ? 'Save Changes' : 'Add Discount';
             } else if (blockType === 'public_session') {
                 if(offlineFields) offlineFields.classList.remove('hidden');
@@ -3439,6 +3449,7 @@
                 const publicExtras = document.getElementById('public-session-extra');
                 if(publicExtras) publicExtras.classList.remove('hidden');
                 document.getElementById('modal-public-capacity').required = true;
+                document.querySelectorAll('#pricing-tiers-container .tier-name, #pricing-tiers-container .tier-price').forEach(el => el.required = true);
 
                 const discValue = document.getElementById('modal-disc-value');
                 if(discValue) discValue.required = false;
@@ -3501,6 +3512,7 @@
                 const publicExtras = document.getElementById('public-session-extra');
                 if(publicExtras) publicExtras.classList.add('hidden');
                 document.getElementById('modal-public-capacity').required = false;
+                document.querySelectorAll('#pricing-tiers-container .tier-name, #pricing-tiers-container .tier-price').forEach(el => el.required = false);
 
                 const discValue = document.getElementById('modal-disc-value');
                 if(discValue) discValue.required = false;
