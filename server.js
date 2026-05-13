@@ -2695,10 +2695,15 @@ app.post('/api/public_sessions/join', async (req, res) => {
 
                 // Add transfer data if the host has stripe connected
                 if (session.stripe_account_id && totalAmount > 0) {
-                    const hostAmount = Math.round(totalAmount * (1 - feePercentage));
+                    // GameGroundz gets 5% + (2.9% + $0.30 CAD to cover Stripe fees)
+                    const stripeFeeCents = Math.round(totalAmount * 0.029) + 30;
+                    const platformCutCents = Math.round(totalAmount * 0.05);
+                    const totalAppFeeCents = platformCutCents + stripeFeeCents;
+                    
+                    const hostAmount = totalAmount - totalAppFeeCents;
                     if (hostAmount > 0) {
                         sessionParams.payment_intent_data = {
-                            application_fee_amount: totalAmount - hostAmount,
+                            application_fee_amount: totalAppFeeCents,
                             transfer_data: {
                                 destination: session.stripe_account_id,
                             },
@@ -3788,13 +3793,20 @@ app.post('/api/create-checkout-session', (req, res) => {
 
                         // Split Payment if Host is onboarded via Stripe Connect
                         if (facility.stripe_account_id && facility.stripe_onboarding_complete) {
-                            const platformFeeCents = Math.round(finalAmountCentsCalculated * 0.05); // 5% platform fee
-                            sessionConfig.payment_intent_data = {
-                                application_fee_amount: platformFeeCents,
-                                transfer_data: {
-                                    destination: facility.stripe_account_id,
-                                },
-                            };
+                            // GameGroundz gets 5% + (2.9% + $0.30 CAD to cover Stripe fees)
+                            const stripeFeeCents = Math.round(finalAmountCentsCalculated * 0.029) + 30;
+                            const platformCutCents = Math.round(finalAmountCentsCalculated * 0.05);
+                            const totalAppFeeCents = platformCutCents + stripeFeeCents;
+                            
+                            const hostAmount = finalAmountCentsCalculated - totalAppFeeCents;
+                            if (hostAmount > 0) {
+                                sessionConfig.payment_intent_data = {
+                                    application_fee_amount: totalAppFeeCents,
+                                    transfer_data: {
+                                        destination: facility.stripe_account_id,
+                                    },
+                                };
+                            }
                         }
 
                         const session = await stripe.checkout.sessions.create(sessionConfig);
