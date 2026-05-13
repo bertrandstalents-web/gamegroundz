@@ -315,7 +315,23 @@ app.get('/host-dashboard.html', (req, res) => res.redirect(301, '/owner-dashboar
 app.get('/dashboard.html', (req, res) => res.redirect(301, '/player-dashboard.html'));
 
 // Serve static frontend files from current directory
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname), {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+        }
+    }
+}));
+
+// Global API Cache Control (prevent GET caching)
+app.use('/api', (req, res, next) => {
+    if (req.method === 'GET') {
+        res.set('Cache-Control', 'no-store');
+    }
+    next();
+});
 
 // API Routes
 app.get('/api/config/maps', (req, res) => {
