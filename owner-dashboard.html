@@ -33,6 +33,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <!-- FullCalendar JS and CSS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales-all.global.min.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -432,7 +433,7 @@
                     </div>
                     
                     <!-- The Interactive Calendar -->
-                    <div id="calendar" class="min-h-[600px] mt-4"></div>
+                    <div id="calendar" class="min-h-[600px] mt-4 notranslate"></div>
 
                     <!-- Add Event Modal Overlay (AllBooked Style) -->
                     <div id="event-modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -2977,9 +2978,11 @@
                 let evTitle = '';
                 let evClass = '';
                 let isEditable = false;
+                let isFr = localStorage.getItem('gg_language') === 'fr';
 
                 if (b.booking_type === 'public_session') {
-                    evTitle = `👥 Public Activity: ${b.manual_notes} (${b.joined_count || 0}/${b.capacity})`;
+                    const pubActText = isFr ? 'Activité Publique' : 'Public Activity';
+                    evTitle = `👥 ${pubActText}: ${b.manual_notes} (${b.joined_count || 0}/${b.capacity})`;
                     evClass = 'g-event-public-session bg-indigo-600 border border-indigo-700 text-white font-semibold shadow-sm rounded overflow-hidden';
                     isEditable = true; // allow dragging if we want, but let's say true like manual
                 } else if (b.booking_type === 'manual') {
@@ -2987,7 +2990,9 @@
                     evClass = 'g-event-manual';
                     isEditable = true;
                 } else {
-                    evTitle = `Booked: ${b.player_name || 'Guest'}`;
+                    const bookedText = isFr ? 'Réservé' : 'Booked';
+                    const guestText = isFr ? 'Invité' : 'Guest';
+                    evTitle = `${bookedText}: ${b.player_name || guestText}`;
                     evClass = 'g-event-online';
                 }
 
@@ -3036,7 +3041,7 @@
                             originalNotes: b.manual_notes,
                             lockerRoom: b.locker_room_assignment,
                             recurringGroupId: b.recurring_group_id,
-                            playerName: b.player_name || 'Guest',
+                            playerName: b.player_name || (localStorage.getItem('gg_language') === 'fr' ? 'Invité' : 'Guest'),
                             playerEmail: b.player_email || 'N/A',
                             playerPhone: b.player_phone_number || 'N/A',
                             capacity: b.capacity || 0,
@@ -3054,8 +3059,13 @@
                 if (!d.is_active) return;
                 
                 const amountText = d.discount_type === 'percentage' ? `${d.value}%` : `$${d.value}`;
-                let evTitle = `🔥 ${amountText} OFF`;
-                if (d.is_last_minute) evTitle += " (Last-Minute)";
+                let isFr = localStorage.getItem('gg_language') === 'fr';
+                let offText = isFr ? 'DE RABAIS' : 'OFF';
+                let evTitle = `🔥 ${amountText} ${offText}`;
+                if (d.is_last_minute) {
+                    let lmText = isFr ? '(Dernière Minute)' : '(Last-Minute)';
+                    evTitle += ` ${lmText}`;
+                }
                 
                 const extProps = {
                     isDiscount: true,
@@ -3128,6 +3138,7 @@
             });
 
             const calendarConfig = {
+                locale: localStorage.getItem('gg_language') === 'fr' ? 'fr' : 'en',
                 initialView: previousView,
                 headerToolbar: {
                     left: 'prev,next today',
@@ -3144,29 +3155,6 @@
                 selectMirror: true,
                 eventLongPressDelay: window.innerWidth <= 768 ? 250 : 1000,
                 selectLongPressDelay: window.innerWidth <= 768 ? 250 : 1000,
-                dayHeaderContent: function(arg) {
-                    const defaultText = arg.text; 
-                    const frDays = ['DIM', 'LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM'];
-                    const mobileFrDay = frDays[arg.date.getDay()];
-                    
-                    return { html: `
-                        <div class="fc-desktop-label">${defaultText}</div>
-                        <div class="fc-mobile-fr-label notranslate" style="display:none;">${mobileFrDay}</div>
-                    ` };
-                },
-                slotLabelContent: function(arg) {
-                    let h = arg.date.getHours();
-                    let isFr = localStorage.getItem('gg_language') === 'fr';
-                    let text = '';
-                    if (isFr) {
-                        text = `${h}h`;
-                    } else {
-                        let period = h >= 12 ? 'pm' : 'am';
-                        let h12 = h % 12 || 12;
-                        text = `${h12}${period}`;
-                    }
-                    return { html: `<div class="notranslate">${text}</div>` };
-                },
                 eventMouseEnter: function(info) {
                     if (info.event.extendedProps && info.event.extendedProps.isManual) {
                         currentHoveredEvent = info.event;
