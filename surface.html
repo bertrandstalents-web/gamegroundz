@@ -1266,8 +1266,19 @@
                         mobilePriceContainer.innerHTML = `From $${hourlyRate} <span class="text-sm font-normal text-slate-500">${pricingUnitLabel}</span>`;
                     }
 
-                    // Re-render pricing calculation to use new hourly rate
-                    render();
+                    // Check if this surface is strictly "public drop-ins only"
+                    let isDropInOnly = false;
+                    if (!Array.isArray(pricingRules) && pricingRules.booking_model === 'drop_in_only') {
+                        isDropInOnly = true;
+                    }
+                    
+                    if (isDropInOnly && typeof window.initPublicActivityWidget === 'function') {
+                        // Initialize the specific drop-in widget. It overwrites the booking-widget-container.
+                        window.initPublicActivityWidget(facility, surfaceIdParam);
+                    } else {
+                        // Re-render pricing calculation to use new hourly rate for private widget
+                        render();
+                    }
 
                 } catch (error) {
                     console.error("Error fetching facility details:", error);
@@ -3002,6 +3013,7 @@
     </script>
     <script src="js/modals.js"></script>
     <script src="js/i18n.js"></script>
+    <script src="js/surface-public-widget.js"></script>
 
 
     <script>

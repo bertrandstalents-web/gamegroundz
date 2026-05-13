@@ -12,13 +12,19 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
             // Relaxed filter: include sessions that either match the surface_id exactly or are facility-wide (null/undefined)
             const surfaceSessions = Array.isArray(sessions) ? sessions.filter(s => !s.surface_id || String(s.surface_id) === String(surfaceIdParam) || String(s.surface_id) === 'null') : [];
             
-            if (surfaceSessions.length === 0) {
-                // No public sessions, retain private booking widget
-                return;
-            }
-
             const bookingWidget = document.getElementById('booking-widget-container');
             if (!bookingWidget) return;
+
+            if (surfaceSessions.length === 0) {
+                // No public sessions, display empty state
+                bookingWidget.innerHTML = `
+                <div class="bg-white lg:sticky lg:top-28 lg:border lg:border-slate-200 lg:shadow-xl rounded-t-3xl lg:rounded-2xl px-6 py-8 lg:p-8 text-center text-slate-500">
+                    <i class="fa-regular fa-calendar-xmark text-4xl mb-4 text-slate-300"></i>
+                    <h3 class="text-lg font-bold text-dark mb-2">No Sessions Available</h3>
+                    <p class="text-sm">There are currently no public activities scheduled for this surface.</p>
+                </div>`;
+                return;
+            }
 
             // Group sessions by date
             const sessionsByDate = {};
@@ -193,6 +199,10 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                             renderTiers();
                         });
                     });
+                    
+                    // Auto-select first time
+                    const firstTimeOpt = timeList.querySelector('.time-option');
+                    if (firstTimeOpt) firstTimeOpt.click();
                 });
             });
 
@@ -253,14 +263,14 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                     `;
                     tiersContainer.appendChild(row);
 
-                    document.getElementById(`pa-minus-\${index}`).addEventListener('click', () => {
+                    document.getElementById(`pa-minus-${index}`).addEventListener('click', () => {
                         if (paTierSelections[tier.name] > 0) {
                             paTierSelections[tier.name]--;
                             updateTotal(pricingTiers);
                         }
                     });
 
-                    document.getElementById(`pa-plus-\${index}`).addEventListener('click', () => {
+                    document.getElementById(`pa-plus-${index}`).addEventListener('click', () => {
                         const totalJoined = Object.values(paTierSelections).reduce((a, b) => a + b, 0);
                         const maxSpots = Math.max(0, paSelectedSession.capacity - (paSelectedSession.joined_count || 0));
                         if (totalJoined < maxSpots) {
