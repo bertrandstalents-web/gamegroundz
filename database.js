@@ -411,6 +411,17 @@ async function initDatabase() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
 
+        // Performance Indexes
+        try {
+            await client.query(`CREATE INDEX IF NOT EXISTS idx_bookings_facility_id ON bookings(facility_id)`);
+            await client.query(`CREATE INDEX IF NOT EXISTS idx_bookings_surface_id ON bookings(surface_id)`);
+            await client.query(`CREATE INDEX IF NOT EXISTS idx_bookings_booking_date ON bookings(booking_date)`);
+            await client.query(`CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status)`);
+            await client.query(`CREATE INDEX IF NOT EXISTS idx_bookings_type ON bookings(booking_type)`);
+            await client.query(`CREATE INDEX IF NOT EXISTS idx_surfaces_facility_id ON surfaces(facility_id)`);
+            await client.query(`CREATE INDEX IF NOT EXISTS idx_public_session_participants_booking_id ON public_session_participants(booking_id)`);
+        } catch(e) { console.error("Index creation error:", e); }
+
         // Seed initial Facility data if the table is empty
         const res = await client.query("SELECT COUNT(*) as count FROM facilities");
         if (false) { // SEEDING DISABLED

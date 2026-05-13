@@ -363,6 +363,22 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                     }
                     return;
                 }
+
+                // Check for Host role
+                try {
+                    const storedUser = localStorage.getItem('gg_user');
+                    if (storedUser) {
+                        const parsedUser = JSON.parse(storedUser);
+                        if (parsedUser.role === 'host') {
+                            if (typeof window.showAlertModal === 'function') {
+                                window.showAlertModal('Booking Restricted', 'Hosts are not allowed to join public activities. Please log in as a Player.', 'OK', true);
+                            } else {
+                                alert('Hosts are not allowed to join public activities. Please log in as a Player.');
+                            }
+                            return;
+                        }
+                    }
+                } catch(e) {}
                 
                 reserveBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i>";
                 reserveBtn.disabled = true;
@@ -383,10 +399,24 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                         throw new Error(data.error || 'Failed to join session');
                     }
 
-                    // Success - redirect to checkout success page or bookings page
-                    window.location.href = 'owner-dashboard.html'; // Or wherever users go after booking
+                    if (data.url) {
+                        window.location.href = data.url;
+                    } else if (data.redirectUrl) {
+                        if (typeof window.showAlertModal === 'function') {
+                            window.showAlertModal("Success", "You've successfully joined the public activity!");
+                        } else {
+                            alert("You've successfully joined the public activity!");
+                        }
+                        window.location.href = data.redirectUrl;
+                    } else {
+                        window.location.href = 'player-dashboard.html';
+                    }
                 } catch (error) {
-                    alert(error.message);
+                    if (typeof window.showAlertModal === 'function') {
+                        window.showAlertModal('Error', error.message, 'OK', true);
+                    } else {
+                        alert(error.message);
+                    }
                     reserveBtn.textContent = "Reserve Now";
                     reserveBtn.disabled = false;
                 }

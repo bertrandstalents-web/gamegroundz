@@ -22,6 +22,8 @@ if (!process.env.SESSION_SECRET) {
 }
 
 const app = express();
+const compression = require('compression');
+app.use(compression());
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -978,7 +980,7 @@ app.get('/api/facilities', (req, res) => {
     const paramsSource = req.query;
     const { type, types, environment, maxPrice, limit, offset, search } = paramsSource;
     
-    let query = "SELECT f.* FROM facilities f WHERE f.listing_status = 'approved'";
+    let query = "SELECT f.id, f.name, f.subtitle, f.location, f.facility_type, f.rating, f.reviews_count, f.image_url, f.operating_hours FROM facilities f WHERE f.listing_status = 'approved'";
     const params = [];
 
     // Note: Filtering by type/environment/price now needs to check the surfaces table.
@@ -1012,7 +1014,7 @@ app.get('/api/facilities', (req, res) => {
     }
 
     if (joinSurfaces) {
-        query = "SELECT DISTINCT f.* FROM facilities f JOIN surfaces s ON f.id = s.facility_id WHERE f.listing_status = 'approved' AND s.status != 'deleted'";
+        query = "SELECT DISTINCT f.id, f.name, f.subtitle, f.location, f.facility_type, f.rating, f.reviews_count, f.image_url, f.operating_hours FROM facilities f JOIN surfaces s ON f.id = s.facility_id WHERE f.listing_status = 'approved' AND s.status != 'deleted'";
         if (surfaceConditions.length > 0) {
             query += " AND " + surfaceConditions.join(" AND ");
         }
@@ -1037,9 +1039,11 @@ app.get('/api/facilities', (req, res) => {
 
     db.all(query, params, (err, rows) => {
         if (err) {
+            console.error("DB Error fetching facilities:", err);
             res.status(500).json({ error: err.message });
             return;
         }
+        console.log("Facilities fetched. Count:", rows ? rows.length : 0);
 
         const serverNow = new Date();
         const tzStr = serverNow.toLocaleString('en-US', { timeZone: 'America/New_York' }); 
@@ -1067,7 +1071,10 @@ app.get('/api/facilities', (req, res) => {
         }
 
         // Fetch all active surfaces
-        db.all("SELECT * FROM surfaces WHERE status != 'deleted'", [], (err, allSurfaces) => {
+        console.log("Fetching surfaces...");
+        db.all("SELECT id, facility_id, name, type, environment, base_price, status FROM surfaces WHERE status != 'deleted'", [], (err, allSurfaces) => {
+            if (err) console.error("Error fetching surfaces:", err);
+            console.log("Surfaces fetched:", allSurfaces ? allSurfaces.length : 0);
             const surfaceMap = {}; // facility_id -> array of surfaces
             (allSurfaces || []).forEach(s => {
                 if (!surfaceMap[s.facility_id]) surfaceMap[s.facility_id] = [];
@@ -1075,11 +1082,17 @@ app.get('/api/facilities', (req, res) => {
             });
 
             // Fetch active discounts to attach
+            console.log("Fetching discounts...");
             db.all("SELECT * FROM discounts WHERE is_active = 1", [], (err, discounts) => {
+                if (err) console.error("Error fetching discounts:", err);
+                console.log("Discounts fetched:", discounts ? discounts.length : 0);
                 const allDiscounts = discounts || [];
                 
                 // Fetch bookings for the target date
+                console.log("Fetching bookings for date:", targetDateStr);
                 db.all("SELECT facility_id, surface_id, time_slots FROM bookings WHERE booking_date = ? AND status != 'cancelled'", [targetDateStr], (err, bookings) => {
+                    if (err) console.error("Error fetching bookings:", err);
+                    console.log("Bookings fetched:", bookings ? bookings.length : 0);
                     const bookedMap = {}; // surface_id -> Set of slots
                     (bookings || []).forEach(b => {
                         const sid = b.surface_id;
@@ -1198,6 +1211,13 @@ app.get('/api/facilities', (req, res) => {
                         finalRows.push(facility);
                     });
                     
+                    console.log("Sending response. finalRows length:", finalRows.length);
+                    try {
+                        const jsonStr = JSON.stringify(finalRows);
+                        console.log("JSON payload size:", jsonStr.length, "bytes");
+                    } catch(e) {
+                        console.error("JSON Stringify error:", e.message);
+                    }
                     res.json(finalRows);
                 });
             });
@@ -1456,15 +1476,14 @@ app.get('/api/public/surfaces', (req, res) => {
     
     let query = `
         SELECT 
-            s.*, 
+            s.id, s.facility_id, s.name, s.subtitle, s.location, s.lat, s.lng, s.image_url, s.type, s.environment, s.base_price, s.status, s.pricing_rules, s.is_instant_book,
             f.name as facility_name, 
             f.operating_hours as effective_operating_hours,
             COALESCE(NULLIF(s.location, ''), f.location) as effective_location,
             COALESCE(s.lat, f.lat) as effective_lat,
             COALESCE(s.lng, f.lng) as effective_lng,
             f.rating,
-            f.reviews_count,
-            f.image_url as facility_image_url
+            f.reviews_count
         FROM surfaces s
         LEFT JOIN facilities f ON s.facility_id = f.id
         WHERE s.status != 'deleted' AND (f.id IS NULL OR f.listing_status = 'approved')
@@ -2564,6 +2583,10 @@ app.get('/api/public_sessions/single/:id', (req, res) => {
 app.post('/api/public_sessions/join', async (req, res) => {
     if (!req.session.userId) {
         return res.status(401).json({ error: "You must be logged in to join a public activity." });
+    }
+
+    if (req.session.userRole === 'host') {
+        return res.status(403).json({ error: "Hosts are not permitted to join public activities." });
     }
 
     const { booking_id } = req.body;
