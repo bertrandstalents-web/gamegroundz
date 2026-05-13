@@ -486,7 +486,7 @@
             const displayDate = formatBilingualDate(session.booking_date);
 
             return `
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick='sessionStorage.setItem("pending_booking_date", "${session.booking_date}"); sessionStorage.setItem("pending_booking_slots", ${JSON.stringify(JSON.stringify(slotKeys))}); window.location.href="surface.html?id=${session.surface_id}"'>
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick='window.location.href="public-activity.html?id=${session.id}"'>
                     <div class="relative h-48 hover-zoom-img-container">
                         <img src="${displayImage}" alt="${session.facility_name}" class="w-full h-full object-cover bg-slate-100">
                         <div class="absolute top-3 left-3 flex flex-wrap gap-2 z-20">
@@ -573,7 +573,7 @@
                     const displayDate = formatBilingualDate(session.booking_date);
 
                     popupContent += `
-                        <div class="w-48 cursor-pointer ${group.items.length > 1 ? 'border-b border-slate-100 pb-3 last:border-0 last:pb-0' : ''}" onclick='sessionStorage.setItem("pending_booking_date", "${session.booking_date}"); sessionStorage.setItem("pending_booking_slots", ${JSON.stringify(JSON.stringify(slotKeys))}); window.location.href="surface.html?id=${session.surface_id}"'>
+                        <div class="w-48 cursor-pointer ${group.items.length > 1 ? 'border-b border-slate-100 pb-3 last:border-0 last:pb-0' : ''}" onclick='window.location.href="public-activity.html?id=${session.id}"'>
                             <img src="${displayImage}" class="w-full h-24 object-cover rounded-lg mb-2">
                             <div class="font-bold text-sm truncate hover:text-primary transition-custom">${session.facility_name}</div>
                             <div class="text-xs text-slate-500 mb-1">${activityName} - ${displayDate} ${timeDisplay}</div>

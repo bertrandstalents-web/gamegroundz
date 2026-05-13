@@ -1466,6 +1466,28 @@
             }
             const typeDisplay = facility.type.charAt(0).toUpperCase() + facility.type.slice(1);
 
+            let model = 'exclusive';
+            let priceDisplay = `$${facility.base_price}`;
+            let unitDisplay = '/hr';
+
+            try {
+                let pr = typeof facility.pricing_rules === 'string' ? JSON.parse(facility.pricing_rules) : facility.pricing_rules;
+                if (!Array.isArray(pr) && pr && pr.booking_model) {
+                    model = pr.booking_model;
+                    if (model === 'shared_zone') {
+                        priceDisplay = `$${pr.zone_price || facility.base_price}`;
+                        unitDisplay = '/lane';
+                    }
+                }
+            } catch(e) {}
+            
+            let priceHtml = '';
+            if (model === 'drop_in_only') {
+                priceHtml = `<span class="font-bold text-sm text-slate-500 whitespace-nowrap"><span class="lang-en-only">Public Only</span><span class="lang-fr-only notranslate">Public Seul</span></span>`;
+            } else {
+                priceHtml = `<span class="font-bold text-base text-dark whitespace-nowrap">${priceDisplay}<span class="text-xs font-normal text-slate-500">${unitDisplay}</span></span>`;
+            }
+
             function getPrimaryImageUrl(urlStr) {
                 if (!urlStr || urlStr === '[]' || urlStr === '') return 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
                 if (urlStr.startsWith('[')) {
@@ -1494,7 +1516,7 @@
                     <div class="p-5">
                         <div class="flex justify-between items-start mb-2 gap-2">
                             <h3 class="text-lg font-bold text-dark group-hover:text-primary transition-custom notranslate truncate">${facility.name}</h3>
-                            <span class="font-bold text-base text-dark whitespace-nowrap">$${facility.base_price}<span class="text-xs font-normal text-slate-500">/hr</span></span>
+                            ${priceHtml}
                         </div>
                         ${facility.facility_name ? `<p class="text-[11px] font-semibold text-slate-500 mb-2 uppercase tracking-wide truncate"><i class="fa-solid fa-building mr-1"></i> ${facility.facility_name}</p>` : ''}
                         <p class="text-slate-500 mb-3 flex items-center text-xs truncate">
@@ -2477,7 +2499,7 @@
             const displayDate = formatBilingualDate(session.booking_date);
 
             return `
-                <div class="facility-card snap-start shrink-0 w-[280px] md:w-[320px] bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer flex flex-col" onclick='sessionStorage.setItem("pending_booking_date", "${session.booking_date}"); sessionStorage.setItem("pending_booking_slots", ${JSON.stringify(JSON.stringify(slotKeys))}); window.location.href="surface.html?id=${session.surface_id}"'>
+                <div class="facility-card snap-start shrink-0 w-[280px] md:w-[320px] bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer flex flex-col" onclick='window.location.href="public-activity.html?id=${session.id}"'>
                     <div class="relative h-48 hover-zoom-img-container">
                         <img src="${displayImage}" alt="${session.facility_name}" class="w-full h-full object-cover bg-slate-100">
                         <div class="absolute top-3 left-3 flex flex-wrap gap-2 z-20">

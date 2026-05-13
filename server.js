@@ -1729,14 +1729,21 @@ app.post('/api/host/facilities/:id/surfaces', (req, res) => {
     db.get("SELECT id FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", [facilityId, req.session.userId, `%"${req.session.email}"%`], (err, fac) => {
         if (err || !fac) return res.status(404).json({ error: "Facility not found or unauthorized" });
         
-        const { name, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url, images, terms_document_url } = req.body;
+        const { name, type, environment, size_info, capacity, base_price, pricing_rules, booking_model, total_zones, zone_price, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url, images, terms_document_url } = req.body;
         
         if (!name || !type || !environment || base_price === undefined) {
             return res.status(400).json({ error: "Missing required surface fields" });
         }
         
+        const combinedPricingRules = {
+            booking_model: booking_model || 'exclusive',
+            total_zones: total_zones || 8,
+            zone_price: zone_price || 25.00,
+            time_slots: pricing_rules || []
+        };
+        
         db.run(`INSERT INTO surfaces (facility_id, name, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url, terms_document_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [facilityId, name, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(pricing_rules || []), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, (has_processing_fee === false || has_processing_fee === 0) ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0, image_url || null, terms_document_url || ''],
+            [facilityId, name, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(combinedPricingRules), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, (has_processing_fee === false || has_processing_fee === 0) ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0, image_url || null, terms_document_url || ''],
             function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 const surfaceId = this.lastID;
@@ -1770,10 +1777,17 @@ app.put('/api/host/surfaces/:id', (req, res) => {
         db.get("SELECT id FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", [surface.facility_id, req.session.userId, `%"${req.session.email}"%`], (err, fac) => {
             if (err || !fac) return res.status(401).json({ error: "Unauthorized" });
             
-            const { name, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url, images, terms_document_url } = req.body;
+            const { name, type, environment, size_info, capacity, base_price, pricing_rules, booking_model, total_zones, zone_price, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url, images, terms_document_url } = req.body;
+            
+            const combinedPricingRules = {
+                booking_model: booking_model || 'exclusive',
+                total_zones: total_zones || 8,
+                zone_price: zone_price || 25.00,
+                time_slots: pricing_rules || []
+            };
             
             db.run(`UPDATE surfaces SET name=?, type=?, environment=?, size_info=?, capacity=?, base_price=?, pricing_rules=?, features=?, amenities=?, is_instant_book=?, advance_booking_days=?, has_processing_fee=?, processing_fee_amount=?, pricing_unit=?, locker_rooms=?, image_url=?, terms_document_url=? WHERE id=?`,
-                [name, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(pricing_rules || []), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, (has_processing_fee === false || has_processing_fee === 0) ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0, image_url || null, terms_document_url || '', surfaceId],
+                [name, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(combinedPricingRules), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, (has_processing_fee === false || has_processing_fee === 0) ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0, image_url || null, terms_document_url || '', surfaceId],
                 function(err) {
                     if (err) return res.status(500).json({ error: err.message });
                     
@@ -2093,7 +2107,7 @@ app.post('/api/host/block-time', (req, res) => {
         return res.status(401).json({ error: "Unauthorized" });
     }
     
-    const { facility_id, surface_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment } = req.body;
+    const { facility_id, surface_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, description, pricing_tiers } = req.body;
     
     if (!facility_id || !surface_id || !booking_date || !time_slots || !manual_notes) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -2104,6 +2118,8 @@ app.post('/api/host/block-time', (req, res) => {
     const priceToUse = typeToUse === 'public_session' ? parseFloat(participant_price) || 0.0 : 0.0;
     const kidPriceToUse = typeToUse === 'public_session' ? parseFloat(participant_kid_price) || 0.0 : 0.0;
     const resOnlyToUse = typeToUse === 'public_session' ? (residents_only ? 1 : 0) : 0;
+    const descToUse = typeToUse === 'public_session' ? description || '' : '';
+    const tiersToUse = typeToUse === 'public_session' ? pricing_tiers || '[]' : '[]';
 
     // Verify this facility belongs to the logged-in host
     db.get("SELECT id FROM facilities WHERE id = ? AND host_id = ?", [facility_id, req.session.userId], async (err, facility) => {
@@ -2139,8 +2155,8 @@ app.post('/api/host/block-time', (req, res) => {
         }
         
         const sql = `
-            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, is_read)
-            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12, 1)
+            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, is_read, description, pricing_tiers)
+            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12, 1, $13, $14)
         `;
         
         try {
@@ -2178,7 +2194,7 @@ app.post('/api/host/block-time', (req, res) => {
                 }
 
                 for (const dateStr of datesToBook) {
-                    await client.query(sql, [facility_id, surface_id, dateStr, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse, kidPriceToUse, resOnlyToUse, locker_room_assignment || '']);
+                    await client.query(sql, [facility_id, surface_id, dateStr, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse, kidPriceToUse, resOnlyToUse, locker_room_assignment || '', descToUse, tiersToUse]);
                 }
             });
 
@@ -2198,7 +2214,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
     }
 
     const bookingId = req.params.id;
-    const { booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment } = req.body;
+    const { booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, description, pricing_tiers } = req.body;
 
     if (!booking_date || !time_slots) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -2210,6 +2226,8 @@ app.put('/api/host/bookings/:id', (req, res) => {
     const numPrice = isPublic ? (parseFloat(participant_price) || 0.0) : 0.0;
     const numKidPrice = isPublic ? (parseFloat(participant_kid_price) || 0.0) : 0.0;
     const reqResOnly = isPublic ? (residents_only ? 1 : 0) : 0;
+    const descToUse = isPublic ? description || '' : '';
+    const tiersToUse = isPublic ? pricing_tiers || '[]' : '[]';
 
     // Verify ownership via facilities table
     db.get(
@@ -2263,14 +2281,24 @@ app.put('/api/host/bookings/:id', (req, res) => {
                     }
 
                     const { rows: existingBookings } = await client.query(
-                        `SELECT id, booking_date, time_slots FROM bookings WHERE (surface_id = $1 OR (surface_id IS NULL AND facility_id = $2)) AND booking_date = ANY($3::text[]) AND status != 'cancelled' FOR UPDATE`,
+                        `SELECT id, booking_date, time_slots, recurring_group_id FROM bookings WHERE (surface_id = $1 OR (surface_id IS NULL AND facility_id = $2)) AND booking_date = ANY($3::text[]) AND status != 'cancelled' FOR UPDATE`,
                         [row.surface_id, row.facility_id, allDatesToCheck]
                     );
 
                     let hasConflict = false;
                     const newSlots = Array.isArray(time_slots) ? time_slots : [time_slots];
+                    const existingDatesInSeries = new Set();
+
                     existingBookings.forEach(booking => {
-                        if (booking.id == bookingId) return;
+                        if (booking.id == bookingId) {
+                            existingDatesInSeries.add(booking.booking_date);
+                            return;
+                        }
+                        
+                        if (row.recurring_group_id && booking.recurring_group_id === row.recurring_group_id) {
+                            existingDatesInSeries.add(booking.booking_date);
+                            return;
+                        }
                         
                         try {
                             const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
@@ -2286,22 +2314,35 @@ app.put('/api/host/bookings/:id', (req, res) => {
                         throw err;
                     }
 
+                    const actualDatesToInsert = datesToBook.filter(dStr => !existingDatesInSeries.has(dStr));
+                    const datesToUpdate = datesToBook.filter(dStr => existingDatesInSeries.has(dStr));
+
                     const updateSql = `
                         UPDATE bookings 
                         SET booking_date = $1, time_slots = $2, manual_notes = COALESCE($3, manual_notes), recurring_group_id = COALESCE($4, recurring_group_id),
-                            capacity = COALESCE($5, capacity), participant_price = COALESCE($6, participant_price), participant_kid_price = COALESCE($7, participant_kid_price), residents_only = COALESCE($8, residents_only), locker_room_assignment = COALESCE($9, locker_room_assignment)
-                        WHERE id = $10
+                            capacity = COALESCE($5, capacity), participant_price = COALESCE($6, participant_price), participant_kid_price = COALESCE($7, participant_kid_price), residents_only = COALESCE($8, residents_only), locker_room_assignment = COALESCE($9, locker_room_assignment), description = COALESCE($10, description), pricing_tiers = COALESCE($11, pricing_tiers)
+                        WHERE id = $12
                     `;
-                    await client.query(updateSql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, bookingId]);
+                    await client.query(updateSql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, descToUse, tiersToUse, bookingId]);
 
-                    if (datesToBook.length > 0) {
+                    if (datesToUpdate.length > 0 && row.recurring_group_id) {
+                        const updateSeriesSql = `
+                            UPDATE bookings 
+                            SET time_slots = $1, manual_notes = COALESCE($2, manual_notes),
+                                capacity = COALESCE($3, capacity), participant_price = COALESCE($4, participant_price), participant_kid_price = COALESCE($5, participant_kid_price), residents_only = COALESCE($6, residents_only), locker_room_assignment = COALESCE($7, locker_room_assignment), description = COALESCE($8, description), pricing_tiers = COALESCE($9, pricing_tiers)
+                            WHERE recurring_group_id = $10 AND booking_date = ANY($11::text[]) AND id != $12 AND status != 'cancelled'
+                        `;
+                        await client.query(updateSeriesSql, [JSON.stringify(time_slots), manual_notes, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, descToUse, tiersToUse, row.recurring_group_id, datesToUpdate, bookingId]);
+                    }
+
+                    if (actualDatesToInsert.length > 0) {
                         const bTypeStr = isPublic ? 'public_session' : 'manual';
                         const insertSql = `
-                            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, is_read)
-                            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12, 1)
+                            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, is_read, description, pricing_tiers)
+                            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12, 1, $13, $14)
                         `;
-                        for (const dateStr of datesToBook) {
-                            await client.query(insertSql, [row.facility_id, row.surface_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment || '']);
+                        for (const dateStr of actualDatesToInsert) {
+                            await client.query(insertSql, [row.facility_id, row.surface_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment || '', descToUse, tiersToUse]);
                         }
                     }
                 });
@@ -2351,13 +2392,13 @@ app.get('/api/bookings/my', (req, res) => {
 
     // Join with facilities to get facility name and image
     const query = `
-        SELECT b.id, b.user_id, b.facility_id, b.booking_date, b.time_slots, b.total_price, b.status, b.booking_type, b.manual_notes, b.payment_status, b.stripe_session_id, b.review_email_sent, b.recurring_group_id, b.is_read, b.is_archived, b.capacity, b.participant_price, f.name as facility_name, f.image_url, f.location, 1 as quantity, s.name as surface_name
+        SELECT b.id, b.user_id, b.facility_id, b.booking_date, b.time_slots, b.total_price, b.status, b.booking_type, b.manual_notes, b.payment_status, b.stripe_session_id, b.review_email_sent, b.recurring_group_id, b.is_read, b.is_archived, b.capacity, b.participant_price, f.name as facility_name, f.image_url, f.location, 1 as quantity, s.name as surface_name, b.pricing_tiers, 0 as quantity_adult, 0 as quantity_kid
         FROM bookings b
         JOIN facilities f ON b.facility_id = f.id
         LEFT JOIN surfaces s ON b.surface_id = s.id
         WHERE b.user_id = ? AND b.booking_type != 'public_session' AND b.status != 'cancelled'
         UNION ALL
-        SELECT b.id, psp.user_id, b.facility_id, b.booking_date, b.time_slots, (psp.quantity * b.participant_price) as total_price, b.status, b.booking_type, b.manual_notes, psp.payment_status, psp.stripe_session_id, b.review_email_sent, b.recurring_group_id, b.is_read, b.is_archived, b.capacity, b.participant_price, f.name as facility_name, f.image_url, f.location, psp.quantity, s.name as surface_name
+        SELECT b.id, psp.user_id, b.facility_id, b.booking_date, b.time_slots, (psp.quantity * b.participant_price) as total_price, b.status, b.booking_type, b.manual_notes, psp.payment_status, psp.stripe_session_id, b.review_email_sent, b.recurring_group_id, b.is_read, b.is_archived, b.capacity, b.participant_price, f.name as facility_name, f.image_url, f.location, psp.quantity, s.name as surface_name, b.pricing_tiers, psp.quantity_adult, psp.quantity_kid
         FROM public_session_participants psp
         JOIN bookings b ON psp.booking_id = b.id
         JOIN facilities f ON b.facility_id = f.id
@@ -2368,6 +2409,33 @@ app.get('/api/bookings/my', (req, res) => {
 
     db.all(query, [user_id, user_id], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
+
+        // Recalculate total_price for public sessions using pricing_tiers
+        rows.forEach(row => {
+            if (row.booking_type === 'public_session' && row.pricing_tiers) {
+                try {
+                    const tiers = JSON.parse(row.pricing_tiers);
+                    let recalculatedPrice = 0;
+                    
+                    if (row.quantity_adult > 0) {
+                        const adultTier = tiers.find(t => t.name.toLowerCase().includes('adult') || t.name === 'Adult (18+)');
+                        if (adultTier) recalculatedPrice += (parseFloat(adultTier.price) * row.quantity_adult);
+                    }
+                    if (row.quantity_kid > 0) {
+                        const childTier = tiers.find(t => t.name.toLowerCase().includes('kid') || t.name.toLowerCase().includes('child'));
+                        if (childTier) recalculatedPrice += (parseFloat(childTier.price) * row.quantity_kid);
+                    }
+                    
+                    // Update total_price if we calculated something valid, or if quantity is present but tiers were zero.
+                    if (recalculatedPrice > 0 || row.quantity_adult > 0 || row.quantity_kid > 0) {
+                         row.total_price = recalculatedPrice;
+                    }
+                } catch (e) {
+                    console.error("Error parsing pricing_tiers for booking my:", e);
+                }
+            }
+        });
+
         res.json(rows);
     });
 });
@@ -2425,6 +2493,7 @@ app.get('/api/public_sessions/upcoming/all', (req, res) => {
 // GET public activities for a facility
 app.get('/api/public_sessions/:facility_id', (req, res) => {
     const { facility_id } = req.params;
+    const { surface_id } = req.query;
     
     const serverNow = new Date();
     const tzStr = serverNow.toLocaleString('en-US', { timeZone: 'America/New_York' }); 
@@ -2432,20 +2501,64 @@ app.get('/api/public_sessions/:facility_id', (req, res) => {
     const todayStr = now.toISOString().split('T')[0];
 
     // We only want future public activities or today's
-    const query = `
-        SELECT b.*, 
-        (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
-        FROM bookings b 
-        WHERE b.facility_id = ? AND b.booking_type = 'public_session' AND b.status = 'confirmed' 
-        AND b.booking_date >= ?
-        ORDER BY b.booking_date ASC, b.time_slots ASC
-    `;
+    let query, params;
     
-    db.all(query, [facility_id, todayStr], (err, rows) => {
+    if (facility_id === 'null' || facility_id === 'undefined') {
+        if (surface_id) {
+            query = `
+                SELECT b.*, 
+                (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
+                FROM bookings b 
+                WHERE b.facility_id IS NULL AND b.surface_id = ? AND b.booking_type = 'public_session' AND b.status = 'confirmed' 
+                AND b.booking_date >= ?
+                ORDER BY b.booking_date ASC, b.time_slots ASC
+            `;
+            params = [surface_id, todayStr];
+        } else {
+            return res.json([]);
+        }
+    } else {
+        query = `
+            SELECT b.*, 
+            (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
+            FROM bookings b 
+            WHERE b.facility_id = ? AND b.booking_type = 'public_session' AND b.status = 'confirmed' 
+            AND b.booking_date >= ?
+            ORDER BY b.booking_date ASC, b.time_slots ASC
+        `;
+        params = [facility_id, todayStr];
+    }
+    
+    db.all(query, params, (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
+
+// GET a single public session by booking ID
+app.get('/api/public_sessions/single/:id', (req, res) => {
+    const { id } = req.params;
+    
+    const query = `
+        SELECT b.*, f.name as facility_name, f.location, f.type as facility_type, f.lat, f.lng, 
+        f.description as facility_description, f.amenities as facility_amenities, f.rating as facility_rating, f.reviews_count as facility_reviews_count,
+        CASE WHEN s.image_url IS NOT NULL AND s.image_url != '' THEN s.image_url ELSE f.image_url END as image_url, 
+        u.stripe_account_id, u.stripe_onboarding_complete, u.name as host_name, u.company_name, u.profile_picture as host_profile_picture,
+        (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
+        FROM bookings b 
+        JOIN facilities f ON b.facility_id = f.id
+        LEFT JOIN surfaces s ON b.surface_id = s.id
+        LEFT JOIN users u ON f.host_id = u.id
+        WHERE b.id = ? AND b.booking_type = 'public_session'
+    `;
+    
+    db.get(query, [id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: "Session not found." });
+        res.json(row);
+    });
+});
+
 
 // POST join a public activity
 app.post('/api/public_sessions/join', async (req, res) => {
@@ -2478,9 +2591,27 @@ app.post('/api/public_sessions/join', async (req, res) => {
             }
         }
 
-        const reqAdultQty = parseInt(req.body.adultQuantity, 10) || parseInt(req.body.quantity, 10) || 0;
-        const reqKidQty = parseInt(req.body.kidQuantity, 10) || 0;
-        const reqTotalQty = reqAdultQty + reqKidQty;
+        // Parse tier quantities from request
+        let tierQuantities = req.body.tierQuantities || {};
+        
+        let reqAdultQty = 0;
+        let reqKidQty = 0;
+        
+        // Fallback for legacy calls
+        if (Object.keys(tierQuantities).length === 0) {
+            reqAdultQty = parseInt(req.body.adultQuantity, 10) || parseInt(req.body.quantity, 10) || 0;
+            reqKidQty = parseInt(req.body.kidQuantity, 10) || 0;
+            if (reqAdultQty > 0) tierQuantities['Adult (18+)'] = reqAdultQty;
+            if (reqKidQty > 0) tierQuantities['Child'] = reqKidQty;
+        } else {
+            reqAdultQty = parseInt(tierQuantities['Adult (18+)'] || 0, 10);
+            reqKidQty = parseInt(tierQuantities['Child'] || 0, 10);
+        }
+
+        let reqTotalQty = 0;
+        for (const qty of Object.values(tierQuantities)) {
+            reqTotalQty += parseInt(qty, 10) || 0;
+        }
 
         if (reqTotalQty < 1 || reqTotalQty > 100) {
             return res.status(400).json({ error: "Invalid quantity. You must book at least 1 spot." });
@@ -2501,54 +2632,63 @@ app.post('/api/public_sessions/join', async (req, res) => {
 
             // Create checkout
             try {
-                // Determine application fee (e.g. 10%)
-                const feePercentage = 0.10;
-                let unitAmountAdult = Math.round(session.participant_price * 100);
-                let unitAmountKid = Math.round((session.participant_kid_price || 0) * 100);
-                
-                const totalAmount = (unitAmountAdult * reqAdultQty) + (unitAmountKid * reqKidQty);
-                
+                // Determine application fee (e.g. 5%)
+                const feePercentage = 0.05;
+                let totalAmount = 0;
                 let line_items = [];
-                if (reqAdultQty > 0) {
-                    line_items.push({
-                        price_data: {
-                            currency: 'cad',
-                            product_data: {
-                                name: `Public Activity (Adult): ${session.manual_notes || 'Open Session'}`,
-                                description: `${session.facility_name} - ${session.booking_date}`,
-                            },
-                            unit_amount: unitAmountAdult,
-                        },
-                        quantity: reqAdultQty,
-                    });
+
+                // Parse pricing tiers from session
+                let pricingTiers = [];
+                try {
+                    pricingTiers = JSON.parse(session.pricing_tiers);
+                } catch (e) {
+                    pricingTiers = [];
                 }
-                if (reqKidQty > 0) {
-                    line_items.push({
-                        price_data: {
-                            currency: 'cad',
-                            product_data: {
-                                name: `Public Activity (Kid): ${session.manual_notes || 'Open Session'}`,
-                                description: `${session.facility_name} - ${session.booking_date}`,
+                
+                // Fallback to legacy pricing if no tiers
+                if (!pricingTiers || pricingTiers.length === 0) {
+                    pricingTiers = [
+                        { name: 'Adult (18+)', price: session.participant_price || 0 },
+                        { name: 'Child', price: session.participant_kid_price || 0 }
+                    ];
+                }
+
+                // Build line items based on dynamic tiers
+                for (const [tierName, quantityStr] of Object.entries(tierQuantities)) {
+                    const quantity = parseInt(quantityStr, 10);
+                    if (quantity > 0) {
+                        const tier = pricingTiers.find(t => t.name === tierName);
+                        const price = tier ? parseFloat(tier.price) : 0;
+                        const unitAmount = Math.round(price * 100);
+                        
+                        totalAmount += (unitAmount * quantity);
+                        
+                        line_items.push({
+                            price_data: {
+                                currency: 'cad',
+                                product_data: {
+                                    name: `Public Activity (${tierName}): ${session.manual_notes || 'Open Session'}`,
+                                    description: `${session.facility_name} - ${session.booking_date}`,
+                                },
+                                unit_amount: unitAmount,
                             },
-                            unit_amount: unitAmountKid,
-                        },
-                        quantity: reqKidQty,
-                    });
+                            quantity: quantity,
+                        });
+                    }
                 }
 
                 let sessionParams = {
                     payment_method_types: ['card'],
                     mode: 'payment',
                     success_url: `${process.env.APP_URL || 'http://localhost:3000'}/player-dashboard.html?session_joined=success&session_id={CHECKOUT_SESSION_ID}`,
-                    cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}/surface.html?id=${session.surface_id}&session_joined=cancel`,
+                    cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}/public-activity.html?id=${booking_id}&session_joined=cancel`,
                     client_reference_id: req.session.userId.toString(),
                     metadata: {
                         booking_id: booking_id.toString(),
                         user_id: req.session.userId.toString(),
                         type: 'public_session_join',
                         quantity: reqTotalQty.toString(),
-                        quantity_adult: reqAdultQty.toString(),
-                        quantity_kid: reqKidQty.toString()
+                        tier_quantities: JSON.stringify(tierQuantities)
                     },
                     line_items: line_items
                 };
@@ -2568,7 +2708,10 @@ app.post('/api/public_sessions/join', async (req, res) => {
 
                 // If total price is 0, we bypass stripe and just insert them as Paid!
                 if (totalAmount === 0) {
-                    db.run("INSERT INTO public_session_participants (booking_id, user_id, payment_status, quantity, quantity_adult, quantity_kid) VALUES (?, ?, 'paid', ?, ?, ?)", [booking_id, req.session.userId, reqTotalQty, reqAdultQty, reqKidQty], function(err) {
+                    const adultQtyFallback = parseInt(tierQuantities['Adult (18+)'] || 0, 10);
+                    const kidQtyFallback = parseInt(tierQuantities['Child'] || 0, 10);
+                    
+                    db.run("INSERT INTO public_session_participants (booking_id, user_id, payment_status, quantity, quantity_adult, quantity_kid) VALUES (?, ?, 'paid', ?, ?, ?)", [booking_id, req.session.userId, reqTotalQty, adultQtyFallback, kidQtyFallback], function(err) {
                          if (err) return res.status(500).json({ error: "Failed to join." });
                          return res.json({ freeJoin: true, redirectUrl: `${process.env.APP_URL || 'http://localhost:3000'}/player-dashboard.html?session_joined=success` });
                     });
@@ -3447,7 +3590,7 @@ app.post('/api/create-checkout-session', (req, res) => {
 
         const fetchSurfacePricing = (cb) => {
             if (requestSurfaceId) {
-                db.get("SELECT name as surface_name, base_price, pricing_rules FROM surfaces WHERE id = ?", [requestSurfaceId], (err, surface) => {
+                db.get("SELECT name as surface_name, base_price, pricing_rules, has_processing_fee, processing_fee_amount FROM surfaces WHERE id = ?", [requestSurfaceId], (err, surface) => {
                     if (err || !surface) {
                         return cb(facility);
                     }
@@ -3455,7 +3598,9 @@ app.post('/api/create-checkout-session', (req, res) => {
                         ...facility,
                         name: `${facility.name} - ${surface.surface_name}`,
                         base_price: surface.base_price,
-                        pricing_rules: surface.pricing_rules
+                        pricing_rules: surface.pricing_rules,
+                        has_processing_fee: surface.has_processing_fee,
+                        processing_fee_amount: surface.processing_fee_amount
                     });
                 });
             } else {
@@ -3489,29 +3634,75 @@ app.post('/api/create-checkout-session', (req, res) => {
             const placeholders = datesArr.map(() => '?').join(',');
             
             db.all(
-                `SELECT booking_date, time_slots FROM bookings WHERE facility_id = ? AND booking_date IN (${placeholders}) AND status != 'cancelled'`,
+                `SELECT booking_date, time_slots, surface_id, zones_booked FROM bookings WHERE facility_id = ? AND booking_date IN (${placeholders}) AND status != 'cancelled'`,
                 [facility_id, ...datesArr],
                 async (err, existingBookings) => {
                     if (err) return res.status(500).json({ error: "Database error during availability check." });
 
                     let hasConflict = false;
+                    
+                    // Parse surface pricing rules for shared_zone logic
+                    let isSharedZone = false;
+                    let totalZones = 1;
+                    if (facility.pricing_rules) {
+                        try {
+                            const pr = typeof facility.pricing_rules === 'string' ? JSON.parse(facility.pricing_rules) : facility.pricing_rules;
+                            if (pr.booking_model === 'shared_zone') {
+                                isSharedZone = true;
+                                totalZones = pr.total_zones || 1;
+                            }
+                        } catch(e){}
+                    }
+                    
+                    const requestedZones = parseInt(req.body.zones_requested || 1, 10);
+                    
+                    // Track zones booked per slot per date for this surface
+                    const zonesPerSlot = {}; // e.g. { "2023-10-10": { "10:00": 2, "10:30": 2 } }
+
                     existingBookings.forEach(booking => {
+                        // Only compare bookings on the same surface
+                        if (String(booking.surface_id) !== String(requestSurfaceId)) return;
+                        
                         try {
                             const slots = typeof booking.time_slots === 'string' 
                                 ? JSON.parse(booking.time_slots) 
                                 : booking.time_slots;
-                            const newSlotsForDate = parsedMultiDaySlots[booking.booking_date] || [];
+                                
+                            const dateStr = booking.booking_date;
+                            if (!zonesPerSlot[dateStr]) zonesPerSlot[dateStr] = {};
+                            
+                            const newSlotsForDate = parsedMultiDaySlots[dateStr] || [];
+                            
                             if (Array.isArray(slots)) {
-                                if (newSlotsForDate.some(newSlot => slots.includes(newSlot))) {
-                                    hasConflict = true;
-                                }
+                                slots.forEach(slot => {
+                                    if (newSlotsForDate.includes(slot)) {
+                                        zonesPerSlot[dateStr][slot] = (zonesPerSlot[dateStr][slot] || 0) + (booking.zones_booked || 1);
+                                    }
+                                });
                             }
                         } catch (e) {}
                     });
 
+                    // Evaluate conflicts
+                    for (const dateStr of datesArr) {
+                        const newSlotsForDate = parsedMultiDaySlots[dateStr] || [];
+                        for (const slot of newSlotsForDate) {
+                            const currentlyBooked = (zonesPerSlot[dateStr] && zonesPerSlot[dateStr][slot]) || 0;
+                            if (isSharedZone) {
+                                if (currentlyBooked + requestedZones > totalZones) {
+                                    hasConflict = true;
+                                }
+                            } else {
+                                if (currentlyBooked > 0) {
+                                    hasConflict = true;
+                                }
+                            }
+                        }
+                    }
+
                     if (hasConflict) {
                         return res.status(409).json({ 
-                            error: "Conflict: One or more selected time slots have already been booked." 
+                            error: "Conflict: The selected time slots do not have enough availability." 
                         });
                     }
 
@@ -3523,7 +3714,10 @@ app.post('/api/create-checkout-session', (req, res) => {
                         facility_id,
                         surface_id: requestSurfaceId,
                         multi_day_slots: parsedMultiDaySlots,
-                        surface_terms_accepted: surface_terms_accepted ? 1 : 0
+                        surface_terms_accepted: surface_terms_accepted ? 1 : 0,
+                        zones_booked: requestedZones,
+                        is_shared_zone: isSharedZone,
+                        total_zones: totalZones
                     });
 
                     db.run("INSERT INTO pending_checkouts (id, payload) VALUES (?, ?)", [checkoutToken, payloadToStore], async function(err) {
@@ -3653,20 +3847,45 @@ app.post('/api/bookings/confirm', async (req, res) => {
                             await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [surface_id || facility_id]);
                             const datesArr = Object.keys(multi_day_slots);
                             const { rows: existingBookings } = await client.query(
-                                `SELECT booking_date, time_slots FROM bookings WHERE (surface_id = $1 OR (surface_id IS NULL AND facility_id = $1)) AND booking_date = ANY($2::text[]) AND status != 'cancelled' FOR UPDATE`,
+                                `SELECT booking_date, time_slots, surface_id, zones_booked FROM bookings WHERE (surface_id = $1 OR (surface_id IS NULL AND facility_id = $1)) AND booking_date = ANY($2::text[]) AND status != 'cancelled' FOR UPDATE`,
                                 [surface_id || facility_id, datesArr]
                             );
 
                             let hasConflict = false;
+                            const isSharedZone = payload.is_shared_zone || false;
+                            const totalZones = payload.total_zones || 1;
+                            const requestedZones = payload.zones_booked || 1;
+                            const zonesPerSlot = {};
+
                             existingBookings.forEach(booking => {
+                                if (String(booking.surface_id) !== String(surface_id)) return;
                                 try {
                                     const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
-                                    const newSlotsForDate = multi_day_slots[booking.booking_date] || [];
-                                    if (Array.isArray(slots) && newSlotsForDate.some(newSlot => slots.includes(newSlot))) {
-                                        hasConflict = true;
+                                    const dateStr = booking.booking_date;
+                                    if (!zonesPerSlot[dateStr]) zonesPerSlot[dateStr] = {};
+                                    const newSlotsForDate = multi_day_slots[dateStr] || [];
+                                    
+                                    if (Array.isArray(slots)) {
+                                        slots.forEach(slot => {
+                                            if (newSlotsForDate.includes(slot)) {
+                                                zonesPerSlot[dateStr][slot] = (zonesPerSlot[dateStr][slot] || 0) + (booking.zones_booked || 1);
+                                            }
+                                        });
                                     }
                                 } catch (e) {}
                             });
+
+                            for (const dateStr of datesArr) {
+                                const newSlotsForDate = multi_day_slots[dateStr] || [];
+                                for (const slot of newSlotsForDate) {
+                                    const currentlyBooked = (zonesPerSlot[dateStr] && zonesPerSlot[dateStr][slot]) || 0;
+                                    if (isSharedZone) {
+                                        if (currentlyBooked + requestedZones > totalZones) hasConflict = true;
+                                    } else {
+                                        if (currentlyBooked > 0) hasConflict = true;
+                                    }
+                                }
+                            }
 
                             if (hasConflict) {
                                 const err = new Error("Conflict: Time slots already booked.");
@@ -3679,8 +3898,8 @@ app.post('/api/bookings/confirm', async (req, res) => {
                                 const lockers = await allocateLockerRooms(client, surface_id, date, slots);
 
                                 const result = await client.query(
-                                    "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment, surface_terms_accepted) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9, $10) RETURNING id",
-                                    [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers, payload.surface_terms_accepted || 0]
+                                    "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment, surface_terms_accepted, zones_booked) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9, $10, $11) RETURNING id",
+                                    [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers, payload.surface_terms_accepted || 0, requestedZones]
                                 );
                                 sendBookingEmails(result.rows[0].id);
                             }

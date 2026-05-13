@@ -523,13 +523,36 @@
             if (isInstantBook) {
                 topBadges += `<div class="bg-primary/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-white shadow-sm">Instant Book</div>`;
             }
+
+            let model = 'exclusive';
+            let priceDisplay = `From $${facility.base_price}`;
+            let unitDisplay = facility.pricing_unit === 'half_day' ? '/ half-day' : (facility.pricing_unit === 'full_day' ? '/ day' : '/hr');
+
+            try {
+                let pr = typeof facility.pricing_rules === 'string' ? JSON.parse(facility.pricing_rules) : facility.pricing_rules;
+                if (!Array.isArray(pr) && pr && pr.booking_model) {
+                    model = pr.booking_model;
+                    if (model === 'shared_zone') {
+                        priceDisplay = `From $${pr.zone_price || facility.base_price}`;
+                        unitDisplay = '/lane';
+                    }
+                }
+            } catch(e) {}
+            
+            let priceHtml = '';
+            if (model === 'drop_in_only') {
+                priceHtml = `<span class="font-bold text-sm text-slate-500 whitespace-nowrap"><span class="lang-en-only">Public Only</span><span class="lang-fr-only notranslate">Public Seul</span></span>`;
+            } else {
+                priceHtml = `<span class="font-bold text-dark whitespace-nowrap">${priceDisplay}<span class="text-xs font-normal text-slate-500">${unitDisplay}</span></span>`;
+            }
+
             return `
                 <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick="window.location.href='surface.html?id=${facility.id}'">
                     <div class="relative h-48 hover-zoom-img-container">
                         <img src="${getPrimaryImageUrl(facility.image_url)}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
                         <div class="absolute top-3 left-3 right-3 flex flex-wrap gap-2 z-20 max-w-[calc(100%-1.5rem)]">
                             <div class="bg-white/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-slate-800 border border-slate-200">
-                                <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating || 'New'} ${facility.reviews_count ? `(${facility.reviews_count})` : ''}
+                                <i class="fa-solid fa-star text-yellow-400 mr-1"></i> ${facility.rating || 'New'} ${facility.reviews_count ? \`(\${facility.reviews_count})\` : ''}
                             </div>
                             ${topBadges}
                         </div>
@@ -540,7 +563,7 @@
                     <div class="p-5">
                         <div class="flex justify-between items-start mb-1">
                             <h3 class="text-lg font-bold text-dark group-hover:text-primary transition-custom truncate pr-4">${facility.name}</h3>
-                            <span class="font-bold text-dark whitespace-nowrap">From $${facility.base_price}<span class="text-xs font-normal text-slate-500">${facility.pricing_unit === 'half_day' ? '/ half-day' : (facility.pricing_unit === 'full_day' ? '/ day' : '/hr')}</span></span>
+                            ${priceHtml}
                         </div>
                         <p class="text-slate-500 text-xs mb-3 flex items-center">
                             <i class="fa-solid fa-location-dot mr-1"></i> ${typeof formatShortLocation === 'function' ? formatShortLocation(facility.effective_location || facility.location) : (facility.effective_location || facility.location || 'Location unavailable')}

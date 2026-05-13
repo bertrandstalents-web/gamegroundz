@@ -522,26 +522,37 @@
 
                                 <!-- Offline / Public Activity Fields -->
                                 <div id="modal-offline-fields" class="space-y-4">
-                                    <div id="public-session-extra" class="hidden space-y-4 pb-2 border-b border-slate-100">
+                                    <div id="public-session-extra" class="hidden space-y-4 pb-4 border-b border-slate-100">
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Information & Rules<span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top">OPTIONAL</span></label>
+                                            <textarea id="modal-public-description" rows="3" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm custom-scrollbar" placeholder="e.g. Must bring own helmet. Swimming caps required."></textarea>
+                                        </div>
                                         <div>
                                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Capacity Limit<span class="text-red-500">*</span></label>
                                             <input type="number" id="modal-public-capacity" min="1" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
                                         </div>
-                                        <div class="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Adult Price<span class="text-red-500">*</span></label>
-                                                <input type="number" id="modal-public-price" min="0" step="0.50" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm" placeholder="e.g. 10.00">
+                                        
+                                        <div class="pt-2">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Pricing Tiers<span class="text-red-500">*</span></label>
+                                                <button type="button" onclick="addPricingTier()" class="text-xs font-bold text-primary hover:text-primaryHover transition-custom flex items-center bg-primary/5 px-2 py-1 rounded-md">
+                                                    <i class="fa-solid fa-plus mr-1"></i> Add Ticket Type
+                                                </button>
                                             </div>
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Kids Price</label>
-                                                <input type="number" id="modal-public-kid-price" min="0" step="0.50" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm" placeholder="e.g. 5.00">
+                                            <div id="pricing-tiers-container" class="space-y-3">
+                                                <!-- Default Tier -->
+                                                <div class="flex items-end gap-3 pricing-tier-row">
+                                                    <div class="flex-1">
+                                                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Ticket Name</label>
+                                                        <input type="text" class="tier-name w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium" value="Adult (18+)" placeholder="e.g. Adult, Resident, Child" required>
+                                                    </div>
+                                                    <div class="w-32">
+                                                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Price ($)</label>
+                                                        <input type="number" step="0.01" min="0" class="tier-price w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium" placeholder="0.00" required>
+                                                    </div>
+                                                    <button type="button" class="text-slate-400 hover:text-red-500 transition-custom pb-2 w-8 text-center invisible"><i class="fa-solid fa-trash"></i></button>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div id="modal-public-residents-only-container" class="hidden">
-                                            <label class="flex items-center cursor-pointer mt-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                                                <input type="checkbox" id="modal-public-residents-only" class="w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded">
-                                                <span class="ml-2 text-sm font-semibold text-slate-700">Residents Only</span>
-                                            </label>
                                         </div>
                                     </div>
                                     <div>
@@ -582,33 +593,47 @@
                                     <div id="modal-repeat-days-container" class="hidden">
                                         <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Repeat On</label>
                                         <div class="flex flex-wrap gap-2">
-                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
-                                                <input type="checkbox" name="repeat_day" value="0" class="sr-only">
-                                                <span class="text-sm font-semibold">Sun</span>
+                                            <label class="cursor-pointer">
+                                                <input type="checkbox" name="repeat_day" value="0" class="peer hidden">
+                                                <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
+                                                    <span class="text-sm font-semibold">Sun</span>
+                                                </div>
                                             </label>
-                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
-                                                <input type="checkbox" name="repeat_day" value="1" class="sr-only">
-                                                <span class="text-sm font-semibold">Mon</span>
+                                            <label class="cursor-pointer">
+                                                <input type="checkbox" name="repeat_day" value="1" class="peer hidden">
+                                                <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
+                                                    <span class="text-sm font-semibold">Mon</span>
+                                                </div>
                                             </label>
-                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
-                                                <input type="checkbox" name="repeat_day" value="2" class="sr-only">
-                                                <span class="text-sm font-semibold">Tue</span>
+                                            <label class="cursor-pointer">
+                                                <input type="checkbox" name="repeat_day" value="2" class="peer hidden">
+                                                <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
+                                                    <span class="text-sm font-semibold">Tue</span>
+                                                </div>
                                             </label>
-                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
-                                                <input type="checkbox" name="repeat_day" value="3" class="sr-only">
-                                                <span class="text-sm font-semibold">Wed</span>
+                                            <label class="cursor-pointer">
+                                                <input type="checkbox" name="repeat_day" value="3" class="peer hidden">
+                                                <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
+                                                    <span class="text-sm font-semibold">Wed</span>
+                                                </div>
                                             </label>
-                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
-                                                <input type="checkbox" name="repeat_day" value="4" class="sr-only">
-                                                <span class="text-sm font-semibold">Thu</span>
+                                            <label class="cursor-pointer">
+                                                <input type="checkbox" name="repeat_day" value="4" class="peer hidden">
+                                                <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
+                                                    <span class="text-sm font-semibold">Thu</span>
+                                                </div>
                                             </label>
-                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
-                                                <input type="checkbox" name="repeat_day" value="5" class="sr-only">
-                                                <span class="text-sm font-semibold">Fri</span>
+                                            <label class="cursor-pointer">
+                                                <input type="checkbox" name="repeat_day" value="5" class="peer hidden">
+                                                <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
+                                                    <span class="text-sm font-semibold">Fri</span>
+                                                </div>
                                             </label>
-                                            <label class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-custom has-[:checked]:bg-primary/10 has-[:checked]:border-primary has-[:checked]:text-primary">
-                                                <input type="checkbox" name="repeat_day" value="6" class="sr-only">
-                                                <span class="text-sm font-semibold">Sat</span>
+                                            <label class="cursor-pointer">
+                                                <input type="checkbox" name="repeat_day" value="6" class="peer hidden">
+                                                <div class="flex items-center justify-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-custom peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary">
+                                                    <span class="text-sm font-semibold">Sat</span>
+                                                </div>
                                             </label>
                                         </div>
                                     </div>
@@ -771,7 +796,7 @@
                                         <span class="text-xs text-slate-500 mt-0.5">Applies within 24 hours of booking</span>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" id="disc-last-minute" class="sr-only peer">
+                                        <input type="checkbox" id="disc-last-minute" class="hidden peer">
                                         <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary shadow-inner"></div>
                                     </label>
                                 </div>
@@ -1529,7 +1554,10 @@
                 </div>
             </div>
             <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-between shrink-0">
-                <button type="button" id="ps-modal-cancel-btn" class="px-5 py-2.5 bg-red-50 border border-red-200 text-red-600 rounded-xl hover:bg-red-100 transition-custom font-bold shadow-sm">Delete Session</button>
+                <div class="flex space-x-2">
+                    <button type="button" id="ps-modal-cancel-btn" class="px-4 py-2.5 bg-red-50 border border-red-200 text-red-600 rounded-xl hover:bg-red-100 transition-custom font-bold shadow-sm">Delete</button>
+                    <button type="button" id="ps-modal-edit-btn" class="px-4 py-2.5 bg-white border border-slate-200 text-primary rounded-xl hover:bg-slate-50 transition-custom font-bold shadow-sm">Edit</button>
+                </div>
                 <button type="button" onclick="closePublicSessionModal()" class="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-custom font-bold shadow-sm">Close</button>
             </div>
         </div>
@@ -2375,6 +2403,14 @@
             document.getElementById('confirm-host-cancel-btn').disabled = false;
             document.getElementById('confirm-host-cancel-text').classList.remove('hidden');
             document.getElementById('confirm-host-cancel-spinner').classList.add('hidden');
+            document.getElementById('host-cancel-scope').value = 'single';
+
+            const booking = allBookingsCache ? allBookingsCache.find(b => b.id.toString() === bookingId.toString()) : null;
+            if (booking && booking.recurring_group_id) {
+                document.getElementById('host-cancel-scope-container').classList.remove('hidden');
+            } else {
+                document.getElementById('host-cancel-scope-container').classList.add('hidden');
+            }
         }
 
         function closeHostCancelModal() {
@@ -2393,11 +2429,13 @@
             document.getElementById('confirm-host-cancel-spinner').classList.remove('hidden');
 
             const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+            const cancelScope = document.getElementById('host-cancel-scope').value;
             try {
                 const res = await fetch(`${API_BASE_URL}/api/host/bookings/${currentHostCancelId}/cancel`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include'
+                    credentials: 'include',
+                    body: JSON.stringify({ cancel_scope: cancelScope })
                 });
                 
                 const data = await res.json();
@@ -2997,7 +3035,9 @@
                             playerPhone: b.player_phone_number || 'N/A',
                             capacity: b.capacity || 0,
                             participant_price: b.participant_price || 0,
-                            joined_count: b.joined_count || 0
+                            joined_count: b.joined_count || 0,
+                            description: b.description || '',
+                            pricing_tiers: b.pricing_tiers || '[]'
                         }
                     });
                 });
@@ -3357,6 +3397,22 @@
             }
         }
 
+        function addPricingTier() {
+            const container = document.getElementById('pricing-tiers-container');
+            const row = document.createElement('div');
+            row.className = 'flex items-end gap-3 pricing-tier-row mt-2';
+            row.innerHTML = `
+                <div class="flex-1">
+                    <input type="text" class="tier-name w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium" placeholder="e.g. Adult, Resident, Child" required>
+                </div>
+                <div class="w-32">
+                    <input type="number" step="0.01" min="0" class="tier-price w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium" placeholder="0.00" required>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-red-500 transition-custom pb-2 w-8 text-center"><i class="fa-solid fa-trash"></i></button>
+            `;
+            container.appendChild(row);
+        }
+
         function toggleModalBlockType() {
             const blockType = document.querySelector('input[name="modal-block-type"]:checked')?.value || 'offline';
             const offlineFields = document.getElementById('modal-offline-fields');
@@ -3383,7 +3439,6 @@
                 const publicExtras = document.getElementById('public-session-extra');
                 if(publicExtras) publicExtras.classList.remove('hidden');
                 document.getElementById('modal-public-capacity').required = true;
-                document.getElementById('modal-public-price').required = true;
 
                 const discValue = document.getElementById('modal-disc-value');
                 if(discValue) discValue.required = false;
@@ -3446,7 +3501,6 @@
                 const publicExtras = document.getElementById('public-session-extra');
                 if(publicExtras) publicExtras.classList.add('hidden');
                 document.getElementById('modal-public-capacity').required = false;
-                document.getElementById('modal-public-price').required = false;
 
                 const discValue = document.getElementById('modal-disc-value');
                 if(discValue) discValue.required = false;
@@ -3741,9 +3795,45 @@
             const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
             typeRadios.forEach(r => { 
                 r.disabled = true; 
-                if(r.value === 'offline') r.checked = true; 
+                if(r.value === (eventObj.extendedProps.isPublicSession ? 'public_session' : 'offline')) r.checked = true; 
             });
             toggleModalBlockType();
+            
+            if (eventObj.extendedProps.isPublicSession) {
+                if(document.getElementById('modal-public-description')) {
+                    document.getElementById('modal-public-description').value = eventObj.extendedProps.description || '';
+                }
+                const container = document.getElementById('pricing-tiers-container');
+                if (container) {
+                    container.innerHTML = ''; // clear default tier
+                    let tiers = [];
+                    try { tiers = JSON.parse(eventObj.extendedProps.pricing_tiers); } catch (e) {}
+                    if (!tiers || tiers.length === 0) {
+                        // Fallback to legacy participant_price if empty
+                        tiers = [{ name: 'Adult (18+)', price: eventObj.extendedProps.participant_price }];
+                    }
+                    tiers.forEach(tier => {
+                        const row = document.createElement('div');
+                        row.className = 'flex items-end gap-3 pricing-tier-row mt-2';
+                        row.innerHTML = `
+                            <div class="flex-1">
+                                <input type="text" class="tier-name w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium" value="${(tier.name||'').replace(/"/g, '&quot;')}" required>
+                            </div>
+                            <div class="w-32">
+                                <input type="number" step="0.01" min="0" class="tier-price w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium" value="${tier.price}" required>
+                            </div>
+                            <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-red-500 transition-custom pb-2 w-8 text-center"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                        container.appendChild(row);
+                    });
+                }
+                if (document.getElementById('modal-public-capacity')) {
+                    document.getElementById('modal-public-capacity').value = eventObj.extendedProps.capacity || '';
+                }
+                if (document.getElementById('modal-public-residents-only')) {
+                    document.getElementById('modal-public-residents-only').checked = !!eventObj.extendedProps.residents_only;
+                }
+            }
 
             document.getElementById('event-modal-backdrop').classList.remove('hidden');
         }
@@ -3761,6 +3851,14 @@
                 btnCancel.onclick = () => {
                     closePublicSessionModal();
                     openHostCancelModal(eventObj.id);
+                };
+            }
+
+            const btnEdit = document.getElementById('ps-modal-edit-btn');
+            if (btnEdit) {
+                btnEdit.onclick = () => {
+                    closePublicSessionModal();
+                    openEditEventModal(eventObj);
                 };
             }
             
@@ -4092,9 +4190,19 @@
                 repeat_days: repeatDays,
                 booking_type: blockType,
                 capacity: blockType === 'public_session' ? parseInt(document.getElementById('modal-public-capacity').value, 10) : 0,
-                participant_price: blockType === 'public_session' ? parseFloat(document.getElementById('modal-public-price').value || 0) : 0,
-                participant_kid_price: blockType === 'public_session' ? parseFloat(document.getElementById('modal-public-kid-price').value || 0) : 0,
-                residents_only: blockType === 'public_session' && document.getElementById('modal-public-residents-only') && document.getElementById('modal-public-residents-only').checked ? 1 : 0
+                description: blockType === 'public_session' && document.getElementById('modal-public-description') ? document.getElementById('modal-public-description').value : '',
+                pricing_tiers: (() => {
+                    if (blockType !== 'public_session') return '[]';
+                    const tiers = [];
+                    document.querySelectorAll('.pricing-tier-row').forEach(row => {
+                        const name = row.querySelector('.tier-name').value;
+                        const price = parseFloat(row.querySelector('.tier-price').value);
+                        if (name && !isNaN(price)) {
+                            tiers.push({ name, price });
+                        }
+                    });
+                    return JSON.stringify(tiers);
+                })()
             };
 
             const editId = document.getElementById('modal-edit-booking-id') ? document.getElementById('modal-edit-booking-id').value : '';
@@ -5535,6 +5643,20 @@
                 <h4 class="font-bold text-dark mb-2">Are you sure you want to proceed?</h4>
                 <p class="text-slate-600 mb-6 text-sm">The time slot(s) for this booking will become immediately available on the calendar again.</p>
                 
+                <div id="host-cancel-scope-container" class="hidden mb-6">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Cancellation Scope</label>
+                    <div class="relative">
+                        <select id="host-cancel-scope" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-slate-50 text-slate-700 font-medium appearance-none cursor-pointer pr-10">
+                            <option value="single">Cancel only this session</option>
+                            <option value="following">Cancel this and all following sessions</option>
+                            <option value="all">Cancel all sessions in the series</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                            <i class="fa-solid fa-chevron-down text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="flex gap-4 mt-8">
                     <button onclick="closeHostCancelModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-custom">Keep Booking</button>
                     <button id="confirm-host-cancel-btn" onclick="processHostCancellation()" class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-custom shadow-glow flex justify-center items-center">
@@ -6649,6 +6771,29 @@
                 
                 window.currentSurfaces.forEach(surf => {
                     let dispImg = surf.image_url ? surf.image_url : 'https://placehold.co/600x400/f8fafc/64748b?text=No+Image';
+                    
+                    let model = 'exclusive';
+                    let priceDisplay = `$${surf.base_price}`;
+                    let unitDisplay = '/hr';
+                    
+                    try {
+                        let pr = typeof surf.pricing_rules === 'string' ? JSON.parse(surf.pricing_rules) : surf.pricing_rules;
+                        if (!Array.isArray(pr) && pr.booking_model) {
+                            model = pr.booking_model;
+                            if (model === 'shared_zone') {
+                                priceDisplay = `$${pr.zone_price || surf.base_price}`;
+                                unitDisplay = '/lane';
+                            }
+                        }
+                    } catch(e) {}
+                    
+                    let priceHtml = '';
+                    if (model === 'drop_in_only') {
+                        priceHtml = `<span class="font-semibold text-slate-500 text-sm">Public Activities Only</span>`;
+                    } else {
+                        priceHtml = `<span class="font-semibold text-dark">${priceDisplay}<span class="text-xs text-slate-500 font-normal">${unitDisplay}</span></span>`;
+                    }
+
                     list.innerHTML += `
                         <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-custom bg-white">
                             <img src="${dispImg}" class="w-full h-32 object-cover">
@@ -6656,7 +6801,7 @@
                                 <h3 class="font-bold text-lg text-dark mb-1">${surf.name}</h3>
                                 <p class="text-sm text-slate-500 mb-2">${surf.type} • ${surf.size_info || 'Unknown size'}</p>
                                 <div class="mt-2 flex justify-between items-center pt-3 border-t border-slate-100">
-                                    <span class="font-semibold text-dark">$${surf.base_price}<span class="text-xs text-slate-500 font-normal">/hr</span></span>
+                                    ${priceHtml}
                                     <button onclick="editSurface(${surf.id})" class="text-primary font-bold hover:underline text-sm">Edit</button>
                                 </div>
                             </div>
@@ -6755,10 +6900,39 @@
             }
         });
 
+        window.toggleBookingModel = function() {
+            const selectedModel = document.querySelector('input[name="booking_model"]:checked')?.value || 'exclusive';
+            
+            const exclusiveContainer = document.getElementById('exclusive-pricing-container');
+            const sharedZoneContainer = document.getElementById('shared-zone-pricing-container');
+            const dropInContainer = document.getElementById('drop-in-only-container');
+            
+            if (exclusiveContainer) exclusiveContainer.classList.toggle('hidden', selectedModel !== 'exclusive');
+            if (sharedZoneContainer) sharedZoneContainer.classList.toggle('hidden', selectedModel !== 'shared_zone');
+            if (dropInContainer) dropInContainer.classList.toggle('hidden', selectedModel !== 'drop_in_only');
+        };
+
         window.updateSizeOptions = function(type, defaultVal) {
             const list = document.getElementById('fac-size-list');
             const input = document.getElementById('fac-size');
             const display = document.getElementById('fac-size-display');
+            
+            // Toggle Booking Model container based on surface type
+            const bookingModelContainer = document.getElementById('booking-model-container');
+            if (bookingModelContainer) {
+                if (['pool', 'track', 'gym'].includes(type)) {
+                    bookingModelContainer.classList.remove('hidden');
+                } else {
+                    bookingModelContainer.classList.add('hidden');
+                    // Reset to exclusive if hidden
+                    const exclusiveRadio = document.querySelector('input[name="booking_model"][value="exclusive"]');
+                    if (exclusiveRadio) {
+                        exclusiveRadio.checked = true;
+                        window.toggleBookingModel();
+                    }
+                }
+            }
+            
             if (!list || !input || !display) return;
             
             const options = sizeOptionsMap[type] || [{value: 'Standard Size', label: 'Standard Size'}, {value: 'Custom Size', label: 'Custom Size'}];
@@ -6919,14 +7093,41 @@
                     if (typeof parsedRules === 'string') {
                          try { parsedRules = JSON.parse(parsedRules); } catch(e){}
                     }
-                    if (Array.isArray(parsedRules) && parsedRules.length > 0) {
-                        parsedRules.forEach(r => {
+                    
+                    let timeSlots = [];
+                    // Check if it's the new object format
+                    if (parsedRules && !Array.isArray(parsedRules) && typeof parsedRules === 'object') {
+                        timeSlots = parsedRules.time_slots || [];
+                        
+                        // Populate booking model UI
+                        if (parsedRules.booking_model) {
+                            const radio = document.querySelector(`input[name="booking_model"][value="${parsedRules.booking_model}"]`);
+                            if (radio) radio.checked = true;
+                        }
+                        if (parsedRules.total_zones) document.getElementById('fac-total-zones').value = parsedRules.total_zones;
+                        if (parsedRules.zone_price) document.getElementById('fac-zone-price').value = parsedRules.zone_price;
+                        
+                    } else if (Array.isArray(parsedRules)) {
+                        timeSlots = parsedRules;
+                        // Legacy: default to exclusive
+                        const radio = document.querySelector(`input[name="booking_model"][value="exclusive"]`);
+                        if (radio) radio.checked = true;
+                    }
+                    
+                    // Call toggle manually after setting the radio button
+                    if (window.toggleBookingModel) window.toggleBookingModel();
+
+                    if (timeSlots.length > 0) {
+                        timeSlots.forEach(r => {
                              if (typeof window.createRuleRow === 'function') window.createRuleRow(r.start, r.end, r.price, r.days);
                         });
                     } else {
                         if (typeof window.createRuleRow === 'function') window.createRuleRow();
                     }
                 } else {
+                    const radio = document.querySelector(`input[name="booking_model"][value="exclusive"]`);
+                    if (radio) radio.checked = true;
+                    if (window.toggleBookingModel) window.toggleBookingModel();
                     if (typeof window.createRuleRow === 'function') window.createRuleRow();
                 }
             }
@@ -7039,6 +7240,11 @@
                 });
                 const basePrice = pricingRules.length > 0 ? Math.min(...pricingRules.map(r => r.price)) : 100;
 
+                // Booking model
+                const bookingModel = document.querySelector('input[name="booking_model"]:checked')?.value || 'exclusive';
+                const totalZones = parseInt(document.getElementById('fac-total-zones')?.value || '8', 10);
+                const zonePrice = parseFloat(document.getElementById('fac-zone-price')?.value || '25.00');
+
                 const payload = {
                     name: document.getElementById('surf-name').value,
                     type: document.getElementById('surf-type') ? document.getElementById('surf-type').value : 'ice',
@@ -7050,6 +7256,9 @@
                     base_price: basePrice,
                     pricing_unit: document.getElementById('fac-pricing-unit') ? document.getElementById('fac-pricing-unit').value : 'hour',
                     pricing_rules: pricingRules,
+                    booking_model: bookingModel,
+                    total_zones: totalZones,
+                    zone_price: zonePrice,
                     image_url: window.localSurfaceImages && window.localSurfaceImages.length > 0 ? window.localSurfaceImages[0] : null,
                     images: window.localSurfaceImages || [],
                     is_instant_book: document.getElementById('fac-instant') && document.getElementById('fac-instant').checked ? 1 : 0,
@@ -7177,55 +7386,55 @@
                     </label>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                         <label class="cursor-pointer">
-                            <input type="radio" name="surf_type_radio" value="ice" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <input type="radio" name="surf_type_radio" value="ice" class="peer hidden" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
                                 <span class="lang-en-only">Ice Rink</span><span class="lang-fr-only notranslate">Patinoire</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="surf_type_radio" value="soccer" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <input type="radio" name="surf_type_radio" value="soccer" class="peer hidden" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
                                 <span class="lang-en-only">Soccer Field</span><span class="lang-fr-only notranslate">Terrain de soccer (gazon)</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="surf_type_radio" value="basketball" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <input type="radio" name="surf_type_radio" value="basketball" class="peer hidden" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
                                 <span class="lang-en-only">Basketball Court</span><span class="lang-fr-only notranslate">Terrain de basketball</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="surf_type_radio" value="tennis" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <input type="radio" name="surf_type_radio" value="tennis" class="peer hidden" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
                                 <span class="lang-en-only">Tennis Court</span><span class="lang-fr-only notranslate">Court de tennis</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="surf_type_radio" value="pickleball" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <input type="radio" name="surf_type_radio" value="pickleball" class="peer hidden" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
                                 <span class="lang-en-only">Pickleball Court</span><span class="lang-fr-only notranslate">Terrain de pickleball</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="surf_type_radio" value="pool" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <input type="radio" name="surf_type_radio" value="pool" class="peer hidden" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
                                 <span class="lang-en-only">Swimming Pool</span><span class="lang-fr-only notranslate">Piscine</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="surf_type_radio" value="football" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <input type="radio" name="surf_type_radio" value="football" class="peer hidden" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
                                 <span class="lang-en-only">Football Field</span><span class="lang-fr-only notranslate">Terrain de football</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="surf_type_radio" value="gym" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <input type="radio" name="surf_type_radio" value="gym" class="peer hidden" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
                                 <span class="lang-en-only">Training Gym</span><span class="lang-fr-only notranslate">Gymnase</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="surf_type_radio" value="deck-hockey" class="peer sr-only" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
+                            <input type="radio" name="surf_type_radio" value="deck-hockey" class="peer hidden" required onchange="document.getElementById('surf-type').value = this.value; if(window.updateSizeOptions) window.updateSizeOptions(this.value);">
                             <div class="px-3 py-2 border-2 border-slate-200 rounded-xl text-center peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary hover:border-primary/50 transition-custom font-semibold text-sm text-slate-600">
                                 <span class="lang-en-only">Deck-Hockey</span><span class="lang-fr-only notranslate">Deck-Hockey</span>
                             </div>
@@ -7299,27 +7508,81 @@
                     <h2 class="text-xl font-bold text-dark mb-4 border-b border-slate-100 pb-2">
                         <span class="lang-en-only">Pricing &amp; Booking</span><span class="lang-fr-only notranslate">Tarification et réservation</span>
                     </h2>
-                    
-                    <div class="mb-5">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Unit</label>
-                        <select id="fac-pricing-unit" class="w-full md:w-1/2 px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
-                            <option value="hour">Per Hour</option>
-                            <option value="half_day">Per Half-Day</option>
-                            <option value="full_day">Per Full Day</option>
-                        </select>
+
+                    <!-- Booking Model Selection (Shown only for pool/track) -->
+                    <div id="booking-model-container" class="mb-6 hidden bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <label class="block text-sm font-bold text-dark mb-3">
+                            <span class="lang-en-only">Booking Model</span><span class="lang-fr-only notranslate">Modèle de réservation</span>
+                        </label>
+                        <div class="space-y-3">
+                            <label class="flex items-start cursor-pointer group">
+                                <input type="radio" name="booking_model" value="exclusive" class="mt-1 w-4 h-4 text-primary bg-slate-100 border-slate-300 focus:ring-primary focus:ring-2 cursor-pointer transition-custom" checked onchange="window.toggleBookingModel()">
+                                <div class="ml-3">
+                                    <span class="block text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors">Exclusive Rental</span>
+                                    <span class="block text-xs text-slate-500">Rent the entire surface by the hour.</span>
+                                </div>
+                            </label>
+                            <label class="flex items-start cursor-pointer group">
+                                <input type="radio" name="booking_model" value="shared_zone" class="mt-1 w-4 h-4 text-primary bg-slate-100 border-slate-300 focus:ring-primary focus:ring-2 cursor-pointer transition-custom" onchange="window.toggleBookingModel()">
+                                <div class="ml-3">
+                                    <span class="block text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors">Shared Lanes / Zones</span>
+                                    <span class="block text-xs text-slate-500">Rent out individual lanes or zones per hour. Multiple users can book simultaneously.</span>
+                                </div>
+                            </label>
+                            <label class="flex items-start cursor-pointer group">
+                                <input type="radio" name="booking_model" value="drop_in_only" class="mt-1 w-4 h-4 text-primary bg-slate-100 border-slate-300 focus:ring-primary focus:ring-2 cursor-pointer transition-custom" onchange="window.toggleBookingModel()">
+                                <div class="ml-3">
+                                    <span class="block text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors">Public Drop-ins Only</span>
+                                    <span class="block text-xs text-slate-500">Private hourly rentals are disabled. You will only schedule Public Activities.</span>
+                                </div>
+                            </label>
+                        </div>
                     </div>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Rules</label>
-                        <p class="text-xs text-slate-500 mb-4">Set up your hourly pricing for different times of the day. The lowest price will be shown as your baseline.</p>
-                        
-                        <div id="pricing-rules-container" class="space-y-3 mb-4">
-                            <!-- Dynamic rule rows go here -->
+
+                    <!-- Exclusive Pricing Container -->
+                    <div id="exclusive-pricing-container">
+                        <div class="mb-5">
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Unit</label>
+                            <select id="fac-pricing-unit" class="w-full md:w-1/2 px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
+                                <option value="hour">Per Hour</option>
+                                <option value="half_day">Per Half-Day</option>
+                                <option value="full_day">Per Full Day</option>
+                            </select>
                         </div>
                         
-                        <button type="button" id="add-rule-btn" onclick="if(window.handleAddTimeSlot) window.handleAddTimeSlot();" class="text-sm font-bold text-primary hover:text-primaryHover flex items-center transition-custom bg-primary/10 px-4 py-2 rounded-lg w-fit">
-                            <i class="fa-solid fa-plus mr-2"></i> Add a Time Slot
-                        </button>
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Pricing Rules</label>
+                            <p class="text-xs text-slate-500 mb-4">Set up your hourly pricing for different times of the day. The lowest price will be shown as your baseline.</p>
+                            
+                            <div id="pricing-rules-container" class="space-y-3 mb-4">
+                                <!-- Dynamic rule rows go here -->
+                            </div>
+                            
+                            <button type="button" id="add-rule-btn" onclick="if(window.handleAddTimeSlot) window.handleAddTimeSlot();" class="text-sm font-bold text-primary hover:text-primaryHover flex items-center transition-custom bg-primary/10 px-4 py-2 rounded-lg w-fit">
+                                <i class="fa-solid fa-plus mr-2"></i> Add a Time Slot
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Shared Zone Pricing Container -->
+                    <div id="shared-zone-pricing-container" class="hidden mb-4 p-4 border border-slate-200 rounded-xl">
+                        <h3 class="text-sm font-bold text-dark mb-4">Lane / Zone Setup</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Total Lanes / Zones Available</label>
+                                <input type="number" id="fac-total-zones" min="1" value="8" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Price per Lane ($/hr)</label>
+                                <input type="number" id="fac-zone-price" min="0" step="0.01" value="25.00" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Drop-in Only Container -->
+                    <div id="drop-in-only-container" class="hidden mb-4 bg-blue-50 border border-blue-100 p-4 rounded-xl text-sm text-blue-800">
+                        <p class="font-semibold mb-1"><i class="fa-solid fa-info-circle mr-1"></i> Private booking disabled</p>
+                        <p>Customers will not be able to book this surface by the hour. To accept bookings, you will need to create Public Activities on your dashboard after creating this surface.</p>
                     </div>
 
                     <div class="flex flex-col pt-4 border-t border-slate-100 mt-4">
