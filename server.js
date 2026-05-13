@@ -1487,7 +1487,8 @@ app.get('/api/public/surfaces', (req, res) => {
             COALESCE(s.lat, f.lat) as effective_lat,
             COALESCE(s.lng, f.lng) as effective_lng,
             f.rating,
-            f.reviews_count
+            f.reviews_count,
+            f.image_url as facility_image_url
         FROM surfaces s
         LEFT JOIN facilities f ON s.facility_id = f.id
         WHERE s.status != 'deleted' AND (f.id IS NULL OR f.listing_status = 'approved')
