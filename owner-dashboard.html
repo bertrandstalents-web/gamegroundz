@@ -1744,7 +1744,7 @@
                 renderFacilities(facilities);
 
                 // Fetch Bookings
-                const bookRes = await fetch(`${API_BASE_URL}/api/host/bookings`, { credentials: 'include' });
+                const bookRes = await fetch(`${API_BASE_URL}/api/host/bookings?_t=${Date.now()}`, { credentials: 'include', cache: 'no-store' });
                 if (bookRes.status === 401) {
                     localStorage.removeItem('gg_user');
                     window.location.href = 'index.html';
@@ -2956,7 +2956,7 @@
             let facilityDiscounts = [];
             try {
                 const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
-                const discRes = await fetch(`${API_BASE_URL}/api/host/discounts/${facilityId}`, { credentials: 'include' });
+                const discRes = await fetch(`${API_BASE_URL}/api/host/discounts/${facilityId}?_t=${Date.now()}`, { credentials: 'include', cache: 'no-store' });
                 if (discRes.ok) {
                     const allDiscounts = await discRes.json();
                     facilityDiscounts = allDiscounts.filter(d => d.surface_id === null || d.surface_id === parseInt(surfaceId, 10));
