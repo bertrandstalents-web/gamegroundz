@@ -277,19 +277,14 @@
                     <!-- Booking Form -->
                     <div class="border border-slate-300 rounded-xl mb-4 relative">
                         <div class="flex border-b border-slate-300 relative">
-                            <div class="flex-1 p-3 border-r border-slate-300 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tl-xl group" id="date-dropdown-trigger">
-                                <div class="text-sm font-medium text-slate-700 w-full h-full flex items-center pr-6 whitespace-nowrap" id="selected-date-display">Select Date</div>
-                                <div class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-primary transition-colors"><i class="fa-solid fa-chevron-down text-xs"></i></div>
-                                
-                                <div id="date-dropdown-menu" class="hidden absolute top-[calc(100%+4px)] left-0 w-[200px] bg-white border border-slate-200 rounded-xl shadow-2xl z-[100] max-h-64 overflow-y-auto">
-                                    <ul id="date-options-list" class="py-1">
-                                        <!-- Populated via JS -->
-                                    </ul>
-                                </div>
+                            <div class="flex-1 p-3 border-r border-slate-300 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tl-xl">
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="booking-date">Date</label>
+                                <input type="date" id="booking-date" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none" style="color-scheme: light;">
                             </div>
-                            <div class="flex-1 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tr-xl group" id="time-slot-trigger">
-                                <div class="text-sm font-medium text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap w-full h-full flex items-center pr-6" id="slots-summary">Select Times</div>
-                                <div class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-primary transition-colors"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                            <div class="flex-1 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tr-xl" id="time-slot-trigger">
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer">Time Slots</label>
+                                <div class="text-sm font-medium text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap" id="slots-summary">Select Times</div>
+                                <div class="absolute right-3 top-4 text-slate-400"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                             </div>
                             
                             <!-- Time Slot Dropdown (Moved outside trigger for proper z-index and scrolling) -->
@@ -905,10 +900,7 @@
                     // Expose it globally for render
                     window.facilityDiscounts = facilityDiscounts;
 
-                    // Init public activity widget if there are any public sessions
-                    if (window.initPublicActivityWidget) {
-                        window.initPublicActivityWidget(facility, surfaceIdParam);
-                    }
+
 
                     // Dynamically populate Activity Type dropdown
                     const activityTypeSelect = document.getElementById('activity-type');
@@ -1613,13 +1605,11 @@
 
                 // Update selected slots header date
                 const headerEl = document.getElementById('selected-slots-header');
-                const dateDisplayEl = document.getElementById('selected-date-display');
-                if (headerEl || dateDisplayEl) {
+                if (headerEl) {
                     const d = new Date(selectedDateStr + 'T00:00:00'); 
                     if (!isNaN(d.getTime())) {
                         const month = d.toLocaleString('en-US', { month: 'short' });
-                        if (headerEl) headerEl.textContent = `Selected Slots (${month} ${d.getDate()})`;
-                        if (dateDisplayEl) dateDisplayEl.textContent = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                        headerEl.textContent = `Selected Slots (${month} ${d.getDate()})`;
                     }
                 }
 
@@ -2523,90 +2513,23 @@
                 };
             }
             
-            // Setup Custom Date Dropdown
-            const dateDropdownTrigger = document.getElementById('date-dropdown-trigger');
-            const dateDropdownMenu = document.getElementById('date-dropdown-menu');
-            const dateOptionsList = document.getElementById('date-options-list');
-            
-            if (dateDropdownTrigger && dateDropdownMenu && dateOptionsList) {
-                // Populate next 60 days
-                let html = '';
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                
-                for (let i = 0; i < 60; i++) {
-                    const d = new Date(today);
-                    d.setDate(today.getDate() + i);
-                    
-                    const yyyy = d.getFullYear();
-                    const mm = String(d.getMonth() + 1).padStart(2, '0');
-                    const dd = String(d.getDate()).padStart(2, '0');
-                    const dateVal = `${yyyy}-${mm}-${dd}`;
-                    
-                    const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                    
-                    html += `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 standard-date-option" data-value="${dateVal}">${label}</li>`;
-                }
-                dateOptionsList.innerHTML = html;
-                
-                // Toggle dropdown
-                dateDropdownTrigger.addEventListener('click', (e) => {
-                    // Only toggle if we didn't click inside the menu itself
-                    if (!dateDropdownMenu.contains(e.target)) {
-                        dateDropdownMenu.classList.toggle('hidden');
+            if (bookingDateInput) {
+                bookingDateInput.addEventListener('change', async (e) => {
+                    selectedDateStr = e.target.value;
+                    const newDate = new Date(selectedDateStr + 'T00:00:00');
+                    if (!isNaN(newDate.getTime())) {
+                        currentDate = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
                     }
-                });
-                
-                // Close when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!dateDropdownTrigger.contains(e.target)) {
-                        dateDropdownMenu.classList.add('hidden');
-                    }
-                });
-                
-                // Handle selection
-                dateOptionsList.addEventListener('click', async (e) => {
-                    const li = e.target.closest('li.standard-date-option');
-                    if (!li) return;
-                    
-                    e.stopPropagation();
-                    const newVal = li.getAttribute('data-value');
-                    
-                    // Update visual checkmarks
-                    document.querySelectorAll('.standard-date-option').forEach(el => el.innerHTML = el.innerHTML.replace('✓ ', ''));
-                    li.innerHTML = '✓ ' + li.innerHTML;
-                    
-                    dateDropdownMenu.classList.add('hidden');
-                    
-                    if (selectedDateStr !== newVal) {
-                        selectedDateStr = newVal;
-                        const newDate = new Date(selectedDateStr + 'T00:00:00');
-                        if (!isNaN(newDate.getTime())) {
-                            currentDate = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
-                        }
-                        
-                        const displayEl = document.getElementById('selected-date-display');
-                        if (displayEl && !isNaN(newDate.getTime())) {
-                            displayEl.textContent = newDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                        }
+                    renderCalendar();
 
-                        renderCalendar();
-
-                        const slotsSummary = document.getElementById('slots-summary');
-                        if (slotsSummary) slotsSummary.textContent = "Loading slots...";
-                        
-                        bookedSlotIds = await fetchBookedSlots();
-                        if (slotsSummary) slotsSummary.textContent = "Select Times";
-                        render();
-                        updatePeriodDisplay();
-                    }
+                    const slotsSummary = document.getElementById('slots-summary');
+                    if (slotsSummary) slotsSummary.textContent = "Loading slots...";
+                    
+                    bookedSlotIds = await fetchBookedSlots();
+                    if (slotsSummary) slotsSummary.textContent = "Select Times";
+                    render();
+                    updatePeriodDisplay();
                 });
-                
-                // Set initial visual checkmark based on selectedDateStr
-                const initialLi = dateOptionsList.querySelector(`li[data-value="${selectedDateStr}"]`);
-                if (initialLi) {
-                    initialLi.innerHTML = '✓ ' + initialLi.innerHTML;
-                }
             }
 
             // Sync initial calendar render
@@ -3237,6 +3160,6 @@
             }
         });
     </script>
-    <script src="js/surface-public-widget.js?v=2"></script>
+
 </body>
 </html>
