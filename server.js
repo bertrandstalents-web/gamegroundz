@@ -2272,7 +2272,8 @@ app.put('/api/host/bookings/:id', (req, res) => {
     const reqResOnly = isPublic ? (residents_only ? 1 : 0) : 0;
     const descToUse = isPublic ? description || '' : '';
     const tiersToUse = isPublic ? pricing_tiers || '[]' : '[]';
-    const colorToUse = block_color || '#3B82F6';
+    const colorToUpdate = block_color !== undefined ? block_color : null;
+    const colorToInsert = block_color || '#3B82F6';
 
     // Verify ownership via facilities table
     db.get(
@@ -2368,7 +2369,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
                             capacity = COALESCE($5, capacity), participant_price = COALESCE($6, participant_price), participant_kid_price = COALESCE($7, participant_kid_price), residents_only = COALESCE($8, residents_only), locker_room_assignment = COALESCE($9, locker_room_assignment), description = COALESCE($10, description), pricing_tiers = COALESCE($11, pricing_tiers), block_color = COALESCE($12, block_color)
                         WHERE id = $13
                     `;
-                    await client.query(updateSql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, descToUse, tiersToUse, colorToUse, bookingId]);
+                    await client.query(updateSql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, descToUse, tiersToUse, colorToUpdate, bookingId]);
 
                     if (datesToUpdate.length > 0 && row.recurring_group_id) {
                         const updateSeriesSql = `
@@ -2377,7 +2378,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
                                 capacity = COALESCE($3, capacity), participant_price = COALESCE($4, participant_price), participant_kid_price = COALESCE($5, participant_kid_price), residents_only = COALESCE($6, residents_only), locker_room_assignment = COALESCE($7, locker_room_assignment), description = COALESCE($8, description), pricing_tiers = COALESCE($9, pricing_tiers), block_color = COALESCE($10, block_color)
                             WHERE recurring_group_id = $11 AND booking_date = ANY($12::text[]) AND id != $13 AND status != 'cancelled'
                         `;
-                        await client.query(updateSeriesSql, [JSON.stringify(time_slots), manual_notes, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, descToUse, tiersToUse, colorToUse, row.recurring_group_id, datesToUpdate, bookingId]);
+                        await client.query(updateSeriesSql, [JSON.stringify(time_slots), manual_notes, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, descToUse, tiersToUse, colorToUpdate, row.recurring_group_id, datesToUpdate, bookingId]);
                     }
 
                     if (actualDatesToInsert.length > 0) {
@@ -2387,7 +2388,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
                             VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12, 1, $13, $14, $15)
                         `;
                         for (let dateStr of actualDatesToInsert) {
-                            await client.query(insertSeriesSql, [row.facility_id, row.surface_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment || '', descToUse, tiersToUse, colorToUse]);
+                            await client.query(insertSeriesSql, [row.facility_id, row.surface_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment || '', descToUse, tiersToUse, colorToInsert]);
                         }
                     }
                 });

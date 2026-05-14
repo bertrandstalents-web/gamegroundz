@@ -2512,7 +2512,11 @@
                 
                 closeHostCancelModal();
                 await showAlertModal('Cancelled', 'Booking canceled and fully refunded successfully.');
-                loadHostData(); 
+                await loadHostData(); 
+                const activeFacilityId = document.getElementById('calendar-facility-select').value;
+                if (activeFacilityId && typeof initCalendar === 'function') {
+                    initCalendar(activeFacilityId);
+                }
             } catch (err) {
                 btn.disabled = false;
                 document.getElementById('confirm-host-cancel-text').classList.remove('hidden');
@@ -2936,7 +2940,11 @@
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || 'Failed to paste booking');
                 showToast("Offline booking pasted!");
-                loadHostData(); 
+                await loadHostData(); 
+                const activeFacilityId = document.getElementById('calendar-facility-select').value;
+                if (activeFacilityId) {
+                    initCalendar(activeFacilityId);
+                }
             } catch (error) {
                 console.error("Paste error", error);
                 showToast("Error pasting booking: " + error.message);
@@ -3463,7 +3471,11 @@
                     const data = await response.json();
                     throw new Error(data.error || 'Failed to update booking');
                 }
-                loadHostData(); // reload purely to keep data sync
+                await loadHostData(); // reload purely to keep data sync
+                const activeFacilityId = document.getElementById('calendar-facility-select').value;
+                if (activeFacilityId) {
+                    initCalendar(activeFacilityId);
+                }
             } catch (error) {
                 console.error("Error updating event time:", error);
                 await showAlertModal('Error', error.message, 'OK', true);
@@ -4030,13 +4042,21 @@
                 
                 // Refresh the modal logic by hiding then retriggering it via calendar fetch or directly refetching the modal
                 closePublicSessionModal();
-                loadHostData(); // refresh full background calendar state to update capacity colors 
+                await loadHostData(); // refresh full background calendar state to update capacity colors 
+                const activeFacilityId = document.getElementById('calendar-facility-select').value;
+                if (activeFacilityId && typeof initCalendar === 'function') {
+                    initCalendar(activeFacilityId);
+                }
 
             } catch (error) {
                 console.error(error);
                 await showAlertModal('Removal failed', error.message, 'OK', true);
                 closePublicSessionModal();
-                loadHostData();
+                await loadHostData();
+                const activeFacilityId = document.getElementById('calendar-facility-select').value;
+                if (activeFacilityId && typeof initCalendar === 'function') {
+                    initCalendar(activeFacilityId);
+                }
             }
         }
 
@@ -4154,7 +4174,7 @@
                     }
                     
                     closeEventModal();
-                    if(typeof loadHostData === 'function') loadHostData();
+                    if(typeof loadHostData === 'function') await loadHostData();
                     const activeFacilityId = document.getElementById('calendar-facility-select').value;
                     if (activeFacilityId && typeof initCalendar === 'function') initCalendar(activeFacilityId);
                     
@@ -4338,7 +4358,11 @@
 
                 closeEventModal();
                 // Refresh data to show new block on calendar
-                loadHostData();
+                await loadHostData();
+                const activeFacilityId = document.getElementById('calendar-facility-select').value;
+                if (activeFacilityId) {
+                    initCalendar(activeFacilityId);
+                }
                 
             } catch (error) {
                 errorBlock.textContent = error.message;
