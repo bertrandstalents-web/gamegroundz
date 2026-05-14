@@ -53,7 +53,7 @@
         
         /* Booking Types */
         .g-event-online { background-color: #10b981 !important; color: white !important; } /* Primary Green */
-        .g-event-manual { color: white !important; border: none !important; } /* Dynamic background handled by JS */
+        .g-event-offline-custom { color: white !important; border: none !important; } /* Dynamic background handled by JS */
         .g-event-discount { background-color: #fee2e2 !important; color: #dc2626 !important; } /* Pale Red to match player surface */
         
         /* Toolbar */
@@ -3057,7 +3057,7 @@
                     isEditable = true; // allow dragging if we want, but let's say true like manual
                 } else if (b.booking_type === 'manual') {
                     evTitle = b.manual_notes;
-                    evClass = 'g-event-manual';
+                    evClass = 'g-event-offline-custom';
                     isEditable = true;
                 } else {
                     const bookedText = isFr ? 'Réservé' : 'Booked';
