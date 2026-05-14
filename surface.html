@@ -913,9 +913,20 @@
 
                     // Expose it globally for render
                     window.facilityDiscounts = facilityDiscounts;
-
-
-
+                    
+                    if (bookingDateInput) {
+                        const todayD = new Date();
+                        const mm = String(todayD.getMonth() + 1).padStart(2, '0');
+                        const dd = String(todayD.getDate()).padStart(2, '0');
+                        bookingDateInput.min = `${todayD.getFullYear()}-${mm}-${dd}`;
+                        
+                        if (facility.booking_end_date) {
+                            bookingDateInput.max = facility.booking_end_date;
+                        } else {
+                            bookingDateInput.max = `${todayD.getFullYear() + 1}-${mm}-${dd}`;
+                        }
+                    }
+                    
                     // Dynamically populate Activity Type dropdown
                     const activityTypeSelect = document.getElementById('activity-type');
                     if (activityTypeSelect) {
@@ -1706,9 +1717,14 @@
                 const mmDay = String(now.getDate()).padStart(2, '0');
                 const todayStr = `${mmYear}-${mmMonth}-${mmDay}`;
                 const isToday = selectedDateStr === todayStr;
+                
+                const todayForCal = new Date(); todayForCal.setHours(0,0,0,0);
+                const dayDate = new Date(selectedDateStr + 'T00:00:00');
+                const maxDate = getMaxBookingDate();
+                const isPastDay = dayDate < todayForCal || dayDate > maxDate;
 
                 availableSlots.forEach(slot => {
-                    const isPast = isToday && slot.id < currentTime24;
+                    const isPast = isPastDay || (isToday && slot.id < currentTime24);
                     const slotKey = `${selectedDateStr}|${slot.id}`;
                     const isBooked = bookedSlotIds.has(slotKey);
                     const pubSess = window.publicSessionSlots ? window.publicSessionSlots.get(slotKey) : null;
@@ -2130,6 +2146,18 @@
                 }
             }
 
+            function getMaxBookingDate() {
+                let maxDate = new Date();
+                maxDate.setHours(0,0,0,0);
+                if (typeof facility !== 'undefined' && facility.booking_end_date) {
+                    const parts = facility.booking_end_date.split('-');
+                    maxDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 23, 59, 59);
+                } else {
+                    maxDate.setDate(maxDate.getDate() + 365);
+                }
+                return maxDate;
+            }
+
             function renderCalendar() {
                 if (!calendarGrid || !monthDisplay) return;
                 calendarGrid.innerHTML = '';
@@ -2154,15 +2182,7 @@
                 }
 
                 // Add day tiles
-                let maxDate = new Date();
-                maxDate.setHours(0,0,0,0);
-                if (typeof facility !== 'undefined' && facility.booking_end_date) {
-                    // Force the exact local date without timezone shifting
-                    const parts = facility.booking_end_date.split('-');
-                    maxDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 23, 59, 59);
-                } else {
-                    maxDate.setDate(maxDate.getDate() + 365); // Default to 1 year if no end date
-                }
+                const maxDate = getMaxBookingDate();
 
                 const todayForCal = new Date();
                 todayForCal.setHours(0,0,0,0);
@@ -2306,7 +2326,8 @@
                     const slotsWrapper = document.createElement('div');
                     slotsWrapper.className = "flex-1 relative pt-4";
 
-                    const isPastDay = dayDate < todayForCal;
+                    const maxDate = getMaxBookingDate();
+                    const isPastDay = dayDate < todayForCal || dayDate > maxDate;
                     
                     slots.forEach(slot => {
                         const isToday = dateStr === todayStr;
@@ -2404,7 +2425,8 @@
                 
                 const todayForCal = new Date(); todayForCal.setHours(0,0,0,0);
                 const dayDate = new Date(selectedDateStr + 'T00:00:00');
-                const isPastDay = dayDate < todayForCal;
+                const maxDate = getMaxBookingDate();
+                const isPastDay = dayDate < todayForCal || dayDate > maxDate;
                 const td = new Date();
                 const isToday = selectedDateStr === `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
                 const currentTime24 = `${td.getHours().toString().padStart(2, '0')}:${td.getMinutes().toString().padStart(2, '0')}`;
