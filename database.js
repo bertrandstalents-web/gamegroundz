@@ -193,6 +193,7 @@ async function initDatabase() {
             locker_rooms INTEGER DEFAULT 0,
             terms_document_url TEXT DEFAULT '',
             status TEXT DEFAULT 'active',
+            booking_end_date TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
 
@@ -227,6 +228,10 @@ async function initDatabase() {
 
         try {
             await client.query(`ALTER TABLE surfaces ADD COLUMN terms_document_url TEXT DEFAULT ''`);
+        } catch(e) {}
+        
+        try {
+            await client.query(`ALTER TABLE surfaces ADD COLUMN booking_end_date TEXT`);
         } catch(e) {}
 
         try {

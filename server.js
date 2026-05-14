@@ -1713,15 +1713,15 @@ app.get('/api/public/surfaces/:id', (req, res) => {
 app.post('/api/host/surfaces/standalone', (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
     
-    const { name, subtitle, description, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, images, location, lat, lng, terms_document_url } = req.body;
+    const { name, subtitle, description, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, booking_end_date, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, images, location, lat, lng, terms_document_url } = req.body;
     
     if (!name || !type || !environment || base_price === undefined || !location) {
         return res.status(400).json({ error: "Missing required surface fields (including location)" });
     }
     
     // For a standalone surface, we insert it with facility_id = NULL
-    db.run(`INSERT INTO surfaces (facility_id, host_id, name, subtitle, description, location, lat, lng, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, terms_document_url) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [req.session.userId, name, subtitle || '', description || '', location, lat || null, lng || null, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(pricing_rules || []), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, has_processing_fee === false ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0, terms_document_url || ''],
+    db.run(`INSERT INTO surfaces (facility_id, host_id, name, subtitle, description, location, lat, lng, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, booking_end_date, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, terms_document_url) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [req.session.userId, name, subtitle || '', description || '', location, lat || null, lng || null, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(pricing_rules || []), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, booking_end_date || null, has_processing_fee === false ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0, terms_document_url || ''],
         function(err) {
             if (err) return res.status(500).json({ error: err.message });
             const surfaceId = this.lastID;
@@ -1772,7 +1772,7 @@ app.post('/api/host/facilities/:id/surfaces', (req, res) => {
     db.get("SELECT id FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", [facilityId, req.session.userId, `%"${req.session.email}"%`], (err, fac) => {
         if (err || !fac) return res.status(404).json({ error: "Facility not found or unauthorized" });
         
-        const { name, type, environment, size_info, capacity, base_price, pricing_rules, booking_model, total_zones, zone_price, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url, images, terms_document_url } = req.body;
+        const { name, type, environment, size_info, capacity, base_price, pricing_rules, booking_model, total_zones, zone_price, features, amenities, is_instant_book, advance_booking_days, booking_end_date, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url, images, terms_document_url } = req.body;
         
         if (!name || !type || !environment || base_price === undefined) {
             return res.status(400).json({ error: "Missing required surface fields" });
@@ -1785,8 +1785,8 @@ app.post('/api/host/facilities/:id/surfaces', (req, res) => {
             time_slots: pricing_rules || []
         };
         
-        db.run(`INSERT INTO surfaces (facility_id, name, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url, terms_document_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [facilityId, name, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(combinedPricingRules), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, (has_processing_fee === false || has_processing_fee === 0) ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0, image_url || null, terms_document_url || ''],
+        db.run(`INSERT INTO surfaces (facility_id, name, type, environment, size_info, capacity, base_price, pricing_rules, features, amenities, is_instant_book, advance_booking_days, booking_end_date, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url, terms_document_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [facilityId, name, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(combinedPricingRules), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, booking_end_date || null, (has_processing_fee === false || has_processing_fee === 0) ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0, image_url || null, terms_document_url || ''],
             function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 const surfaceId = this.lastID;
@@ -1820,7 +1820,7 @@ app.put('/api/host/surfaces/:id', (req, res) => {
         db.get("SELECT id FROM facilities WHERE id = ? AND (host_id = ? OR co_host_emails LIKE ?)", [surface.facility_id, req.session.userId, `%"${req.session.email}"%`], (err, fac) => {
             if (err || !fac) return res.status(401).json({ error: "Unauthorized" });
             
-            const { name, type, environment, size_info, capacity, base_price, pricing_rules, booking_model, total_zones, zone_price, features, amenities, is_instant_book, advance_booking_days, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url, images, terms_document_url } = req.body;
+            const { name, type, environment, size_info, capacity, base_price, pricing_rules, booking_model, total_zones, zone_price, features, amenities, is_instant_book, advance_booking_days, booking_end_date, has_processing_fee, processing_fee_amount, pricing_unit, locker_rooms, image_url, images, terms_document_url } = req.body;
             
             const combinedPricingRules = {
                 booking_model: booking_model || 'exclusive',
@@ -1829,8 +1829,8 @@ app.put('/api/host/surfaces/:id', (req, res) => {
                 time_slots: pricing_rules || []
             };
             
-            db.run(`UPDATE surfaces SET name=?, type=?, environment=?, size_info=?, capacity=?, base_price=?, pricing_rules=?, features=?, amenities=?, is_instant_book=?, advance_booking_days=?, has_processing_fee=?, processing_fee_amount=?, pricing_unit=?, locker_rooms=?, image_url=?, terms_document_url=? WHERE id=?`,
-                [name, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(combinedPricingRules), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, (has_processing_fee === false || has_processing_fee === 0) ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0, image_url || null, terms_document_url || '', surfaceId],
+            db.run(`UPDATE surfaces SET name=?, type=?, environment=?, size_info=?, capacity=?, base_price=?, pricing_rules=?, features=?, amenities=?, is_instant_book=?, advance_booking_days=?, booking_end_date=?, has_processing_fee=?, processing_fee_amount=?, pricing_unit=?, locker_rooms=?, image_url=?, terms_document_url=? WHERE id=?`,
+                [name, type, environment, size_info || '', capacity || 0, base_price, JSON.stringify(combinedPricingRules), JSON.stringify(features || []), JSON.stringify(amenities || []), is_instant_book ? 1 : 0, advance_booking_days || 180, booking_end_date || null, (has_processing_fee === false || has_processing_fee === 0) ? 0 : 1, processing_fee_amount || 15.00, pricing_unit || 'hour', locker_rooms || 0, image_url || null, terms_document_url || '', surfaceId],
                 function(err) {
                     if (err) return res.status(500).json({ error: err.message });
                     

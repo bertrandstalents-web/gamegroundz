@@ -7076,7 +7076,7 @@
                 }
                 if (document.getElementById('fac-processing-fee-amount')) document.getElementById('fac-processing-fee-amount').value = '15.00';
                 if (document.getElementById('fac-instant')) document.getElementById('fac-instant').checked = true;
-                if (document.getElementById('fac-advance-booking')) document.getElementById('fac-advance-booking').value = '180';
+                if (document.getElementById('fac-booking-end-date')) document.getElementById('fac-booking-end-date').value = '';
                 if (document.getElementById('fac-pricing-unit')) document.getElementById('fac-pricing-unit').value = 'hour';
                 
                 const rulesContainer = document.getElementById('pricing-rules-container');
@@ -7160,7 +7160,7 @@
             }
             if (document.getElementById('fac-processing-fee-amount')) document.getElementById('fac-processing-fee-amount').value = surf.processing_fee_amount || 15.00;
             if (document.getElementById('fac-instant')) document.getElementById('fac-instant').checked = surf.is_instant_book == 1;
-            if (document.getElementById('fac-advance-booking')) document.getElementById('fac-advance-booking').value = surf.advance_booking_days || 180;
+            if (document.getElementById('fac-booking-end-date')) document.getElementById('fac-booking-end-date').value = surf.booking_end_date || '';
             
             const rulesContainer = document.getElementById('pricing-rules-container');
             if (rulesContainer) {
@@ -7339,7 +7339,7 @@
                     image_url: window.localSurfaceImages && window.localSurfaceImages.length > 0 ? window.localSurfaceImages[0] : null,
                     images: window.localSurfaceImages || [],
                     is_instant_book: document.getElementById('fac-instant') && document.getElementById('fac-instant').checked ? 1 : 0,
-                    advance_booking_days: document.getElementById('fac-advance-booking') && document.getElementById('fac-advance-booking').value ? parseInt(document.getElementById('fac-advance-booking').value, 10) : 180,
+                    booking_end_date: document.getElementById('fac-booking-end-date') && document.getElementById('fac-booking-end-date').value ? document.getElementById('fac-booking-end-date').value : null,
                     has_processing_fee: document.getElementById('fac-has-processing-fee') && document.getElementById('fac-has-processing-fee').checked ? 1 : 0,
                     processing_fee_amount: document.getElementById('fac-processing-fee-amount') ? parseFloat(document.getElementById('fac-processing-fee-amount').value) : 15.00,
                     terms_document_url: document.getElementById('surf-terms-doc') ? document.getElementById('surf-terms-doc').value : ''
@@ -7696,16 +7696,15 @@
                     </div>
 
                     <div class="flex flex-col pt-4 border-t border-slate-100 mt-4">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Advance Booking Limit (Days)</label>
-                        <input type="number" id="fac-advance-booking" min="1" max="1000" class="w-full md:w-1/3 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white" placeholder="180">
-                        <p class="text-xs text-slate-400 mt-1 mb-3">Maximum number of days in advance a player can book.</p>
-                        
-                        <div class="bg-blue-50/50 border border-blue-100 rounded-lg p-3 flex items-start max-w-lg">
-                            <i class="fa-solid fa-calendar-check text-blue-500 mt-0.5 mr-2"></i>
-                            <p class="text-xs text-blue-800 leading-relaxed">
-                                <strong class="font-bold">Recommendation:</strong> Limit players to booking a maximum of 3-4 months (90-120 days) in advance to maintain flexibility in your schedule for tournaments or seasonal changes.
-                            </p>
-                        </div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            <span class="lang-en-only">Booking Season End Date (Optional)</span>
+                            <span class="lang-fr-only notranslate">Date de fin de la saison (Optionnel)</span>
+                        </label>
+                        <input type="date" id="fac-booking-end-date" class="w-full md:w-1/3 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white text-slate-700">
+                        <p class="text-xs text-slate-400 mt-1 mb-3">
+                            <span class="lang-en-only">The last date players are allowed to book this surface. Leave blank if open year-round.</span>
+                            <span class="lang-fr-only notranslate">La dernière date à laquelle les joueurs peuvent réserver. Laissez vide si ouvert toute l'année.</span>
+                        </p>
                     </div>
                 </div>
 
