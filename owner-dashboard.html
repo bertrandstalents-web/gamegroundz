@@ -596,8 +596,18 @@
                                                 </ul>
                                             </div>
                                         </div>
+                                        </div>
                                     </div>
-                                    <div>
+                                    <div id="modal-block-color-container" class="mt-4">
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Color</span><span class="lang-fr-only notranslate">Couleur</span> <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top"><span class="lang-en-only">OPTIONAL</span><span class="lang-fr-only notranslate">OPTIONNEL</span></span></label>
+                                        <div class="flex items-center gap-3">
+                                            <div class="relative w-12 h-12 rounded-xl border border-slate-200 overflow-hidden shadow-sm flex-shrink-0 cursor-pointer">
+                                                <input type="color" id="modal-block-color" value="#3b82f6" class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer outline-none border-none p-0 bg-transparent">
+                                            </div>
+                                            <span class="text-sm font-medium text-slate-500"><span class="lang-en-only">Choose a custom color for this booking</span><span class="lang-fr-only notranslate">Choisissez une couleur pour cette réservation</span></span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4">
                                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Locker Room</span><span class="lang-fr-only notranslate">Vestiaire</span> <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top"><span class="lang-en-only">OPTIONAL</span><span class="lang-fr-only notranslate">OPTIONNEL</span></span></label>
                                         <input type="hidden" id="modal-locker-room">
                                         <div id="modal-locker-boxes" class="flex flex-wrap gap-2"></div>
@@ -3074,7 +3084,7 @@
                     }
                     const endTimeStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
 
-                    calendarEvents.push({
+                    let evObj = {
                         id: b.id,
                         title: evTitle,
                         start: `${b.booking_date}T${startTime}:00`,
@@ -3095,9 +3105,17 @@
                             participant_price: b.participant_price || 0,
                             joined_count: b.joined_count || 0,
                             description: b.description || '',
-                            pricing_tiers: b.pricing_tiers || '[]'
+                            pricing_tiers: b.pricing_tiers || '[]',
+                            color: b.color || '#3b82f6'
                         }
-                    });
+                    };
+
+                    if (b.booking_type === 'manual' && b.color) {
+                        evObj.backgroundColor = b.color;
+                        evObj.borderColor = b.color;
+                    }
+
+                    calendarEvents.push(evObj);
                 });
             });
 
@@ -3470,12 +3488,14 @@
             const submitBtn = document.getElementById('modal-submit-btn');
             const isEditMode = document.getElementById('modal-edit-booking-id') && document.getElementById('modal-edit-booking-id').value !== '';
             const isDiscountEditMode = document.getElementById('modal-edit-discount-id') && document.getElementById('modal-edit-discount-id').value !== '';
+            const colorContainer = document.getElementById('modal-block-color-container');
 
             if (blockType === 'discount') {
                 if(offlineFields) offlineFields.classList.add('hidden');
                 if(notesInput) { notesInput.required = false; notesInput.classList.remove('hidden'); }
                 const customWrapper = document.getElementById('modal-block-notes-custom-wrapper');
                 if (customWrapper) customWrapper.classList.add('hidden');
+                if (colorContainer) colorContainer.classList.add('hidden');
                 if(discountFields) discountFields.classList.remove('hidden');
                 const discValue = document.getElementById('modal-disc-value');
                 if(discValue) discValue.required = true;
@@ -3487,6 +3507,7 @@
             } else if (blockType === 'public_session') {
                 if(offlineFields) offlineFields.classList.remove('hidden');
                 if(discountFields) discountFields.classList.add('hidden');
+                if(colorContainer) colorContainer.classList.add('hidden');
 
                 const publicExtras = document.getElementById('public-session-extra');
                 if(publicExtras) publicExtras.classList.remove('hidden');
@@ -3549,6 +3570,7 @@
                 if(notesInput) { notesInput.required = true; notesInput.classList.remove('hidden'); }
                 const customWrapper = document.getElementById('modal-block-notes-custom-wrapper');
                 if (customWrapper) customWrapper.classList.add('hidden');
+                if (colorContainer) colorContainer.classList.remove('hidden');
                 if(discountFields) discountFields.classList.add('hidden');
 
                 const publicExtras = document.getElementById('public-session-extra');
@@ -3754,6 +3776,7 @@
 
             if(document.getElementById('modal-block-notes')) document.getElementById('modal-block-notes').value = '';
             if(document.getElementById('modal-locker-room')) document.getElementById('modal-locker-room').value = '';
+            if(document.getElementById('modal-block-color')) document.getElementById('modal-block-color').value = '#3b82f6';
             renderLockerBoxes(facId, 'modal-locker-boxes', 'modal-locker-room', '');
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-regular fa-calendar-plus mr-3 text-xl"></i>New Booking';
             document.getElementById('modal-cancel-btn').textContent = 'Cancel booking';
@@ -3836,6 +3859,7 @@
 
             if(document.getElementById('modal-block-notes')) document.getElementById('modal-block-notes').value = eventObj.extendedProps.originalNotes || '';
             if(document.getElementById('modal-locker-room')) document.getElementById('modal-locker-room').value = eventObj.extendedProps.lockerRoom || '';
+            if(document.getElementById('modal-block-color')) document.getElementById('modal-block-color').value = eventObj.extendedProps.color || '#3b82f6';
             
             renderLockerBoxes(facId, 'modal-locker-boxes', 'modal-locker-room', eventObj.extendedProps.lockerRoom || '');
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-solid fa-pen mr-3 text-xl"></i>Edit Booking';
@@ -4256,7 +4280,8 @@
                         }
                     });
                     return JSON.stringify(tiers);
-                })()
+                })(),
+                color: document.getElementById('modal-block-color') ? document.getElementById('modal-block-color').value : '#3b82f6'
             };
 
             const editId = document.getElementById('modal-edit-booking-id') ? document.getElementById('modal-edit-booking-id').value : '';

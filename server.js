@@ -2150,7 +2150,7 @@ app.post('/api/host/block-time', (req, res) => {
         return res.status(401).json({ error: "Unauthorized" });
     }
     
-    const { facility_id, surface_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, description, pricing_tiers } = req.body;
+    const { facility_id, surface_id, booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, description, pricing_tiers, color } = req.body;
     
     if (!facility_id || !surface_id || !booking_date || !time_slots || !manual_notes) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -2163,6 +2163,7 @@ app.post('/api/host/block-time', (req, res) => {
     const resOnlyToUse = typeToUse === 'public_session' ? (residents_only ? 1 : 0) : 0;
     const descToUse = typeToUse === 'public_session' ? description || '' : '';
     const tiersToUse = typeToUse === 'public_session' ? pricing_tiers || '[]' : '[]';
+    const colorToUse = typeToUse === 'manual' && color ? color : '#3b82f6';
 
     // Verify this facility belongs to the logged-in host
     db.get("SELECT id FROM facilities WHERE id = ? AND host_id = ?", [facility_id, req.session.userId], async (err, facility) => {
@@ -2198,8 +2199,8 @@ app.post('/api/host/block-time', (req, res) => {
         }
         
         const sql = `
-            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, is_read, description, pricing_tiers)
-            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12, 1, $13, $14)
+            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, is_read, description, pricing_tiers, color)
+            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12, 1, $13, $14, $15)
         `;
         
         try {
@@ -2237,7 +2238,7 @@ app.post('/api/host/block-time', (req, res) => {
                 }
 
                 for (const dateStr of datesToBook) {
-                    await client.query(sql, [facility_id, surface_id, dateStr, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse, kidPriceToUse, resOnlyToUse, locker_room_assignment || '', descToUse, tiersToUse]);
+                    await client.query(sql, [facility_id, surface_id, dateStr, JSON.stringify(time_slots), typeToUse, manual_notes, recurringGroupId, capToUse, priceToUse, kidPriceToUse, resOnlyToUse, locker_room_assignment || '', descToUse, tiersToUse, colorToUse]);
                 }
             });
 
@@ -2257,7 +2258,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
     }
 
     const bookingId = req.params.id;
-    const { booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, description, pricing_tiers } = req.body;
+    const { booking_date, time_slots, manual_notes, repeat_option, repeat_until, repeat_days, booking_type, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, description, pricing_tiers, color } = req.body;
 
     if (!booking_date || !time_slots) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -2271,6 +2272,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
     const reqResOnly = isPublic ? (residents_only ? 1 : 0) : 0;
     const descToUse = isPublic ? description || '' : '';
     const tiersToUse = isPublic ? pricing_tiers || '[]' : '[]';
+    const colorToUse = !isPublic && color ? color : '#3b82f6';
 
     // Verify ownership via facilities table
     db.get(
@@ -2363,29 +2365,29 @@ app.put('/api/host/bookings/:id', (req, res) => {
                     const updateSql = `
                         UPDATE bookings 
                         SET booking_date = $1, time_slots = $2, manual_notes = COALESCE($3, manual_notes), recurring_group_id = COALESCE($4, recurring_group_id),
-                            capacity = COALESCE($5, capacity), participant_price = COALESCE($6, participant_price), participant_kid_price = COALESCE($7, participant_kid_price), residents_only = COALESCE($8, residents_only), locker_room_assignment = COALESCE($9, locker_room_assignment), description = COALESCE($10, description), pricing_tiers = COALESCE($11, pricing_tiers)
-                        WHERE id = $12
+                            capacity = COALESCE($5, capacity), participant_price = COALESCE($6, participant_price), participant_kid_price = COALESCE($7, participant_kid_price), residents_only = COALESCE($8, residents_only), locker_room_assignment = COALESCE($9, locker_room_assignment), description = COALESCE($10, description), pricing_tiers = COALESCE($11, pricing_tiers), color = COALESCE($12, color)
+                        WHERE id = $13
                     `;
-                    await client.query(updateSql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, descToUse, tiersToUse, bookingId]);
+                    await client.query(updateSql, [booking_date, JSON.stringify(time_slots), manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, descToUse, tiersToUse, colorToUse, bookingId]);
 
                     if (datesToUpdate.length > 0 && row.recurring_group_id) {
                         const updateSeriesSql = `
                             UPDATE bookings 
                             SET time_slots = $1, manual_notes = COALESCE($2, manual_notes),
-                                capacity = COALESCE($3, capacity), participant_price = COALESCE($4, participant_price), participant_kid_price = COALESCE($5, participant_kid_price), residents_only = COALESCE($6, residents_only), locker_room_assignment = COALESCE($7, locker_room_assignment), description = COALESCE($8, description), pricing_tiers = COALESCE($9, pricing_tiers)
-                            WHERE recurring_group_id = $10 AND booking_date = ANY($11::text[]) AND id != $12 AND status != 'cancelled'
+                                capacity = COALESCE($3, capacity), participant_price = COALESCE($4, participant_price), participant_kid_price = COALESCE($5, participant_kid_price), residents_only = COALESCE($6, residents_only), locker_room_assignment = COALESCE($7, locker_room_assignment), description = COALESCE($8, description), pricing_tiers = COALESCE($9, pricing_tiers), color = COALESCE($10, color)
+                            WHERE recurring_group_id = $11 AND booking_date = ANY($12::text[]) AND id != $13 AND status != 'cancelled'
                         `;
-                        await client.query(updateSeriesSql, [JSON.stringify(time_slots), manual_notes, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, descToUse, tiersToUse, row.recurring_group_id, datesToUpdate, bookingId]);
+                        await client.query(updateSeriesSql, [JSON.stringify(time_slots), manual_notes, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment, descToUse, tiersToUse, colorToUse, row.recurring_group_id, datesToUpdate, bookingId]);
                     }
 
                     if (actualDatesToInsert.length > 0) {
                         const bTypeStr = isPublic ? 'public_session' : 'manual';
                         const insertSql = `
-                            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, is_read, description, pricing_tiers)
-                            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12, 1, $13, $14)
+                            INSERT INTO bookings (facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, manual_notes, recurring_group_id, capacity, participant_price, participant_kid_price, residents_only, locker_room_assignment, is_read, description, pricing_tiers, color)
+                            VALUES ($1, $2, $3, $4, 0, 'confirmed', $5, $6, $7, $8, $9, $10, $11, $12, 1, $13, $14, $15)
                         `;
                         for (const dateStr of actualDatesToInsert) {
-                            await client.query(insertSql, [row.facility_id, row.surface_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment || '', descToUse, tiersToUse]);
+                            await client.query(insertSql, [row.facility_id, row.surface_id, dateStr, JSON.stringify(time_slots), bTypeStr, manual_notes, recurringGroupId, numCap, numPrice, numKidPrice, reqResOnly, locker_room_assignment || '', descToUse, tiersToUse, colorToUse]);
                         }
                     }
                 });
