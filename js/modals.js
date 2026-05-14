@@ -152,3 +152,58 @@ window.showAlertModal = function(title, message, btnText = "OK", isError = false
         document.body.style.overflow = 'hidden';
     });
 };
+
+window.showSuccessModal = function(title, message, btnText = "Awesome") {
+    return new Promise((resolve) => {
+        const container = createModalContainer();
+        const backdrop = document.getElementById('custom-modal-backdrop');
+        const closeX = document.getElementById('custom-modal-close-x');
+        const titleEl = document.getElementById('custom-modal-title');
+        const messageEl = document.getElementById('custom-modal-message');
+        const actionsEl = document.getElementById('custom-modal-actions');
+        const inputContainer = document.getElementById('custom-modal-input-container');
+
+        titleEl.textContent = title;
+        titleEl.className = 'text-2xl font-extrabold text-dark text-center w-full';
+        
+        // Add big green checkmark and message
+        messageEl.innerHTML = `
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fa-solid fa-check text-4xl text-green-500"></i>
+            </div>
+            <div class="text-center text-slate-500 text-lg leading-relaxed">
+                ${message.replace(/\n/g, '<br>')}
+            </div>
+        `;
+        inputContainer.classList.add('hidden');
+
+        actionsEl.innerHTML = `
+            <button id="custom-modal-ok-btn" class="w-full bg-primary hover:bg-primaryHover text-white font-bold py-3.5 rounded-xl transition-custom shadow-glow">${btnText}</button>
+        `;
+
+        const okBtn = document.getElementById('custom-modal-ok-btn');
+
+        const cleanup = () => {
+            container.classList.remove('flex');
+            container.classList.add('hidden');
+            document.body.style.overflow = '';
+            
+            backdrop.onclick = null;
+            closeX.onclick = null;
+            okBtn.onclick = null;
+        };
+
+        const handleResolve = () => {
+            cleanup();
+            resolve();
+        };
+
+        backdrop.onclick = handleResolve;
+        closeX.onclick = handleResolve;
+        okBtn.onclick = handleResolve;
+
+        container.classList.remove('hidden');
+        container.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    });
+};

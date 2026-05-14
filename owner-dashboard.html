@@ -4507,7 +4507,9 @@
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Failed to update profile');
                 
-                if (typeof window.showAlertModal === 'function') {
+                if (typeof window.showSuccessModal === 'function') {
+                    await window.showSuccessModal("Success", "<span class='lang-en-only'>Profile updated successfully!</span><span class='lang-fr-only notranslate'>Profil mis à jour avec succès!</span>", "OK");
+                } else if (typeof window.showAlertModal === 'function') {
                     await window.showAlertModal("Success", "<span class='lang-en-only'>Profile updated successfully!</span><span class='lang-fr-only notranslate'>Profil mis à jour avec succès!</span>", "OK", false);
                 } else {
                     msgDiv.textContent = data.message || 'Profile updated successfully!';
@@ -5314,7 +5316,9 @@
                 
                 if (editId) {
                     // Updating logic
-                    if (typeof window.showAlertModal === 'function') {
+                    if (typeof window.showSuccessModal === 'function') {
+                        await window.showSuccessModal("Success", `<span class='lang-en-only'>${data.message || 'Facility updated successfully!'}</span><span class='lang-fr-only notranslate'>Installation mise à jour avec succès!</span>`, "Awesome");
+                    } else if (typeof window.showAlertModal === 'function') {
                         await window.showAlertModal("Success", `<span class='lang-en-only'>${data.message || 'Facility updated successfully!'}</span><span class='lang-fr-only notranslate'>Installation mise à jour avec succès!</span>`, "OK", false);
                     } else {
                         successDiv.innerHTML = `<i class="fa-solid fa-check mr-2"></i> ${data.message || 'Facility updated successfully!'}`;
@@ -5326,11 +5330,13 @@
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     btn.classList.remove('opacity-80', 'cursor-not-allowed');
-                    fetchHostFacilities(); // Reload list
+                    if (typeof loadHostData === 'function') loadHostData(); // Reload list
                     switchTab('facilities');
                 } else {
                     // Creating logic
-                    if (typeof window.showAlertModal === 'function') {
+                    if (typeof window.showSuccessModal === 'function') {
+                        await window.showSuccessModal("Success", `<span class='lang-en-only'>${data.message || 'Facility created successfully! Redirecting...'}</span><span class='lang-fr-only notranslate'>Installation créée avec succès! Redirection...</span>`, "Awesome");
+                    } else if (typeof window.showAlertModal === 'function') {
                         await window.showAlertModal("Success", `<span class='lang-en-only'>${data.message || 'Facility created successfully! Redirecting...'}</span><span class='lang-fr-only notranslate'>Installation créée avec succès! Redirection...</span>`, "OK", false);
                     } else {
                         successDiv.innerHTML = `<i class="fa-solid fa-check mr-2"></i> ${data.message || 'Facility created successfully! Redirecting...'}`;
@@ -7321,7 +7327,9 @@
                     closeSurfaceModal();
                     
                     // Show beautiful success pop-up!
-                    if (typeof window.showAlertModal === 'function') {
+                    if (typeof window.showSuccessModal === 'function') {
+                        await window.showSuccessModal("Success", `<span class='lang-en-only'>Your surface has been successfully saved. It is now active and ready for bookings!</span><span class='lang-fr-only notranslate'>Votre surface a été enregistrée avec succès. Elle est maintenant active et prête pour les réservations!</span>`, "Awesome");
+                    } else if (typeof window.showAlertModal === 'function') {
                         await window.showAlertModal("Success", `<span class='lang-en-only'>Your surface has been successfully saved. It is now active and ready for bookings!</span><span class='lang-fr-only notranslate'>Votre surface a été enregistrée avec succès. Elle est maintenant active et prête pour les réservations!</span>`, "Awesome", false);
                     } else {
                         const successModal = document.getElementById('surface-success-modal');
