@@ -5279,6 +5279,19 @@
             btn.classList.add('opacity-80', 'cursor-not-allowed');
             errorDiv.classList.add('hidden');
             
+            const latVal = document.getElementById('fac-lat').value ? parseFloat(document.getElementById('fac-lat').value) : null;
+            const lngVal = document.getElementById('fac-lng').value ? parseFloat(document.getElementById('fac-lng').value) : null;
+
+            if (!latVal || !lngVal) {
+                errorDiv.textContent = "Please select a valid address from the dropdown suggestions to verify location coordinates.";
+                errorDiv.classList.remove('hidden');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                document.getElementById('fac-location').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
 // Pricing rules moved to Surface
 
             // Build features array
@@ -5321,8 +5334,8 @@
                 environment: envVal,
                 base_price: 100,
                 location: document.getElementById('fac-location').value,
-                lat: document.getElementById('fac-lat').value ? parseFloat(document.getElementById('fac-lat').value) : null,
-                lng: document.getElementById('fac-lng').value ? parseFloat(document.getElementById('fac-lng').value) : null,
+                lat: latVal,
+                lng: lngVal,
                 image_url: JSON.stringify(window.localImagesArray),
                 connected_facilities: Array.from(document.querySelectorAll('input[name="connected_fac"]:checked')).map(cb => parseInt(cb.value, 10)),
                 operating_hours: operating_hours,

@@ -624,11 +624,8 @@
                     actualLat = f.lat;
                     actualLng = f.lng;
                 } else {
-                    // Fallback visually if missing coordinates
-                    actualLat = 45.5017 + (Math.random() - 0.5) * 0.2;
-                    actualLng = -73.5673 + (Math.random() - 0.5) * 0.2;
-                    f.effective_lat = actualLat;
-                    f.effective_lng = actualLng;
+                    // Skip map marker if coordinates are completely missing
+                    return;
                 }
                 
                 const key = `${actualLat.toFixed(5)}_${actualLng.toFixed(5)}`;
@@ -689,7 +686,8 @@
                     if (lat && lng) {
                         return bounds.contains(L.latLng(lat, lng));
                     }
-                    return false;
+                    // Keep facilities without coordinates in the list so they aren't lost
+                    return true;
                 });
             } else {
                 // Map is hidden (e.g., mobile), filter by distance from map center (50km radius)
@@ -701,7 +699,8 @@
                         // distanceTo returns distance in meters
                         return center.distanceTo(L.latLng(lat, lng)) < 50000; 
                     }
-                    return false;
+                    // Keep facilities without coordinates in the list
+                    return true;
                 });
             }
 
