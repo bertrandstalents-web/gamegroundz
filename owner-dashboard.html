@@ -697,16 +697,16 @@
                                     </div>
                                 </div>
 
-                                <div class="pt-4 border-t border-slate-100 flex justify-end gap-3 items-center">
+                                <div class="pt-4 border-t border-slate-100 flex flex-wrap justify-end gap-3 items-center">
                                     <!-- Price Display Mimicking Screenshot -->
-                                    <div class="flex-1">
+                                    <div class="flex-1 min-w-[120px]">
                                          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider"><span class="lang-en-only">Booking Price</span><span class="lang-fr-only notranslate">Prix de réservation</span></div>
                                          <div class="text-xl font-bold text-slate-800 flex items-center" id="modal-price-display">Offline</div>
                                     </div>
                                     
-                                    <button type="button" id="modal-cancel-btn" onclick="handleModalCancelBtn()" class="px-5 py-2.5 border border-slate-200 text-red-600 rounded-lg hover:bg-slate-50 transition-custom font-bold shadow-sm bg-white"><span class="lang-en-only">Cancel booking</span><span class="lang-fr-only notranslate">Annuler</span></button>
-                                    <button type="submit" id="modal-submit-btn" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-bold transition-custom shadow-md flex items-center justify-center">
-                                        <span class="lang-en-only">Confirm booking</span><span class="lang-fr-only notranslate">Confirmer</span>
+                                    <button type="button" id="modal-cancel-btn" onclick="handleModalCancelBtn()" class="px-5 py-2.5 border border-slate-200 text-red-600 rounded-lg hover:bg-slate-50 transition-custom font-bold shadow-sm bg-white whitespace-nowrap"><span class="lang-en-only">Cancel booking</span><span class="lang-fr-only notranslate">Annuler la réservation</span></button>
+                                    <button type="submit" id="modal-submit-btn" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-bold transition-custom shadow-md flex items-center justify-center whitespace-nowrap">
+                                        <span class="lang-en-only">Confirm booking</span><span class="lang-fr-only notranslate">Confirmer la réservation</span>
                                     </button>
                                 </div>
                                 <div id="modal-block-error" class="hidden text-red-500 text-sm font-medium bg-red-50 p-3 rounded-xl border border-red-100 mt-2"></div>
@@ -3511,6 +3511,26 @@
             }
         }
 
+        function setModalButtonText(isEdit, blockType) {
+            const submitBtn = document.getElementById('modal-submit-btn');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
+            if (!submitBtn || !cancelBtn) return;
+
+            if (isEdit) {
+                submitBtn.innerHTML = '<span class="lang-en-only">Save Changes</span><span class="lang-fr-only notranslate">Enregistrer les modifications</span>';
+                cancelBtn.innerHTML = '<span class="lang-en-only">Cancel</span><span class="lang-fr-only notranslate">Annuler</span>';
+            } else {
+                cancelBtn.innerHTML = '<span class="lang-en-only">Cancel booking</span><span class="lang-fr-only notranslate">Annuler la réservation</span>';
+                if (blockType === 'discount') {
+                    submitBtn.innerHTML = '<span class="lang-en-only">Add Discount</span><span class="lang-fr-only notranslate">Ajouter un rabais</span>';
+                } else if (blockType === 'public_session') {
+                    submitBtn.innerHTML = '<span class="lang-en-only">Create Public Activity</span><span class="lang-fr-only notranslate">Créer l\'activité</span>';
+                } else {
+                    submitBtn.innerHTML = '<span class="lang-en-only">Confirm booking</span><span class="lang-fr-only notranslate">Confirmer la réservation</span>';
+                }
+            }
+        }
+
         function toggleModalBlockType() {
             const blockType = document.querySelector('input[name="modal-block-type"]:checked')?.value || 'offline';
             const offlineFields = document.getElementById('modal-offline-fields');
@@ -3535,7 +3555,7 @@
                 document.getElementById('modal-public-capacity').required = false;
                 document.querySelectorAll('#pricing-tiers-container .tier-name, #pricing-tiers-container .tier-price').forEach(el => el.required = false);
 
-                if(submitBtn) submitBtn.innerHTML = isDiscountEditMode ? 'Save Changes' : 'Add Discount';
+                setModalButtonText(isDiscountEditMode, 'discount');
             } else if (blockType === 'public_session') {
                 if(offlineFields) offlineFields.classList.remove('hidden');
                 if(discountFields) discountFields.classList.add('hidden');
@@ -3596,7 +3616,7 @@
                     }
                 }
 
-                if(submitBtn) submitBtn.innerHTML = isEditMode ? 'Save Changes' : 'Create Public Activity';
+                setModalButtonText(isEditMode, 'public_session');
             } else {
                 if(offlineFields) offlineFields.classList.remove('hidden');
                 if(notesInput) { notesInput.required = true; notesInput.classList.remove('hidden'); }
@@ -3615,7 +3635,7 @@
                 const residentsContainer = document.getElementById('modal-public-residents-only-container');
                 if (residentsContainer) residentsContainer.classList.add('hidden');
                 
-                if(submitBtn) submitBtn.innerHTML = isEditMode ? 'Save Changes' : 'Confirm booking';
+                setModalButtonText(isEditMode, 'offline');
             }
             calculateModalPrice();
         }
@@ -3811,9 +3831,7 @@
             setColorValue('#3b82f6');
             renderLockerBoxes(facId, 'modal-locker-boxes', 'modal-locker-room', '');
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-regular fa-calendar-plus mr-3 text-xl"></i>New Booking';
-            document.getElementById('modal-cancel-btn').textContent = 'Cancel booking';
             document.getElementById('modal-price-display').parentElement.classList.remove('hidden');
-            document.getElementById('modal-submit-btn').innerHTML = 'Confirm booking';
             const delDiscBtn = document.getElementById('modal-delete-discount-btn');
             if (delDiscBtn) delDiscBtn.classList.add('hidden');
             
@@ -3895,9 +3913,7 @@
             
             renderLockerBoxes(facId, 'modal-locker-boxes', 'modal-locker-room', eventObj.extendedProps.lockerRoom || '');
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-solid fa-pen mr-3 text-xl"></i>Edit Booking';
-            document.getElementById('modal-cancel-btn').textContent = 'Cancel';
             document.getElementById('modal-price-display').parentElement.classList.remove('hidden');
-            document.getElementById('modal-submit-btn').innerHTML = 'Save Changes';
             const delDiscBtn = document.getElementById('modal-delete-discount-btn');
             if (delDiscBtn) delDiscBtn.classList.add('hidden');
             
@@ -5497,9 +5513,8 @@
             calculateModalPrice();
             
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-solid fa-tag mr-3 text-xl"></i>Edit Discount';
-            document.getElementById('modal-cancel-btn').textContent = 'Cancel';
+            setModalButtonText(true, 'discount');
             document.getElementById('modal-price-display').parentElement.classList.add('hidden');
-            document.getElementById('modal-submit-btn').innerHTML = 'Save Changes';
             
             let delBtn = document.getElementById('modal-delete-discount-btn');
             if (!delBtn) {
