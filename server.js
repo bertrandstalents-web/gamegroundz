@@ -1649,7 +1649,7 @@ app.get('/api/public/surfaces', (req, res) => {
                         // Optimize payload: delete massive base64 arrays and strings once primary_image is set
                         delete s.images;
                         delete s.image_url;
-                        delete s.facility_image_url;
+                        // Keep facility_image_url so frontend can display the facility image on facility cards
                     });
                     
                     res.json(surfaces);
