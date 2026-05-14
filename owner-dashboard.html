@@ -599,12 +599,17 @@
                                         </div>
                                     </div>
                                     <div id="modal-block-color-container" class="mt-4">
-                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Color</span><span class="lang-fr-only notranslate">Couleur</span> <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top"><span class="lang-en-only">OPTIONAL</span><span class="lang-fr-only notranslate">OPTIONNEL</span></span></label>
-                                        <div class="flex items-center gap-3">
-                                            <div class="relative w-12 h-12 rounded-xl border border-slate-200 overflow-hidden shadow-sm flex-shrink-0 cursor-pointer">
-                                                <input type="color" id="modal-block-color" value="#3b82f6" class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer outline-none border-none p-0 bg-transparent">
-                                            </div>
-                                            <span class="text-sm font-medium text-slate-500"><span class="lang-en-only">Choose a custom color for this booking</span><span class="lang-fr-only notranslate">Choisissez une couleur pour cette réservation</span></span>
+                                        <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"><span class="lang-en-only">Color</span><span class="lang-fr-only notranslate">Couleur</span> <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top"><span class="lang-en-only">OPTIONAL</span><span class="lang-fr-only notranslate">OPTIONNEL</span></span></label>
+                                        <input type="hidden" id="modal-block-color" value="#3b82f6">
+                                        <div class="flex items-center gap-2 flex-wrap" id="modal-color-picker">
+                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #3b82f6;" data-color="#3b82f6" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
+                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #ef4444;" data-color="#ef4444" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
+                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #f97316;" data-color="#f97316" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
+                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #eab308;" data-color="#eab308" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
+                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #10b981;" data-color="#10b981" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
+                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #8b5cf6;" data-color="#8b5cf6" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
+                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #ec4899;" data-color="#ec4899" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
+                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #64748b;" data-color="#64748b" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
                                         </div>
                                     </div>
                                     <div class="mt-4">
@@ -3479,6 +3484,33 @@
             container.appendChild(row);
         }
 
+        function selectColor(btn) {
+            document.querySelectorAll('#modal-color-picker .color-btn i').forEach(icon => icon.classList.add('hidden'));
+            btn.querySelector('i').classList.remove('hidden');
+            document.getElementById('modal-block-color').value = btn.getAttribute('data-color');
+        }
+
+        function setColorValue(colorHex) {
+            const defaultColor = '#3b82f6';
+            const colorToSet = colorHex || defaultColor;
+            document.getElementById('modal-block-color').value = colorToSet;
+            
+            let matched = false;
+            document.querySelectorAll('#modal-color-picker .color-btn').forEach(btn => {
+                if(btn.getAttribute('data-color') === colorToSet) {
+                    btn.querySelector('i').classList.remove('hidden');
+                    matched = true;
+                } else {
+                    btn.querySelector('i').classList.add('hidden');
+                }
+            });
+            
+            if (!matched) {
+                document.querySelector('#modal-color-picker .color-btn[data-color="#3b82f6"] i').classList.remove('hidden');
+                document.getElementById('modal-block-color').value = defaultColor;
+            }
+        }
+
         function toggleModalBlockType() {
             const blockType = document.querySelector('input[name="modal-block-type"]:checked')?.value || 'offline';
             const offlineFields = document.getElementById('modal-offline-fields');
@@ -3776,7 +3808,7 @@
 
             if(document.getElementById('modal-block-notes')) document.getElementById('modal-block-notes').value = '';
             if(document.getElementById('modal-locker-room')) document.getElementById('modal-locker-room').value = '';
-            if(document.getElementById('modal-block-color')) document.getElementById('modal-block-color').value = '#3b82f6';
+            setColorValue('#3b82f6');
             renderLockerBoxes(facId, 'modal-locker-boxes', 'modal-locker-room', '');
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-regular fa-calendar-plus mr-3 text-xl"></i>New Booking';
             document.getElementById('modal-cancel-btn').textContent = 'Cancel booking';
@@ -3859,7 +3891,7 @@
 
             if(document.getElementById('modal-block-notes')) document.getElementById('modal-block-notes').value = eventObj.extendedProps.originalNotes || '';
             if(document.getElementById('modal-locker-room')) document.getElementById('modal-locker-room').value = eventObj.extendedProps.lockerRoom || '';
-            if(document.getElementById('modal-block-color')) document.getElementById('modal-block-color').value = eventObj.extendedProps.color || '#3b82f6';
+            setColorValue(eventObj.extendedProps.color || '#3b82f6');
             
             renderLockerBoxes(facId, 'modal-locker-boxes', 'modal-locker-room', eventObj.extendedProps.lockerRoom || '');
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-solid fa-pen mr-3 text-xl"></i>Edit Booking';
