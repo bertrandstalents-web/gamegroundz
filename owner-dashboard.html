@@ -464,10 +464,10 @@
 
                     <!-- Add Event Modal Overlay (AllBooked Style) -->
                     <div id="event-modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-                        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all border border-slate-100">
+                        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden transform transition-all border border-slate-100">
                             
                             <!-- Green Header like Allbooked -->
-                            <div class="bg-primary p-6 flex justify-between items-center text-white flex-shrink-0">
+                            <div class="bg-primary p-6 flex justify-between items-center text-white">
                                 <h3 class="font-bold text-lg flex items-center tracking-wide uppercase">
                                     <i class="fa-regular fa-calendar-plus mr-3 text-xl"></i>
                                     <span class="lang-en-only">New Booking</span><span class="lang-fr-only notranslate">Nouvelle réservation</span>
@@ -477,8 +477,7 @@
                                 </button>
                             </div>
                             
-                            <form id="block-time-interactive-form" class="flex flex-col flex-1 overflow-hidden">
-                                <div class="p-4 md:p-8 space-y-6 overflow-y-auto overflow-x-hidden flex-1 custom-scrollbar">
+                            <form id="block-time-interactive-form" class="p-4 md:p-8 space-y-6 overflow-y-auto">
                                 
                                 <input type="hidden" id="modal-true-facility-id">
                                 <input type="hidden" id="modal-facility-id">
@@ -597,23 +596,8 @@
                                                 </ul>
                                             </div>
                                         </div>
-                                        </div>
                                     </div>
-                                    <div id="modal-block-color-container" class="mt-4">
-                                        <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"><span class="lang-en-only">Color</span><span class="lang-fr-only notranslate">Couleur</span> <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top"><span class="lang-en-only">OPTIONAL</span><span class="lang-fr-only notranslate">OPTIONNEL</span></span></label>
-                                        <input type="hidden" id="modal-block-color" value="#3b82f6">
-                                        <div class="flex items-center gap-2 flex-wrap" id="modal-color-picker">
-                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #3b82f6;" data-color="#3b82f6" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
-                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #ef4444;" data-color="#ef4444" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
-                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #f97316;" data-color="#f97316" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
-                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #eab308;" data-color="#eab308" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
-                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #10b981;" data-color="#10b981" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
-                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #8b5cf6;" data-color="#8b5cf6" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
-                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #ec4899;" data-color="#ec4899" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
-                                            <button type="button" class="color-btn w-7 h-7 rounded-full flex items-center justify-center focus:outline-none transition-transform hover:scale-110 shadow-sm" style="background-color: #64748b;" data-color="#64748b" onclick="selectColor(this)"><i class="fa-solid fa-check text-white text-xs hidden"></i></button>
-                                        </div>
-                                    </div>
-                                    <div class="mt-4">
+                                    <div>
                                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Locker Room</span><span class="lang-fr-only notranslate">Vestiaire</span> <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top"><span class="lang-en-only">OPTIONAL</span><span class="lang-fr-only notranslate">OPTIONNEL</span></span></label>
                                         <input type="hidden" id="modal-locker-room">
                                         <div id="modal-locker-boxes" class="flex flex-wrap gap-2"></div>
@@ -698,26 +682,19 @@
                                     </div>
                                 </div>
 
-                                </div>
-
-                                <!-- Footer (Moved inside scrolling area to guarantee containment) -->
-                                <div class="mt-8 pt-6 border-t border-slate-200 flex flex-col lg:flex-row justify-between gap-6 lg:items-center w-full">
+                                <div class="pt-4 border-t border-slate-100 flex justify-end gap-3 items-center">
                                     <!-- Price Display Mimicking Screenshot -->
-                                    <div class="w-full lg:w-auto flex-1 min-w-[120px]">
+                                    <div class="flex-1">
                                          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider"><span class="lang-en-only">Booking Price</span><span class="lang-fr-only notranslate">Prix de réservation</span></div>
-                                         <div class="text-xl font-bold text-slate-800 flex items-center break-words" id="modal-price-display">Offline</div>
+                                         <div class="text-xl font-bold text-slate-800 flex items-center" id="modal-price-display">Offline</div>
                                     </div>
                                     
-                                    <div class="w-full lg:w-auto flex flex-col sm:flex-row flex-wrap gap-3">
-                                        <button type="button" id="modal-cancel-btn" onclick="handleModalCancelBtn()" class="w-full sm:flex-1 lg:w-auto px-6 py-3 border border-slate-200 text-red-600 rounded-lg hover:bg-slate-50 transition-custom font-bold shadow-sm bg-white break-words whitespace-normal text-center min-h-[48px]"><span class="lang-en-only">Cancel booking</span><span class="lang-fr-only notranslate">Annuler la réservation</span></button>
-                                        <button type="submit" id="modal-submit-btn" class="w-full sm:flex-1 lg:w-auto bg-primary hover:bg-primaryHover text-white px-6 py-3 rounded-lg font-bold transition-custom shadow-md flex items-center justify-center break-words whitespace-normal text-center min-h-[48px]">
-                                            <span class="lang-en-only">Confirm booking</span><span class="lang-fr-only notranslate">Confirmer la réservation</span>
-                                        </button>
-                                    </div>
+                                    <button type="button" id="modal-cancel-btn" onclick="handleModalCancelBtn()" class="px-5 py-2.5 border border-slate-200 text-red-600 rounded-lg hover:bg-slate-50 transition-custom font-bold shadow-sm bg-white"><span class="lang-en-only">Cancel booking</span><span class="lang-fr-only notranslate">Annuler</span></button>
+                                    <button type="submit" id="modal-submit-btn" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-bold transition-custom shadow-md flex items-center justify-center">
+                                        <span class="lang-en-only">Confirm booking</span><span class="lang-fr-only notranslate">Confirmer</span>
+                                    </button>
                                 </div>
-                                <div id="modal-block-error" class="hidden text-red-500 text-sm font-medium bg-red-50 p-4 mt-6 rounded-xl border border-red-100"></div>
-
-                                </div>
+                                <div id="modal-block-error" class="hidden text-red-500 text-sm font-medium bg-red-50 p-3 rounded-xl border border-red-100 mt-2"></div>
                             </form>
                         </div>
                     </div>
@@ -3097,7 +3074,7 @@
                     }
                     const endTimeStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
 
-                    let evObj = {
+                    calendarEvents.push({
                         id: b.id,
                         title: evTitle,
                         start: `${b.booking_date}T${startTime}:00`,
@@ -3118,17 +3095,9 @@
                             participant_price: b.participant_price || 0,
                             joined_count: b.joined_count || 0,
                             description: b.description || '',
-                            pricing_tiers: b.pricing_tiers || '[]',
-                            color: b.color || '#3b82f6'
+                            pricing_tiers: b.pricing_tiers || '[]'
                         }
-                    };
-
-                    if (b.booking_type === 'manual' && b.color) {
-                        evObj.backgroundColor = b.color;
-                        evObj.borderColor = b.color;
-                    }
-
-                    calendarEvents.push(evObj);
+                    });
                 });
             });
 
@@ -3492,53 +3461,6 @@
             container.appendChild(row);
         }
 
-        function selectColor(btn) {
-            document.querySelectorAll('#modal-color-picker .color-btn i').forEach(icon => icon.classList.add('hidden'));
-            btn.querySelector('i').classList.remove('hidden');
-            document.getElementById('modal-block-color').value = btn.getAttribute('data-color');
-        }
-
-        function setColorValue(colorHex) {
-            const defaultColor = '#3b82f6';
-            const colorToSet = colorHex || defaultColor;
-            document.getElementById('modal-block-color').value = colorToSet;
-            
-            let matched = false;
-            document.querySelectorAll('#modal-color-picker .color-btn').forEach(btn => {
-                if(btn.getAttribute('data-color') === colorToSet) {
-                    btn.querySelector('i').classList.remove('hidden');
-                    matched = true;
-                } else {
-                    btn.querySelector('i').classList.add('hidden');
-                }
-            });
-            
-            if (!matched) {
-                document.querySelector('#modal-color-picker .color-btn[data-color="#3b82f6"] i').classList.remove('hidden');
-                document.getElementById('modal-block-color').value = defaultColor;
-            }
-        }
-
-        function setModalButtonText(isEdit, blockType) {
-            const submitBtn = document.getElementById('modal-submit-btn');
-            const cancelBtn = document.getElementById('modal-cancel-btn');
-            if (!submitBtn || !cancelBtn) return;
-
-            if (isEdit) {
-                submitBtn.innerHTML = '<span class="lang-en-only">Save Changes</span><span class="lang-fr-only notranslate">Enregistrer les modifications</span>';
-                cancelBtn.innerHTML = '<span class="lang-en-only">Cancel</span><span class="lang-fr-only notranslate">Annuler</span>';
-            } else {
-                cancelBtn.innerHTML = '<span class="lang-en-only">Cancel booking</span><span class="lang-fr-only notranslate">Annuler la réservation</span>';
-                if (blockType === 'discount') {
-                    submitBtn.innerHTML = '<span class="lang-en-only">Add Discount</span><span class="lang-fr-only notranslate">Ajouter un rabais</span>';
-                } else if (blockType === 'public_session') {
-                    submitBtn.innerHTML = '<span class="lang-en-only">Create Public Activity</span><span class="lang-fr-only notranslate">Créer l\'activité</span>';
-                } else {
-                    submitBtn.innerHTML = '<span class="lang-en-only">Confirm booking</span><span class="lang-fr-only notranslate">Confirmer la réservation</span>';
-                }
-            }
-        }
-
         function toggleModalBlockType() {
             const blockType = document.querySelector('input[name="modal-block-type"]:checked')?.value || 'offline';
             const offlineFields = document.getElementById('modal-offline-fields');
@@ -3548,14 +3470,12 @@
             const submitBtn = document.getElementById('modal-submit-btn');
             const isEditMode = document.getElementById('modal-edit-booking-id') && document.getElementById('modal-edit-booking-id').value !== '';
             const isDiscountEditMode = document.getElementById('modal-edit-discount-id') && document.getElementById('modal-edit-discount-id').value !== '';
-            const colorContainer = document.getElementById('modal-block-color-container');
 
             if (blockType === 'discount') {
                 if(offlineFields) offlineFields.classList.add('hidden');
                 if(notesInput) { notesInput.required = false; notesInput.classList.remove('hidden'); }
                 const customWrapper = document.getElementById('modal-block-notes-custom-wrapper');
                 if (customWrapper) customWrapper.classList.add('hidden');
-                if (colorContainer) colorContainer.classList.add('hidden');
                 if(discountFields) discountFields.classList.remove('hidden');
                 const discValue = document.getElementById('modal-disc-value');
                 if(discValue) discValue.required = true;
@@ -3563,11 +3483,10 @@
                 document.getElementById('modal-public-capacity').required = false;
                 document.querySelectorAll('#pricing-tiers-container .tier-name, #pricing-tiers-container .tier-price').forEach(el => el.required = false);
 
-                setModalButtonText(isDiscountEditMode, 'discount');
+                if(submitBtn) submitBtn.innerHTML = isDiscountEditMode ? 'Save Changes' : 'Add Discount';
             } else if (blockType === 'public_session') {
                 if(offlineFields) offlineFields.classList.remove('hidden');
                 if(discountFields) discountFields.classList.add('hidden');
-                if(colorContainer) colorContainer.classList.add('hidden');
 
                 const publicExtras = document.getElementById('public-session-extra');
                 if(publicExtras) publicExtras.classList.remove('hidden');
@@ -3624,13 +3543,12 @@
                     }
                 }
 
-                setModalButtonText(isEditMode, 'public_session');
+                if(submitBtn) submitBtn.innerHTML = isEditMode ? 'Save Changes' : 'Create Public Activity';
             } else {
                 if(offlineFields) offlineFields.classList.remove('hidden');
                 if(notesInput) { notesInput.required = true; notesInput.classList.remove('hidden'); }
                 const customWrapper = document.getElementById('modal-block-notes-custom-wrapper');
                 if (customWrapper) customWrapper.classList.add('hidden');
-                if (colorContainer) colorContainer.classList.remove('hidden');
                 if(discountFields) discountFields.classList.add('hidden');
 
                 const publicExtras = document.getElementById('public-session-extra');
@@ -3643,7 +3561,7 @@
                 const residentsContainer = document.getElementById('modal-public-residents-only-container');
                 if (residentsContainer) residentsContainer.classList.add('hidden');
                 
-                setModalButtonText(isEditMode, 'offline');
+                if(submitBtn) submitBtn.innerHTML = isEditMode ? 'Save Changes' : 'Confirm booking';
             }
             calculateModalPrice();
         }
@@ -3836,10 +3754,11 @@
 
             if(document.getElementById('modal-block-notes')) document.getElementById('modal-block-notes').value = '';
             if(document.getElementById('modal-locker-room')) document.getElementById('modal-locker-room').value = '';
-            setColorValue('#3b82f6');
             renderLockerBoxes(facId, 'modal-locker-boxes', 'modal-locker-room', '');
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-regular fa-calendar-plus mr-3 text-xl"></i>New Booking';
+            document.getElementById('modal-cancel-btn').textContent = 'Cancel booking';
             document.getElementById('modal-price-display').parentElement.classList.remove('hidden');
+            document.getElementById('modal-submit-btn').innerHTML = 'Confirm booking';
             const delDiscBtn = document.getElementById('modal-delete-discount-btn');
             if (delDiscBtn) delDiscBtn.classList.add('hidden');
             
@@ -3917,11 +3836,12 @@
 
             if(document.getElementById('modal-block-notes')) document.getElementById('modal-block-notes').value = eventObj.extendedProps.originalNotes || '';
             if(document.getElementById('modal-locker-room')) document.getElementById('modal-locker-room').value = eventObj.extendedProps.lockerRoom || '';
-            setColorValue(eventObj.extendedProps.color || '#3b82f6');
             
             renderLockerBoxes(facId, 'modal-locker-boxes', 'modal-locker-room', eventObj.extendedProps.lockerRoom || '');
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-solid fa-pen mr-3 text-xl"></i>Edit Booking';
+            document.getElementById('modal-cancel-btn').textContent = 'Cancel';
             document.getElementById('modal-price-display').parentElement.classList.remove('hidden');
+            document.getElementById('modal-submit-btn').innerHTML = 'Save Changes';
             const delDiscBtn = document.getElementById('modal-delete-discount-btn');
             if (delDiscBtn) delDiscBtn.classList.add('hidden');
             
@@ -4336,8 +4256,7 @@
                         }
                     });
                     return JSON.stringify(tiers);
-                })(),
-                color: document.getElementById('modal-block-color') ? document.getElementById('modal-block-color').value : '#3b82f6'
+                })()
             };
 
             const editId = document.getElementById('modal-edit-booking-id') ? document.getElementById('modal-edit-booking-id').value : '';
@@ -5521,8 +5440,9 @@
             calculateModalPrice();
             
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-solid fa-tag mr-3 text-xl"></i>Edit Discount';
-            setModalButtonText(true, 'discount');
+            document.getElementById('modal-cancel-btn').textContent = 'Cancel';
             document.getElementById('modal-price-display').parentElement.classList.add('hidden');
+            document.getElementById('modal-submit-btn').innerHTML = 'Save Changes';
             
             let delBtn = document.getElementById('modal-delete-discount-btn');
             if (!delBtn) {

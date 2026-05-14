@@ -366,10 +366,6 @@ async function initDatabase() {
         } catch(e) {}
 
         try {
-            await client.query(`ALTER TABLE bookings ADD COLUMN color TEXT DEFAULT '#3b82f6'`);
-        } catch(e) {}
-
-        try {
             await client.query(`ALTER TABLE bookings ADD COLUMN locker_room_assignment TEXT DEFAULT ''`);
         } catch(e) {}
 
