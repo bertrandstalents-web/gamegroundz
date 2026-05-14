@@ -700,21 +700,24 @@
 
                                 </div>
 
-                                <div class="p-4 md:p-6 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row justify-between gap-4 items-center flex-shrink-0">
+                                <!-- Footer (Moved inside scrolling area to guarantee containment) -->
+                                <div class="mt-8 pt-6 border-t border-slate-200 flex flex-col lg:flex-row justify-between gap-6 lg:items-center">
                                     <!-- Price Display Mimicking Screenshot -->
-                                    <div class="w-full sm:w-auto flex-1 min-w-[120px]">
+                                    <div class="w-full lg:w-auto flex-1">
                                          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider"><span class="lang-en-only">Booking Price</span><span class="lang-fr-only notranslate">Prix de réservation</span></div>
                                          <div class="text-xl font-bold text-slate-800 flex items-center" id="modal-price-display">Offline</div>
                                     </div>
                                     
-                                    <div class="flex flex-col sm:flex-row flex-wrap gap-3 w-full sm:w-auto">
-                                        <button type="button" id="modal-cancel-btn" onclick="handleModalCancelBtn()" class="w-full sm:w-auto px-5 py-2.5 border border-slate-200 text-red-600 rounded-lg hover:bg-slate-50 transition-custom font-bold shadow-sm bg-white"><span class="lang-en-only">Cancel booking</span><span class="lang-fr-only notranslate">Annuler la réservation</span></button>
-                                        <button type="submit" id="modal-submit-btn" class="w-full sm:w-auto bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-bold transition-custom shadow-md flex items-center justify-center">
+                                    <div class="w-full lg:w-auto flex flex-col sm:flex-row gap-3">
+                                        <button type="button" id="modal-cancel-btn" onclick="handleModalCancelBtn()" class="w-full sm:flex-1 lg:w-auto px-6 py-3 border border-slate-200 text-red-600 rounded-lg hover:bg-slate-50 transition-custom font-bold shadow-sm bg-white break-words whitespace-normal"><span class="lang-en-only">Cancel booking</span><span class="lang-fr-only notranslate">Annuler la réservation</span></button>
+                                        <button type="submit" id="modal-submit-btn" class="w-full sm:flex-1 lg:w-auto bg-primary hover:bg-primaryHover text-white px-6 py-3 rounded-lg font-bold transition-custom shadow-md flex items-center justify-center break-words whitespace-normal text-center">
                                             <span class="lang-en-only">Confirm booking</span><span class="lang-fr-only notranslate">Confirmer la réservation</span>
                                         </button>
                                     </div>
                                 </div>
-                                <div id="modal-block-error" class="hidden text-red-500 text-sm font-medium bg-red-50 p-3 mx-4 mb-4 rounded-xl border border-red-100 flex-shrink-0"></div>
+                                <div id="modal-block-error" class="hidden text-red-500 text-sm font-medium bg-red-50 p-4 mt-6 rounded-xl border border-red-100"></div>
+
+                                </div>
                             </form>
                         </div>
                     </div>
