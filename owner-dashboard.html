@@ -464,7 +464,7 @@
 
                     <!-- Add Event Modal Overlay (AllBooked Style) -->
                     <div id="event-modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-                        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh] overflow-hidden transform transition-all border border-slate-100">
+                        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all border border-slate-100">
                             
                             <!-- Green Header like Allbooked -->
                             <div class="bg-primary p-6 flex justify-between items-center text-white flex-shrink-0">
@@ -707,9 +707,9 @@
                                          <div class="text-xl font-bold text-slate-800 flex items-center" id="modal-price-display">Offline</div>
                                     </div>
                                     
-                                    <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                                        <button type="button" id="modal-cancel-btn" onclick="handleModalCancelBtn()" class="w-full sm:w-auto px-5 py-2.5 border border-slate-200 text-red-600 rounded-lg hover:bg-slate-50 transition-custom font-bold shadow-sm bg-white whitespace-nowrap"><span class="lang-en-only">Cancel booking</span><span class="lang-fr-only notranslate">Annuler la réservation</span></button>
-                                        <button type="submit" id="modal-submit-btn" class="w-full sm:w-auto bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-bold transition-custom shadow-md flex items-center justify-center whitespace-nowrap">
+                                    <div class="flex flex-col sm:flex-row flex-wrap gap-3 w-full sm:w-auto">
+                                        <button type="button" id="modal-cancel-btn" onclick="handleModalCancelBtn()" class="w-full sm:w-auto px-5 py-2.5 border border-slate-200 text-red-600 rounded-lg hover:bg-slate-50 transition-custom font-bold shadow-sm bg-white"><span class="lang-en-only">Cancel booking</span><span class="lang-fr-only notranslate">Annuler la réservation</span></button>
+                                        <button type="submit" id="modal-submit-btn" class="w-full sm:w-auto bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-bold transition-custom shadow-md flex items-center justify-center">
                                             <span class="lang-en-only">Confirm booking</span><span class="lang-fr-only notranslate">Confirmer la réservation</span>
                                         </button>
                                     </div>
