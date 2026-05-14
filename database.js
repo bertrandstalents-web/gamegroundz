@@ -297,7 +297,8 @@ async function initDatabase() {
             is_archived INTEGER DEFAULT 0,
             capacity INTEGER DEFAULT 0,
             participant_price REAL DEFAULT 0.0,
-            surface_terms_accepted INTEGER DEFAULT 0
+            surface_terms_accepted INTEGER DEFAULT 0,
+            block_color TEXT DEFAULT '#3B82F6'
         )`);
 
         try {
@@ -308,6 +309,9 @@ async function initDatabase() {
         } catch(e) {}
         try {
             await client.query(`ALTER TABLE bookings ADD COLUMN recurring_group_id TEXT`);
+        } catch(e) {}
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN block_color TEXT DEFAULT '#3B82F6'`);
         } catch(e) {}
         
         try {

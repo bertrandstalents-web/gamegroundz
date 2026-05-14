@@ -484,6 +484,21 @@
                                 <input type="hidden" id="modal-date-val">
                                 <input type="hidden" id="modal-edit-discount-id">
 
+                                <!-- Color Picker (Top Right) -->
+                                <div id="modal-block-color-container" class="flex justify-end mb-[-12px] transition-all">
+                                    <input type="hidden" id="modal-block-color" name="block_color" value="#3B82F6">
+                                    <div class="flex items-center gap-2" id="modal-color-picker">
+                                        <button type="button" class="w-6 h-6 rounded-full cursor-pointer transition-transform hover:scale-110 flex items-center justify-center text-white color-swatch" data-color="#3B82F6" style="background-color: #3B82F6;"><i class="fa-solid fa-check text-[10px]"></i></button>
+                                        <button type="button" class="w-6 h-6 rounded-full cursor-pointer transition-transform hover:scale-110 flex items-center justify-center text-white color-swatch" data-color="#EF4444" style="background-color: #EF4444;"></button>
+                                        <button type="button" class="w-6 h-6 rounded-full cursor-pointer transition-transform hover:scale-110 flex items-center justify-center text-white color-swatch" data-color="#F97316" style="background-color: #F97316;"></button>
+                                        <button type="button" class="w-6 h-6 rounded-full cursor-pointer transition-transform hover:scale-110 flex items-center justify-center text-white color-swatch" data-color="#EAB308" style="background-color: #EAB308;"></button>
+                                        <button type="button" class="w-6 h-6 rounded-full cursor-pointer transition-transform hover:scale-110 flex items-center justify-center text-white color-swatch" data-color="#10B981" style="background-color: #10B981;"></button>
+                                        <button type="button" class="w-6 h-6 rounded-full cursor-pointer transition-transform hover:scale-110 flex items-center justify-center text-white color-swatch" data-color="#8B5CF6" style="background-color: #8B5CF6;"></button>
+                                        <button type="button" class="w-6 h-6 rounded-full cursor-pointer transition-transform hover:scale-110 flex items-center justify-center text-white color-swatch" data-color="#EC4899" style="background-color: #EC4899;"></button>
+                                        <button type="button" class="w-6 h-6 rounded-full cursor-pointer transition-transform hover:scale-110 flex items-center justify-center text-white color-swatch" data-color="#64748B" style="background-color: #64748B;"></button>
+                                    </div>
+                                </div>
+
                                 <!-- Date & Time Display -->
                                 <div class="space-y-4">
                                     <div>
@@ -3074,7 +3089,10 @@
                     }
                     const endTimeStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
 
-                    calendarEvents.push({
+                    const isManualBlock = b.booking_type === 'manual';
+                    const customColor = b.block_color || '#3B82F6';
+                    
+                    const eventData = {
                         id: b.id,
                         title: evTitle,
                         start: `${b.booking_date}T${startTime}:00`,
@@ -3082,7 +3100,7 @@
                         className: evClass,
                         editable: isEditable,
                         extendedProps: {
-                            isManual: b.booking_type === 'manual',
+                            isManual: isManualBlock,
                             isPublicSession: b.booking_type === 'public_session',
                             status: b.status,
                             originalNotes: b.manual_notes,
@@ -3095,9 +3113,17 @@
                             participant_price: b.participant_price || 0,
                             joined_count: b.joined_count || 0,
                             description: b.description || '',
-                            pricing_tiers: b.pricing_tiers || '[]'
+                            pricing_tiers: b.pricing_tiers || '[]',
+                            blockColor: b.block_color || '#3B82F6'
                         }
-                    });
+                    };
+
+                    if (isManualBlock) {
+                        eventData.backgroundColor = customColor;
+                        eventData.borderColor = customColor;
+                    }
+
+                    calendarEvents.push(eventData);
                 });
             });
 
@@ -3725,6 +3751,16 @@
                 end24
             );
 
+            // Default Color
+            document.getElementById('modal-block-color').value = '#3B82F6';
+            const colorSwatches = document.querySelectorAll('.color-swatch');
+            colorSwatches.forEach(s => {
+                s.innerHTML = '';
+                if (s.getAttribute('data-color') === '#3B82F6') {
+                    s.innerHTML = '<i class="fa-solid fa-check text-[10px]"></i>';
+                }
+            });
+
             // Format for Backend Payload
             const mYear = startObj.getFullYear();
             const mMonth = String(startObj.getMonth() + 1).padStart(2, '0');
@@ -3852,6 +3888,17 @@
                 if(r.value === (eventObj.extendedProps.isPublicSession ? 'public_session' : 'offline')) r.checked = true; 
             });
             toggleModalBlockType();
+
+            // Set Color Picker
+            const eventColor = eventObj.extendedProps.blockColor || '#3B82F6';
+            document.getElementById('modal-block-color').value = eventColor;
+            const colorSwatches = document.querySelectorAll('.color-swatch');
+            colorSwatches.forEach(s => {
+                s.innerHTML = '';
+                if (s.getAttribute('data-color') === eventColor) {
+                    s.innerHTML = '<i class="fa-solid fa-check text-[10px]"></i>';
+                }
+            });
             
             if (eventObj.extendedProps.isPublicSession) {
                 if(document.getElementById('modal-public-description')) {
@@ -4245,6 +4292,7 @@
                 booking_type: blockType,
                 capacity: blockType === 'public_session' ? parseInt(document.getElementById('modal-public-capacity').value, 10) : 0,
                 description: blockType === 'public_session' && document.getElementById('modal-public-description') ? document.getElementById('modal-public-description').value : '',
+                block_color: document.getElementById('modal-block-color').value,
                 pricing_tiers: (() => {
                     if (blockType !== 'public_session') return '[]';
                     const tiers = [];
@@ -7933,6 +7981,41 @@
                 setTimeout(() => alert('Your email has been successfully verified! Welcome to GameGroundz.'), 500);
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
+
+            // Color Swatch Selection
+            const colorSwatches = document.querySelectorAll('.color-swatch');
+            const colorInput = document.getElementById('modal-block-color');
+            const colorContainer = document.getElementById('modal-block-color-container');
+
+            colorSwatches.forEach(swatch => {
+                swatch.addEventListener('click', () => {
+                    // Remove checkmark from all
+                    colorSwatches.forEach(s => s.innerHTML = '');
+                    // Add checkmark to clicked
+                    swatch.innerHTML = '<i class="fa-solid fa-check text-[10px]"></i>';
+                    // Update hidden input
+                    colorInput.value = swatch.getAttribute('data-color');
+                });
+            });
+
+            // Toggle color picker visibility based on selected radio
+            const radioOffline = document.getElementById('modal-action-offline');
+            const radioDiscount = document.getElementById('modal-action-discount');
+            const radioPublic = document.getElementById('modal-action-public');
+
+            function toggleColorPicker() {
+                if (radioOffline && radioOffline.checked) {
+                    colorContainer.style.opacity = '1';
+                    colorContainer.style.pointerEvents = 'auto';
+                } else {
+                    colorContainer.style.opacity = '0';
+                    colorContainer.style.pointerEvents = 'none';
+                }
+            }
+
+            if (radioOffline) radioOffline.addEventListener('change', toggleColorPicker);
+            if (radioDiscount) radioDiscount.addEventListener('change', toggleColorPicker);
+            if (radioPublic) radioPublic.addEventListener('change', toggleColorPicker);
         });
     </script>
 </body></html>
