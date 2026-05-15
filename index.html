@@ -1082,7 +1082,8 @@
                             distance: s.distance,
                             rating: s.rating,
                             reviews_count: s.reviews_count,
-                            primary_image: s.facility_image_url || s.primary_image,
+                            facility_image_url: s.facility_image_url,
+                            primary_image: s.primary_image,
                             active_promotions: s.active_promotions
                         });
                     }
@@ -1317,7 +1318,7 @@
                     </div>
                 </div>
             `;
-            container.innerHTML += rowHtml;
+            container.insertAdjacentHTML('beforeend', rowHtml);
             setTimeout(() => {
                 const containers = container.querySelectorAll('.row-scroll-container');
                 if (containers.length > 0) {
@@ -1357,7 +1358,7 @@
                     </div>
                 </div>
             `;
-            container.innerHTML += rowHtml;
+            container.insertAdjacentHTML('beforeend', rowHtml);
             setTimeout(() => {
                 const containers = container.querySelectorAll('.row-scroll-container');
                 if (containers.length > 0) {
@@ -1374,7 +1375,10 @@
 
             function getPrimaryImageUrl(urlStr) {
                 if (!urlStr || urlStr === '[]' || urlStr === '') return 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
-                if (urlStr.startsWith('[')) {
+                
+                if (Array.isArray(urlStr) && urlStr.length > 0) return urlStr[0];
+                
+                if (typeof urlStr === 'string' && urlStr.startsWith('[')) {
                     try {
                         const arr = JSON.parse(urlStr);
                         if (arr.length > 0) return arr[0];
@@ -1383,10 +1387,14 @@
                 return urlStr || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
             }
 
+            const imgToUse = (facility.facility_image_url && facility.facility_image_url !== '[]' && facility.facility_image_url !== '') 
+                ? facility.facility_image_url 
+                : (facility.primary_image || facility.image_url);
+
             return `
                 <a href="facility.html?id=${facility.id}" class="facility-card snap-start shrink-0 w-[280px] md:w-[320px] bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg border border-slate-100 transition-all duration-300 group flex flex-col no-underline text-inherit block hover:-translate-y-1">
                     <div class="h-44 bg-slate-200 relative overflow-hidden">
-                        <img src="${getPrimaryImageUrl(facility.primary_image)}" alt="${facility.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80'">
+                        <img src="${getPrimaryImageUrl(imgToUse)}" alt="${facility.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80'">
                         <div class="absolute top-3 left-3 flex flex-col gap-1 items-start z-10">
                             ${topBadges}
                         </div>
@@ -1446,7 +1454,7 @@
                     </div>
                 </div>
             `;
-            container.innerHTML += rowHtml;
+            container.insertAdjacentHTML('beforeend', rowHtml);
             setTimeout(() => {
                 const containers = container.querySelectorAll('.row-scroll-container');
                 if (containers.length > 0) {
@@ -1490,7 +1498,10 @@
 
             function getPrimaryImageUrl(urlStr) {
                 if (!urlStr || urlStr === '[]' || urlStr === '') return 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
-                if (urlStr.startsWith('[')) {
+                
+                if (Array.isArray(urlStr) && urlStr.length > 0) return urlStr[0];
+                
+                if (typeof urlStr === 'string' && urlStr.startsWith('[')) {
                     try {
                         const arr = JSON.parse(urlStr);
                         if (arr.length > 0) return arr[0];

@@ -1960,7 +1960,7 @@
                     
                     const dragClasses = surfaceVal === 'all' ? 'cursor-grab active:cursor-grabbing' : '';
 
-                    container.innerHTML += `
+                    container.insertAdjacentHTML('beforeend', `
                         <div data-id="${fac.id}" class="flex flex-col border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-custom bg-white ${dragClasses}">
                             <div class="h-40 w-full overflow-hidden relative">
                                 <img src="${displayImage}" alt="${fac.name || 'Facility'}" class="w-full h-full object-cover">
@@ -1977,7 +1977,7 @@
                                 </div>
                             </div>
                         </div>
-                    `;
+                    `);
                 } catch (err) {
                     console.error("Error rendering facility", fac, err);
                 }

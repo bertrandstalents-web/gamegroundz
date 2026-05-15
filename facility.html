@@ -374,14 +374,36 @@
                     let images = [];
 
                     try {
-                        const parsed = JSON.parse(facility.image_url);
-                        if (Array.isArray(parsed) && parsed.length > 0) {
-                            images = parsed;
-                        } else if (facility.image_url) {
-                            images = [facility.image_url];
+                        if (facility.image_url && facility.image_url !== '[]') {
+                            const parsed = JSON.parse(facility.image_url);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                images = parsed;
+                            } else if (typeof parsed === 'string' && parsed.trim() !== '') {
+                                images = [parsed];
+                            }
                         }
                     } catch (e) {
-                        if (facility.image_url) images = [facility.image_url];
+                        if (facility.image_url && facility.image_url !== '[]') images = [facility.image_url];
+                    }
+
+                    if (images.length === 0 && facility.surfaces && facility.surfaces.length > 0) {
+                        for (const s of facility.surfaces) {
+                            if (s.images && s.images.length > 0 && s.images[0].image_url) {
+                                images.push(s.images[0].image_url);
+                                break;
+                            } else if (s.image_url && s.image_url !== '[]') {
+                                try {
+                                    const arr = JSON.parse(s.image_url);
+                                    if (Array.isArray(arr) && arr.length > 0) {
+                                        images.push(arr[0]);
+                                        break;
+                                    }
+                                } catch(e) {
+                                    images.push(s.image_url);
+                                    break;
+                                }
+                            }
+                        }
                     }
 
                     // Fallback neutral image if none exist

@@ -991,14 +991,21 @@
                         images = facility.images.map(img => img.image_url);
                     } else {
                         try {
-                            const parsed = JSON.parse(facility.image_url);
-                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                images = parsed;
-                            } else if (facility.image_url) {
-                                images = [facility.image_url];
+                            if (facility.image_url && facility.image_url !== '[]') {
+                                const parsed = JSON.parse(facility.image_url);
+                                if (Array.isArray(parsed) && parsed.length > 0) {
+                                    images = parsed;
+                                } else if (typeof parsed === 'string' && parsed.trim() !== '') {
+                                    images = [parsed];
+                                }
                             }
                         } catch (e) {
-                            if (facility.image_url) images = [facility.image_url];
+                            if (facility.image_url && facility.image_url !== '[]') images = [facility.image_url];
+                        }
+                        
+                        // Fallback to surface primary image if available
+                        if (images.length === 0 && facility.images && facility.images.length > 0) {
+                            images = [facility.images[0].image_url];
                         }
                     }
 

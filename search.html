@@ -497,11 +497,15 @@
         const pagination = document.getElementById('pagination');
 
         function getPrimaryImageUrl(urlStr) {
-            try {
-                const parsed = JSON.parse(urlStr);
-                if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
-            } catch (e) {
-                // not json, return string directly
+            if (!urlStr || urlStr === '[]' || urlStr === '') return 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
+            
+            if (Array.isArray(urlStr) && urlStr.length > 0) return urlStr[0];
+            
+            if (typeof urlStr === 'string' && urlStr.startsWith('[')) {
+                try {
+                    const parsed = JSON.parse(urlStr);
+                    if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+                } catch (e) {}
             }
             return urlStr || 'https://images.unsplash.com/photo-1518605368461-1ee0ab24b829?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80';
         }
@@ -578,7 +582,7 @@
                         </div>
                     </div>
                 </div>
-            `;
+            `);
         }
 
         let map;
@@ -653,7 +657,7 @@
                             <div class="font-bold text-sm truncate hover:text-primary transition-custom">${f.name}</div>
                             <div class="font-bold text-primary">From $${f.base_price}<span class="text-xs text-slate-500 font-normal">${f.pricing_unit === 'half_day' ? '/ half-day' : (f.pricing_unit === 'full_day' ? '/ day' : '/hr')}</span></div>
                         </div>
-                    `;
+                    `);
                 });
                 
                 popupContent += `</div>`;
@@ -1006,7 +1010,7 @@
                     mobileProfileBtn.innerHTML = `
                         <i class="fa-solid fa-user-check text-xl mb-1 pb-0.5 text-primary"></i>
                         <span class="text-[10px] font-medium text-primary">Profile</span>
-                    `;
+                    `);
                 }
 
                 // Update puck UI
