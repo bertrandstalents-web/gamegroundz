@@ -1184,56 +1184,75 @@
         // Profile puck logic handled in head script
 
         // Check if user is logged in
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            function updatePuckUI(u) {
+                const puckName = document.getElementById('puck-name');
+                const puckEmail = document.getElementById('puck-email');
+                const puckIcon = document.getElementById('puck-icon');
+                const puckInitials = document.getElementById('puck-initials');
+                const puckImg = document.getElementById('puck-img');
+                const puckLoggedOut = document.getElementById('puck-logged-out');
+                const puckLoggedIn = document.getElementById('puck-logged-in');
+
+                if (puckLoggedOut) puckLoggedOut.classList.add('hidden');
+                if (puckLoggedIn) puckLoggedIn.classList.remove('hidden');
+
+                if (puckName) puckName.textContent = u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'User';
+                if (puckEmail) puckEmail.textContent = u.email || '';
+                
+                if (puckIcon) puckIcon.classList.add('hidden');
+                if (u.profile_picture) {
+                    if (puckImg) {
+                        puckImg.src = u.profile_picture;
+                        puckImg.classList.remove('hidden');
+                    }
+                    if (puckInitials) puckInitials.classList.add('hidden');
+                } else {
+                    if (puckImg) puckImg.classList.add('hidden');
+                    if (puckInitials) {
+                        const initials = (u.name || u.first_name || 'U').substring(0, 2);
+                        puckInitials.textContent = initials;
+                        puckInitials.classList.remove('hidden');
+                    }
+                }
+                
+                const logoutBtn = document.getElementById('puck-logout');
+                if (logoutBtn && !logoutBtn.dataset.listenerAdded) {
+                    logoutBtn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                        await fetch(`${API_BASE_URL}/api/auth/logout`, {method: 'POST', credentials: 'include'});
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('gg_user');
+                        window.location.reload();
+                    });
+                    logoutBtn.dataset.listenerAdded = 'true';
+                }
+            }
+
             const userStr = localStorage.getItem('gg_user');
             if (userStr) {
                 try {
-                    const u = JSON.parse(userStr);
-                    const puckName = document.getElementById('puck-name');
-                    const puckEmail = document.getElementById('puck-email');
-                    const puckIcon = document.getElementById('puck-icon');
-                    const puckInitials = document.getElementById('puck-initials');
-                    const puckImg = document.getElementById('puck-img');
-                    const puckLoggedOut = document.getElementById('puck-logged-out');
-                    const puckLoggedIn = document.getElementById('puck-logged-in');
-
-                    if (puckLoggedOut) puckLoggedOut.classList.add('hidden');
-                    if (puckLoggedIn) puckLoggedIn.classList.remove('hidden');
-
-                    if (puckName) puckName.textContent = u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'User';
-                    if (puckEmail) puckEmail.textContent = u.email || '';
-                    
-                    if (puckIcon) puckIcon.classList.add('hidden');
-                    if (u.profile_picture) {
-                        if (puckImg) {
-                            puckImg.src = u.profile_picture;
-                            puckImg.classList.remove('hidden');
-                        }
-                        if (puckInitials) puckInitials.classList.add('hidden');
-                    } else {
-                        if (puckImg) puckImg.classList.add('hidden');
-                        if (puckInitials) {
-                            const initials = (u.name || u.first_name || 'U').substring(0, 2);
-                            puckInitials.textContent = initials;
-                            puckInitials.classList.remove('hidden');
-                        }
-                    }
-                    
-                    const logoutBtn = document.getElementById('puck-logout');
-                    if (logoutBtn) {
-                        logoutBtn.addEventListener('click', async (e) => {
-                            e.preventDefault();
-                            const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
-                            await fetch(`${API_BASE_URL}/api/auth/logout`, {method: 'POST', credentials: 'include'});
-                            localStorage.removeItem('user');
-                            localStorage.removeItem('gg_user');
-                            window.location.reload();
-                        });
-                    }
+                    updatePuckUI(JSON.parse(userStr));
                 } catch (e) {
                     console.error("Error parsing user", e);
                 }
             }
+
+            try {
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    updatePuckUI(data.user);
+                    const _u = {...data.user}; 
+                    delete _u.profile_picture; 
+                    localStorage.setItem('gg_user', JSON.stringify(_u));
+                } else if (res.status === 401) {
+                    localStorage.removeItem('gg_user');
+                    localStorage.removeItem('user');
+                }
+            } catch (e) { }
         });
     </script>
     <script src="js/modals.js"></script>
