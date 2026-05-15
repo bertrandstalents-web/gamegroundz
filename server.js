@@ -2849,7 +2849,11 @@ app.post('/api/host/public_sessions/:booking_id/participants/:psp_id/cancel', as
                     const session = await stripe.checkout.sessions.retrieve(pspRow.stripe_session_id);
                     if (session && session.payment_intent) {
                         await stripe.refunds.create(
-                            { payment_intent: session.payment_intent },
+                            { 
+                                payment_intent: session.payment_intent,
+                                reverse_transfer: true,
+                                refund_application_fee: true
+                            },
                             { idempotencyKey: `refund-booking-${booking_id}` }
                         );
                     }
@@ -2958,7 +2962,11 @@ app.post('/api/bookings/:id/cancel', async (req, res) => {
                 const session = await stripe.checkout.sessions.retrieve(booking.stripe_session_id);
                 if (session && session.payment_intent) {
                     await stripe.refunds.create(
-                        { payment_intent: session.payment_intent },
+                        { 
+                            payment_intent: session.payment_intent,
+                            reverse_transfer: true,
+                            refund_application_fee: true
+                        },
                         { idempotencyKey: `refund-booking-${bookingId}` }
                     );
                 }
@@ -3053,7 +3061,11 @@ app.post('/api/host/bookings/:id/cancel', async (req, res) => {
                 if (session && session.payment_intent) {
                     // Full refund
                     await stripe.refunds.create(
-                        { payment_intent: session.payment_intent },
+                        { 
+                            payment_intent: session.payment_intent,
+                            reverse_transfer: true,
+                            refund_application_fee: true
+                        },
                         { idempotencyKey: `refund-booking-${bookingId}` }
                     );
                 }
