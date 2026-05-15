@@ -294,7 +294,7 @@
                     <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom relative">
                         <i class="fa-solid fa-location-dot text-slate-400 mr-3"></i>
                         <div class="relative w-full flex items-center">
-                            <input type="text" id="locationSearch" autocomplete="off" placeholder="Where do you want to play?" class="bg-transparent text-white w-full outline-none placeholder-slate-400 font-medium pr-10">
+                            <input type="text" id="locationSearch" autocomplete="off" placeholder="Where" class="bg-transparent text-white w-full outline-none placeholder-slate-400 font-medium pr-10">
                             <button id="home-locate-me-btn" type="button" class="absolute right-0 text-slate-400 hover:text-white transition-custom focus:outline-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700" title="Use my current location">
                                 <i class="fa-solid fa-location-crosshairs"></i>
                             </button>
@@ -303,7 +303,7 @@
                     <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom">
                         <i class="fa-solid fa-futbol text-slate-400 mr-3"></i>
                         <select id="homeSportSearch" class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer">
-                            <option value="" class="text-slate-800">Any Sport</option>
+                            <option value="" class="text-slate-800">Surface</option>
                             <option value="ice" class="text-slate-800">Ice Rink</option>
                             <option value="soccer" class="text-slate-800">Soccer Field</option>
                             <option value="basketball" class="text-slate-800">Basketball Court</option>
@@ -317,12 +317,12 @@
                     </div>
                     <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom relative cursor-pointer" onclick="const d = document.getElementById('homeDateSearch'); d.focus(); if(d.showPicker) d.showPicker();">
                         <i class="fa-regular fa-calendar text-slate-400 mr-3"></i>
-                        <input type="text" id="homeDateSearch" placeholder="Any Date" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'" class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer placeholder-slate-400" style="color-scheme: dark;">
+                        <input type="text" id="homeDateSearch" placeholder="Date" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'" class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer placeholder-slate-400" style="color-scheme: dark;">
                     </div>
                     <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom">
                         <i class="fa-regular fa-clock text-slate-400 mr-3"></i>
                         <select id="homeTimeSearch" class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer">
-                            <option value="" class="text-slate-800">Any Time</option>
+                            <option value="" class="text-slate-800">Time</option>
                             <option value="morning" class="text-slate-800">Morning (Midnight - 12pm)</option>
                             <option value="afternoon" class="text-slate-800">Afternoon (12pm - 5pm)</option>
                             <option value="night" class="text-slate-800">Night (5pm - Midnight)</option>
@@ -2440,15 +2440,15 @@
             const timeSelect = document.getElementById('homeTimeSearch');
             
             if (lang === 'fr') {
-                if (locSearch) locSearch.placeholder = "Où voulez-vous jouer ?";
-                if (dateSearch) dateSearch.placeholder = "N'importe quelle date";
-                if (sportSelect && sportSelect.options[0].value === "") sportSelect.options[0].text = "N'importe quel sport";
-                if (timeSelect && timeSelect.options[0].value === "") timeSelect.options[0].text = "N'importe quelle heure";
+                if (locSearch) locSearch.placeholder = "Où";
+                if (dateSearch) dateSearch.placeholder = "Date";
+                if (sportSelect && sportSelect.options[0].value === "") sportSelect.options[0].text = "Surface";
+                if (timeSelect && timeSelect.options[0].value === "") timeSelect.options[0].text = "Quand";
             } else {
-                if (locSearch) locSearch.placeholder = "Where do you want to play?";
-                if (dateSearch) dateSearch.placeholder = "Any Date";
-                if (sportSelect && sportSelect.options[0].value === "") sportSelect.options[0].text = "Any Sport";
-                if (timeSelect && timeSelect.options[0].value === "") timeSelect.options[0].text = "Any Time";
+                if (locSearch) locSearch.placeholder = "Where";
+                if (dateSearch) dateSearch.placeholder = "Date";
+                if (sportSelect && sportSelect.options[0].value === "") sportSelect.options[0].text = "Surface";
+                if (timeSelect && timeSelect.options[0].value === "") timeSelect.options[0].text = "Time";
             }
         }
         
