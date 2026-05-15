@@ -232,13 +232,17 @@
 
         <!-- Search Results -->
         <div class="flex-1">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-6 gap-2 md:gap-4">
                 <div>
-                    <h1 class="text-2xl font-bold text-dark">Sports Surfaces in your area</h1>
+                    <h1 class="text-2xl font-bold text-dark">
+                        <span class="lang-en-only">Sports Surfaces in your area</span>
+                        <span class="lang-fr-only notranslate hidden md:inline">Terrains de sport dans votre région</span>
+                        <span class="lang-fr-only notranslate md:hidden">Surfaces dans votre région</span>
+                    </h1>
                     <p class="text-slate-500 text-sm mt-1" id="results-count">Showing 24 available surfaces</p>
                 </div>
                 
-                <div class="flex items-center space-x-2">
+                <div class="hidden md:flex items-center space-x-2">
                     <span class="text-sm font-medium text-slate-500">Sort by:</span>
                     <select class="border-none bg-transparent font-semibold text-dark outline-none cursor-pointer focus:ring-0 text-sm">
                         <option>Recommended</option>
@@ -582,7 +586,7 @@
                         </div>
                     </div>
                 </div>
-            `);
+            `;
         }
 
         let map;
@@ -657,7 +661,7 @@
                             <div class="font-bold text-sm truncate hover:text-primary transition-custom">${f.name}</div>
                             <div class="font-bold text-primary">From $${f.base_price}<span class="text-xs text-slate-500 font-normal">${f.pricing_unit === 'half_day' ? '/ half-day' : (f.pricing_unit === 'full_day' ? '/ day' : '/hr')}</span></div>
                         </div>
-                    `);
+                    `;
                 });
                 
                 popupContent += `</div>`;
@@ -1010,7 +1014,7 @@
                     mobileProfileBtn.innerHTML = `
                         <i class="fa-solid fa-user-check text-xl mb-1 pb-0.5 text-primary"></i>
                         <span class="text-[10px] font-medium text-primary">Profile</span>
-                    `);
+                    `;
                 }
 
                 // Update puck UI
