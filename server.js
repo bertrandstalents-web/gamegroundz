@@ -3225,10 +3225,10 @@ app.post('/api/host/accept-terms', (req, res) => {
 app.post('/api/stripe/onboard', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
 
-    try {
-        db.get("SELECT * FROM users WHERE id = ?", [req.session.userId], async (err, user) => {
-            if (err || !user) return res.status(500).json({ error: "User not found" });
+    db.get("SELECT * FROM users WHERE id = ?", [req.session.userId], async (err, user) => {
+        if (err || !user) return res.status(500).json({ error: "User not found" });
 
+        try {
             let accountId = user.stripe_account_id;
 
             if (!accountId) {
@@ -3253,11 +3253,11 @@ app.post('/api/stripe/onboard', async (req, res) => {
             });
 
             res.json({ url: accountLink.url });
-        });
-    } catch (error) {
-        console.error("Stripe Onboard Error:", error);
-        res.status(500).json({ error: error.message });
-    }
+        } catch (error) {
+            console.error("Stripe Onboard Error:", error);
+            res.status(500).json({ error: error.message });
+        }
+    });
 });
 
 app.get('/api/stripe/return', async (req, res) => {
