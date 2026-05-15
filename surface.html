@@ -739,6 +739,9 @@
                         window.publicSessionSlots.clear();
                         
                         bookings.forEach(b => {
+                            if (b.status === 'cancelled' || b.status === 'rejected') return;
+                            if (window.currentSurfaceId && b.surface_id && String(b.surface_id) !== String(window.currentSurfaceId)) return;
+                            
                             if (b.time_slots && b.booking_date) {
                                 const dStr = b.booking_date.split('T')[0];
                                 const isPublic = b.booking_type === 'public_session';
