@@ -342,16 +342,20 @@ body.mobile-map-active #facilitiesGrid > div .absolute.bottom-3.right-3 {
     }
 }
 
+body.mobile-map-active {
+    overflow: hidden !important;
+}
+
 body.mobile-map-active #map-view {
     display: block !important;
-    position: relative !important;
-    top: auto !important;
-    bottom: auto !important;
-    left: auto !important;
-    right: auto !important;
-    height: 350px !important; /* Fixed reasonable height */
+    position: fixed !important;
+    top: 340px !important; /* Starts exactly below the compact cards */
+    bottom: 10.5rem !important; /* Ends exactly above the FAB and bottom menu */
+    left: 1rem !important;
+    right: 1rem !important;
+    height: auto !important; /* Stretches dynamically between top and bottom */
     width: auto !important;
-    margin: 1rem 1rem 8rem 1rem !important; /* Bottom margin ensures FAB doesn't cover map when fully scrolled down */
+    margin: 0 !important;
     border-radius: 1.5rem !important;
     box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.05) !important;
     z-index: 10 !important;
