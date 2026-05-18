@@ -286,10 +286,10 @@ body.mobile-map-active {
 body.mobile-map-active #map-view {
     display: block !important;
     position: relative !important;
-    height: 52vh !important;
+    height: 45vh !important;
     width: auto !important;
-    margin: 0 0 6rem 0 !important; /* Bottom margin accounts for FAB, 0 top margin to bring it higher */
-    border-radius: 1rem !important;
+    margin: 1rem 1rem 6rem 1rem !important; /* Margins on all sides to match image 2 */
+    border-radius: 1.5rem !important; /* More rounded to match image 2 */
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
     z-index: 10 !important;
 }

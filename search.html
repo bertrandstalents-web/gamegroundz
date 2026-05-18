@@ -606,6 +606,15 @@
             map.on('moveend', () => {
                 updateListingsFromMapBounds();
             });
+
+            // Robust map resize handling to prevent blank spaces
+            const mapViewEl = document.getElementById('map-view');
+            if (mapViewEl && window.ResizeObserver) {
+                const resizeObserver = new ResizeObserver(() => {
+                    map.invalidateSize();
+                });
+                resizeObserver.observe(mapViewEl);
+            }
         }
 
         function updateMapMarkers(facilities, preventFitBounds = false) {
