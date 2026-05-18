@@ -1177,9 +1177,10 @@
                         }
                     }
                     
-                    // Trigger Leaflet resize calculation
+                    // Trigger Leaflet resize calculation (twice to ensure layout shift completes)
                     if (typeof map !== 'undefined' && map !== null) {
                         setTimeout(() => { map.invalidateSize(); }, 100);
+                        setTimeout(() => { map.invalidateSize(); }, 300);
                     }
                 });
             }
