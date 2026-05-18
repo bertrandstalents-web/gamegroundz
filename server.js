@@ -3908,6 +3908,9 @@ app.post('/api/create-checkout-session', (req, res) => {
                             payment_method_types: ['card'],
                             line_items: lineItems,
                             mode: 'payment',
+                            adaptive_pricing: {
+                                enabled: false
+                            },
                             success_url: `${sessionUrl}/player-dashboard.html?success=true&session_id={CHECKOUT_SESSION_ID}`,
                             cancel_url: requestSurfaceId ? `${sessionUrl}/surface.html?id=${requestSurfaceId}&canceled=true` : `${sessionUrl}/facility.html?id=${facility_id}&canceled=true`,
                             metadata: {
