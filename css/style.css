@@ -349,7 +349,7 @@ body.mobile-map-active {
 body.mobile-map-active #map-view {
     display: block !important;
     position: fixed !important;
-    top: 340px !important; /* Starts exactly below the compact cards */
+    top: 430px !important; /* Starts exactly below the compact cards to completely clear the surface box */
     bottom: 10.5rem !important; /* Ends exactly above the FAB and bottom menu */
     left: 1rem !important;
     right: 1rem !important;
