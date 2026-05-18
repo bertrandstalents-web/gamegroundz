@@ -238,12 +238,14 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 10,
-    message: { error: 'Too many attempts. Try again in 15 minutes.' }
+    message: { error: 'Too many attempts. Try again in 15 minutes.' },
+    validate: { trustProxy: false }
 });
 
 const generalLimiter = rateLimit({
     windowMs: 60 * 1000,
-    max: 60
+    max: 60,
+    validate: { trustProxy: false }
 });
 
 app.use('/api/auth/login', authLimiter);
@@ -251,6 +253,23 @@ app.use('/api/auth/forgot-password', authLimiter);
 app.use('/api/users/signup', authLimiter);
 app.use('/api/reviews', authLimiter);
 app.use('/api/create-checkout-session', authLimiter);
+app.use('/api/bookings/calculate', authLimiter);
+
+// Tax calculation helper
+function getTaxInfo(location) {
+    if (!location) return { rate: 0.14975, name: 'QST + GST' };
+    const loc = location.toLowerCase();
+    if (loc.includes('qc') || loc.includes('quebec') || loc.includes('québec')) return { rate: 0.14975, name: 'QST + GST' };
+    if (loc.includes('on') || loc.includes('ontario')) return { rate: 0.13, name: 'HST' };
+    if (loc.includes('bc') || loc.includes('british columbia')) return { rate: 0.12, name: 'GST + PST' };
+    if (loc.includes('mb') || loc.includes('manitoba')) return { rate: 0.12, name: 'GST + RST' };
+    if (loc.includes('sk') || loc.includes('saskatchewan')) return { rate: 0.11, name: 'GST + PST' };
+    if (loc.includes('ab') || loc.includes('alberta')) return { rate: 0.05, name: 'GST' };
+    if (loc.includes('ns') || loc.includes('nova scotia') || loc.includes('nb') || loc.includes('new brunswick') || loc.includes('pe') || loc.includes('prince edward island') || loc.includes('nl') || loc.includes('newfoundland')) return { rate: 0.15, name: 'HST' };
+    if (loc.includes('nt') || loc.includes('northwest territories') || loc.includes('nu') || loc.includes('nunavut') || loc.includes('yt') || loc.includes('yukon')) return { rate: 0.05, name: 'GST' };
+    return { rate: 0.14975, name: 'QST + GST' };
+}
+
 app.use('/api', generalLimiter);
 
 // Session Middleware
@@ -3733,7 +3752,8 @@ app.post('/api/create-checkout-session', (req, res) => {
             }
             
             // Add processing fee and tax to match frontend
-            const taxRate = 0.14975;
+            const taxInfo = getTaxInfo(facility.location);
+            const taxRate = taxInfo.rate;
             const processingFee = (facility.has_processing_fee === 1 || facility.has_processing_fee === true) ? Number(facility.processing_fee_amount || 0) : 0;
             const finalAmount = secureTotalPrice + processingFee + (secureTotalPrice * taxRate);
             const finalAmountCents = Math.round(finalAmount * 100);
@@ -3874,7 +3894,7 @@ app.post('/api/create-checkout-session', (req, res) => {
                                     currency: 'cad',
                                     product_data: {
                                         name: 'Taxes',
-                                        description: `Based on listing location: ${facility.location} (QST + GST 14.975%)`,
+                                        description: `Based on listing location: ${facility.location} (${taxInfo.name} ${(taxInfo.rate * 100).toFixed(3).replace(/\\.?0+$/, '')}%)`,
                                     },
                                     unit_amount: Math.round(taxAmount * 100),
                                 },
