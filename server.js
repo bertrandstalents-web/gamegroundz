@@ -3755,7 +3755,7 @@ app.post('/api/create-checkout-session', (req, res) => {
             const taxInfo = getTaxInfo(facility.location);
             const taxRate = taxInfo.rate;
             const processingFee = (facility.has_processing_fee === 1 || facility.has_processing_fee === true) ? Number(facility.processing_fee_amount || 0) : 0;
-            const finalAmount = secureTotalPrice + processingFee + (secureTotalPrice * taxRate);
+            const finalAmount = secureTotalPrice + processingFee + ((secureTotalPrice + processingFee) * taxRate);
             const finalAmountCents = Math.round(finalAmount * 100);
 
             // 1. Check for existing overlapping bookings across all dates
@@ -3887,7 +3887,7 @@ app.post('/api/create-checkout-session', (req, res) => {
                             });
                         }
 
-                        const taxAmount = secureTotalPrice * taxRate;
+                        const taxAmount = (secureTotalPrice + processingFee) * taxRate;
                         if (taxAmount > 0) {
                             lineItems.push({
                                 price_data: {

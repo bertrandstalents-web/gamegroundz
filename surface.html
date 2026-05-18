@@ -2078,7 +2078,7 @@
 
                     const discountedSubtotal = Math.max(0, subtotal - bestDiscountValue);
 
-                    const tax = discountedSubtotal * taxRate;
+                    const tax = (discountedSubtotal + processingFee) * taxRate;
                     currentTotal = discountedSubtotal + processingFee + tax; // update global total
 
                     if (hours === 1) {
