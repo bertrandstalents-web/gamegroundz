@@ -247,3 +247,49 @@ body {
     color: #047857 !important; /* text-primary-dark */
     font-weight: 600 !important;
 }
+
+/* Mobile Map Active Styles */
+body.mobile-map-active #facilitiesGrid {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 1rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    margin-left: -1rem !important; /* Negate parent padding if any, to allow edge-to-edge scroll */
+    margin-right: -1rem !important;
+    gap: 1rem !important;
+    /* Hide scrollbar for cleaner look */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+body.mobile-map-active #facilitiesGrid::-webkit-scrollbar {
+    display: none;
+}
+
+body.mobile-map-active #facilitiesGrid > div {
+    min-width: 85vw !important;
+    scroll-snap-align: center !important;
+}
+
+@media (min-width: 1024px) {
+    body.mobile-map-active #facilitiesGrid > div {
+        min-width: auto !important; /* don't apply on desktop */
+    }
+}
+
+body.mobile-map-active #map-view {
+    display: block !important;
+    position: relative !important;
+    height: 45vh !important;
+    width: auto !important;
+    margin: 0.5rem 0 7rem 0 !important; /* Bottom margin accounts for FAB */
+    border-radius: 1rem !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+    z-index: 10 !important;
+}
+
+body.mobile-map-active #mobile-close-map-btn {
+    display: none !important;
+}

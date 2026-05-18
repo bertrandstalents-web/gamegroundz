@@ -1142,16 +1142,40 @@
 
             if(mobileMapToggle) {
                 mobileMapToggle.addEventListener('click', () => {
-                    // Do NOT hide resultsView, instead push it down below the map
-                    // resultsView.classList.add('hidden');
-                    resultsView.style.paddingTop = '45dvh';
+                    const isMapActive = document.body.classList.toggle('mobile-map-active');
                     
-                    mapView.classList.remove('hidden', ...desktopMapClasses);
-                    mapView.classList.add(...mobileMapClasses);
-                    
-                    // Hide the Mobile FAB (Filters/Map toggle)
-                    const fabContainer = document.getElementById('mobile-map-toggle').closest('.fixed.bottom-24');
-                    if (fabContainer) fabContainer.style.display = 'none';
+                    if (isMapActive) {
+                        // Map is now active
+                        mapView.classList.remove('hidden', ...desktopMapClasses);
+                        // Hide pagination when map is active
+                        const paginationEl = document.getElementById('pagination');
+                        if(paginationEl) paginationEl.classList.add('hidden');
+                        
+                        // Change FAB text from "Carte" to "Liste"
+                        const mapTextEn = mobileMapToggle.querySelector('.lang-en-only');
+                        const mapTextFr = mobileMapToggle.querySelector('.lang-fr-only');
+                        if (mapTextEn) mapTextEn.innerText = 'List';
+                        if (mapTextFr) mapTextFr.innerText = 'Liste';
+                        const icon = mobileMapToggle.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('fa-map');
+                            icon.classList.add('fa-list');
+                        }
+                    } else {
+                        // Map is deactivated, revert to list
+                        mapView.classList.add('hidden', ...desktopMapClasses);
+                        
+                        // Change FAB text back to "Carte"
+                        const mapTextEn = mobileMapToggle.querySelector('.lang-en-only');
+                        const mapTextFr = mobileMapToggle.querySelector('.lang-fr-only');
+                        if (mapTextEn) mapTextEn.innerText = 'Map';
+                        if (mapTextFr) mapTextFr.innerText = 'Carte';
+                        const icon = mobileMapToggle.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('fa-list');
+                            icon.classList.add('fa-map');
+                        }
+                    }
                     
                     // Trigger Leaflet resize calculation
                     if (typeof map !== 'undefined' && map !== null) {
@@ -1161,16 +1185,21 @@
             }
 
             if(mobileCloseMapBtn) {
+                // Since we removed the "X" button from the map view in the new design,
+                // this button is technically hidden, but we keep the logic just in case
                 mobileCloseMapBtn.addEventListener('click', () => {
-                    mapView.classList.remove(...mobileMapClasses);
+                    document.body.classList.remove('mobile-map-active');
                     mapView.classList.add('hidden', ...desktopMapClasses);
                     
-                    // Restore results view position
-                    resultsView.style.paddingTop = '';
-                    
-                    // Restore the Mobile FAB
-                    const fabContainer = document.getElementById('mobile-map-toggle').closest('.fixed.bottom-24');
-                    if (fabContainer) fabContainer.style.display = '';
+                    const mapTextEn = mobileMapToggle.querySelector('.lang-en-only');
+                    const mapTextFr = mobileMapToggle.querySelector('.lang-fr-only');
+                    if (mapTextEn) mapTextEn.innerText = 'Map';
+                    if (mapTextFr) mapTextFr.innerText = 'Carte';
+                    const icon = mobileMapToggle.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('fa-list');
+                        icon.classList.add('fa-map');
+                    }
                 });
             }
         });
