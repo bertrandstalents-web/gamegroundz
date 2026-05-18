@@ -250,22 +250,16 @@ body {
 
 /* Mobile Map Active Styles */
 body.mobile-map-active #facilitiesGrid {
-    display: flex !important;
-    overflow-x: auto !important;
-    scroll-snap-type: x mandatory !important;
-    flex-wrap: nowrap !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
     padding-bottom: 1rem !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-    margin-left: -1rem !important; /* Negate parent padding if any, to allow edge-to-edge scroll */
-    margin-right: -1rem !important;
     gap: 1rem !important;
-    /* Hide scrollbar for cleaner look */
-    -ms-overflow-style: none;
-    scrollbar-width: none;
 }
-body.mobile-map-active #facilitiesGrid::-webkit-scrollbar {
-    display: none;
+
+body.mobile-map-active #results-view {
+    padding-bottom: 60vh !important; /* Massive padding so the last row of cards can scroll up past the fixed map */
 }
 
 body.mobile-map-active #facilitiesGrid > div {
@@ -342,8 +336,9 @@ body.mobile-map-active #facilitiesGrid > div .absolute.bottom-3.right-3 {
     }
 }
 
+/* Allow page to scroll behind the locked map */
 body.mobile-map-active {
-    overflow: hidden !important;
+    overflow: auto !important;
 }
 
 body.mobile-map-active #map-view {
