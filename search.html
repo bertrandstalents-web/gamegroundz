@@ -1138,13 +1138,20 @@
             const mobileCloseMapBtn = document.getElementById('mobile-close-map-btn');
 
             const desktopMapClasses = ['lg:block', 'w-[450px]', 'h-[calc(100vh-120px)]', 'sticky', 'top-28', 'rounded-2xl', 'z-10'];
-            const mobileMapClasses = ['fixed', 'inset-0', 'z-[80]', 'w-full', 'h-[100dvh]', 'rounded-none'];
+            const mobileMapClasses = ['fixed', 'top-0', 'left-0', 'right-0', 'z-[80]', 'w-full', 'h-[45dvh]', 'rounded-b-2xl', 'shadow-md'];
 
             if(mobileMapToggle) {
                 mobileMapToggle.addEventListener('click', () => {
-                    resultsView.classList.add('hidden');
+                    // Do NOT hide resultsView, instead push it down below the map
+                    // resultsView.classList.add('hidden');
+                    resultsView.style.paddingTop = '45dvh';
+                    
                     mapView.classList.remove('hidden', ...desktopMapClasses);
                     mapView.classList.add(...mobileMapClasses);
+                    
+                    // Hide the Mobile FAB (Filters/Map toggle)
+                    const fabContainer = document.getElementById('mobile-map-toggle').closest('.fixed.bottom-24');
+                    if (fabContainer) fabContainer.style.display = 'none';
                     
                     // Trigger Leaflet resize calculation
                     if (typeof map !== 'undefined' && map !== null) {
@@ -1157,7 +1164,13 @@
                 mobileCloseMapBtn.addEventListener('click', () => {
                     mapView.classList.remove(...mobileMapClasses);
                     mapView.classList.add('hidden', ...desktopMapClasses);
-                    resultsView.classList.remove('hidden');
+                    
+                    // Restore results view position
+                    resultsView.style.paddingTop = '';
+                    
+                    // Restore the Mobile FAB
+                    const fabContainer = document.getElementById('mobile-map-toggle').closest('.fixed.bottom-24');
+                    if (fabContainer) fabContainer.style.display = '';
                 });
             }
         });
