@@ -746,8 +746,8 @@
                 if (!currentFacilityId) return new Set();
                 try {
                     const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
-                    // Fetch all without date param
-                    const response = await fetch(`${API_BASE_URL}/api/bookings/${currentFacilityId}`);
+                    // Fetch all without date param, preventing aggressive browser or proxy caching
+                    const response = await fetch(`${API_BASE_URL}/api/bookings/${currentFacilityId}?_t=${Date.now()}`, { cache: 'no-store' });
                     if (response.ok) {
                         const bookings = await response.json();
                         let bookedIds = new Set();

@@ -1096,7 +1096,7 @@
                     window.history.replaceState({}, document.title, window.location.pathname);
                 }
 
-                const response = await fetch(`${API_BASE_URL}/api/bookings/my`, {credentials: 'include'});
+                const response = await fetch(`${API_BASE_URL}/api/bookings/my?_t=${Date.now()}`, {credentials: 'include', cache: 'no-store'});
                 
                 loadingUI.classList.add('hidden');
                 
