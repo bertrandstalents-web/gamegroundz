@@ -347,7 +347,9 @@ app.use(express.static(path.join(__dirname), {
 // Global API Cache Control (prevent GET caching)
 app.use('/api', (req, res, next) => {
     if (req.method === 'GET') {
-        res.set('Cache-Control', 'no-store');
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
     }
     next();
 });
