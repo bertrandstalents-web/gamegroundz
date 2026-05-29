@@ -232,7 +232,7 @@
 
         <!-- Search Results -->
         <div class="flex-1">
-            <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-6 gap-2 md:gap-4">
+            <div id="search-header-container" class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-6 gap-2 md:gap-4">
                 <div>
                     <h1 class="text-2xl font-bold text-dark">
                         <span class="lang-en-only">Sports Surfaces in your area</span>
@@ -1219,7 +1219,7 @@
     <script src="js/i18n.js"></script>
 
     <!-- Mobile FABs for Map & Filters -->
-    <div class="lg:hidden fixed bottom-24 left-0 w-full flex justify-center z-40 pointer-events-none">
+    <div id="mobile-fabs-container" class="lg:hidden fixed bottom-24 left-0 w-full flex justify-center z-40 pointer-events-none">
         <div class="bg-dark text-white rounded-full flex shadow-xl pointer-events-auto divide-x divide-slate-700">
             <button id="open-filters-btn" class="px-6 py-3 font-bold text-sm flex items-center hover:bg-slate-800 rounded-l-full transition-custom">
                 <i class="fa-solid fa-sliders mr-2"></i> <span class="lang-en-only">Filters</span><span class="lang-fr-only notranslate">Filtres</span>
@@ -1231,7 +1231,7 @@
     </div>
 
     <!-- Mobile Bottom Tab Bar -->
-    <div class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pt-2 pb-4 px-2 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+    <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pt-2 pb-4 px-2 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
         <a href="index.html" class="flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-800 transition-custom">
             <i class="fa-solid fa-compass text-lg mb-0.5"></i>
             <span class="text-[10px] font-medium"><span class="lang-en-only">Explore</span><span class="lang-fr-only notranslate">Explorer</span></span>

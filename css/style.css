@@ -250,22 +250,40 @@ body {
 
 /* Mobile Map Active Styles */
 body.mobile-map-active #facilitiesGrid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    overflow-x: hidden !important;
-    overflow-y: visible !important;
-    padding-bottom: 1rem !important;
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    white-space: nowrap !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 0.5rem 1rem 1rem 1rem !important;
     gap: 1rem !important;
+    scrollbar-width: none !important; /* Firefox */
+}
+
+body.mobile-map-active #facilitiesGrid::-webkit-scrollbar {
+    display: none !important; /* Safari & Chrome */
 }
 
 body.mobile-map-active #results-view {
-    padding-bottom: 60vh !important; /* Massive padding so the last row of cards can scroll up past the fixed map */
+    padding-bottom: 0 !important;
 }
 
 body.mobile-map-active #facilitiesGrid > div {
-    min-width: 44vw !important;
-    max-width: 44vw !important;
+    flex: 0 0 auto !important;
+    min-width: 280px !important;
+    max-width: 280px !important;
     scroll-snap-align: start !important;
+    margin: 0 !important;
+}
+
+body.mobile-map-active #facilitiesGrid > .col-span-full {
+    width: 100% !important;
+    min-width: 100% !important;
+    white-space: normal !important;
+    text-align: center !important;
+    padding: 2rem 1rem !important;
 }
 
 /* Make image smaller */
@@ -336,24 +354,89 @@ body.mobile-map-active #facilitiesGrid > div .absolute.bottom-3.right-3 {
     }
 }
 
-/* Allow page to scroll behind the locked map */
-body.mobile-map-active {
-    overflow: auto !important;
-}
+/* Mobile Media Queries for Viewport-constrained Fluid Layout */
+@media (max-width: 1023px) {
+    /* Prevent page vertical scroll and lock to viewport */
+    body.mobile-map-active {
+        overflow: hidden !important;
+        position: fixed !important;
+        width: 100% !important;
+        height: 100% !important;
+        height: 100dvh !important;
+    }
 
-body.mobile-map-active #map-view {
-    display: block !important;
-    position: fixed !important;
-    top: 430px !important; /* Starts exactly below the compact cards to completely clear the surface box */
-    bottom: 10.5rem !important; /* Ends exactly above the FAB and bottom menu */
-    left: 1rem !important;
-    right: 1rem !important;
-    height: auto !important; /* Stretches dynamically between top and bottom */
-    width: auto !important;
-    margin: 0 !important;
-    border-radius: 1.5rem !important;
-    box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.05) !important;
-    z-index: 10 !important;
+    /* Constrain main content container to take available height below navbar */
+    body.mobile-map-active .flex-1.max-w-\[1400px\] {
+        padding: 0.5rem 0 0 0 !important;
+        margin: 0 !important;
+        height: calc(100vh - 72px) !important;
+        height: calc(100dvh - 72px) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+    }
+
+    /* Hide the sidebar filters in mobile map mode */
+    body.mobile-map-active #filters-sidebar {
+        display: none !important;
+    }
+
+    /* Results and Map sibling wrapper container */
+    body.mobile-map-active .flex.flex-col.xl\:flex-row {
+        margin: 0 !important;
+        gap: 0 !important;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        overflow: hidden !important;
+    }
+
+    /* Search Results Grid View (Carousel wrapper) */
+    body.mobile-map-active #results-view {
+        flex: 0 0 auto !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 0.5rem !important;
+        z-index: 20 !important;
+    }
+
+    /* Map View relative wrapper */
+    body.mobile-map-active #map-view {
+        display: block !important;
+        position: relative !important; /* Dynamic flow! Sits naturally below carousel */
+        flex: 1 !important; /* Stretches to fill the remaining screen space */
+        height: 100% !important;
+        width: 100% !important;
+        top: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        margin: 0 !important;
+        border-radius: 1.5rem 1.5rem 0 0 !important; /* Drawer style rounded top */
+        box-shadow: 0 -4px 15px -3px rgba(0, 0, 0, 0.1) !important;
+        z-index: 10 !important;
+    }
+
+    /* Make Leaflet map fill map-view */
+    body.mobile-map-active #map {
+        height: 100% !important;
+        width: 100% !important;
+    }
+
+    /* Hide search header, results subtitle, and sort dropdown */
+    body.mobile-map-active #search-header-container {
+        display: none !important;
+    }
+
+    /* Hide mobile bottom tab bar */
+    body.mobile-map-active #mobile-bottom-nav {
+        display: none !important;
+    }
+
+    /* Adjust FAB position since bottom nav is hidden */
+    body.mobile-map-active #mobile-fabs-container {
+        bottom: 1.5rem !important;
+    }
 }
 
 body.mobile-map-active #mobile-close-map-btn {
