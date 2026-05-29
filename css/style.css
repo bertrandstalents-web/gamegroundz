@@ -319,12 +319,12 @@ body.mobile-map-active #facilitiesGrid > div .text-xs.mb-3 {
 }
 
 body.mobile-map-active #facilitiesGrid > div .mb-4 {
-    margin-bottom: 0.25rem !important;
+    display: none !important;
 }
 
-body.mobile-map-active #facilitiesGrid > div .pt-3 {
-    padding-top: 0.25rem !important;
-    font-size: 0.7rem !important;
+body.mobile-map-active #facilitiesGrid > div .pt-3,
+body.mobile-map-active #facilitiesGrid > div .border-t {
+    display: none !important;
 }
 
 /* Scale down badges on the image */
