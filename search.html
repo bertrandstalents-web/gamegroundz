@@ -773,7 +773,56 @@
                 const response = await fetch(`${API_BASE_URL}/api/public/surfaces?` + params.toString());
                 
                 if (!response.ok) throw new Error(`Server returned ${response.status}`);
-                const data = await response.json();
+                let data = await response.json();
+                
+                // Filter by activity URL parameter if present
+                const urlParams = new URLSearchParams(window.location.search);
+                const explicitActivity = urlParams.get('activity');
+                if (explicitActivity) {
+                    try {
+                        const sessionsRes = await fetch(`${API_BASE_URL}/api/public_sessions/upcoming/all`);
+                        if (sessionsRes.ok) {
+                            const sessions = await sessionsRes.json();
+                            const matchingSurfaceIds = new Set();
+                            const actLower = explicitActivity.toLowerCase().trim();
+                            
+                            sessions.forEach(sess => {
+                                const noteLower = (sess.manual_notes || '').toLowerCase().trim();
+                                let match = noteLower.includes(actLower) || actLower.includes(noteLower);
+                                
+                                // Specific fallback/mappings for pools
+                                if (actLower === 'swimming lane' || actLower.includes('natation') || actLower.includes('couloirs')) {
+                                    if (noteLower.includes('lane') || noteLower.includes('natation') || noteLower.includes('couloirs')) match = true;
+                                }
+                                if (actLower.includes('diving') || actLower.includes('open swim') || actLower.includes('baignade') || actLower.includes('plongeon')) {
+                                    if (noteLower.includes('swim') || noteLower.includes('baignade') || noteLower.includes('plongeon') || noteLower.includes('diving')) match = true;
+                                }
+                                if (actLower.includes('recreational') || actLower.includes('family') || actLower.includes('piscine récréative') || actLower.includes('piscine recreative')) {
+                                    if (noteLower.includes('recreat') || noteLower.includes('family') || noteLower.includes('récréat') || noteLower.includes('famill')) match = true;
+                                }
+                                
+                                // Specific fallback/mappings for ice
+                                if (actLower.includes('skating') || actLower.includes('patin')) {
+                                    if (noteLower.includes('skat') || noteLower.includes('patin')) match = true;
+                                }
+                                if (actLower.includes('hockey libre 18') || actLower.includes('18+')) {
+                                    if (noteLower.includes('18')) match = true;
+                                } else if (actLower.includes('hockey')) {
+                                    if (noteLower.includes('hockey') && !noteLower.includes('18')) match = true;
+                                }
+                                
+                                if (match) {
+                                    matchingSurfaceIds.add(Number(sess.surface_id));
+                                }
+                            });
+                            
+                            data = data.filter(f => matchingSurfaceIds.has(Number(f.id)));
+                        }
+                    } catch (err) {
+                        console.error("Failed to filter by activity:", err);
+                    }
+                }
+
                 allFetchedFacilities = data; // Store globally
                 
                 facilitiesGrid.innerHTML = '';

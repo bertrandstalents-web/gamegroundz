@@ -808,6 +808,26 @@
                 }
             }
 
+            // Handle pre-selected activity filter
+            const explicitActivity = urlParams.get('activity');
+            if (explicitActivity) {
+                const activityFilterInput = document.getElementById('inline-activity-filter');
+                const activityLabel = document.getElementById('custom-activity-label');
+                if (activityFilterInput) {
+                    activityFilterInput.value = explicitActivity;
+                    
+                    // Match dropdown option
+                    const option = Array.from(document.querySelectorAll('.activity-option')).find(o => o.getAttribute('data-value') === explicitActivity.toLowerCase());
+                    if (option && activityLabel) {
+                        activityLabel.textContent = option.getAttribute('data-label') || explicitActivity;
+                        
+                        // Style option in dropdown
+                        document.querySelectorAll('.activity-option').forEach(o => o.classList.remove('bg-slate-50', 'text-primary', 'font-bold'));
+                        option.classList.add('bg-slate-50', 'text-primary', 'font-bold');
+                    }
+                }
+            }
+
             if (explicitLocation) {
                 // User explicitly searched for a location, bypass geolocation
                 const navSearch = document.getElementById('navLocationSearch');

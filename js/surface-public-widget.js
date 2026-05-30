@@ -1,5 +1,21 @@
 window.initPublicActivityWidget = function(facility, surfaceIdParam) {
     const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+    const currentLang = document.documentElement.getAttribute('data-lang') || 'en';
+    const translateActivity = (name) => {
+        const mapping = {
+            'Swimming Lane': { en: 'Swimming Lanes', fr: 'Couloirs de Natation' },
+            'Open Swim and Diving Board': { en: 'Open Swim & Diving', fr: 'Baignade Libre et Plongeon' },
+            'Recreational and Family Pool': { en: 'Family Pool', fr: 'Piscine Récréative et Familiale' },
+            'Free Skating': { en: 'Free Skating', fr: 'Patin Libre' },
+            'Open Hockey': { en: 'Open Hockey', fr: 'Hockey Libre' },
+            'Open Hockey (18+)': { en: 'Open Hockey 18+', fr: 'Hockey Libre 18+' }
+        };
+        const entry = mapping[name];
+        if (entry) {
+            return entry[currentLang] || name;
+        }
+        return name;
+    };
 
     fetch(`${API_BASE_URL}/api/public_sessions/${facility.facility_id}?surface_id=${surfaceIdParam}`)
         .then(res => {
@@ -20,9 +36,16 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                 bookingWidget.innerHTML = `
                 <div class="bg-white lg:sticky lg:top-28 lg:border lg:border-slate-200 lg:shadow-xl rounded-t-3xl lg:rounded-2xl px-6 py-8 lg:p-8 text-center text-slate-500">
                     <i class="fa-regular fa-calendar-xmark text-4xl mb-4 text-slate-300"></i>
-                    <h3 class="text-lg font-bold text-dark mb-2">No Sessions Available</h3>
-                    <p class="text-sm">There are currently no public activities scheduled for this surface.</p>
+                    <h3 class="text-lg font-bold text-dark mb-2">
+                        <span class="lang-en-only">No Sessions Available</span>
+                        <span class="lang-fr-only notranslate">Aucune séance disponible</span>
+                    </h3>
+                    <p class="text-sm">
+                        <span class="lang-en-only">There are currently no public activities scheduled for this surface.</span>
+                        <span class="lang-fr-only notranslate">Il n'y a actuellement aucune activité publique programmée pour cette surface.</span>
+                    </p>
                 </div>`;
+                if (typeof updateLanguage === 'function') updateLanguage(currentLang);
                 return;
             }
 
@@ -40,7 +63,7 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
             let dateListHtml = '';
             dates.forEach(dStr => {
                 const d = new Date(dStr + 'T12:00:00');
-                const dLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+                const dLabel = d.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: 'numeric', weekday: 'short' });
                 dateListHtml += `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 date-option" data-date="${dStr}">${dLabel}</li>`;
             });
 
@@ -55,7 +78,10 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                         <div class="flex border-b border-slate-300 relative">
                             <!-- Date Dropdown Trigger -->
                             <div class="flex-1 p-3 border-r border-slate-300 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tl-xl group" id="pa-date-trigger">
-                                <div class="text-sm font-medium text-slate-700 w-full h-full flex items-center pr-6 whitespace-nowrap" id="pa-selected-date">Select Date</div>
+                                <div class="text-sm font-medium text-slate-700 w-full h-full flex items-center pr-6 whitespace-nowrap" id="pa-selected-date">
+                                    <span class="lang-en-only">Select Date</span>
+                                    <span class="lang-fr-only notranslate">Choisir la date</span>
+                                </div>
                                 <div class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-primary transition-colors"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                                 
                                 <div id="pa-date-dropdown" class="hidden absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-[100] max-h-48 overflow-y-auto">
@@ -65,12 +91,18 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
 
                             <!-- Time Slot Dropdown Trigger -->
                             <div class="flex-1 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tr-xl group" id="pa-time-trigger">
-                                <div class="text-sm font-medium text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap w-full h-full flex items-center pr-6" id="pa-selected-time">Select Time</div>
+                                <div class="text-sm font-medium text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap w-full h-full flex items-center pr-6" id="pa-selected-time">
+                                    <span class="lang-en-only">Select Time</span>
+                                    <span class="lang-fr-only notranslate">Choisir l'heure</span>
+                                </div>
                                 <div class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-primary transition-colors"><i class="fa-solid fa-chevron-down text-xs"></i></div>
 
                                 <div id="pa-time-dropdown" class="hidden absolute top-[calc(100%+4px)] left-0 w-[200px] bg-white border border-slate-200 rounded-xl shadow-2xl z-[100] max-h-64 overflow-y-auto">
                                     <ul id="pa-time-list" class="py-1">
-                                        <li class="px-4 py-2 text-sm text-slate-500 italic">Please select a date first</li>
+                                        <li class="px-4 py-2 text-sm text-slate-500 italic">
+                                            <span class="lang-en-only">Please select a date first</span>
+                                            <span class="lang-fr-only notranslate">Veuillez choisir une date</span>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -78,29 +110,45 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                         
                         <div class="p-4 bg-white relative rounded-b-xl">
                             <div id="pa-tiers-container" class="space-y-3">
-                                <div class="text-sm text-slate-400 italic text-center py-2">Select a time slot to see tickets</div>
+                                <div class="text-sm text-slate-400 italic text-center py-2">
+                                    <span class="lang-en-only">Select a time slot to see tickets</span>
+                                    <span class="lang-fr-only notranslate">Sélectionnez une heure pour voir les billets</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="bg-indigo-50/50 rounded-xl p-3 mb-5 border border-indigo-100/50">
-                        <h4 class="text-[10px] font-bold text-indigo-800/70 uppercase tracking-wide mb-2">Selected Slots</h4>
+                        <h4 class="text-[10px] font-bold text-indigo-800/70 uppercase tracking-wide mb-2">
+                            <span class="lang-en-only">Selected Slots</span>
+                            <span class="lang-fr-only notranslate">Sélectionné</span>
+                        </h4>
                         <div id="pa-selected-summary" class="text-xs font-medium text-slate-600 bg-white/60 p-2 rounded border border-indigo-100/50">
-                            No tickets selected
+                            <span class="lang-en-only">No tickets selected</span>
+                            <span class="lang-fr-only notranslate">Aucun billet sélectionné</span>
                         </div>
                     </div>
 
                     <button id="pa-reserve-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-base transition-all duration-300 shadow-glow mb-4 opacity-50 cursor-not-allowed" disabled>
-                        Reserve Now
+                        <span class="lang-en-only">Reserve Now</span>
+                        <span class="lang-fr-only notranslate">Réserver</span>
                     </button>
-                    <p class="text-center text-xs text-slate-400 mb-2 font-medium">You won't be charged yet</p>
+                    <p class="text-center text-xs text-slate-400 mb-2 font-medium">
+                        <span class="lang-en-only">You won't be charged yet</span>
+                        <span class="lang-fr-only notranslate">Vous ne serez pas facturé immédiatement</span>
+                    </p>
                     
                     <div class="flex justify-between font-extrabold text-dark text-lg pt-4 px-1 border-t border-slate-200">
-                        <span>Total <span class="text-xs font-semibold text-slate-400">(CAD)</span></span>
+                        <span>
+                            <span class="lang-en-only">Total</span>
+                            <span class="lang-fr-only notranslate">Total</span>
+                            <span class="text-xs font-semibold text-slate-400">(CAD)</span>
+                        </span>
                         <span id="pa-total-amount" class="text-primary">$0.00</span>
                     </div>
                 </div>
             `;
+            if (typeof updateLanguage === 'function') updateLanguage(currentLang);
 
             // State
             let paSelectedDate = null;

@@ -1333,16 +1333,20 @@
 
                     // Check if this surface is strictly "public drop-ins only"
                     let isDropInOnly = false;
-                    if (!Array.isArray(pricingRules) && pricingRules.booking_model === 'drop_in_only') {
+                    if ((!Array.isArray(pricingRules) && pricingRules.booking_model === 'drop_in_only') || facility.type === 'pool') {
                         isDropInOnly = true;
                     }
                     
                     if (isDropInOnly && typeof window.initPublicActivityWidget === 'function') {
                         // Initialize the specific drop-in widget. It overwrites the booking-widget-container.
                         window.initPublicActivityWidget(facility, surfaceIdParam);
+                        const availSec = document.getElementById('availability-section');
+                        if (availSec) availSec.classList.add('hidden');
                     } else {
                         // Re-render pricing calculation to use new hourly rate for private widget
                         render();
+                        const availSec = document.getElementById('availability-section');
+                        if (availSec) availSec.classList.remove('hidden');
                     }
 
                 } catch (error) {

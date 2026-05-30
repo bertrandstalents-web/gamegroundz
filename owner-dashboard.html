@@ -570,6 +570,55 @@
                                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Information & Rules</span><span class="lang-fr-only notranslate">Informations et Règles</span><span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top"><span class="lang-en-only">OPTIONAL</span><span class="lang-fr-only notranslate">OPTIONNEL</span></span></label>
                                             <textarea id="modal-public-description" rows="3" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm custom-scrollbar" placeholder="e.g. Must bring own helmet. Swimming caps required."></textarea>
                                         </div>
+                                        <!-- Pool Activities Selection (visible only for pools) -->
+                                        <div id="modal-pool-activities-container" class="hidden space-y-3 pt-2">
+                                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">
+                                                <span class="lang-en-only">Select Pool Activities to Open</span>
+                                                <span class="lang-fr-only notranslate">Sélectionner les activités de piscine à ouvrir</span>
+                                                <span class="text-red-500">*</span>
+                                            </label>
+                                            <div class="space-y-3 bg-slate-50 border border-slate-200/60 rounded-2xl p-4">
+                                                <!-- Activity 1 -->
+                                                <div class="flex items-center justify-between gap-3">
+                                                    <label class="flex items-center cursor-pointer flex-1">
+                                                        <input type="checkbox" id="pool-act-lanes" class="pool-activity-cb w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded" onchange="togglePoolActivityQty(this)">
+                                                        <span class="ml-3 text-sm font-semibold text-slate-700">
+                                                            <span class="lang-en-only">Swimming Lanes</span>
+                                                            <span class="lang-fr-only notranslate">Couloirs de Natation</span>
+                                                        </span>
+                                                    </label>
+                                                    <div class="w-24 hidden" id="pool-qty-lanes-wrapper">
+                                                        <input type="number" id="pool-qty-lanes" min="1" placeholder="Qty" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none">
+                                                    </div>
+                                                </div>
+                                                <!-- Activity 2 -->
+                                                <div class="flex items-center justify-between gap-3 border-t border-slate-200/60 pt-3">
+                                                    <label class="flex items-center cursor-pointer flex-1">
+                                                        <input type="checkbox" id="pool-act-swim" class="pool-activity-cb w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded" onchange="togglePoolActivityQty(this)">
+                                                        <span class="ml-3 text-sm font-semibold text-slate-700">
+                                                            <span class="lang-en-only">Open Swim & Diving</span>
+                                                            <span class="lang-fr-only notranslate">Baignade Libre et Plongeon</span>
+                                                        </span>
+                                                    </label>
+                                                    <div class="w-24 hidden" id="pool-qty-swim-wrapper">
+                                                        <input type="number" id="pool-qty-swim" min="1" placeholder="Qty" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none">
+                                                    </div>
+                                                </div>
+                                                <!-- Activity 3 -->
+                                                <div class="flex items-center justify-between gap-3 border-t border-slate-200/60 pt-3">
+                                                    <label class="flex items-center cursor-pointer flex-1">
+                                                        <input type="checkbox" id="pool-act-family" class="pool-activity-cb w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded" onchange="togglePoolActivityQty(this)">
+                                                        <span class="ml-3 text-sm font-semibold text-slate-700">
+                                                            <span class="lang-en-only">Recreational & Family</span>
+                                                            <span class="lang-fr-only notranslate">Piscine Récréative et Familiale</span>
+                                                        </span>
+                                                    </label>
+                                                    <div class="w-24 hidden" id="pool-qty-family-wrapper">
+                                                        <input type="number" id="pool-qty-family" min="1" placeholder="Qty" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div>
                                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Capacity Limit</span><span class="lang-fr-only notranslate">Limite de capacité</span><span class="text-red-500">*</span></label>
                                             <input type="number" id="modal-public-capacity" min="1" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
@@ -3499,6 +3548,22 @@
             container.appendChild(row);
         }
 
+        window.togglePoolActivityQty = function(cb) {
+            const id = cb.id;
+            const key = id.replace('pool-act-', '');
+            const wrapper = document.getElementById(`pool-qty-${key}-wrapper`);
+            const input = document.getElementById(`pool-qty-${key}`);
+            if (wrapper) {
+                if (cb.checked) {
+                    wrapper.classList.remove('hidden');
+                    if (input) input.required = true;
+                } else {
+                    wrapper.classList.add('hidden');
+                    if (input) { input.required = false; input.value = ''; }
+                }
+            }
+        };
+
         function toggleModalBlockType() {
             const blockType = document.querySelector('input[name="modal-block-type"]:checked')?.value || 'offline';
             const offlineFields = document.getElementById('modal-offline-fields');
@@ -3508,6 +3573,18 @@
             const submitBtn = document.getElementById('modal-submit-btn');
             const isEditMode = document.getElementById('modal-edit-booking-id') && document.getElementById('modal-edit-booking-id').value !== '';
             const isDiscountEditMode = document.getElementById('modal-edit-discount-id') && document.getElementById('modal-edit-discount-id').value !== '';
+
+            // Detect surface type
+            const trueFacId = document.getElementById('modal-true-facility-id').value;
+            const surfaceId = document.getElementById('modal-facility-id').value;
+            const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == trueFacId) : null;
+            const surface = facility && facility.surfaces ? facility.surfaces.find(s => s.id == surfaceId) : null;
+            const surfaceType = surface ? surface.type : '';
+
+            // Reset pool activities view
+            const poolContainer = document.getElementById('modal-pool-activities-container');
+            const standardCapacityDiv = document.getElementById('modal-public-capacity').closest('div');
+            const standardTitleWrapper = document.getElementById('modal-block-notes').closest('div');
 
             if (blockType === 'discount') {
                 if(offlineFields) offlineFields.classList.add('hidden');
@@ -3521,6 +3598,9 @@
                 document.getElementById('modal-public-capacity').required = false;
                 document.querySelectorAll('#pricing-tiers-container .tier-name, #pricing-tiers-container .tier-price').forEach(el => el.required = false);
 
+                if(poolContainer) poolContainer.classList.add('hidden');
+                if(standardCapacityDiv) standardCapacityDiv.classList.remove('hidden');
+
                 if(submitBtn) submitBtn.innerHTML = isDiscountEditMode ? 'Save Changes' : 'Add Discount';
             } else if (blockType === 'public_session') {
                 if(offlineFields) offlineFields.classList.remove('hidden');
@@ -3528,48 +3608,63 @@
 
                 const publicExtras = document.getElementById('public-session-extra');
                 if(publicExtras) publicExtras.classList.remove('hidden');
-                document.getElementById('modal-public-capacity').required = true;
+                document.getElementById('modal-public-capacity').required = surfaceType !== 'pool';
                 document.querySelectorAll('#pricing-tiers-container .tier-name, #pricing-tiers-container .tier-price').forEach(el => el.required = true);
 
                 const discValue = document.getElementById('modal-disc-value');
                 if(discValue) discValue.required = false;
 
-                const trueFacId = document.getElementById('modal-true-facility-id').value;
-                const surfaceId = document.getElementById('modal-facility-id').value;
-                const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == trueFacId) : null;
-                const surface = facility && facility.surfaces ? facility.surfaces.find(s => s.id == surfaceId) : null;
-                const surfaceType = surface ? surface.type : '';
-
-                let optionsData = [];
-                if (surfaceType === 'ice') {
-                    optionsData = ['Free Skating', 'Open Hockey', 'Open Hockey (18+)'];
-                } else if (surfaceType === 'pool') {
-                    optionsData = ['Swimming Lane', 'Open Swim and Diving Board', 'Recreational and Family Pool'];
+                if (surfaceType === 'pool') {
+                    if (poolContainer) poolContainer.classList.remove('hidden');
+                    if (standardCapacityDiv) standardCapacityDiv.classList.add('hidden');
+                    if (standardTitleWrapper) standardTitleWrapper.classList.add('hidden');
+                    
+                    // Force public session checked and disable other options for pools
+                    const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
+                    typeRadios.forEach(r => {
+                        if (r.value !== 'public_session') {
+                            r.disabled = true;
+                        } else {
+                            r.checked = true;
+                        }
+                    });
                 } else {
-                    optionsData = ['Public Activity'];
-                }
+                    if (poolContainer) poolContainer.classList.add('hidden');
+                    if (standardCapacityDiv) standardCapacityDiv.classList.remove('hidden');
+                    if (standardTitleWrapper) standardTitleWrapper.classList.remove('hidden');
+                    
+                    const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
+                    typeRadios.forEach(r => { r.disabled = false; });
 
-                const customWrapper = document.getElementById('modal-block-notes-custom-wrapper');
-                if (customWrapper) {
-                    const notesList = document.getElementById('modal-block-notes-list');
-                    const notesDisplay = document.getElementById('modal-block-notes-display');
-                    
-                    notesList.innerHTML = optionsData.map(opt => 
-                        `<li><button type="button" class="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-primary transition-custom border-b border-slate-50 last:border-0" onclick="document.getElementById('modal-block-notes').value = '${opt}'; document.getElementById('modal-block-notes-display').textContent = '${opt}'; document.getElementById('modal-block-notes-dropdown').classList.add('hidden');">${opt}</button></li>`
-                    ).join('');
-                    
-                    customWrapper.classList.remove('hidden');
-                    
-                    let selectedValue = optionsData[0];
-                    if (notesInput && notesInput.value && optionsData.includes(notesInput.value)) {
-                        selectedValue = notesInput.value;
+                    let optionsData = [];
+                    if (surfaceType === 'ice') {
+                        optionsData = ['Free Skating', 'Open Hockey', 'Open Hockey (18+)'];
+                    } else {
+                        optionsData = ['Public Activity'];
                     }
-                    if (notesInput) notesInput.value = selectedValue;
-                    notesDisplay.textContent = selectedValue;
-                }
-                if (notesInput) {
-                    notesInput.classList.add('hidden');
-                    notesInput.required = false;
+
+                    const customWrapper = document.getElementById('modal-block-notes-custom-wrapper');
+                    if (customWrapper) {
+                        const notesList = document.getElementById('modal-block-notes-list');
+                        const notesDisplay = document.getElementById('modal-block-notes-display');
+                        
+                        notesList.innerHTML = optionsData.map(opt => 
+                            `<li><button type="button" class="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-primary transition-custom border-b border-slate-50 last:border-0" onclick="document.getElementById('modal-block-notes').value = '${opt}'; document.getElementById('modal-block-notes-display').textContent = '${opt}'; document.getElementById('modal-block-notes-dropdown').classList.add('hidden');">${opt}</button></li>`
+                        ).join('');
+                        
+                        customWrapper.classList.remove('hidden');
+                        
+                        let selectedValue = optionsData[0];
+                        if (notesInput && notesInput.value && optionsData.includes(notesInput.value)) {
+                            selectedValue = notesInput.value;
+                        }
+                        if (notesInput) notesInput.value = selectedValue;
+                        notesDisplay.textContent = selectedValue;
+                    }
+                    if (notesInput) {
+                        notesInput.classList.add('hidden');
+                        notesInput.required = false;
+                    }
                 }
 
                 const residentsContainer = document.getElementById('modal-public-residents-only-container');
@@ -3598,6 +3693,13 @@
                 if(discValue) discValue.required = false;
                 const residentsContainer = document.getElementById('modal-public-residents-only-container');
                 if (residentsContainer) residentsContainer.classList.add('hidden');
+
+                if (poolContainer) poolContainer.classList.add('hidden');
+                if (standardCapacityDiv) standardCapacityDiv.classList.remove('hidden');
+                if (standardTitleWrapper) standardTitleWrapper.classList.remove('hidden');
+                
+                const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
+                typeRadios.forEach(r => { r.disabled = false; });
                 
                 if(submitBtn) submitBtn.innerHTML = isEditMode ? 'Save Changes' : 'Confirm booking';
             }
@@ -3813,6 +3915,14 @@
             // Show block type selector for new bookings
             const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
             typeRadios.forEach(r => { r.disabled = false; if(r.value === 'offline') r.checked = true; });
+
+            // Resets for Pool activities
+            document.querySelectorAll('.pool-activity-cb').forEach(cb => {
+                cb.checked = false;
+                cb.disabled = false;
+                if(window.togglePoolActivityQty) window.togglePoolActivityQty(cb);
+            });
+
             toggleModalBlockType();
 
             document.getElementById('event-modal-backdrop').classList.remove('hidden');
@@ -3899,6 +4009,45 @@
                 r.disabled = true; 
                 if(r.value === (eventObj.extendedProps.isPublicSession ? 'public_session' : 'offline')) r.checked = true; 
             });
+
+            // Resets for Pool activities
+            document.querySelectorAll('.pool-activity-cb').forEach(cb => {
+                cb.checked = false;
+                cb.disabled = false;
+                if(window.togglePoolActivityQty) window.togglePoolActivityQty(cb);
+            });
+
+            const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == trueFacId) : null;
+            const surface = facility && facility.surfaces ? facility.surfaces.find(s => s.id == facId) : null;
+            const surfaceType = surface ? surface.type : '';
+
+            if (eventObj.extendedProps.isPublicSession && surfaceType === 'pool') {
+                const activityName = eventObj.extendedProps.originalNotes;
+                let matchedCb = null;
+                if (activityName === 'Swimming Lane') {
+                    matchedCb = document.getElementById('pool-act-lanes');
+                    document.getElementById('pool-qty-lanes').value = eventObj.extendedProps.capacity || '';
+                } else if (activityName === 'Open Swim and Diving Board') {
+                    matchedCb = document.getElementById('pool-act-swim');
+                    document.getElementById('pool-qty-swim').value = eventObj.extendedProps.capacity || '';
+                } else if (activityName === 'Recreational and Family Pool') {
+                    matchedCb = document.getElementById('pool-act-family');
+                    document.getElementById('pool-qty-family').value = eventObj.extendedProps.capacity || '';
+                }
+                
+                if (matchedCb) {
+                    matchedCb.checked = true;
+                    if(window.togglePoolActivityQty) window.togglePoolActivityQty(matchedCb);
+                }
+                
+                // Disable other checkboxes in edit mode
+                document.querySelectorAll('.pool-activity-cb').forEach(cb => {
+                    if (!cb.checked) {
+                        cb.disabled = true;
+                    }
+                });
+            }
+
             toggleModalBlockType();
 
             // Set Color Picker
@@ -4298,6 +4447,157 @@
 
             // Collect selected days mapping (0=Sun...6=Sat)
             const repeatDays = Array.from(document.querySelectorAll('input[name="repeat_day"]:checked')).map(cb => parseInt(cb.value, 10));
+
+            // Detect surface type
+            const trueFacId = document.getElementById('modal-true-facility-id').value;
+            const surfaceId = document.getElementById('modal-facility-id').value;
+            const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == trueFacId) : null;
+            const surface = facility && facility.surfaces ? facility.surfaces.find(s => s.id == surfaceId) : null;
+            const surfaceType = surface ? surface.type : '';
+
+            if (blockType === 'public_session' && surfaceType === 'pool') {
+                const checkedActs = [];
+                if (document.getElementById('pool-act-lanes').checked) {
+                    checkedActs.push({
+                        name: 'Swimming Lane',
+                        qty: parseInt(document.getElementById('pool-qty-lanes').value, 10)
+                    });
+                }
+                if (document.getElementById('pool-act-swim').checked) {
+                    checkedActs.push({
+                        name: 'Open Swim and Diving Board',
+                        qty: parseInt(document.getElementById('pool-qty-swim').value, 10)
+                    });
+                }
+                if (document.getElementById('pool-act-family').checked) {
+                    checkedActs.push({
+                        name: 'Recreational and Family Pool',
+                        qty: parseInt(document.getElementById('pool-qty-family').value, 10)
+                    });
+                }
+
+                if (checkedActs.length === 0) {
+                    errorBlock.textContent = "Please select at least one pool activity.";
+                    errorBlock.classList.remove('hidden');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+
+                const editId = document.getElementById('modal-edit-booking-id') ? document.getElementById('modal-edit-booking-id').value : '';
+
+                try {
+                    const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                    
+                    if (editId) {
+                        // Updating single pool activity
+                        const act = checkedActs[0];
+                        const payload = {
+                            facility_id: parseInt(document.getElementById('modal-true-facility-id').value, 10),
+                            surface_id: parseInt(document.getElementById('modal-facility-id').value, 10),
+                            booking_date: document.getElementById('modal-date-val').value,
+                            time_slots: slots,
+                            manual_notes: act.name,
+                            locker_room_assignment: document.getElementById('modal-locker-room') ? document.getElementById('modal-locker-room').value : '',
+                            repeat_option: repeatOptEl ? repeatOptEl.value : 'none',
+                            repeat_until: (repeatOptEl && repeatOptEl.value !== 'none' && repeatUntilEl) ? repeatUntilEl.value : null,
+                            repeat_days: repeatDays,
+                            booking_type: 'public_session',
+                            capacity: act.qty,
+                            description: document.getElementById('modal-public-description') ? document.getElementById('modal-public-description').value : '',
+                            block_color: document.getElementById('modal-block-color').value,
+                            pricing_tiers: (() => {
+                                const tiers = [];
+                                document.querySelectorAll('.pricing-tier-row').forEach(row => {
+                                    const name = row.querySelector('.tier-name').value;
+                                    const price = parseFloat(row.querySelector('.tier-price').value);
+                                    if (name && !isNaN(price)) {
+                                        tiers.push({ name, price });
+                                    }
+                                });
+                                return JSON.stringify(tiers);
+                            })()
+                        };
+
+                        const response = await fetch(`${API_BASE_URL}/api/host/bookings/${editId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload),
+                            credentials: 'include'
+                        });
+
+                        if (response.status === 401) {
+                            localStorage.removeItem('gg_user');
+                            window.location.href = 'index.html';
+                            return;
+                        }
+
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.error || 'Failed to update pool activity');
+                    } else {
+                        // Creating possibly multiple pool activities
+                        for (const act of checkedActs) {
+                            const payload = {
+                                facility_id: parseInt(document.getElementById('modal-true-facility-id').value, 10),
+                                surface_id: parseInt(document.getElementById('modal-facility-id').value, 10),
+                                booking_date: document.getElementById('modal-date-val').value,
+                                time_slots: slots,
+                                manual_notes: act.name,
+                                locker_room_assignment: document.getElementById('modal-locker-room') ? document.getElementById('modal-locker-room').value : '',
+                                repeat_option: repeatOptEl ? repeatOptEl.value : 'none',
+                                repeat_until: (repeatOptEl && repeatOptEl.value !== 'none' && repeatUntilEl) ? repeatUntilEl.value : null,
+                                repeat_days: repeatDays,
+                                booking_type: 'public_session',
+                                capacity: act.qty,
+                                description: document.getElementById('modal-public-description') ? document.getElementById('modal-public-description').value : '',
+                                block_color: document.getElementById('modal-block-color').value,
+                                pricing_tiers: (() => {
+                                    const tiers = [];
+                                    document.querySelectorAll('.pricing-tier-row').forEach(row => {
+                                        const name = row.querySelector('.tier-name').value;
+                                        const price = parseFloat(row.querySelector('.tier-price').value);
+                                        if (name && !isNaN(price)) {
+                                            tiers.push({ name, price });
+                                        }
+                                    });
+                                    return JSON.stringify(tiers);
+                                })()
+                            };
+
+                            const response = await fetch(`${API_BASE_URL}/api/host/block-time`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload),
+                                credentials: 'include'
+                            });
+
+                            if (response.status === 401) {
+                                localStorage.removeItem('gg_user');
+                                window.location.href = 'index.html';
+                                return;
+                            }
+
+                            const data = await response.json();
+                            if (!response.ok) throw new Error(data.error || `Failed to create activity "${act.name}"`);
+                        }
+                    }
+
+                    closeEventModal();
+                    await loadHostData();
+                    const activeFacilityId = document.getElementById('calendar-facility-select').value;
+                    if (activeFacilityId) {
+                        initCalendar(activeFacilityId);
+                    }
+
+                } catch (error) {
+                    errorBlock.textContent = error.message;
+                    errorBlock.classList.remove('hidden');
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+                return;
+            }
 
             const payload = {
                 facility_id: parseInt(document.getElementById('modal-true-facility-id').value, 10),

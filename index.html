@@ -169,9 +169,9 @@
                                 <path d="M12 2v13" />
                                 <path d="M8 7l4 8" />
                                 <path d="M16 7l-4 8" />
+                                <path d="M5 11h14" />
                                 <path d="M6 15a6 6 0 0 0 12 0" />
                                 <path d="M4 15h16" />
-                                <path d="M5 11h14" />
                             </svg>
                             <span class="text-[10px] font-bold text-slate-700 group-hover:text-dark uppercase tracking-wider mt-1 notranslate">Badminton</span>
                         </a>
@@ -1057,6 +1057,26 @@
                     throw new Error("Invalid format received from server.");
                 }
                 
+                // Fetch upcoming public sessions to filter pool surfaces
+                let upcomingSessionSurfaceIds = new Set();
+                try {
+                    const sessionsRes = await fetch(`${API_BASE_URL}/api/public_sessions/upcoming/all`, {
+                        method: 'GET',
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (sessionsRes.ok) {
+                        const sessions = await sessionsRes.json();
+                        sessions.forEach(s => {
+                            if (s.surface_id) upcomingSessionSurfaceIds.add(Number(s.surface_id));
+                        });
+                    }
+                } catch (err) {
+                    console.error('Failed to load upcoming public sessions for filtering', err);
+                }
+
+                // Filter out pool surfaces that do not have active public sessions
+                facilities = facilities.filter(f => f.type !== 'pool' || upcomingSessionSurfaceIds.has(Number(f.id)));
+
                 // Fetch user location without aggressive prompting
                 const loc = await getUserLocationSilently();
                 const userLat = loc ? loc.lat : null;
@@ -1195,30 +1215,11 @@
                     // Only render row if we have at least 2 facilities
                     if (catFacilities.length >= 2 || (category.id === 'featured' && catFacilities.length > 0)) {
                         renderCategoryRow(feedContainer, category, catFacilities);
-                    }
-                });
-
-
-                // Fetch and render Public Activities as the last row
-                try {
-                    const sessionsRes = await fetch(`${API_BASE_URL}/api/public_sessions/upcoming/all`, { 
-                        method: 'GET',
-                        headers: { 'Accept': 'application/json' }
-                    });
-                    if (sessionsRes.ok) {
-                        let sessions = await sessionsRes.json();
-                        if (sessions && sessions.length > 0) {
-                            sessions = sessions.slice(0, 10); // show up to 10 upcoming public activities
-                            renderPublicSessionRow(feedContainer, {
-                                titleEn: 'Public Activities',
-                                titleFr: 'Activités publiques',
-                                link: 'public-sessions.html'
-                            }, sessions);
+                        if (category.id === 'featured') {
+                            renderPublicActivitiesCategoryRow(feedContainer);
                         }
                     }
-                } catch (err) {
-                    console.error('Failed to load public activities row', err);
-                }
+                });
 
                 if (feedContainer.innerHTML === '') {
                     // Fallback if absolutely no categories rendered
@@ -1461,6 +1462,81 @@
                     updateRowArrows(containers[containers.length - 1]);
                 }
             }, 100);
+        }
+
+        function renderPublicActivitiesCategoryRow(container) {
+            const rowHtml = `
+                <div class="category-row relative pt-4 pb-8 border-b border-slate-100">
+                    <div class="flex justify-between items-end mb-6 px-1">
+                        <h2 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight">
+                            <span class="lang-en-only">Public Activities</span>
+                            <span class="lang-fr-only notranslate">Activités publiques</span>
+                        </h2>
+                        <a href="public-sessions.html" class="flex items-center text-primary font-bold hover:text-primaryHover transition-custom text-sm relative z-10 whitespace-nowrap bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-full">
+                            <span class="lang-en-only">View all</span><span class="lang-fr-only notranslate">Voir tout</span> <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                        <!-- Box 1: Patin Libre -->
+                        <div onclick="window.location.href='public-sessions.html?activity=free%20skating'" class="flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group">
+                            <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3">
+                                <i class="fa-solid fa-person-skating text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                            </div>
+                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
+                                <span class="lang-en-only">Free Skating</span>
+                                <span class="lang-fr-only notranslate">Patin Libre</span>
+                            </span>
+                        </div>
+                        
+                        <!-- Box 2: Hockey Libre -->
+                        <div onclick="window.location.href='public-sessions.html?activity=open%20hockey'" class="flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group">
+                            <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3">
+                                <i class="fa-solid fa-hockey-puck text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                            </div>
+                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
+                                <span class="lang-en-only">Open Hockey</span>
+                                <span class="lang-fr-only notranslate">Hockey Libre</span>
+                            </span>
+                        </div>
+                        
+                        <!-- Box 3: Hockey Libre 18+ -->
+                        <div onclick="window.location.href='public-sessions.html?activity=open%20hockey%20(18+)'" class="flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group relative">
+                            <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3 relative">
+                                <i class="fa-solid fa-hockey-puck text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                                <span class="absolute -top-1 -right-2 bg-primary text-white text-[8px] font-black px-1 rounded-full scale-90">18+</span>
+                            </div>
+                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
+                                <span class="lang-en-only">Open Hockey 18+</span>
+                                <span class="lang-fr-only notranslate">Hockey Libre 18+</span>
+                            </span>
+                        </div>
+                        
+                        <!-- Box 4: Récréatif & Familial -->
+                        <div onclick="window.location.href='public-sessions.html?activity=recreational%20and%20family%20pool'" class="flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group">
+                            <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3">
+                                <i class="fa-solid fa-person-swimming text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                            </div>
+                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
+                                <span class="lang-en-only">Family Pool</span>
+                                <span class="lang-fr-only notranslate">Récréatif & Familial</span>
+                            </span>
+                        </div>
+                        
+                        <!-- Box 5: Plongeon -->
+                        <div onclick="window.location.href='public-sessions.html?activity=open%20swim%20and%20diving%20board'" class="flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group">
+                            <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3">
+                                <i class="fa-solid fa-person-diving text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                            </div>
+                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
+                                <span class="lang-en-only">Diving & Open Swim</span>
+                                <span class="lang-fr-only notranslate">Plongeon</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', rowHtml);
         }
 
         function generateSurfaceCard(facility) {

@@ -2237,7 +2237,7 @@ app.post('/api/host/block-time', (req, res) => {
                 }
 
                 const { rows: existingBookings } = await client.query(
-                    `SELECT booking_date, time_slots FROM bookings WHERE surface_id = $1 AND booking_date = ANY($2::text[]) AND status != 'cancelled' FOR UPDATE`,
+                    `SELECT booking_date, time_slots, booking_type FROM bookings WHERE surface_id = $1 AND booking_date = ANY($2::text[]) AND status != 'cancelled' FOR UPDATE`,
                     [surface_id, datesToBook]
                 );
 
@@ -2247,7 +2247,9 @@ app.post('/api/host/block-time', (req, res) => {
                     try {
                         const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
                         if (Array.isArray(slots) && newSlots.some(newSlot => slots.includes(newSlot))) {
-                            hasConflict = true;
+                            if (booking.booking_type !== 'public_session' || typeToUse !== 'public_session') {
+                                hasConflict = true;
+                            }
                         }
                     } catch (e) {}
                 });
@@ -2348,7 +2350,7 @@ app.put('/api/host/bookings/:id', (req, res) => {
                     }
 
                     const { rows: existingBookings } = await client.query(
-                        `SELECT id, booking_date, time_slots, recurring_group_id FROM bookings WHERE (surface_id = $1 OR (surface_id IS NULL AND facility_id = $2)) AND booking_date = ANY($3::text[]) AND status != 'cancelled' FOR UPDATE`,
+                        `SELECT id, booking_date, time_slots, recurring_group_id, booking_type FROM bookings WHERE (surface_id = $1 OR (surface_id IS NULL AND facility_id = $2)) AND booking_date = ANY($3::text[]) AND status != 'cancelled' FOR UPDATE`,
                         [row.surface_id, row.facility_id, allDatesToCheck]
                     );
 
@@ -2370,7 +2372,10 @@ app.put('/api/host/bookings/:id', (req, res) => {
                         try {
                             const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
                             if (Array.isArray(slots) && newSlots.some(newSlot => slots.includes(newSlot))) {
-                                hasConflict = true;
+                                const editType = booking_type === 'public_session' ? 'public_session' : 'manual';
+                                if (booking.booking_type !== 'public_session' || editType !== 'public_session') {
+                                    hasConflict = true;
+                                }
                             }
                         } catch (e) {}
                     });
