@@ -3618,6 +3618,7 @@
                     if (poolContainer) poolContainer.classList.remove('hidden');
                     if (standardCapacityDiv) standardCapacityDiv.classList.add('hidden');
                     if (standardTitleWrapper) standardTitleWrapper.classList.add('hidden');
+                    if (notesInput) notesInput.required = false;
                     
                     // Force public session checked and disable other options for pools
                     const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
