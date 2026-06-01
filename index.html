@@ -1477,61 +1477,63 @@
                         </a>
                     </div>
                     
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                        <!-- Box 1: Patin Libre -->
-                        <div onclick="window.location.href='public-sessions.html?activity=free%20skating'" class="flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group">
-                            <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3">
-                                <i class="fa-solid fa-person-skating text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                    <div class="relative">
+                        <div class="row-scroll-container flex overflow-x-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 scroll-pl-4 sm:scroll-pl-6 snap-x snap-mandatory hide-scrollbar gap-4 md:grid md:grid-cols-5 md:overflow-visible md:pb-0 md:mx-0 md:px-0 md:snap-none md:gap-4">
+                            <!-- Box 1: Patin Libre -->
+                            <div onclick="window.location.href='public-sessions.html?activity=free%20skating'" class="snap-start shrink-0 w-[140px] md:w-auto md:shrink flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group">
+                                <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-person-skating text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                                </div>
+                                <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
+                                    <span class="lang-en-only">Free Skating</span>
+                                    <span class="lang-fr-only notranslate">Patin Libre</span>
+                                </span>
                             </div>
-                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
-                                <span class="lang-en-only">Free Skating</span>
-                                <span class="lang-fr-only notranslate">Patin Libre</span>
-                            </span>
-                        </div>
-                        
-                        <!-- Box 2: Hockey Libre -->
-                        <div onclick="window.location.href='public-sessions.html?activity=open%20hockey'" class="flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group">
-                            <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3">
-                                <i class="fa-solid fa-hockey-puck text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                            
+                            <!-- Box 2: Hockey Libre -->
+                            <div onclick="window.location.href='public-sessions.html?activity=open%20hockey'" class="snap-start shrink-0 w-[140px] md:w-auto md:shrink flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group">
+                                <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-hockey-puck text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                                </div>
+                                <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
+                                    <span class="lang-en-only">Open Hockey</span>
+                                    <span class="lang-fr-only notranslate">Hockey Libre</span>
+                                </span>
                             </div>
-                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
-                                <span class="lang-en-only">Open Hockey</span>
-                                <span class="lang-fr-only notranslate">Hockey Libre</span>
-                            </span>
-                        </div>
-                        
-                        <!-- Box 3: Hockey Libre 18+ -->
-                        <div onclick="window.location.href='public-sessions.html?activity=open%20hockey%20(18+)'" class="flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group relative">
-                            <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3 relative">
-                                <i class="fa-solid fa-hockey-puck text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
-                                <span class="absolute -top-1 -right-2 bg-primary text-white text-[8px] font-black px-1 rounded-full scale-90">18+</span>
+                            
+                            <!-- Box 3: Hockey Libre 18+ -->
+                            <div onclick="window.location.href='public-sessions.html?activity=open%20hockey%20(18+)'" class="snap-start shrink-0 w-[140px] md:w-auto md:shrink flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group relative">
+                                <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3 relative">
+                                    <i class="fa-solid fa-hockey-puck text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                                    <span class="absolute -top-1 -right-2 bg-primary text-white text-[8px] font-black px-1 rounded-full scale-90">18+</span>
+                                </div>
+                                <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
+                                    <span class="lang-en-only">Open Hockey 18+</span>
+                                    <span class="lang-fr-only notranslate">Hockey Libre 18+</span>
+                                </span>
                             </div>
-                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
-                                <span class="lang-en-only">Open Hockey 18+</span>
-                                <span class="lang-fr-only notranslate">Hockey Libre 18+</span>
-                            </span>
-                        </div>
-                        
-                        <!-- Box 4: Récréatif & Familial -->
-                        <div onclick="window.location.href='public-sessions.html?activity=recreational%20and%20family%20pool'" class="flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group">
-                            <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3">
-                                <i class="fa-solid fa-person-swimming text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                            
+                            <!-- Box 4: Récréatif & Familial -->
+                            <div onclick="window.location.href='public-sessions.html?activity=recreational%20and%20family%20pool'" class="snap-start shrink-0 w-[140px] md:w-auto md:shrink flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group">
+                                <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-person-swimming text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                                </div>
+                                <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
+                                    <span class="lang-en-only">Family Pool</span>
+                                    <span class="lang-fr-only notranslate">Récréatif & Familial</span>
+                                </span>
                             </div>
-                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
-                                <span class="lang-en-only">Family Pool</span>
-                                <span class="lang-fr-only notranslate">Récréatif & Familial</span>
-                            </span>
-                        </div>
-                        
-                        <!-- Box 5: Plongeon -->
-                        <div onclick="window.location.href='public-sessions.html?activity=open%20swim%20and%20diving%20board'" class="flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group">
-                            <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3">
-                                <i class="fa-solid fa-person-diving text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                            
+                            <!-- Box 5: Plongeon -->
+                            <div onclick="window.location.href='public-sessions.html?activity=open%20swim%20and%20diving%20board'" class="snap-start shrink-0 w-[140px] md:w-auto md:shrink flex flex-col items-center justify-center p-6 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5 group">
+                                <div class="w-14 h-14 bg-white shadow-sm border border-slate-200/30 rounded-xl flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-person-diving text-2xl text-slate-600 group-hover:text-primary transition-custom"></i>
+                                </div>
+                                <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
+                                    <span class="lang-en-only">Diving & Open Swim</span>
+                                    <span class="lang-fr-only notranslate">Plongeon</span>
+                                </span>
                             </div>
-                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center">
-                                <span class="lang-en-only">Diving & Open Swim</span>
-                                <span class="lang-fr-only notranslate">Plongeon</span>
-                            </span>
                         </div>
                     </div>
                 </div>
