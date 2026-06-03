@@ -797,7 +797,18 @@
                     pagination.classList.add('hidden');
                     updateMapMarkers([]);
                 } else {
-                    updateMapMarkers(data, preventFitBounds);
+                    let hasNearby = false;
+                    if (map) {
+                        const center = map.getCenter();
+                        hasNearby = data.some(f => {
+                            if (f.lat && f.lng) {
+                                return center.distanceTo(L.latLng(f.lat, f.lng)) < 30000;
+                            }
+                            return false;
+                        });
+                    }
+                    const finalPreventFitBounds = hasNearby ? preventFitBounds : false;
+                    updateMapMarkers(data, finalPreventFitBounds);
                     setTimeout(updateListingsFromMapBounds, 50);
                 }
                 facilitiesGrid.style.opacity = '1';

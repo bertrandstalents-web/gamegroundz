@@ -832,7 +832,20 @@
                     pagination.classList.add('hidden');
                     updateMapMarkers([]);
                 } else {
-                    updateMapMarkers(data, preventFitBounds);
+                    let hasNearby = false;
+                    if (map) {
+                        const center = map.getCenter();
+                        hasNearby = data.some(f => {
+                            const lat = f.effective_lat || f.lat;
+                            const lng = f.effective_lng || f.lng;
+                            if (lat && lng) {
+                                return center.distanceTo(L.latLng(lat, lng)) < 30000;
+                            }
+                            return false;
+                        });
+                    }
+                    const finalPreventFitBounds = hasNearby ? preventFitBounds : false;
+                    updateMapMarkers(data, finalPreventFitBounds);
                     // Instead of raw render, we trigger the map bounds render immediately
                     // The map bounds might take a fraction of a second to settle after fitBounds
                     setTimeout(updateListingsFromMapBounds, 50);
