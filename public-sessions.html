@@ -162,6 +162,7 @@
                                         <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="open hockey (18+)" data-label="Open Hockey (18+)"><span class="lang-en-only">Open Hockey (18+)</span><span class="lang-fr-only notranslate">Hockey libre (18+)</span></div>
                                         
                                         <div class="px-4 py-1.5 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-t border-slate-50 pt-3">Swimming Pool</div>
+                                        <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="swim" data-label="Swimming"><span class="lang-en-only">Swimming</span><span class="lang-fr-only notranslate">Baignade</span></div>
                                         <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="swimming lane" data-label="Swimming Lane">Swimming Lane</div>
                                         <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="open swim and diving board" data-label="Open Swim & Dive">Open Swim and Diving Board</div>
                                         <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="recreational and family pool" data-label="Rec & Family Pool">Recreational and Family Pool</div>
@@ -760,7 +761,23 @@
                         (actLower === 'open hockey' && s.manual_notes && (s.manual_notes.toLowerCase().includes('hockey libre') || s.manual_notes.toLowerCase().includes('bâton') || s.manual_notes.toLowerCase().includes('open hockey') || s.manual_notes.toLowerCase().includes('free hockey'))) ||
                         (actLower === 'open hockey (18+)' && s.manual_notes && (s.manual_notes.toLowerCase().includes('18+') || s.manual_notes.toLowerCase().includes('open hockey'))) ||
                         (actLower === 'swimming lane' && s.manual_notes && (s.manual_notes.toLowerCase().includes('corridor') || s.manual_notes.toLowerCase().includes('longueur'))) ||
-                        (actLower === 'recreational and family pool' && s.manual_notes && (s.manual_notes.toLowerCase().includes('bain libre') || s.manual_notes.toLowerCase().includes('récréatif')))
+                        (actLower === 'recreational and family pool' && s.manual_notes && (s.manual_notes.toLowerCase().includes('bain libre') || s.manual_notes.toLowerCase().includes('récréatif'))) ||
+                        (actLower === 'swim' && (
+                            (s.facility_type && s.facility_type.toLowerCase().includes('pool')) ||
+                            (s.manual_notes && (
+                                s.manual_notes.toLowerCase().includes('swim') || 
+                                s.manual_notes.toLowerCase().includes('pool') || 
+                                s.manual_notes.toLowerCase().includes('lane') || 
+                                s.manual_notes.toLowerCase().includes('diving') || 
+                                s.manual_notes.toLowerCase().includes('dive') || 
+                                s.manual_notes.toLowerCase().includes('natation') || 
+                                s.manual_notes.toLowerCase().includes('plongeon') || 
+                                s.manual_notes.toLowerCase().includes('family') || 
+                                s.manual_notes.toLowerCase().includes('famill') || 
+                                s.manual_notes.toLowerCase().includes('récréat') || 
+                                s.manual_notes.toLowerCase().includes('bain')
+                            ))
+                        ))
                     );
                 }
                 // (Note: ignoring environment filter since public activities don't return environment info easily without joining, but if needed we could add it)
@@ -851,10 +868,13 @@
                 const activityFilterInput = document.getElementById('inline-activity-filter');
                 const activityLabel = document.getElementById('custom-activity-label');
                 if (activityFilterInput) {
-                    activityFilterInput.value = explicitActivity;
+                    let searchVal = explicitActivity.toLowerCase();
+                    if (searchVal === 'swimming') searchVal = 'swim'; // map 'swimming' to 'swim'
+                    
+                    activityFilterInput.value = searchVal;
                     
                     // Match dropdown option
-                    const option = Array.from(document.querySelectorAll('.activity-option')).find(o => o.getAttribute('data-value') === explicitActivity.toLowerCase());
+                    const option = Array.from(document.querySelectorAll('.activity-option')).find(o => o.getAttribute('data-value') === searchVal);
                     if (option && activityLabel) {
                         activityLabel.textContent = option.getAttribute('data-label') || explicitActivity;
                         
