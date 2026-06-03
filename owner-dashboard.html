@@ -548,11 +548,11 @@
                                 <div>
                                     <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Action Type</span><span class="lang-fr-only notranslate">Type d'action</span><span class="text-red-500">*</span></label>
                                     <div class="flex flex-wrap items-center gap-4 mt-2">
-                                        <label class="flex items-center cursor-pointer">
+                                        <label id="modal-block-type-offline-label" class="flex items-center cursor-pointer">
                                             <input type="radio" name="modal-block-type" value="offline" class="w-4 h-4 text-primary focus:ring-primary border-slate-300" checked="" onchange="toggleModalBlockType()">
                                             <span class="ml-2 text-sm font-semibold text-slate-700"><span class="lang-en-only">Offline Booking</span><span class="lang-fr-only notranslate">Réservation hors ligne</span></span>
                                         </label>
-                                        <label class="flex items-center cursor-pointer">
+                                        <label id="modal-block-type-discount-label" class="flex items-center cursor-pointer">
                                             <input type="radio" name="modal-block-type" value="discount" class="w-4 h-4 text-primary focus:ring-primary border-slate-300" onchange="toggleModalBlockType()">
                                             <span class="ml-2 text-sm font-semibold text-slate-700"><span class="lang-en-only">Add Discount</span><span class="lang-fr-only notranslate">Ajouter un rabais</span></span>
                                         </label>
@@ -624,7 +624,7 @@
                                             <input type="number" id="modal-public-capacity" min="1" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
                                         </div>
                                         
-                                        <div class="pt-2">
+                                        <div id="modal-pricing-tiers-section" class="pt-2">
                                             <div class="flex items-center justify-between mb-2">
                                                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider"><span class="lang-en-only">Pricing Tiers</span><span class="lang-fr-only notranslate">Niveaux de prix</span><span class="text-red-500">*</span></label>
                                                 <button type="button" onclick="addPricingTier()" class="text-xs font-bold text-primary hover:text-primaryHover transition-custom flex items-center bg-primary/5 px-2 py-1 rounded-md">
@@ -3565,6 +3565,29 @@
         };
 
         function toggleModalBlockType() {
+            // Detect surface type
+            const trueFacId = document.getElementById('modal-true-facility-id').value;
+            const surfaceId = document.getElementById('modal-facility-id').value;
+            const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == trueFacId) : null;
+            let surface = facility && facility.surfaces ? facility.surfaces.find(s => s.id == surfaceId) : null;
+            if (!surface && typeof window.currentSurfaces !== 'undefined' && window.currentSurfaces) {
+                surface = window.currentSurfaces.find(s => s.id == surfaceId);
+            }
+            const surfaceType = surface ? surface.type : '';
+
+            // Handle pool-specific Action Type choices
+            const offlineLabel = document.getElementById('modal-block-type-offline-label');
+            const discountLabel = document.getElementById('modal-block-type-discount-label');
+            if (surfaceType === 'pool') {
+                if (offlineLabel) offlineLabel.classList.add('hidden');
+                if (discountLabel) discountLabel.classList.add('hidden');
+                const publicRadio = document.querySelector('input[name="modal-block-type"][value="public_session"]');
+                if (publicRadio) publicRadio.checked = true;
+            } else {
+                if (offlineLabel) offlineLabel.classList.remove('hidden');
+                if (discountLabel) discountLabel.classList.remove('hidden');
+            }
+
             const blockType = document.querySelector('input[name="modal-block-type"]:checked')?.value || 'offline';
             const offlineFields = document.getElementById('modal-offline-fields');
             const discountFields = document.getElementById('modal-discount-fields');
@@ -3573,13 +3596,6 @@
             const submitBtn = document.getElementById('modal-submit-btn');
             const isEditMode = document.getElementById('modal-edit-booking-id') && document.getElementById('modal-edit-booking-id').value !== '';
             const isDiscountEditMode = document.getElementById('modal-edit-discount-id') && document.getElementById('modal-edit-discount-id').value !== '';
-
-            // Detect surface type
-            const trueFacId = document.getElementById('modal-true-facility-id').value;
-            const surfaceId = document.getElementById('modal-facility-id').value;
-            const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == trueFacId) : null;
-            const surface = facility && facility.surfaces ? facility.surfaces.find(s => s.id == surfaceId) : null;
-            const surfaceType = surface ? surface.type : '';
 
             // Reset pool activities view
             const poolContainer = document.getElementById('modal-pool-activities-container');
@@ -3609,7 +3625,15 @@
                 const publicExtras = document.getElementById('public-session-extra');
                 if(publicExtras) publicExtras.classList.remove('hidden');
                 document.getElementById('modal-public-capacity').required = surfaceType !== 'pool';
-                document.querySelectorAll('#pricing-tiers-container .tier-name, #pricing-tiers-container .tier-price').forEach(el => el.required = true);
+                
+                const pricingTiersSection = document.getElementById('modal-pricing-tiers-section');
+                if (surfaceType === 'pool') {
+                    if (pricingTiersSection) pricingTiersSection.classList.add('hidden');
+                    document.querySelectorAll('#pricing-tiers-container .tier-name, #pricing-tiers-container .tier-price').forEach(el => el.required = false);
+                } else {
+                    if (pricingTiersSection) pricingTiersSection.classList.remove('hidden');
+                    document.querySelectorAll('#pricing-tiers-container .tier-name, #pricing-tiers-container .tier-price').forEach(el => el.required = true);
+                }
 
                 const discValue = document.getElementById('modal-disc-value');
                 if(discValue) discValue.required = false;
@@ -4019,7 +4043,10 @@
             });
 
             const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == trueFacId) : null;
-            const surface = facility && facility.surfaces ? facility.surfaces.find(s => s.id == facId) : null;
+            let surface = facility && facility.surfaces ? facility.surfaces.find(s => s.id == facId) : null;
+            if (!surface && typeof window.currentSurfaces !== 'undefined' && window.currentSurfaces) {
+                surface = window.currentSurfaces.find(s => s.id == facId);
+            }
             const surfaceType = surface ? surface.type : '';
 
             if (eventObj.extendedProps.isPublicSession && surfaceType === 'pool') {
@@ -4453,7 +4480,10 @@
             const trueFacId = document.getElementById('modal-true-facility-id').value;
             const surfaceId = document.getElementById('modal-facility-id').value;
             const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == trueFacId) : null;
-            const surface = facility && facility.surfaces ? facility.surfaces.find(s => s.id == surfaceId) : null;
+            let surface = facility && facility.surfaces ? facility.surfaces.find(s => s.id == surfaceId) : null;
+            if (!surface && typeof window.currentSurfaces !== 'undefined' && window.currentSurfaces) {
+                surface = window.currentSurfaces.find(s => s.id == surfaceId);
+            }
             const surfaceType = surface ? surface.type : '';
 
             if (blockType === 'public_session' && surfaceType === 'pool') {
@@ -4493,6 +4523,32 @@
                     if (editId) {
                         // Updating single pool activity
                         const act = checkedActs[0];
+                        const actName = act.name;
+                        let activityKey = '';
+                        if (actName === 'Swimming Lane') activityKey = 'lanes';
+                        else if (actName === 'Open Swim and Diving Board') activityKey = 'swim';
+                        else if (actName === 'Recreational and Family Pool') activityKey = 'family';
+
+                        let parsedRules = null;
+                        if (surface && surface.pricing_rules) {
+                            try {
+                                parsedRules = typeof surface.pricing_rules === 'string' ? JSON.parse(surface.pricing_rules) : surface.pricing_rules;
+                            } catch(e) {}
+                        }
+
+                        let tiers = [];
+                        let activities = null;
+                        if (parsedRules) {
+                            if (parsedRules.activities) {
+                                activities = parsedRules.activities;
+                            } else if (parsedRules.time_slots && parsedRules.time_slots.activities) {
+                                activities = parsedRules.time_slots.activities;
+                            }
+                        }
+                        if (activities && activityKey) {
+                            tiers = activities[activityKey] || [];
+                        }
+
                         const payload = {
                             facility_id: parseInt(document.getElementById('modal-true-facility-id').value, 10),
                             surface_id: parseInt(document.getElementById('modal-facility-id').value, 10),
@@ -4507,17 +4563,7 @@
                             capacity: act.qty,
                             description: document.getElementById('modal-public-description') ? document.getElementById('modal-public-description').value : '',
                             block_color: document.getElementById('modal-block-color').value,
-                            pricing_tiers: (() => {
-                                const tiers = [];
-                                document.querySelectorAll('.pricing-tier-row').forEach(row => {
-                                    const name = row.querySelector('.tier-name').value;
-                                    const price = parseFloat(row.querySelector('.tier-price').value);
-                                    if (name && !isNaN(price)) {
-                                        tiers.push({ name, price });
-                                    }
-                                });
-                                return JSON.stringify(tiers);
-                            })()
+                            pricing_tiers: JSON.stringify(tiers)
                         };
 
                         const response = await fetch(`${API_BASE_URL}/api/host/bookings/${editId}`, {
@@ -4538,6 +4584,32 @@
                     } else {
                         // Creating possibly multiple pool activities
                         for (const act of checkedActs) {
+                            const actName = act.name;
+                            let activityKey = '';
+                            if (actName === 'Swimming Lane') activityKey = 'lanes';
+                            else if (actName === 'Open Swim and Diving Board') activityKey = 'swim';
+                            else if (actName === 'Recreational and Family Pool') activityKey = 'family';
+
+                            let parsedRules = null;
+                            if (surface && surface.pricing_rules) {
+                                try {
+                                    parsedRules = typeof surface.pricing_rules === 'string' ? JSON.parse(surface.pricing_rules) : surface.pricing_rules;
+                                } catch(e) {}
+                            }
+
+                            let tiers = [];
+                            let activities = null;
+                            if (parsedRules) {
+                                if (parsedRules.activities) {
+                                    activities = parsedRules.activities;
+                                } else if (parsedRules.time_slots && parsedRules.time_slots.activities) {
+                                    activities = parsedRules.time_slots.activities;
+                                }
+                            }
+                            if (activities && activityKey) {
+                                tiers = activities[activityKey] || [];
+                            }
+
                             const payload = {
                                 facility_id: parseInt(document.getElementById('modal-true-facility-id').value, 10),
                                 surface_id: parseInt(document.getElementById('modal-facility-id').value, 10),
@@ -4552,17 +4624,7 @@
                                 capacity: act.qty,
                                 description: document.getElementById('modal-public-description') ? document.getElementById('modal-public-description').value : '',
                                 block_color: document.getElementById('modal-block-color').value,
-                                pricing_tiers: (() => {
-                                    const tiers = [];
-                                    document.querySelectorAll('.pricing-tier-row').forEach(row => {
-                                        const name = row.querySelector('.tier-name').value;
-                                        const price = parseFloat(row.querySelector('.tier-price').value);
-                                        if (name && !isNaN(price)) {
-                                            tiers.push({ name, price });
-                                        }
-                                    });
-                                    return JSON.stringify(tiers);
-                                })()
+                                pricing_tiers: JSON.stringify(tiers)
                             };
 
                             const response = await fetch(`${API_BASE_URL}/api/host/block-time`, {
@@ -7199,6 +7261,15 @@
                 const res = await fetch(`${API_BASE_URL}/api/facilities/${facId}?_t=${Date.now()}`);
                 const data = await res.json();
                 window.currentSurfaces = data.surfaces || [];
+                
+                // Sync ownerFacilities to prevent stale rules inside calendar scheduling
+                if (typeof ownerFacilities !== 'undefined' && ownerFacilities) {
+                    const fac = ownerFacilities.find(f => f.id == facId);
+                    if (fac) {
+                        fac.surfaces = window.currentSurfaces;
+                    }
+                }
+                
                 renderSurfaces();
                 
                 // Populate Calendar Dropdown
@@ -7370,9 +7441,82 @@
             const sharedZoneContainer = document.getElementById('shared-zone-pricing-container');
             const dropInContainer = document.getElementById('drop-in-only-container');
             
+            // Pool activities pricing container
+            const poolPricingContainer = document.getElementById('pool-activities-pricing-container');
+            const surfType = document.getElementById('surf-type') ? document.getElementById('surf-type').value : '';
+            
             if (exclusiveContainer) exclusiveContainer.classList.toggle('hidden', selectedModel !== 'exclusive');
             if (sharedZoneContainer) sharedZoneContainer.classList.toggle('hidden', selectedModel !== 'shared_zone');
             if (dropInContainer) dropInContainer.classList.toggle('hidden', selectedModel !== 'drop_in_only');
+            
+            if (poolPricingContainer) {
+                if (selectedModel === 'drop_in_only' && surfType === 'pool') {
+                    poolPricingContainer.classList.remove('hidden');
+                } else {
+                    poolPricingContainer.classList.add('hidden');
+                }
+            }
+        };
+
+        window.toggleSurfPoolActivityPricing = function(activityKey) {
+            const isChecked = document.getElementById(`surf-pool-act-${activityKey}`).checked;
+            const pricingDiv = document.getElementById(`surf-pool-act-${activityKey}-pricing`);
+            if (pricingDiv) {
+                pricingDiv.classList.toggle('hidden', !isChecked);
+            }
+            // If checked and empty, add default rows
+            const rowsContainer = document.getElementById(`surf-pool-act-${activityKey}-rows`);
+            if (isChecked && rowsContainer && rowsContainer.children.length === 0) {
+                // Add defaults: Resident ($0), Non-Resident ($9 / $7 / $10), Adult 18+ ($4 / $5 / $6)
+                let defaultTiers = [];
+                if (activityKey === 'lanes') {
+                    defaultTiers = [
+                        { name: 'Resident', price: 0 },
+                        { name: 'Non-Resident', price: 9 },
+                        { name: 'Adult 18+', price: 4 }
+                    ];
+                } else if (activityKey === 'swim') {
+                    defaultTiers = [
+                        { name: 'Resident', price: 0 },
+                        { name: 'Non-Resident', price: 7 },
+                        { name: 'Adult 18+', price: 5 }
+                    ];
+                } else if (activityKey === 'family') {
+                    defaultTiers = [
+                        { name: 'Resident', price: 0 },
+                        { name: 'Non-Resident', price: 10 },
+                        { name: 'Adult 18+', price: 6 }
+                    ];
+                }
+                defaultTiers.forEach(t => {
+                    window.addSurfPoolPricingRow(activityKey, t.name, t.price);
+                });
+            }
+        };
+
+        window.addSurfPoolPricingRow = function(activityKey, name = '', price = '') {
+            const container = document.getElementById(`surf-pool-act-${activityKey}-rows`);
+            if (!container) return;
+            
+            const rowId = 'surf-row-' + Math.random().toString(36).substr(2, 9);
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = 'flex items-center gap-3 surf-pool-pricing-row mt-2';
+            div.dataset.activity = activityKey;
+            
+            div.innerHTML = `
+                <div class="flex-1">
+                    <input type="text" class="tier-name-input w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium" value="${name}" placeholder="e.g. Resident, Non-Resident" required>
+                </div>
+                <div class="w-28 flex items-center bg-white border border-slate-300 rounded-lg px-2 py-1 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary">
+                    <span class="text-sm text-slate-500 mr-1">$</span>
+                    <input type="number" min="0" step="0.01" class="tier-price-input w-full outline-none text-sm font-medium bg-transparent" value="${price}" placeholder="0.00" required>
+                </div>
+                <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-slate-400 hover:text-red-500 transition-custom p-1.5">
+                    <i class="fa-solid fa-trash text-sm"></i>
+                </button>
+            `;
+            container.appendChild(div);
         };
 
         window.updateSizeOptions = function(type, defaultVal) {
@@ -7391,10 +7535,10 @@
                     const exclusiveRadio = document.querySelector('input[name="booking_model"][value="exclusive"]');
                     if (exclusiveRadio) {
                         exclusiveRadio.checked = true;
-                        window.toggleBookingModel();
                     }
                 }
             }
+            if (window.toggleBookingModel) window.toggleBookingModel();
             
             if (!list || !input || !display) return;
             
@@ -7548,6 +7692,16 @@
             if (document.getElementById('fac-instant')) document.getElementById('fac-instant').checked = surf.is_instant_book == 1;
             if (document.getElementById('fac-booking-end-date')) document.getElementById('fac-booking-end-date').value = surf.booking_end_date || '';
             
+            // Reset pool activities checkboxes and pricing rows
+            ['lanes', 'swim', 'family'].forEach(act => {
+                const cb = document.getElementById(`surf-pool-act-${act}`);
+                if (cb) cb.checked = false;
+                const pricingDiv = document.getElementById(`surf-pool-act-${act}-pricing`);
+                if (pricingDiv) pricingDiv.classList.add('hidden');
+                const rowsContainer = document.getElementById(`surf-pool-act-${act}-rows`);
+                if (rowsContainer) rowsContainer.innerHTML = '';
+            });
+
             const rulesContainer = document.getElementById('pricing-rules-container');
             if (rulesContainer) {
                 rulesContainer.innerHTML = '';
@@ -7584,8 +7738,34 @@
                         timeSlots.forEach(r => {
                              if (typeof window.createRuleRow === 'function') window.createRuleRow(r.start, r.end, r.price, r.days);
                         });
-                    } else {
+                    } else if (surf.type !== 'pool' || (parsedRules && parsedRules.booking_model !== 'drop_in_only')) {
                         if (typeof window.createRuleRow === 'function') window.createRuleRow();
+                    }
+
+                    // Populate pool activities pricing grid if pool & drop_in_only
+                    if (surf.type === 'pool' && parsedRules && (parsedRules.booking_model === 'drop_in_only' || parsedRules.booking_model === 'shared_zone')) {
+                        let activities = null;
+                        if (parsedRules.activities) {
+                            activities = parsedRules.activities;
+                        } else if (parsedRules.time_slots && parsedRules.time_slots.activities) {
+                            activities = parsedRules.time_slots.activities;
+                        }
+                        
+                        if (activities) {
+                            ['lanes', 'swim', 'family'].forEach(act => {
+                                const cb = document.getElementById(`surf-pool-act-${act}`);
+                                if (activities[act]) {
+                                    if (cb) cb.checked = true;
+                                    const pricingDiv = document.getElementById(`surf-pool-act-${act}-pricing`);
+                                    if (pricingDiv) pricingDiv.classList.remove('hidden');
+                                    
+                                    const tiers = activities[act];
+                                    tiers.forEach(t => {
+                                        window.addSurfPoolPricingRow(act, t.name, t.price);
+                                    });
+                                }
+                            });
+                        }
                     }
                 } else {
                     const radio = document.querySelector(`input[name="booking_model"][value="exclusive"]`);
@@ -7701,16 +7881,47 @@
                         price: parseInt(row.querySelector('.rule-price').value, 10)
                     };
                 });
-                const basePrice = pricingRules.length > 0 ? Math.min(...pricingRules.map(r => r.price)) : 100;
 
                 // Booking model
                 const bookingModel = document.querySelector('input[name="booking_model"]:checked')?.value || 'exclusive';
+                const surfType = document.getElementById('surf-type') ? document.getElementById('surf-type').value : 'ice';
                 const totalZones = parseInt(document.getElementById('fac-total-zones')?.value || '8', 10);
                 const zonePrice = parseFloat(document.getElementById('fac-zone-price')?.value || '25.00');
 
+                // Read pool activities pricing if type pool & model drop_in_only
+                let finalPricingRules = pricingRules;
+                let basePrice = pricingRules.length > 0 ? Math.min(...pricingRules.map(r => r.price)) : 100;
+                
+                if (surfType === 'pool' && bookingModel === 'drop_in_only') {
+                    const poolActivitiesPricing = {};
+                    ['lanes', 'swim', 'family'].forEach(act => {
+                        const cb = document.getElementById(`surf-pool-act-${act}`);
+                        if (cb && cb.checked) {
+                            poolActivitiesPricing[act] = [];
+                            const rows = document.querySelectorAll(`.surf-pool-pricing-row[data-activity="${act}"]`);
+                            rows.forEach(row => {
+                                const nameVal = row.querySelector('.tier-name-input').value.trim();
+                                const priceVal = parseFloat(row.querySelector('.tier-price-input').value) || 0;
+                                if (nameVal) {
+                                    poolActivitiesPricing[act].push({ name: nameVal, price: priceVal });
+                                }
+                            });
+                        }
+                    });
+                    finalPricingRules = { activities: poolActivitiesPricing };
+                    // Set basePrice to the lowest price among all checked pool activities
+                    let minP = Infinity;
+                    Object.values(poolActivitiesPricing).forEach(tiers => {
+                        tiers.forEach(t => {
+                            if (t.price < minP) minP = t.price;
+                        });
+                    });
+                    basePrice = minP === Infinity ? 0 : minP;
+                }
+
                 const payload = {
                     name: document.getElementById('surf-name').value,
-                    type: document.getElementById('surf-type') ? document.getElementById('surf-type').value : 'ice',
+                    type: surfType,
                     environment: document.getElementById('fac-env') ? document.getElementById('fac-env').value : 'indoor',
                     locker_rooms: document.getElementById('surf-locker-rooms') ? parseInt(document.getElementById('surf-locker-rooms').textContent, 10) : 0,
                     capacity: document.getElementById('surf-capacity') ? parseInt(document.getElementById('surf-capacity').textContent, 10) : 0,
@@ -7718,7 +7929,7 @@
                     amenities: Array.from(document.getElementById('add-surface-modal').querySelectorAll('.amenity-card.border-slate-800')).map(el => el.dataset.amenity),
                     base_price: basePrice,
                     pricing_unit: document.getElementById('fac-pricing-unit') ? document.getElementById('fac-pricing-unit').value : 'hour',
-                    pricing_rules: pricingRules,
+                    pricing_rules: finalPricingRules,
                     booking_model: bookingModel,
                     total_zones: totalZones,
                     zone_price: zonePrice,
@@ -7991,7 +8202,7 @@
                                     <span class="block text-xs text-slate-500">Rent the entire surface by the hour.</span>
                                 </div>
                             </label>
-                            <label class="flex items-start cursor-pointer group">
+                            <label class="hidden items-start cursor-pointer group">
                                 <input type="radio" name="booking_model" value="shared_zone" class="mt-1 w-4 h-4 text-primary bg-slate-100 border-slate-300 focus:ring-primary focus:ring-2 cursor-pointer transition-custom" onchange="window.toggleBookingModel()">
                                 <div class="ml-3">
                                     <span class="block text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors">Shared Lanes / Zones</span>
@@ -8052,6 +8263,86 @@
                     <div id="drop-in-only-container" class="hidden mb-4 bg-blue-50 border border-blue-100 p-4 rounded-xl text-sm text-blue-800">
                         <p class="font-semibold mb-1"><i class="fa-solid fa-info-circle mr-1"></i> Private booking disabled</p>
                         <p>Customers will not be able to book this surface by the hour. To accept bookings, you will need to create Public Activities on your dashboard after creating this surface.</p>
+                    </div>
+
+                    <!-- Pool drop-in activities pricing container -->
+                    <div id="pool-activities-pricing-container" class="hidden mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <label class="block text-sm font-bold text-dark mb-3">
+                            <span class="lang-en-only">Public Activities & Pricing Tiers</span>
+                            <span class="lang-fr-only notranslate">Activités publiques et grille de tarifs</span>
+                        </label>
+                        <p class="text-xs text-slate-500 mb-4">
+                            <span class="lang-en-only">Select the activities available for this pool and set the pricing tiers for each.</span>
+                            <span class="lang-fr-only notranslate">Sélectionnez les activités disponibles pour cette piscine et établissez la grille de prix pour chacune.</span>
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <!-- Activity 1: Swimming Lanes -->
+                            <div class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
+                                <label class="flex items-center cursor-pointer mb-3">
+                                    <input type="checkbox" id="surf-pool-act-lanes" class="w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded" onchange="toggleSurfPoolActivityPricing('lanes')">
+                                    <span class="ml-3 text-sm font-bold text-slate-800">
+                                        <span class="lang-en-only">Couloir de Natation (Swimming Lanes)</span>
+                                        <span class="lang-fr-only notranslate">Couloir de Natation</span>
+                                    </span>
+                                </label>
+                                <div id="surf-pool-act-lanes-pricing" class="hidden pl-7 space-y-3 pt-2 border-t border-slate-100 mt-2">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-xs font-semibold text-slate-500"><span class="lang-en-only">Pricing Tiers</span><span class="lang-fr-only notranslate">Niveaux de prix</span></span>
+                                        <button type="button" onclick="addSurfPoolPricingRow('lanes')" class="text-xs font-bold text-primary hover:text-primaryHover transition-custom flex items-center bg-primary/5 px-2 py-1 rounded-md">
+                                            <i class="fa-solid fa-plus mr-1"></i> <span class="lang-en-only">Add Tier</span><span class="lang-fr-only notranslate">Ajouter un tarif</span>
+                                        </button>
+                                    </div>
+                                    <div id="surf-pool-act-lanes-rows" class="space-y-2">
+                                        <!-- Rows added by JS -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Activity 2: Open Swim & Diving -->
+                            <div class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
+                                <label class="flex items-center cursor-pointer mb-3">
+                                    <input type="checkbox" id="surf-pool-act-swim" class="w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded" onchange="toggleSurfPoolActivityPricing('swim')">
+                                    <span class="ml-3 text-sm font-bold text-slate-800">
+                                        <span class="lang-en-only">Baignade Libre et Plongeon (Open Swim & Diving)</span>
+                                        <span class="lang-fr-only notranslate">Baignade Libre et Plongeon</span>
+                                    </span>
+                                </label>
+                                <div id="surf-pool-act-swim-pricing" class="hidden pl-7 space-y-3 pt-2 border-t border-slate-100 mt-2">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-xs font-semibold text-slate-500"><span class="lang-en-only">Pricing Tiers</span><span class="lang-fr-only notranslate">Niveaux de prix</span></span>
+                                        <button type="button" onclick="addSurfPoolPricingRow('swim')" class="text-xs font-bold text-primary hover:text-primaryHover transition-custom flex items-center bg-primary/5 px-2 py-1 rounded-md">
+                                            <i class="fa-solid fa-plus mr-1"></i> <span class="lang-en-only">Add Tier</span><span class="lang-fr-only notranslate">Ajouter un tarif</span>
+                                        </button>
+                                    </div>
+                                    <div id="surf-pool-act-swim-rows" class="space-y-2">
+                                        <!-- Rows added by JS -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Activity 3: Recreational & Family -->
+                            <div class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
+                                <label class="flex items-center cursor-pointer mb-3">
+                                    <input type="checkbox" id="surf-pool-act-family" class="w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded" onchange="toggleSurfPoolActivityPricing('family')">
+                                    <span class="ml-3 text-sm font-bold text-slate-800">
+                                        <span class="lang-en-only">Piscine Récréative et Familiale (Recreational & Family)</span>
+                                        <span class="lang-fr-only notranslate">Piscine Récréative et Familiale</span>
+                                    </span>
+                                </label>
+                                <div id="surf-pool-act-family-pricing" class="hidden pl-7 space-y-3 pt-2 border-t border-slate-100 mt-2">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-xs font-semibold text-slate-500"><span class="lang-en-only">Pricing Tiers</span><span class="lang-fr-only notranslate">Niveaux de prix</span></span>
+                                        <button type="button" onclick="addSurfPoolPricingRow('family')" class="text-xs font-bold text-primary hover:text-primaryHover transition-custom flex items-center bg-primary/5 px-2 py-1 rounded-md">
+                                            <i class="fa-solid fa-plus mr-1"></i> <span class="lang-en-only">Add Tier</span><span class="lang-fr-only notranslate">Ajouter un tarif</span>
+                                        </button>
+                                    </div>
+                                    <div id="surf-pool-act-family-rows" class="space-y-2">
+                                        <!-- Rows added by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="flex flex-col pt-4 border-t border-slate-100 mt-4">

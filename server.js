@@ -2023,7 +2023,7 @@ app.get('/api/host/facilities', (req, res) => {
         const facilityIds = rows.map(f => f.id);
         const placeholders = facilityIds.map(() => '?').join(',');
         
-        db.all(`SELECT id, facility_id, name, type, environment, locker_rooms FROM surfaces WHERE facility_id IN (${placeholders}) AND status != 'deleted' ORDER BY id ASC`, facilityIds, (err, surfaces) => {
+        db.all(`SELECT * FROM surfaces WHERE facility_id IN (${placeholders}) AND status != 'deleted' ORDER BY id ASC`, facilityIds, (err, surfaces) => {
             if (err) return res.status(500).json({ error: err.message });
             
             const surfacesByFac = {};
@@ -2544,7 +2544,7 @@ app.get('/api/public_sessions/upcoming/all', (req, res) => {
     const todayStr = now.toISOString().split('T')[0];
 
     const query = `
-        SELECT b.*, f.name as facility_name, f.location, f.type as facility_type, 
+        SELECT b.*, f.name as facility_name, s.name as surface_name, f.location, f.type as facility_type, 
         CASE WHEN s.image_url IS NOT NULL AND s.image_url != '' THEN s.image_url ELSE f.image_url END as image_url, 
         f.lat, f.lng,
         (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
@@ -2612,7 +2612,7 @@ app.get('/api/public_sessions/single/:id', (req, res) => {
     const { id } = req.params;
     
     const query = `
-        SELECT b.*, f.name as facility_name, f.location, f.type as facility_type, f.lat, f.lng, 
+        SELECT b.*, f.name as facility_name, s.name as surface_name, f.location, f.type as facility_type, f.lat, f.lng, 
         f.description as facility_description, f.amenities as facility_amenities, f.rating as facility_rating, f.reviews_count as facility_reviews_count,
         CASE WHEN s.image_url IS NOT NULL AND s.image_url != '' THEN s.image_url ELSE f.image_url END as image_url, 
         u.stripe_account_id, u.stripe_onboarding_complete, u.name as host_name, u.company_name, u.profile_picture as host_profile_picture,

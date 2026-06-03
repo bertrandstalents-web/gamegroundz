@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <span class="mx-3 text-slate-300">•</span>
             <i class="fa-regular fa-clock mr-2 text-primary"></i> ${timeLabel}
             <span class="mx-3 text-slate-300">•</span>
-            <i class="fa-solid fa-location-dot mr-2 text-primary"></i> ${activityData.facility_name}
+            <i class="fa-solid fa-building mr-2 text-primary"></i> ${activityData.surface_name || 'Surface'} (${activityData.facility_name})
         `;
 
         // Image
