@@ -59,14 +59,16 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
             
             const dates = Object.keys(sessionsByDate).sort();
 
-            // Build HTML
-            let dateListHtml = '';
-            dates.forEach(dStr => {
-                const d = new Date(dStr + 'T12:00:00');
-                const dLabel = d.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: 'numeric', weekday: 'short' });
-                dateListHtml += `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 date-option" data-date="${dStr}">${dLabel}</li>`;
+            // Extract unique activities
+            const uniqueActivities = [...new Set(surfaceSessions.map(s => s.manual_notes || 'Activity'))].sort();
+            
+            let activityListHtml = '';
+            uniqueActivities.forEach(actName => {
+                const translatedAct = translateActivity(actName);
+                activityListHtml += `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 activity-option" data-activity="${actName}">${translatedAct}</li>`;
             });
 
+            // Build HTML
             bookingWidget.innerHTML = `
                 <!-- Mobile Handle -->
                 <div class="lg:hidden w-full flex justify-center pt-3 pb-0 cursor-pointer" id="close-booking-handle">
@@ -75,9 +77,22 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
 
                 <div class="bg-white lg:sticky lg:top-28 lg:border lg:border-slate-200 lg:shadow-xl rounded-t-3xl lg:rounded-2xl px-6 pt-2 pb-24 lg:p-6 lg:shadow-soft overflow-y-auto lg:overflow-visible max-h-[82vh] lg:max-h-none">
                     <div class="border border-slate-300 rounded-xl mb-4 relative z-[60]">
+                        <!-- Activity Dropdown Trigger -->
+                        <div class="p-3 border-b border-slate-300 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-t-xl group" id="pa-activity-trigger">
+                            <div class="text-sm font-medium text-slate-700 w-full h-full flex items-center pr-6 whitespace-nowrap" id="pa-selected-activity">
+                                <span class="lang-en-only">Select Activity</span>
+                                <span class="lang-fr-only notranslate">Choisir l'activité</span>
+                            </div>
+                            <div class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-primary transition-colors"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                            
+                            <div id="pa-activity-dropdown" class="hidden absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-[100] max-h-48 overflow-y-auto">
+                                <ul id="pa-activity-list" class="py-1">${activityListHtml}</ul>
+                            </div>
+                        </div>
+
                         <div class="flex border-b border-slate-300 relative">
                             <!-- Date Dropdown Trigger -->
-                            <div class="flex-1 p-3 border-r border-slate-300 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tl-xl group" id="pa-date-trigger">
+                            <div class="flex-1 p-3 border-r border-slate-300 cursor-pointer hover:bg-slate-50 transition-custom relative group" id="pa-date-trigger">
                                 <div class="text-sm font-medium text-slate-700 w-full h-full flex items-center pr-6 whitespace-nowrap" id="pa-selected-date">
                                     <span class="lang-en-only">Select Date</span>
                                     <span class="lang-fr-only notranslate">Choisir la date</span>
@@ -85,12 +100,12 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                                 <div class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-primary transition-colors"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                                 
                                 <div id="pa-date-dropdown" class="hidden absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-[100] max-h-48 overflow-y-auto">
-                                    <ul id="pa-date-list" class="py-1">${dateListHtml}</ul>
+                                    <ul id="pa-date-list" class="py-1"></ul>
                                 </div>
                             </div>
 
                             <!-- Time Slot Dropdown Trigger -->
-                            <div class="flex-1 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tr-xl group" id="pa-time-trigger">
+                            <div class="flex-1 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative group" id="pa-time-trigger">
                                 <div class="text-sm font-medium text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap w-full h-full flex items-center pr-6" id="pa-selected-time">
                                     <span class="lang-en-only">Select Time</span>
                                     <span class="lang-fr-only notranslate">Choisir l'heure</span>
@@ -151,11 +166,14 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
             if (typeof updateLanguage === 'function') updateLanguage(currentLang);
 
             // State
+            let paSelectedActivity = null;
             let paSelectedDate = null;
             let paSelectedSession = null;
             let paTierSelections = {};
             
             // Logic
+            const activityTrigger = document.getElementById('pa-activity-trigger');
+            const activityDropdown = document.getElementById('pa-activity-dropdown');
             const dateTrigger = document.getElementById('pa-date-trigger');
             const dateDropdown = document.getElementById('pa-date-dropdown');
             const timeTrigger = document.getElementById('pa-time-trigger');
@@ -166,98 +184,144 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
 
             // Close dropdowns on outside click
             document.addEventListener('click', (e) => {
+                if (!activityTrigger.contains(e.target)) activityDropdown.classList.add('hidden');
                 if (!dateTrigger.contains(e.target)) dateDropdown.classList.add('hidden');
                 if (!timeTrigger.contains(e.target)) timeDropdown.classList.add('hidden');
             });
 
-            // Date Selection
-            dateTrigger.addEventListener('click', () => {
-                dateDropdown.classList.toggle('hidden');
+            // Activity Selection
+            activityTrigger.addEventListener('click', () => {
+                activityDropdown.classList.toggle('hidden');
+                dateDropdown.classList.add('hidden');
                 timeDropdown.classList.add('hidden');
             });
 
-            document.querySelectorAll('.date-option').forEach(opt => {
+            document.querySelectorAll('.activity-option').forEach(opt => {
                 opt.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    paSelectedDate = e.target.getAttribute('data-date');
+                    paSelectedActivity = e.currentTarget.getAttribute('data-activity');
                     
-                    // Update checkmarks and text
-                    document.querySelectorAll('.date-option').forEach(el => el.innerHTML = el.innerHTML.replace('✓ ', ''));
-                    e.target.innerHTML = '✓ ' + e.target.innerHTML;
+                    document.querySelectorAll('.activity-option').forEach(el => el.innerHTML = el.innerHTML.replace('✓ ', ''));
+                    e.currentTarget.innerHTML = '✓ ' + e.currentTarget.innerHTML;
                     
-                    document.getElementById('pa-selected-date').textContent = e.target.textContent.replace('✓ ', '');
-                    dateDropdown.classList.add('hidden');
+                    document.getElementById('pa-selected-activity').textContent = e.currentTarget.textContent.replace('✓ ', '');
+                    activityDropdown.classList.add('hidden');
 
-                    // Populate Times
-                    const daySessions = sessionsByDate[paSelectedDate] || [];
-                    let timeHtml = '';
-                    daySessions.forEach((s, idx) => {
-                        let slots = s.time_slots;
+                    paSelectedDate = null;
+                    paSelectedSession = null;
+                    document.getElementById('pa-selected-date').innerHTML = currentLang === 'fr' ? 'Choisir la date' : 'Select Date';
+                    document.getElementById('pa-selected-time').innerHTML = currentLang === 'fr' ? "Choisir l'heure" : 'Select Time';
+                    timeList.innerHTML = `<li class="px-4 py-2 text-sm text-slate-500 italic"><span class="lang-en-only">${currentLang === 'fr' ? "Veuillez d'abord choisir une date" : "Please select a date first"}</span></li>`;
+                    tiersContainer.innerHTML = `<div class="text-sm text-slate-400 italic text-center py-2">${currentLang === 'fr' ? "Sélectionnez une heure pour voir les billets" : "Select a time slot to see tickets"}</div>`;
+                    updateTotal();
+                    
+                    rebuildDateDropdown();
+                });
+            });
+
+            function rebuildDateDropdown() {
+                const dateDropdownList = document.getElementById('pa-date-list');
+                dateDropdownList.innerHTML = '';
+                
+                // Filter sessions by selected activity
+                const filteredSessions = surfaceSessions.filter(s => (s.manual_notes || 'Activity') === paSelectedActivity);
+                
+                // Group them by date
+                const filteredSessionsByDate = {};
+                filteredSessions.forEach(session => {
+                    const dStr = session.booking_date;
+                    if (!filteredSessionsByDate[dStr]) filteredSessionsByDate[dStr] = [];
+                    filteredSessionsByDate[dStr].push(session);
+                });
+                
+                const filteredDates = Object.keys(filteredSessionsByDate).sort();
+                
+                let dateListHtml = '';
+                filteredDates.forEach(dStr => {
+                    const d = new Date(dStr + 'T12:00:00');
+                    const dLabel = d.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+                    dateListHtml += `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 date-option" data-date="${dStr}">${dLabel}</li>`;
+                });
+                
+                dateDropdownList.innerHTML = dateListHtml;
+                
+                // Re-attach event listeners
+                dateDropdownList.querySelectorAll('.date-option').forEach(opt => {
+                    opt.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        paSelectedDate = e.target.getAttribute('data-date');
+                        
+                        document.querySelectorAll('.date-option').forEach(el => el.innerHTML = el.innerHTML.replace('✓ ', ''));
+                        e.target.innerHTML = '✓ ' + e.target.innerHTML;
+                        
+                        document.getElementById('pa-selected-date').textContent = e.target.textContent.replace('✓ ', '');
+                        dateDropdown.classList.add('hidden');
+                        
+                        rebuildTimeDropdown(filteredSessionsByDate[paSelectedDate] || []);
+                    });
+                });
+                
+                // Auto-select the first date in the filtered list
+                const firstDateOpt = dateDropdownList.querySelector('.date-option');
+                if (firstDateOpt) firstDateOpt.click();
+            }
+
+            function rebuildTimeDropdown(daySessions) {
+                let timeHtml = '';
+                daySessions.forEach((s, idx) => {
+                    let slots = s.time_slots;
+                    if (typeof slots === 'string') { try { slots = JSON.parse(slots); } catch(e) { slots = slots.split(','); } }
+                    const timeLabel = slots && slots.length > 0 ? slots[0] : 'Time TBD';
+                    
+                    timeHtml += `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 time-option flex justify-between" data-idx="${idx}">
+                        <span>${timeLabel}</span>
+                    </li>`;
+                });
+                
+                timeList.innerHTML = timeHtml;
+                document.getElementById('pa-selected-time').textContent = 'Select Time';
+                tiersContainer.innerHTML = '<div class="text-sm text-slate-400 italic text-center py-2">Select a time slot to see tickets</div>';
+                paSelectedSession = null;
+                updateTotal();
+                
+                // Attach time clicks
+                timeList.querySelectorAll('.time-option').forEach(opt => {
+                    opt.addEventListener('click', (ev) => {
+                        ev.stopPropagation();
+                        const idx = ev.currentTarget.getAttribute('data-idx');
+                        paSelectedSession = daySessions[idx];
+                        
+                        timeList.querySelectorAll('.time-option').forEach(el => el.innerHTML = el.innerHTML.replace('✓ ', ''));
+                        ev.currentTarget.innerHTML = '✓ ' + ev.currentTarget.innerHTML;
+                        
+                        let slots = paSelectedSession.time_slots;
                         if (typeof slots === 'string') { try { slots = JSON.parse(slots); } catch(e) { slots = slots.split(','); } }
                         const timeLabel = slots && slots.length > 0 ? slots[0] : 'Time TBD';
                         
-                        // Parse pricing_tiers to get lowest price
-                        let minPrice = 'Free';
-                        try {
-                            let pt = s.pricing_tiers;
-                            if (typeof pt === 'string' && pt.trim().length > 0) {
-                                pt = JSON.parse(pt);
-                            }
-                            if (Array.isArray(pt) && pt.length > 0) {
-                                let minP = Infinity;
-                                pt.forEach(t => { if(parseFloat(t.price||0) < minP) minP = parseFloat(t.price||0); });
-                                minPrice = minP === Infinity ? 'Free' : '$' + minP.toFixed(2);
-                            } else if (!pt && (s.participant_price > 0 || s.participant_kid_price > 0)) {
-                                let minP = Infinity;
-                                if (s.participant_price !== undefined && s.participant_price > 0) minP = Math.min(minP, s.participant_price);
-                                if (s.participant_kid_price !== undefined && s.participant_kid_price > 0) minP = Math.min(minP, s.participant_kid_price);
-                                minPrice = minP === Infinity ? 'Free' : '$' + minP.toFixed(2);
-                            }
-                        } catch(e) {}
-
-                        timeHtml += `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 time-option flex justify-between" data-idx="${idx}">
-                            <span>${timeLabel} - ${s.manual_notes || 'Activity'}</span>
-                            <span class="text-xs text-primary">${minPrice}</span>
-                        </li>`;
+                        document.getElementById('pa-selected-time').textContent = timeLabel;
+                        timeDropdown.classList.add('hidden');
+                        
+                        renderTiers();
                     });
-                    
-                    timeList.innerHTML = timeHtml;
-                    document.getElementById('pa-selected-time').textContent = 'Select Time';
-                    tiersContainer.innerHTML = '<div class="text-sm text-slate-400 italic text-center py-2">Select a time slot to see tickets</div>';
-                    paSelectedSession = null;
-                    updateTotal();
-
-                    // Attach time clicks
-                    document.querySelectorAll('.time-option').forEach(opt => {
-                        opt.addEventListener('click', (ev) => {
-                            ev.stopPropagation();
-                            const idx = ev.currentTarget.getAttribute('data-idx');
-                            paSelectedSession = daySessions[idx];
-                            
-                            document.querySelectorAll('.time-option').forEach(el => el.innerHTML = el.innerHTML.replace('✓ ', ''));
-                            ev.currentTarget.innerHTML = '✓ ' + ev.currentTarget.innerHTML;
-                            
-                            let slots = paSelectedSession.time_slots;
-                            if (typeof slots === 'string') { try { slots = JSON.parse(slots); } catch(e) { slots = slots.split(','); } }
-                            const timeLabel = slots && slots.length > 0 ? slots[0] : 'Time TBD';
-                            
-                            document.getElementById('pa-selected-time').textContent = timeLabel;
-                            timeDropdown.classList.add('hidden');
-                            
-                            renderTiers();
-                        });
-                    });
-                    
-                    // Auto-select first time
-                    const firstTimeOpt = timeList.querySelector('.time-option');
-                    if (firstTimeOpt) firstTimeOpt.click();
                 });
+                
+                // Auto-select first time
+                const firstTimeOpt = timeList.querySelector('.time-option');
+                if (firstTimeOpt) firstTimeOpt.click();
+            }
+
+            dateTrigger.addEventListener('click', () => {
+                if (!paSelectedActivity) return;
+                dateDropdown.classList.toggle('hidden');
+                timeDropdown.classList.add('hidden');
+                activityDropdown.classList.add('hidden');
             });
 
             timeTrigger.addEventListener('click', () => {
                 if (!paSelectedDate) return;
                 timeDropdown.classList.toggle('hidden');
                 dateDropdown.classList.add('hidden');
+                activityDropdown.classList.add('hidden');
             });
 
             function renderTiers() {
@@ -470,10 +534,10 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                 }
             });
             
-            // Auto-select the first date
-            if (dates.length > 0) {
-                const firstDateTrigger = document.querySelector('.date-option');
-                if (firstDateTrigger) firstDateTrigger.click();
+            // Auto-select the first activity
+            if (uniqueActivities.length > 0) {
+                const firstActivityOpt = document.querySelector('.activity-option');
+                if (firstActivityOpt) firstActivityOpt.click();
             }
         });
 };
