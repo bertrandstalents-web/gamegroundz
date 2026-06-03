@@ -2635,26 +2635,32 @@
             const text = (notes || '').toLowerCase();
             let iconSrc = '';
             let alt = '';
+            let scaleClass = '';
             
             if (text.includes('hockey')) {
                 iconSrc = 'images/open_hockey.png';
                 alt = 'Hockey';
+                scaleClass = 'scale-[1.1]';
             } else if (text.includes('skat') || text.includes('patinage') || text.includes('glace')) {
                 iconSrc = 'images/free_skating.png';
                 alt = 'Skating';
+                scaleClass = 'scale-[1.1]';
             } else if (text.includes('lane') || text.includes('natation') || text.includes('couloirs')) {
                 iconSrc = 'images/swimming_lane.png';
                 alt = 'Swimming Lanes';
+                scaleClass = 'scale-[1.0]';
             } else if (text.includes('diving') || text.includes('dive') || text.includes('plongeon')) {
                 iconSrc = 'images/open_swim.jpg';
                 alt = 'Diving';
+                scaleClass = 'scale-[1.15]';
             } else if (text.includes('swim') || text.includes('bath') || text.includes('bain') || text.includes('family') || text.includes('récréat') || text.includes('famill')) {
                 iconSrc = 'images/family_swim.png';
                 alt = 'Family Swim';
+                scaleClass = 'scale-[0.95]';
             }
             
             if (iconSrc) {
-                return `<img src="${iconSrc}" alt="${alt}" class="h-12 w-auto object-contain notranslate">`;
+                return `<div class="w-12 h-12 flex items-center justify-center overflow-visible"><img src="${iconSrc}" alt="${alt}" class="max-w-full max-h-full w-auto h-auto object-contain ${scaleClass} notranslate"></div>`;
             }
             return '';
         }
