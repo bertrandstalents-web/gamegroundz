@@ -499,35 +499,96 @@
             return '';
         }
 
-        function createFacilityCard(session) {
-            const typesArr = session.facility_type ? session.facility_type.split(',').map(t => t.trim().charAt(0).toUpperCase() + t.trim().slice(1)) : [];
-            const typeDisplay = typesArr.join(', ');
-            const slots = (typeof session.time_slots === 'string') ? JSON.parse(session.time_slots) : session.time_slots;
-            const timeDisplay = slots && slots.length > 0 ? slots[0] : '';
-            const slotKeys = slots ? slots.map(s => `${session.booking_date}|${s}`) : [];
+        function getUniqueActivityIconsHtml(sessions, size = 'large') {
+            const seenIcons = new Set();
+            let html = '';
             
-            const spotsRemaining = Math.max(0, (session.capacity || 0) - (session.joined_count || 0));
-            let activityName = session.manual_notes || 'Public Activity';
-            
-            if (activityName === 'Open Hockey' || activityName === 'Free Hockey') {
-                activityName = '<span class="lang-en-only">Open Hockey</span><span class="lang-fr-only notranslate">Hockey libre</span>';
-            } else if (activityName === 'Open Hockey (18+)' || activityName === 'Free Hockey (18+)') {
-                activityName = '<span class="lang-en-only">Open Hockey (18+)</span><span class="lang-fr-only notranslate">Hockey libre (18+)</span>';
-            } else if (activityName === 'Free Skating') {
-                activityName = '<span class="lang-en-only">Free Skating</span><span class="lang-fr-only notranslate">Patinage libre</span>';
+            sessions.forEach(s => {
+                const text = (s.manual_notes || '').toLowerCase();
+                let iconKey = '';
+                let iconSrc = '';
+                let alt = '';
+                let scaleClass = '';
+                
+                if (text.includes('hockey')) {
+                    iconKey = 'hockey';
+                    iconSrc = 'images/open_hockey.png';
+                    alt = 'Hockey';
+                    scaleClass = 'scale-[1.1]';
+                } else if (text.includes('skat') || text.includes('patinage') || text.includes('glace')) {
+                    iconKey = 'skating';
+                    iconSrc = 'images/free_skating.png';
+                    alt = 'Skating';
+                    scaleClass = 'scale-[1.1]';
+                } else if (text.includes('lane') || text.includes('natation') || text.includes('couloirs')) {
+                    iconKey = 'lane';
+                    iconSrc = 'images/swimming_lane.png';
+                    alt = 'Swimming Lanes';
+                    scaleClass = 'scale-[1.38]';
+                } else if (text.includes('diving') || text.includes('dive') || text.includes('plongeon')) {
+                    iconKey = 'diving';
+                    iconSrc = 'images/open_swim.jpg';
+                    alt = 'Diving';
+                    scaleClass = 'scale-[1.15]';
+                } else if (text.includes('swim') || text.includes('bath') || text.includes('bain') || text.includes('family') || text.includes('récréat') || text.includes('famill')) {
+                    iconKey = 'family';
+                    iconSrc = 'images/family_swim.png';
+                    alt = 'Family Swim';
+                    scaleClass = 'scale-[0.95]';
+                }
+                
+                if (iconKey && !seenIcons.has(iconKey)) {
+                    seenIcons.add(iconKey);
+                    if (size === 'small') {
+                        html += `<div class="w-8 h-8 flex items-center justify-center overflow-visible border border-slate-100 rounded-md bg-slate-50 p-1 shadow-sm"><img src="${iconSrc}" alt="${alt}" class="max-w-full max-h-full w-auto h-auto object-contain ${scaleClass} notranslate"></div>`;
+                    } else {
+                        html += `<div class="w-11 h-11 flex items-center justify-center overflow-visible border border-slate-200 rounded-xl p-1.5 bg-slate-50 shadow-sm"><img src="${iconSrc}" alt="${alt}" class="max-w-full max-h-full w-auto h-auto object-contain ${scaleClass} notranslate"></div>`;
+                    }
+                }
+            });
+            return html;
+        }
+
+        function translateActivityName(manualNotes) {
+            if (!manualNotes) return '<span class="lang-en-only">Public Activity</span><span class="lang-fr-only notranslate">Activité libre</span>';
+            const nameLower = manualNotes.toLowerCase();
+            if (nameLower.includes('hockey (18+)')) {
+                return '<span class="lang-en-only">Open Hockey (18+)</span><span class="lang-fr-only notranslate">Hockey libre (18+)</span>';
+            } else if (nameLower.includes('hockey')) {
+                return '<span class="lang-en-only">Open Hockey</span><span class="lang-fr-only notranslate">Hockey libre</span>';
+            } else if (nameLower.includes('skat') || nameLower.includes('patinage')) {
+                return '<span class="lang-en-only">Free Skating</span><span class="lang-fr-only notranslate">Patinage libre</span>';
+            } else if (nameLower.includes('lane') || nameLower.includes('couloir')) {
+                return '<span class="lang-en-only">Swimming Lane</span><span class="lang-fr-only notranslate">Couloir de natation</span>';
+            } else if (nameLower.includes('diving') || nameLower.includes('dive') || nameLower.includes('plongeon')) {
+                return '<span class="lang-en-only">Open Swim & Dive</span><span class="lang-fr-only notranslate">Baignade libre et plongeon</span>';
+            } else if (nameLower.includes('family') || nameLower.includes('récréat') || nameLower.includes('famill')) {
+                return '<span class="lang-en-only">Recreational & Family Pool</span><span class="lang-fr-only notranslate">Bassin récréatif et familial</span>';
             }
+            return manualNotes;
+        }
+
+        function createConsolidatedSurfaceCard(group) {
+            const firstSession = group.sessions[0];
+            const displayImage = getActivityImage(firstSession.manual_notes, group.facility_type, group.image_url);
             
-            const displayImage = getActivityImage(session.manual_notes, session.facility_type, session.image_url);
-            const displayDate = formatBilingualDate(session.booking_date);
-            const activityIconHtml = getActivityIconHtml(session.manual_notes);
+            // Earliest upcoming session's details
+            const displayDate = formatBilingualDate(firstSession.booking_date);
+            const slots = (typeof firstSession.time_slots === 'string') ? JSON.parse(firstSession.time_slots) : firstSession.time_slots;
+            const timeDisplay = slots && slots.length > 0 ? slots[0] : '';
+            const firstSessionSpots = Math.max(0, (firstSession.capacity || 0) - (firstSession.joined_count || 0));
+            
+            // Unique icons for all activities on this surface
+            const activityIconsHtml = getUniqueActivityIconsHtml(group.sessions, 'large');
+            const translatedBadge = translateActivityName(firstSession.manual_notes);
 
             return `
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick='window.location.href="public-activity.html?id=${session.id}"'>
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick='window.location.href="surface.html?id=${group.surface_id}"'>
                     <div class="relative h-48 hover-zoom-img-container">
-                        <img src="${displayImage}" alt="${session.facility_name}" class="w-full h-full object-cover bg-slate-100">
+                        <img src="${displayImage}" alt="${group.surface_name || group.facility_name}" class="w-full h-full object-cover bg-slate-100">
                         <div class="absolute top-3 left-3 flex flex-wrap gap-2 z-20">
-                            <div class="bg-primary/90 backdrop-blur px-2 py-1 rounded-md text-xs font-bold text-white shadow-sm flex items-center">
-                                <i class="fa-solid fa-users mr-1"></i> ${activityName}
+                            <div class="bg-primary/90 backdrop-blur px-2.5 py-1 rounded-md text-xs font-bold text-white shadow-sm flex items-center">
+                                <i class="fa-solid fa-users mr-1"></i> ${translatedBadge}
                             </div>
                         </div>
                     </div>
@@ -535,26 +596,32 @@
                         <div class="flex items-center justify-between gap-4 mb-3">
                             <div class="flex-grow min-w-0">
                                 <div class="flex justify-between items-start mb-1">
-                                    <h3 class="text-lg font-bold text-dark group-hover:text-primary transition-custom truncate pr-2">${session.surface_name || session.facility_name}</h3>
+                                    <h3 class="text-lg font-bold text-dark group-hover:text-primary transition-custom truncate pr-2">${group.surface_name || group.facility_name}</h3>
                                 </div>
+                                <p class="text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wide truncate"><i class="fa-solid fa-building mr-1"></i> ${group.facility_name}</p>
                                 <p class="text-slate-500 text-xs flex items-center">
-                                    <i class="fa-solid fa-location-dot mr-1"></i> ${typeof formatShortLocation === 'function' ? formatShortLocation(session.location) : session.location}
+                                    <i class="fa-solid fa-location-dot mr-1"></i> ${typeof formatShortLocation === 'function' ? formatShortLocation(group.location) : group.location}
                                 </p>
                             </div>
-                            <div class="shrink-0 flex items-center justify-center">
-                                ${activityIconHtml}
+                            <div class="shrink-0 flex items-center gap-1.5">
+                                ${activityIconsHtml}
                             </div>
                         </div>
                         <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-3 gap-y-2 text-xs">
-                            <div class="flex gap-2">
+                            <div class="flex gap-2 items-center">
                                 <div class="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold text-slate-600">
                                     ${displayDate}
                                 </div>
                                 <div class="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold text-slate-600">
                                     ${timeDisplay}
                                 </div>
+                                ${group.sessions.length > 1 ? `
+                                    <div class="px-2 py-1 bg-primary/10 border border-primary/20 rounded text-[10px] font-bold text-primary">
+                                        +${group.sessions.length - 1} <span class="lang-en-only">more</span><span class="lang-fr-only notranslate">autre(s)</span>
+                                    </div>
+                                ` : ''}
                             </div>
-                            <span class="text-xs font-semibold ${spotsRemaining > 0 ? 'text-primary' : 'text-red-500'}">${spotsRemaining} spots left</span>
+                            <span class="text-xs font-semibold ${firstSessionSpots > 0 ? 'text-primary' : 'text-red-500'}">${firstSessionSpots} spots left</span>
                         </div>
                     </div>
                 </div>
@@ -602,25 +669,46 @@
                 const marker = L.marker([group.lat, group.lng]).addTo(map);
                 let popupContent = `<div class="max-h-[300px] overflow-y-auto space-y-4 pr-2 custom-scrollbar">`;
                 
-                if (group.items.length > 1) {
-                    popupContent += `<div class="text-xs font-bold text-slate-500 uppercase tracking-wide border-b border-slate-200 pb-1 mb-2">${group.items.length} Sessions Here</div>`;
+                // Group the coordinate group's sessions by surface_id
+                const surfaceGroups = {};
+                group.items.forEach(s => {
+                    const sId = s.surface_id || `facility_${s.facility_id}`;
+                    if (!surfaceGroups[sId]) {
+                        surfaceGroups[sId] = {
+                            surface_id: s.surface_id,
+                            surface_name: s.surface_name || s.facility_name,
+                            facility_name: s.facility_name,
+                            image_url: s.image_url,
+                            sessions: []
+                        };
+                    }
+                    surfaceGroups[sId].sessions.push(s);
+                });
+
+                const surfaceCount = Object.keys(surfaceGroups).length;
+                if (surfaceCount > 1) {
+                    popupContent += `<div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide border-b border-slate-200 pb-1 mb-2">${surfaceCount} Surfaces Here</div>`;
                 }
                 
-                group.items.forEach(session => {
-                    const activityName = session.manual_notes || 'Public Activity';
-                    const displayImage = getActivityImage(session.manual_notes, session.facility_type, session.image_url);
-                    const slots = (typeof session.time_slots === 'string') ? JSON.parse(session.time_slots) : session.time_slots;
-                    const timeDisplay = slots && slots.length > 0 ? slots[0] : '';
-
-                    const slotKeys = slots ? slots.map(s => `${session.booking_date}|${s}`) : [];
-                    const displayDate = formatBilingualDate(session.booking_date);
-
+                Object.values(surfaceGroups).forEach(surfGroup => {
+                    const firstSession = surfGroup.sessions[0];
+                    const displayImage = getActivityImage(firstSession.manual_notes, firstSession.facility_type, surfGroup.image_url);
+                    
+                    // Unique icons for the popup (small size)
+                    const iconsHtml = getUniqueActivityIconsHtml(surfGroup.sessions, 'small');
+                    
+                    const sessionCount = surfGroup.sessions.length;
+                    const sessionText = sessionCount === 1 ? '1 session' : `${sessionCount} sessions`;
+                    
                     popupContent += `
-                        <div class="w-48 cursor-pointer ${group.items.length > 1 ? 'border-b border-slate-100 pb-3 last:border-0 last:pb-0' : ''}" onclick='window.location.href="public-activity.html?id=${session.id}"'>
+                        <div class="w-48 cursor-pointer ${surfaceCount > 1 ? 'border-b border-slate-100 pb-3 last:border-0 last:pb-0' : ''}" onclick='window.location.href="surface.html?id=${surfGroup.surface_id}"'>
                             <img src="${displayImage}" class="w-full h-24 object-cover rounded-lg mb-2">
-                            <div class="font-bold text-sm truncate hover:text-primary transition-custom">${session.surface_name || session.facility_name}</div>
-                            <div class="text-xs text-slate-400 uppercase font-semibold mb-1 truncate">${session.facility_name}</div>
-                            <div class="text-xs text-slate-500 mb-1">${activityName} - ${displayDate} ${timeDisplay}</div>
+                            <div class="font-bold text-sm truncate hover:text-primary transition-custom">${surfGroup.surface_name}</div>
+                            <div class="text-[10px] text-slate-400 uppercase font-semibold mb-1 truncate">${surfGroup.facility_name}</div>
+                            <div class="flex gap-1 my-1.5 flex-wrap">
+                                ${iconsHtml}
+                            </div>
+                            <div class="text-xs text-slate-500 font-medium">${sessionText}</div>
                         </div>
                     `;
                 });
@@ -669,11 +757,32 @@
                  facilitiesGrid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 text-lg">No sessions match your criteria${msgSuffix}.</div>`;
                  resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">0</span> upcoming sessions`;
             } else {
-                visibleFacilities.forEach(facility => {
-                    facilitiesGrid.innerHTML += createFacilityCard(facility);
+                // Group visible sessions by surface
+                const groupedSurfaces = {};
+                visibleFacilities.forEach(session => {
+                    const sId = session.surface_id || `facility_${session.facility_id}`;
+                    if (!groupedSurfaces[sId]) {
+                        groupedSurfaces[sId] = {
+                            surface_id: session.surface_id,
+                            surface_name: session.surface_name,
+                            facility_id: session.facility_id,
+                            facility_name: session.facility_name,
+                            location: session.location,
+                            facility_type: session.facility_type,
+                            image_url: session.image_url,
+                            lat: session.lat,
+                            lng: session.lng,
+                            sessions: []
+                        };
+                    }
+                    groupedSurfaces[sId].sessions.push(session);
+                });
+
+                Object.values(groupedSurfaces).forEach(group => {
+                    facilitiesGrid.innerHTML += createConsolidatedSurfaceCard(group);
                 });
                 const msgSuffix = isMapVisible ? ' in this area' : '';
-                resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">${visibleFacilities.length}</span> sessions${msgSuffix}`;
+                resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">${Object.keys(groupedSurfaces).length}</span> surfaces${msgSuffix}`;
             }
             
             pagination.classList.add('hidden');
