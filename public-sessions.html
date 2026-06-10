@@ -542,11 +542,11 @@
                     if (size === 'small') {
                         html += `<div class="w-8 h-8 flex items-center justify-center overflow-visible border border-slate-100 rounded-md bg-slate-50 p-1 shadow-sm"><img src="${iconSrc}" alt="${alt}" class="max-w-full max-h-full w-auto h-auto object-contain ${scaleClass} notranslate"></div>`;
                     } else {
-                        const inlineActivity = document.getElementById('inline-activity-filter')?.value;
+                        const inlineActivity = document.getElementById('inline-activity-filter')?.value || '';
                         let cursorClass = 'cursor-pointer';
                         let styleClasses = 'border-slate-200 bg-slate-50';
                         
-                        if (inlineActivity === 'swim') {
+                        if (inlineActivity === 'swim' || inlineActivity === '') {
                             if (activeIconKey === iconKey) {
                                 styleClasses = 'border-primary bg-primary/5 ring-1 ring-primary/30 scale-105';
                             } else {
@@ -607,8 +607,8 @@
         }
 
         window.handleActivityIconClick = function(event, surfaceId, iconKey) {
-            const activityFilter = document.getElementById('inline-activity-filter')?.value;
-            if (activityFilter !== 'swim') {
+            const activityFilter = document.getElementById('inline-activity-filter')?.value || '';
+            if (activityFilter !== 'swim' && activityFilter !== '') {
                 return;
             }
             
