@@ -267,127 +267,156 @@
 
                 <div class="bg-white lg:sticky lg:top-28 lg:border lg:border-slate-200 lg:shadow-xl rounded-t-3xl lg:rounded-2xl px-6 pt-2 pb-24 lg:p-6 lg:shadow-soft overflow-y-auto lg:overflow-visible max-h-[82vh] lg:max-h-none">
                     
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <span class="text-2xl font-bold text-dark inline-block min-w-[60px]"><div class="h-8 w-16 mt-1 bg-slate-200 rounded animate-pulse"></div></span><span class="text-slate-500 font-medium"> / hour</span>
+                    <!-- Booking Form Loading Skeleton -->
+                    <div id="booking-widget-skeleton" class="space-y-6 py-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="h-8 w-24 bg-slate-200 rounded animate-pulse"></div>
+                            <div class="h-8 w-16 bg-slate-200 rounded animate-pulse"></div>
                         </div>
-                        <div class="flex flex-col items-end">
-                            <span class="flex items-center font-bold text-sm"><i class="fa-solid fa-star text-yellow-400 text-xs mr-1"></i> <div class="h-4 w-6 bg-slate-200 rounded animate-pulse inline-block ml-1"></div></span>
-                            <span class="text-xs text-slate-400 underline"><div class="h-3 w-16 bg-slate-200 rounded animate-pulse inline-block mt-1"></div></span>
+                        <div class="border border-slate-200 rounded-xl p-4 space-y-4 bg-white shadow-soft">
+                            <div class="flex gap-4">
+                                <div class="flex-1 space-y-2">
+                                    <div class="h-3 w-10 bg-slate-200 rounded animate-pulse"></div>
+                                    <div class="h-5 w-24 bg-slate-200 rounded animate-pulse"></div>
+                                </div>
+                                <div class="flex-1 space-y-2 border-l border-slate-100 pl-4">
+                                    <div class="h-3 w-16 bg-slate-200 rounded animate-pulse"></div>
+                                    <div class="h-5 w-24 bg-slate-200 rounded animate-pulse"></div>
+                                </div>
+                            </div>
+                            <hr class="border-slate-100">
+                            <div class="space-y-2">
+                                <div class="h-3 w-20 bg-slate-200 rounded animate-pulse"></div>
+                                <div class="h-5 w-full bg-slate-200 rounded animate-pulse"></div>
+                            </div>
                         </div>
+                        <div class="h-11 w-full bg-slate-200 rounded-xl animate-pulse"></div>
                     </div>
 
-                    <!-- Booking Form -->
-                    <div class="border border-slate-300 rounded-xl mb-4 relative">
-                        <div class="flex border-b border-slate-300 relative">
-                            <div class="flex-1 p-3 border-r border-slate-300 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tl-xl">
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="booking-date">Date</label>
-                                <input type="date" id="booking-date" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none" style="color-scheme: light;">
+                    <!-- booking-widget-content wrapper (hidden during loading) -->
+                    <div id="booking-widget-content" class="hidden">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <span class="text-2xl font-bold text-dark inline-block min-w-[60px]"><div class="h-8 w-16 mt-1 bg-slate-200 rounded animate-pulse"></div></span><span class="text-slate-500 font-medium"> / hour</span>
                             </div>
-                            <div class="flex-1 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tr-xl" id="time-slot-trigger">
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer">Time Slots</label>
-                                <div class="text-sm font-medium text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap" id="slots-summary">Select Times</div>
-                                <div class="absolute right-3 top-4 text-slate-400"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                            <div class="flex flex-col items-end">
+                                <span class="flex items-center font-bold text-sm"><i class="fa-solid fa-star text-yellow-400 text-xs mr-1"></i> <div class="h-4 w-6 bg-slate-200 rounded animate-pulse inline-block ml-1"></div></span>
+                                <span class="text-xs text-slate-400 underline"><div class="h-3 w-16 bg-slate-200 rounded animate-pulse inline-block mt-1"></div></span>
+                            </div>
+                        </div>
+
+                        <!-- Booking Form -->
+                        <div class="border border-slate-300 rounded-xl mb-4 relative">
+                            <div class="flex border-b border-slate-300 relative">
+                                <div class="flex-1 p-3 border-r border-slate-300 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tl-xl">
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="booking-date">Date</label>
+                                    <input type="date" id="booking-date" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none" style="color-scheme: light;">
+                                </div>
+                                <div class="flex-1 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tr-xl" id="time-slot-trigger">
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer">Time Slots</label>
+                                    <div class="text-sm font-medium text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap" id="slots-summary">Select Times</div>
+                                    <div class="absolute right-3 top-4 text-slate-400"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                                </div>
+                                
+                                <!-- Time Slot Dropdown (Moved outside trigger for proper z-index and scrolling) -->
+                                <div id="time-slot-dropdown" class="absolute top-[70px] right-0 w-[260px] bg-white border border-slate-200 shadow-2xl rounded-xl z-[60] hidden">
+                                    <div class="p-2 max-h-64 overflow-y-auto" id="available-slots-list">
+                                        <!-- Populated via JS -->
+                                    </div>
+                                </div>
                             </div>
                             
-                            <!-- Time Slot Dropdown (Moved outside trigger for proper z-index and scrolling) -->
-                            <div id="time-slot-dropdown" class="absolute top-[70px] right-0 w-[260px] bg-white border border-slate-200 shadow-2xl rounded-xl z-[60] hidden">
-                                <div class="p-2 max-h-64 overflow-y-auto" id="available-slots-list">
-                                    <!-- Populated via JS -->
-                                </div>
+                            <!-- Connected Facilities Switcher -->
+                            <div id="surface-switcher-container" class="hidden border-b border-slate-300 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative">
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="surface-select">Surface Option</label>
+                                <select id="surface-select" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none pr-6">
+                                </select>
+                                <div class="absolute right-3 top-6 text-slate-400 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                             </div>
-                        </div>
-                        
-                        <!-- Connected Facilities Switcher -->
-                        <div id="surface-switcher-container" class="hidden border-b border-slate-300 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative">
-                            <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="surface-select">Surface Option</label>
-                            <select id="surface-select" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none pr-6">
-                            </select>
-                            <div class="absolute right-3 top-6 text-slate-400 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
-                        </div>
 
-                        <div id="activity-type-container" class="p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-b-xl">
-                            <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="activity-type">Activity Type</label>
-                            <select id="activity-type" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none pr-6">
-                                <option value="practice">Hockey Practice</option>
-                                <option value="game">Hockey Game (Adult League)</option>
-                                <option value="skating">Free Skating</option>
-                                <option value="event">Private Event</option>
-                            </select>
-                            <div class="absolute right-3 top-6 text-slate-400 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
-                        </div>
-
-                        <div id="public-session-admission-container" class="hidden p-3 hover:bg-slate-50 transition-custom relative rounded-b-xl">
-                            <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer">Select Participants</label>
-                            <div id="ps-admission-trigger" class="w-full text-sm font-medium text-slate-700 bg-transparent cursor-pointer flex justify-between items-center">
-                                <span id="ps-admission-summary">1 Adult</span>
-                                <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+                            <div id="activity-type-container" class="p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-b-xl">
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="activity-type">Activity Type</label>
+                                <select id="activity-type" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none pr-6">
+                                    <option value="practice">Hockey Practice</option>
+                                    <option value="game">Hockey Game (Adult League)</option>
+                                    <option value="skating">Free Skating</option>
+                                    <option value="event">Private Event</option>
+                                </select>
+                                <div class="absolute right-3 top-6 text-slate-400 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                             </div>
-                            
-                            <!-- Participant Dropdown Popover -->
-                            <div id="ps-admission-popover" class="absolute top-[60px] left-0 mt-2 w-full bg-white border border-slate-200 shadow-2xl rounded-xl z-[60] hidden flex-col p-4 gap-4">
-                                <!-- Adult Row -->
-                                <div class="flex items-center justify-between">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold text-dark text-sm">Adults</span>
-                                        <span class="text-xs text-slate-400" id="ps-adult-price-label">$0.00</span>
-                                    </div>
-                                    <div class="flex items-center space-x-3 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 shadow-sm">
-                                        <button id="ps-adult-minus" class="w-6 h-6 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-minus text-[10px]"></i></button>
-                                        <span class="font-bold text-dark text-sm inline-block w-4 text-center" id="ps-adult-count">1</span>
-                                        <button id="ps-adult-plus" class="w-6 h-6 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-plus text-[10px]"></i></button>
-                                    </div>
+
+                            <div id="public-session-admission-container" class="hidden p-3 hover:bg-slate-50 transition-custom relative rounded-b-xl">
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer">Select Participants</label>
+                                <div id="ps-admission-trigger" class="w-full text-sm font-medium text-slate-700 bg-transparent cursor-pointer flex justify-between items-center">
+                                    <span id="ps-admission-summary">1 Adult</span>
+                                    <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
                                 </div>
-                                <hr class="border-slate-100">
-                                <!-- Kid Row -->
-                                <div class="flex items-center justify-between">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold text-dark text-sm">Kids</span>
-                                        <span class="text-xs text-slate-400" id="ps-kid-price-label">$0.00</span>
+                                
+                                <!-- Participant Dropdown Popover -->
+                                <div id="ps-admission-popover" class="absolute top-[60px] left-0 mt-2 w-full bg-white border border-slate-200 shadow-2xl rounded-xl z-[60] hidden flex-col p-4 gap-4">
+                                    <!-- Adult Row -->
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-dark text-sm">Adults</span>
+                                            <span class="text-xs text-slate-400" id="ps-adult-price-label">$0.00</span>
+                                        </div>
+                                        <div class="flex items-center space-x-3 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 shadow-sm">
+                                            <button id="ps-adult-minus" class="w-6 h-6 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                                            <span class="font-bold text-dark text-sm inline-block w-4 text-center" id="ps-adult-count">1</span>
+                                            <button id="ps-adult-plus" class="w-6 h-6 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center space-x-3 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 shadow-sm">
-                                        <button id="ps-kid-minus" class="w-6 h-6 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-minus text-[10px]"></i></button>
-                                        <span class="font-bold text-dark text-sm inline-block w-4 text-center" id="ps-kid-count">0</span>
-                                        <button id="ps-kid-plus" class="w-6 h-6 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                                    <hr class="border-slate-100">
+                                    <!-- Kid Row -->
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-dark text-sm">Kids</span>
+                                            <span class="text-xs text-slate-400" id="ps-kid-price-label">$0.00</span>
+                                        </div>
+                                        <div class="flex items-center space-x-3 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 shadow-sm">
+                                            <button id="ps-kid-minus" class="w-6 h-6 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                                            <span class="font-bold text-dark text-sm inline-block w-4 text-center" id="ps-kid-count">0</span>
+                                            <button id="ps-kid-plus" class="w-6 h-6 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-dark transition-colors disabled:opacity-30"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Time slot chips -->
-                    <div class="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-100">
-                        <h4 id="selected-slots-header" class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Selected Slots</h4>
-                        <div class="flex flex-wrap gap-2" id="selected-slots-container">
-                            <!-- Populated via JS -->
+                        <!-- Time slot chips -->
+                        <div class="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-100">
+                            <h4 id="selected-slots-header" class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Selected Slots</h4>
+                            <div class="flex flex-wrap gap-2" id="selected-slots-container">
+                                <!-- Populated via JS -->
+                            </div>
                         </div>
-                    </div>
 
-                    <button id="reserve-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-lg transition-custom shadow-glow mb-4">
-                        Reserve Now
-                    </button>
-                    <p class="text-center text-sm text-slate-500 mb-6 font-medium">You won't be charged yet</p>
+                        <button id="reserve-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-lg transition-custom shadow-glow mb-4">
+                            Reserve Now
+                        </button>
+                        <p class="text-center text-sm text-slate-500 mb-6 font-medium">You won't be charged yet</p>
 
-                    <!-- Price breakdown -->
-                    <div class="space-y-3 text-slate-600 pb-4 border-b border-slate-200">
-                        <div class="flex justify-between text-base">
-                            <span class="underline cursor-pointer" id="price-calculation">$197 x 2 hours</span>
-                            <span id="subtotal-amount">$394.00</span>
+                        <!-- Price breakdown -->
+                        <div class="space-y-3 text-slate-600 pb-4 border-b border-slate-200">
+                            <div class="flex justify-between text-base">
+                                <span class="underline cursor-pointer" id="price-calculation">$197 x 2 hours</span>
+                                <span id="subtotal-amount">$394.00</span>
+                            </div>
+                            <div class="flex justify-between text-base" id="processing-fee-row">
+                                <span class="underline cursor-pointer">Processing fee</span>
+                                <span id="processing-fee-amount">$15.00</span>
+                            </div>
+                            <div class="flex justify-between text-base">
+                                <span class="underline cursor-pointer notranslate">Taxes</span>
+                                <span id="tax-amount">$61.35</span>
+                            </div>
                         </div>
-                        <div class="flex justify-between text-base" id="processing-fee-row">
-                            <span class="underline cursor-pointer">Processing fee</span>
-                            <span id="processing-fee-amount">$15.00</span>
-                        </div>
-                        <div class="flex justify-between text-base">
-                            <span class="underline cursor-pointer notranslate">Taxes</span>
-                            <span id="tax-amount">$61.35</span>
-                        </div>
-                    </div>
 
-                    <div class="flex justify-between font-extrabold text-dark text-lg pt-4">
-                        <span>Total <span class="text-sm font-normal text-slate-500">(CAD)</span></span>
-                        <span id="total-amount">$470.35</span>
-                    </div>
+                        <div class="flex justify-between font-extrabold text-dark text-lg pt-4">
+                            <span>Total <span class="text-sm font-normal text-slate-500">(CAD)</span></span>
+                            <span id="total-amount">$470.35</span>
+                        </div>
+                    </div> <!-- End booking-widget-content -->
 
                 </div>
             </div>
@@ -398,7 +427,7 @@
     <!-- Mobile Sticky Booking Footer -->
     <div id="mobile-sticky-footer" class="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 px-4 pt-3 pb-8 lg:hidden z-40 flex justify-between items-center transition-transform duration-300 ease-in-out transform shadow-[0_-10px_20px_rgba(0,0,0,0.05)]" style="padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);">
         <div>
-            <span class="text-lg font-bold text-dark inline-flex items-center gap-1" id="mobile-footer-price"><div class="h-6 w-12 bg-slate-200 rounded animate-pulse"></div> <span class="text-sm font-normal text-slate-500">/ hour</span></span>
+            <span class="text-lg font-bold text-dark inline-flex items-center gap-1" id="mobile-footer-price"><div class="h-6 w-12 bg-slate-200 rounded animate-pulse"></div> <span class="text-sm font-normal text-slate-500 hidden">/ hour</span></span>
             <div class="text-xs font-semibold text-primary mt-1"><i class="fa-solid fa-bolt"></i> Instant Book</div>
         </div>
         <button id="mobile-reserve-btn" class="bg-primary text-white px-8 py-3 rounded-full font-bold shadow-glow hover:bg-primaryHover transition-custom">
@@ -928,9 +957,20 @@
                     pricingUnitLabel = window.pricingUnit === 'half_day' ? '/ half-day' : (window.pricingUnit === 'full_day' ? '/ day' : '/ hour');
                     pricingUnitLabelShort = window.pricingUnit === 'half_day' ? '/ half-day' : (window.pricingUnit === 'full_day' ? '/ day' : '/hr');
                     
-                    document.querySelector('#booking-widget-container .text-2xl.font-bold').innerHTML = `$${hourlyRate}`;
-                    document.querySelector('#booking-widget-container .text-slate-500.font-medium').innerText = pricingUnitLabel;
-                    document.getElementById('mobile-footer-price').innerHTML = `$${hourlyRate} <span class="text-sm font-normal text-slate-500">${pricingUnitLabelShort}</span>`;
+                    // Precompute isDropInOnly here to avoid flashing hourly skeleton properties
+                    let isDropInOnly = false;
+                    if ((!Array.isArray(pricingRules) && pricingRules.booking_model === 'drop_in_only') || facility.type === 'pool') {
+                        isDropInOnly = true;
+                    }
+                    
+                    if (!isDropInOnly) {
+                        const hPrice = document.querySelector('#booking-widget-container .text-2xl.font-bold');
+                        if (hPrice) hPrice.innerHTML = `$${hourlyRate}`;
+                        const hUnit = document.querySelector('#booking-widget-container .text-slate-500.font-medium');
+                        if (hUnit) hUnit.innerText = pricingUnitLabel;
+                        const mPrice = document.getElementById('mobile-footer-price');
+                        if (mPrice) mPrice.innerHTML = `$${hourlyRate} <span class="text-sm font-normal text-slate-500">${pricingUnitLabelShort}</span>`;
+                    }
 
                     // Expose it globally for render
                     window.facilityDiscounts = facilityDiscounts;
@@ -1325,28 +1365,44 @@
                     }
 
 
-                    // Mobile Footer Price
-                    const mobilePriceContainer = document.querySelector('.fixed.bottom-0 .text-lg.font-bold.text-dark');
-                    if (mobilePriceContainer) {
-                        mobilePriceContainer.innerHTML = `From $${hourlyRate} <span class="text-sm font-normal text-slate-500">${pricingUnitLabel}</span>`;
-                    }
-
-                    // Check if this surface is strictly "public drop-ins only"
-                    let isDropInOnly = false;
-                    if ((!Array.isArray(pricingRules) && pricingRules.booking_model === 'drop_in_only') || facility.type === 'pool') {
-                        isDropInOnly = true;
-                    }
-                    
-                    if (isDropInOnly && typeof window.initPublicActivityWidget === 'function') {
-                        // Initialize the specific drop-in widget. It overwrites the booking-widget-container.
-                        window.initPublicActivityWidget(facility, surfaceIdParam);
+                    // Check if this surface is strictly "public drop-ins only" (precomputed above)
+                    if (isDropInOnly) {
+                        const initWidget = () => {
+                            if (typeof window.initPublicActivityWidget === 'function') {
+                                window.initPublicActivityWidget(facility, surfaceIdParam);
+                            } else {
+                                setTimeout(initWidget, 50);
+                            }
+                        };
+                        initWidget();
                         const availSec = document.getElementById('availability-section');
                         if (availSec) availSec.classList.add('hidden');
+
+                        // Update mobile sticky footer for public sessions
+                        const currentLang = document.documentElement.getAttribute('data-lang') || 'en';
+                        const mobilePriceContainer = document.querySelector('.fixed.bottom-0 #mobile-footer-price');
+                        if (mobilePriceContainer) {
+                            mobilePriceContainer.innerHTML = currentLang === 'fr' 
+                                ? `<span class="lang-fr-only notranslate">Activités publiques</span>`
+                                : `<span class="lang-en-only">Public Activities</span>`;
+                        }
                     } else {
+                        // Mobile Footer Price for hourly rentals
+                        const mobilePriceContainer = document.querySelector('.fixed.bottom-0 .text-lg.font-bold.text-dark');
+                        if (mobilePriceContainer) {
+                            mobilePriceContainer.innerHTML = `From $${hourlyRate} <span class="text-sm font-normal text-slate-500">${pricingUnitLabel}</span>`;
+                        }
+
                         // Re-render pricing calculation to use new hourly rate for private widget
                         render();
                         const availSec = document.getElementById('availability-section');
                         if (availSec) availSec.classList.remove('hidden');
+
+                        // Hide skeleton and reveal hourly rental widget contents
+                        const skeleton = document.getElementById('booking-widget-skeleton');
+                        const content = document.getElementById('booking-widget-content');
+                        if (skeleton) skeleton.classList.add('hidden');
+                        if (content) content.classList.remove('hidden');
                     }
 
                 } catch (error) {
