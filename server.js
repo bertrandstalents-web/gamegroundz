@@ -2584,7 +2584,8 @@ app.get('/api/public_sessions/upcoming/all', (req, res) => {
                 const actName = row.manual_notes;
                 const key = activityMapping[actName];
                 if (key) {
-                    return activeActivities[key] && activeActivities[key].length > 0;
+                    const actData = activeActivities[key];
+                    return actData && (Array.isArray(actData) ? actData.length > 0 : (actData.tiers && actData.tiers.length > 0));
                 }
             }
             return true;
@@ -2659,7 +2660,8 @@ app.get('/api/public_sessions/:facility_id', (req, res) => {
                 const actName = row.manual_notes;
                 const key = activityMapping[actName];
                 if (key) {
-                    return activeActivities[key] && activeActivities[key].length > 0;
+                    const actData = activeActivities[key];
+                    return actData && (Array.isArray(actData) ? actData.length > 0 : (actData.tiers && actData.tiers.length > 0));
                 }
             }
             return true;
