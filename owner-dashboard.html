@@ -3851,6 +3851,61 @@
             }
         }
 
+        window.updatePoolActivitiesVisibility = function(surfaceId, currentActivityName = null) {
+            // Find surface details
+            let surface = null;
+            if (typeof window.currentSurfaces !== 'undefined' && window.currentSurfaces) {
+                surface = window.currentSurfaces.find(s => s.id == surfaceId);
+            }
+            if (!surface && typeof ownerFacilities !== 'undefined' && ownerFacilities) {
+                ownerFacilities.forEach(f => {
+                    if (f.surfaces) {
+                        const s = f.surfaces.find(x => x.id == surfaceId);
+                        if (s) surface = s;
+                    }
+                });
+            }
+
+            let activeActivities = {};
+            if (surface && surface.pricing_rules) {
+                let parsedRules = surface.pricing_rules;
+                if (typeof parsedRules === 'string') {
+                    try { parsedRules = JSON.parse(parsedRules); } catch(e){}
+                }
+                if (parsedRules) {
+                    const actObj = parsedRules.activities || (parsedRules.time_slots && parsedRules.time_slots.activities);
+                    if (actObj) activeActivities = actObj;
+                }
+            }
+
+            const mapping = {
+                'lanes': { id: 'pool-act-lanes', name: 'Swimming Lane' },
+                'swim': { id: 'pool-act-swim', name: 'Open Swim and Diving Board' },
+                'family': { id: 'pool-act-family', name: 'Recreational and Family Pool' }
+            };
+
+            Object.keys(mapping).forEach(key => {
+                const cbId = mapping[key].id;
+                const actName = mapping[key].name;
+                const cb = document.getElementById(cbId);
+                if (cb) {
+                    const hasActivity = activeActivities[key] && activeActivities[key].length > 0;
+                    const isCurrentlyScheduled = currentActivityName && currentActivityName === actName;
+                    
+                    const row = cb.closest('.flex');
+                    if (hasActivity || isCurrentlyScheduled) {
+                        cb.disabled = false;
+                        if (row) row.classList.remove('hidden');
+                    } else {
+                        cb.disabled = true;
+                        cb.checked = false;
+                        if (row) row.classList.add('hidden');
+                    }
+                    if (window.togglePoolActivityQty) window.togglePoolActivityQty(cb);
+                }
+            });
+        };
+
         function openEventModal(info) {
             const facId = document.getElementById('calendar-facility-select').value;
             if (!facId) {
@@ -3941,12 +3996,10 @@
             const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
             typeRadios.forEach(r => { r.disabled = false; if(r.value === 'offline') r.checked = true; });
 
-            // Resets for Pool activities
-            document.querySelectorAll('.pool-activity-cb').forEach(cb => {
-                cb.checked = false;
-                cb.disabled = false;
-                if(window.togglePoolActivityQty) window.togglePoolActivityQty(cb);
-            });
+            // Resets for Pool activities using helper
+            if (window.updatePoolActivitiesVisibility) {
+                window.updatePoolActivitiesVisibility(facId);
+            }
 
             toggleModalBlockType();
 
@@ -4035,12 +4088,10 @@
                 if(r.value === (eventObj.extendedProps.isPublicSession ? 'public_session' : 'offline')) r.checked = true; 
             });
 
-            // Resets for Pool activities
-            document.querySelectorAll('.pool-activity-cb').forEach(cb => {
-                cb.checked = false;
-                cb.disabled = false;
-                if(window.togglePoolActivityQty) window.togglePoolActivityQty(cb);
-            });
+            // Resets for Pool activities using helper
+            if (window.updatePoolActivitiesVisibility) {
+                window.updatePoolActivitiesVisibility(facId, eventObj.extendedProps.originalNotes);
+            }
 
             const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == trueFacId) : null;
             let surface = facility && facility.surfaces ? facility.surfaces.find(s => s.id == facId) : null;

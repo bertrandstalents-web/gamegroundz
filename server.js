@@ -2544,7 +2544,7 @@ app.get('/api/public_sessions/upcoming/all', (req, res) => {
     const todayStr = now.toISOString().split('T')[0];
 
     const query = `
-        SELECT b.*, f.name as facility_name, s.name as surface_name, f.location, f.type as facility_type, 
+        SELECT b.*, f.name as facility_name, s.name as surface_name, s.pricing_rules as surface_pricing_rules, s.type as surface_type, f.location, f.type as facility_type, 
         CASE WHEN s.image_url IS NOT NULL AND s.image_url != '' THEN s.image_url ELSE f.image_url END as image_url, 
         f.lat, f.lng,
         (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
@@ -2558,7 +2558,35 @@ app.get('/api/public_sessions/upcoming/all', (req, res) => {
     
     db.all(query, [todayStr], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
+        
+        // Filter out sessions for unconfigured activities if surface is a pool
+        const filteredRows = (rows || []).filter(row => {
+            if (row.surface_type === 'pool') {
+                let activeActivities = {};
+                if (row.surface_pricing_rules) {
+                    try {
+                        const parsed = typeof row.surface_pricing_rules === 'string'
+                            ? JSON.parse(row.surface_pricing_rules)
+                            : row.surface_pricing_rules;
+                        const actObj = parsed.activities || (parsed.time_slots && parsed.time_slots.activities);
+                        if (actObj) activeActivities = actObj;
+                    } catch (e) {}
+                }
+                const activityMapping = {
+                    'Swimming Lane': 'lanes',
+                    'Open Swim and Diving Board': 'swim',
+                    'Recreational and Family Pool': 'family'
+                };
+                const actName = row.manual_notes;
+                const key = activityMapping[actName];
+                if (key) {
+                    return activeActivities[key] && activeActivities[key].length > 0;
+                }
+            }
+            return true;
+        });
+
+        res.json(filteredRows);
     });
 });
 
@@ -2578,9 +2606,10 @@ app.get('/api/public_sessions/:facility_id', (req, res) => {
     if (facility_id === 'null' || facility_id === 'undefined') {
         if (surface_id) {
             query = `
-                SELECT b.*, 
+                SELECT b.*, s.pricing_rules as surface_pricing_rules, s.type as surface_type,
                 (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
                 FROM bookings b 
+                LEFT JOIN surfaces s ON b.surface_id = s.id
                 WHERE b.facility_id IS NULL AND b.surface_id = ? AND b.booking_type = 'public_session' AND b.status = 'confirmed' 
                 AND b.booking_date >= ?
                 ORDER BY b.booking_date ASC, b.time_slots ASC
@@ -2591,9 +2620,10 @@ app.get('/api/public_sessions/:facility_id', (req, res) => {
         }
     } else {
         query = `
-            SELECT b.*, 
+            SELECT b.*, s.pricing_rules as surface_pricing_rules, s.type as surface_type,
             (SELECT COALESCE(SUM(quantity), 0) FROM public_session_participants WHERE booking_id = b.id AND payment_status = 'paid') as joined_count
             FROM bookings b 
+            LEFT JOIN surfaces s ON b.surface_id = s.id
             WHERE b.facility_id = ? AND b.booking_type = 'public_session' AND b.status = 'confirmed' 
             AND b.booking_date >= ?
             ORDER BY b.booking_date ASC, b.time_slots ASC
@@ -2603,7 +2633,35 @@ app.get('/api/public_sessions/:facility_id', (req, res) => {
     
     db.all(query, params, (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
+        
+        // Filter out sessions for unconfigured activities if surface is a pool
+        const filteredRows = (rows || []).filter(row => {
+            if (row.surface_type === 'pool') {
+                let activeActivities = {};
+                if (row.surface_pricing_rules) {
+                    try {
+                        const parsed = typeof row.surface_pricing_rules === 'string'
+                            ? JSON.parse(row.surface_pricing_rules)
+                            : row.surface_pricing_rules;
+                        const actObj = parsed.activities || (parsed.time_slots && parsed.time_slots.activities);
+                        if (actObj) activeActivities = actObj;
+                    } catch (e) {}
+                }
+                const activityMapping = {
+                    'Swimming Lane': 'lanes',
+                    'Open Swim and Diving Board': 'swim',
+                    'Recreational and Family Pool': 'family'
+                };
+                const actName = row.manual_notes;
+                const key = activityMapping[actName];
+                if (key) {
+                    return activeActivities[key] && activeActivities[key].length > 0;
+                }
+            }
+            return true;
+        });
+
+        res.json(filteredRows);
     });
 });
 

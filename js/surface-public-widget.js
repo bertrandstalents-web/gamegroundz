@@ -26,7 +26,35 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
             if (sessions.error) throw new Error(sessions.error);
             
             // Relaxed filter: include sessions that either match the surface_id exactly or are facility-wide (null/undefined)
-            const surfaceSessions = Array.isArray(sessions) ? sessions.filter(s => !s.surface_id || String(s.surface_id) === String(surfaceIdParam) || String(s.surface_id) === 'null') : [];
+            let surfaceSessions = Array.isArray(sessions) ? sessions.filter(s => !s.surface_id || String(s.surface_id) === String(surfaceIdParam) || String(s.surface_id) === 'null') : [];
+            
+            // Filter out sessions for unconfigured activities if type is pool
+            if (facility.type === 'pool') {
+                let activeActivities = {};
+                if (facility.pricing_rules) {
+                    let parsedRules = facility.pricing_rules;
+                    if (typeof parsedRules === 'string') {
+                        try { parsedRules = JSON.parse(parsedRules); } catch(e){}
+                    }
+                    if (parsedRules) {
+                        const actObj = parsedRules.activities || (parsedRules.time_slots && parsedRules.time_slots.activities);
+                        if (actObj) activeActivities = actObj;
+                    }
+                }
+                const activityMapping = {
+                    'Swimming Lane': 'lanes',
+                    'Open Swim and Diving Board': 'swim',
+                    'Recreational and Family Pool': 'family'
+                };
+                surfaceSessions = surfaceSessions.filter(s => {
+                    const actName = s.manual_notes;
+                    const key = activityMapping[actName];
+                    if (key) {
+                        return activeActivities[key] && activeActivities[key].length > 0;
+                    }
+                    return true;
+                });
+            }
             
             const bookingWidget = document.getElementById('booking-widget-container');
             if (!bookingWidget) return;
