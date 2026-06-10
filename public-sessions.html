@@ -667,6 +667,9 @@
                     btn.className = 'activity-icon-btn w-11 h-11 flex items-center justify-center overflow-visible border rounded-xl p-1.5 shadow-sm border-slate-200 bg-slate-50 opacity-60 hover:opacity-100 hover:scale-105 transition-all duration-200 cursor-pointer';
                 }
             });
+
+            // Update card navigation URL to auto-select the clicked activity on the surface detail page
+            card.setAttribute('onclick', `window.location.href="surface.html?id=${surfaceId}&activity=${iconKey}"`);
         };
 
         function createConsolidatedSurfaceCard(group) {
@@ -686,7 +689,7 @@
             const translatedBadge = translateActivityName(firstSession.manual_notes);
 
             return `
-                <div data-card-surface-id="${group.surface_id}" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick='window.location.href="surface.html?id=${group.surface_id}"'>
+                <div data-card-surface-id="${group.surface_id}" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick='window.location.href="surface.html?id=${group.surface_id}&activity=${activeIconKey}"'>
                     <div class="relative h-48 hover-zoom-img-container">
                         <img src="${displayImage}" alt="${group.surface_name || group.facility_name}" class="w-full h-full object-cover bg-slate-100">
                         <div class="absolute top-3 left-3 flex flex-wrap gap-2 z-20">

@@ -562,8 +562,21 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                 }
             });
             
-            // Auto-select the first activity
-            if (uniqueActivities.length > 0) {
+            // Auto-select the first activity or match one specified in the URL query params
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetActivity = urlParams.get('activity');
+            let matchedOpt = null;
+            if (targetActivity) {
+                const lowerTarget = targetActivity.toLowerCase();
+                matchedOpt = Array.from(document.querySelectorAll('.activity-option')).find(opt => {
+                    const actName = opt.getAttribute('data-activity').toLowerCase();
+                    return actName.includes(lowerTarget) || lowerTarget.includes(actName);
+                });
+            }
+
+            if (matchedOpt) {
+                matchedOpt.click();
+            } else if (uniqueActivities.length > 0) {
                 const firstActivityOpt = document.querySelector('.activity-option');
                 if (firstActivityOpt) firstActivityOpt.click();
             }
