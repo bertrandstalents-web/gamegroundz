@@ -959,7 +959,7 @@
                     
                     // Precompute isDropInOnly here to avoid flashing hourly skeleton properties
                     let isDropInOnly = false;
-                    if ((!Array.isArray(pricingRules) && pricingRules.booking_model === 'drop_in_only') || facility.type === 'pool') {
+                    if ((!Array.isArray(pricingRules) && pricingRules.booking_model === 'drop_in_only') || facility.type === 'pool' || urlParams.has('activity')) {
                         isDropInOnly = true;
                     }
                     
