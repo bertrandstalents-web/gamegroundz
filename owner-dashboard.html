@@ -623,6 +623,14 @@
                                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Capacity Limit</span><span class="lang-fr-only notranslate">Limite de capacité</span><span class="text-red-500">*</span></label>
                                             <input type="number" id="modal-public-capacity" min="1" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
                                         </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">
+                                                <span class="lang-en-only">Max Reservations Per Person</span>
+                                                <span class="lang-fr-only notranslate">Limite de réservation par personne</span>
+                                                <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top"><span class="lang-en-only">OPTIONAL</span><span class="lang-fr-only notranslate">OPTIONNEL</span></span>
+                                            </label>
+                                            <input type="number" id="modal-public-max-reservations" min="1" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm" placeholder="No limit">
+                                        </div>
                                         
                                         <div id="modal-pricing-tiers-section" class="pt-2">
                                             <div class="flex items-center justify-between mb-2">
@@ -3171,7 +3179,8 @@
                             joined_count: b.joined_count || 0,
                             description: b.description || '',
                             pricing_tiers: b.pricing_tiers || '[]',
-                            blockColor: b.block_color || '#3B82F6'
+                            blockColor: b.block_color || '#3B82F6',
+                            max_reservations: b.max_reservations || null
                         }
                     };
 
@@ -3984,6 +3993,8 @@
 
             if(document.getElementById('modal-block-notes')) document.getElementById('modal-block-notes').value = '';
             if(document.getElementById('modal-locker-room')) document.getElementById('modal-locker-room').value = '';
+            if(document.getElementById('modal-public-capacity')) document.getElementById('modal-public-capacity').value = '';
+            if(document.getElementById('modal-public-max-reservations')) document.getElementById('modal-public-max-reservations').value = '';
             renderLockerBoxes(facId, 'modal-locker-boxes', 'modal-locker-room', '');
             document.querySelector('#event-modal-backdrop h3').innerHTML = '<i class="fa-regular fa-calendar-plus mr-3 text-xl"></i>New Booking';
             document.getElementById('modal-cancel-btn').textContent = 'Cancel booking';
@@ -4170,6 +4181,9 @@
                 }
                 if (document.getElementById('modal-public-capacity')) {
                     document.getElementById('modal-public-capacity').value = eventObj.extendedProps.capacity || '';
+                }
+                if (document.getElementById('modal-public-max-reservations')) {
+                    document.getElementById('modal-public-max-reservations').value = eventObj.extendedProps.max_reservations || '';
                 }
                 if (document.getElementById('modal-public-residents-only')) {
                     document.getElementById('modal-public-residents-only').checked = !!eventObj.extendedProps.residents_only;
@@ -4588,6 +4602,7 @@
                         }
 
                         let tiers = [];
+                        let maxRes = null;
                         let activities = null;
                         if (parsedRules) {
                             if (parsedRules.activities) {
@@ -4597,7 +4612,15 @@
                             }
                         }
                         if (activities && activityKey) {
-                            tiers = activities[activityKey] || [];
+                            const actData = activities[activityKey];
+                            if (actData) {
+                                if (Array.isArray(actData)) {
+                                    tiers = actData;
+                                } else {
+                                    tiers = actData.tiers || [];
+                                    maxRes = actData.max_reservations || null;
+                                }
+                            }
                         }
 
                         const payload = {
@@ -4612,6 +4635,7 @@
                             repeat_days: repeatDays,
                             booking_type: 'public_session',
                             capacity: act.qty,
+                            max_reservations: maxRes,
                             description: document.getElementById('modal-public-description') ? document.getElementById('modal-public-description').value : '',
                             block_color: document.getElementById('modal-block-color').value,
                             pricing_tiers: JSON.stringify(tiers)
@@ -4649,6 +4673,7 @@
                             }
 
                             let tiers = [];
+                            let maxRes = null;
                             let activities = null;
                             if (parsedRules) {
                                 if (parsedRules.activities) {
@@ -4658,7 +4683,15 @@
                                 }
                             }
                             if (activities && activityKey) {
-                                tiers = activities[activityKey] || [];
+                                const actData = activities[activityKey];
+                                if (actData) {
+                                    if (Array.isArray(actData)) {
+                                        tiers = actData;
+                                    } else {
+                                        tiers = actData.tiers || [];
+                                        maxRes = actData.max_reservations || null;
+                                    }
+                                }
                             }
 
                             const payload = {
@@ -4673,6 +4706,7 @@
                                 repeat_days: repeatDays,
                                 booking_type: 'public_session',
                                 capacity: act.qty,
+                                max_reservations: maxRes,
                                 description: document.getElementById('modal-public-description') ? document.getElementById('modal-public-description').value : '',
                                 block_color: document.getElementById('modal-block-color').value,
                                 pricing_tiers: JSON.stringify(tiers)
@@ -4725,6 +4759,7 @@
                 repeat_days: repeatDays,
                 booking_type: blockType,
                 capacity: blockType === 'public_session' ? parseInt(document.getElementById('modal-public-capacity').value, 10) : 0,
+                max_reservations: blockType === 'public_session' && document.getElementById('modal-public-max-reservations') && document.getElementById('modal-public-max-reservations').value !== '' ? parseInt(document.getElementById('modal-public-max-reservations').value, 10) : null,
                 description: blockType === 'public_session' && document.getElementById('modal-public-description') ? document.getElementById('modal-public-description').value : '',
                 block_color: document.getElementById('modal-block-color').value,
                 pricing_tiers: (() => {
@@ -7751,6 +7786,8 @@
                 if (pricingDiv) pricingDiv.classList.add('hidden');
                 const rowsContainer = document.getElementById(`surf-pool-act-${act}-rows`);
                 if (rowsContainer) rowsContainer.innerHTML = '';
+                const maxInput = document.getElementById(`surf-pool-act-${act}-max`);
+                if (maxInput) maxInput.value = '';
             });
 
             const rulesContainer = document.getElementById('pricing-rules-container');
@@ -7810,7 +7847,13 @@
                                     const pricingDiv = document.getElementById(`surf-pool-act-${act}-pricing`);
                                     if (pricingDiv) pricingDiv.classList.remove('hidden');
                                     
-                                    const tiers = activities[act];
+                                    const actData = activities[act];
+                                    const tiers = Array.isArray(actData) ? actData : (actData.tiers || []);
+                                    const maxVal = Array.isArray(actData) ? '' : (actData.max_reservations || '');
+                                    
+                                    const maxInput = document.getElementById(`surf-pool-act-${act}-max`);
+                                    if (maxInput) maxInput.value = maxVal;
+
                                     tiers.forEach(t => {
                                         window.addSurfPoolPricingRow(act, t.name, t.price);
                                     });
@@ -7948,21 +7991,27 @@
                     ['lanes', 'swim', 'family'].forEach(act => {
                         const cb = document.getElementById(`surf-pool-act-${act}`);
                         if (cb && cb.checked) {
-                            poolActivitiesPricing[act] = [];
+                            const maxVal = document.getElementById(`surf-pool-act-${act}-max`) && document.getElementById(`surf-pool-act-${act}-max`).value !== '' ? parseInt(document.getElementById(`surf-pool-act-${act}-max`).value, 10) : null;
+                            const tiers = [];
                             const rows = document.querySelectorAll(`.surf-pool-pricing-row[data-activity="${act}"]`);
                             rows.forEach(row => {
                                 const nameVal = row.querySelector('.tier-name-input').value.trim();
                                 const priceVal = parseFloat(row.querySelector('.tier-price-input').value) || 0;
                                 if (nameVal) {
-                                    poolActivitiesPricing[act].push({ name: nameVal, price: priceVal });
+                                    tiers.push({ name: nameVal, price: priceVal });
                                 }
                             });
+                            poolActivitiesPricing[act] = {
+                                max_reservations: isNaN(maxVal) ? null : maxVal,
+                                tiers: tiers
+                            };
                         }
                     });
                     finalPricingRules = { activities: poolActivitiesPricing };
                     // Set basePrice to the lowest price among all checked pool activities
                     let minP = Infinity;
-                    Object.values(poolActivitiesPricing).forEach(tiers => {
+                    Object.values(poolActivitiesPricing).forEach(actObj => {
+                        const tiers = actObj.tiers || [];
                         tiers.forEach(t => {
                             if (t.price < minP) minP = t.price;
                         });
@@ -8330,13 +8379,19 @@
                         <div class="space-y-4">
                             <!-- Activity 1: Swimming Lanes -->
                             <div class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
-                                <label class="flex items-center cursor-pointer mb-3">
-                                    <input type="checkbox" id="surf-pool-act-lanes" class="w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded" onchange="toggleSurfPoolActivityPricing('lanes')">
-                                    <span class="ml-3 text-sm font-bold text-slate-800">
-                                        <span class="lang-en-only">Couloir de Natation (Swimming Lanes)</span>
-                                        <span class="lang-fr-only notranslate">Couloir de Natation</span>
-                                    </span>
-                                </label>
+                                <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" id="surf-pool-act-lanes" class="w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded" onchange="toggleSurfPoolActivityPricing('lanes')">
+                                        <span class="ml-3 text-sm font-bold text-slate-800">
+                                            <span class="lang-en-only">Couloir de Natation (Swimming Lanes)</span>
+                                            <span class="lang-fr-only notranslate">Couloir de Natation</span>
+                                        </span>
+                                    </label>
+                                    <div class="flex items-center space-x-2">
+                                        <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider whitespace-nowrap"><span class="lang-en-only">Max per person:</span><span class="lang-fr-only notranslate">Max par personne :</span></label>
+                                        <input type="number" id="surf-pool-act-lanes-max" min="1" class="w-16 px-2 py-1 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white" placeholder="None">
+                                    </div>
+                                </div>
                                 <div id="surf-pool-act-lanes-pricing" class="hidden pl-7 space-y-3 pt-2 border-t border-slate-100 mt-2">
                                     <div class="flex items-center justify-between mb-1">
                                         <span class="text-xs font-semibold text-slate-500"><span class="lang-en-only">Pricing Tiers</span><span class="lang-fr-only notranslate">Niveaux de prix</span></span>
@@ -8352,13 +8407,19 @@
 
                             <!-- Activity 2: Open Swim & Diving -->
                             <div class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
-                                <label class="flex items-center cursor-pointer mb-3">
-                                    <input type="checkbox" id="surf-pool-act-swim" class="w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded" onchange="toggleSurfPoolActivityPricing('swim')">
-                                    <span class="ml-3 text-sm font-bold text-slate-800">
-                                        <span class="lang-en-only">Baignade Libre et Plongeon (Open Swim & Diving)</span>
-                                        <span class="lang-fr-only notranslate">Baignade Libre et Plongeon</span>
-                                    </span>
-                                </label>
+                                <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" id="surf-pool-act-swim" class="w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded" onchange="toggleSurfPoolActivityPricing('swim')">
+                                        <span class="ml-3 text-sm font-bold text-slate-800">
+                                            <span class="lang-en-only">Baignade Libre et Plongeon (Open Swim & Diving)</span>
+                                            <span class="lang-fr-only notranslate">Baignade Libre et Plongeon</span>
+                                        </span>
+                                    </label>
+                                    <div class="flex items-center space-x-2">
+                                        <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider whitespace-nowrap"><span class="lang-en-only">Max per person:</span><span class="lang-fr-only notranslate">Max par personne :</span></label>
+                                        <input type="number" id="surf-pool-act-swim-max" min="1" class="w-16 px-2 py-1 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white" placeholder="None">
+                                    </div>
+                                </div>
                                 <div id="surf-pool-act-swim-pricing" class="hidden pl-7 space-y-3 pt-2 border-t border-slate-100 mt-2">
                                     <div class="flex items-center justify-between mb-1">
                                         <span class="text-xs font-semibold text-slate-500"><span class="lang-en-only">Pricing Tiers</span><span class="lang-fr-only notranslate">Niveaux de prix</span></span>
@@ -8374,13 +8435,19 @@
 
                             <!-- Activity 3: Recreational & Family -->
                             <div class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
-                                <label class="flex items-center cursor-pointer mb-3">
-                                    <input type="checkbox" id="surf-pool-act-family" class="w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded" onchange="toggleSurfPoolActivityPricing('family')">
-                                    <span class="ml-3 text-sm font-bold text-slate-800">
-                                        <span class="lang-en-only">Piscine Récréative et Familiale (Recreational & Family)</span>
-                                        <span class="lang-fr-only notranslate">Piscine Récréative et Familiale</span>
-                                    </span>
-                                </label>
+                                <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" id="surf-pool-act-family" class="w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded" onchange="toggleSurfPoolActivityPricing('family')">
+                                        <span class="ml-3 text-sm font-bold text-slate-800">
+                                            <span class="lang-en-only">Piscine Récréative et Familiale (Recreational & Family)</span>
+                                            <span class="lang-fr-only notranslate">Piscine Récréative et Familiale</span>
+                                        </span>
+                                    </label>
+                                    <div class="flex items-center space-x-2">
+                                        <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider whitespace-nowrap"><span class="lang-en-only">Max per person:</span><span class="lang-fr-only notranslate">Max par personne :</span></label>
+                                        <input type="number" id="surf-pool-act-family-max" min="1" class="w-16 px-2 py-1 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium bg-white" placeholder="None">
+                                    </div>
+                                </div>
                                 <div id="surf-pool-act-family-pricing" class="hidden pl-7 space-y-3 pt-2 border-t border-slate-100 mt-2">
                                     <div class="flex items-center justify-between mb-1">
                                         <span class="text-xs font-semibold text-slate-500"><span class="lang-en-only">Pricing Tiers</span><span class="lang-fr-only notranslate">Niveaux de prix</span></span>

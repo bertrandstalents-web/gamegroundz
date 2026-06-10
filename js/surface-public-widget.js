@@ -50,7 +50,8 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                     const actName = s.manual_notes;
                     const key = activityMapping[actName];
                     if (key) {
-                        return activeActivities[key] && activeActivities[key].length > 0;
+                        const actData = activeActivities[key];
+                        return actData && (Array.isArray(actData) ? actData.length > 0 : (actData.tiers && actData.tiers.length > 0));
                     }
                     return true;
                 });
@@ -198,6 +199,7 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
             let paSelectedDate = null;
             let paSelectedSession = null;
             let paTierSelections = {};
+            let paUserBookedCount = 0;
             
             // Logic
             const activityTrigger = document.getElementById('pa-activity-trigger');
@@ -329,7 +331,17 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                         document.getElementById('pa-selected-time').textContent = timeLabel;
                         timeDropdown.classList.add('hidden');
                         
-                        renderTiers();
+                        paUserBookedCount = 0;
+                        fetch(`${API_BASE_URL}/api/public_sessions/single/${paSelectedSession.id}/my-status`, { credentials: 'include' })
+                            .then(r => r.ok ? r.json() : { user_booked_count: 0 })
+                            .then(data => {
+                                paUserBookedCount = parseInt(data.user_booked_count, 10) || 0;
+                                renderTiers();
+                            })
+                            .catch(() => {
+                                paUserBookedCount = 0;
+                                renderTiers();
+                            });
                     });
                 });
                 
@@ -383,6 +395,22 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                 }
 
                 tiersContainer.innerHTML = '';
+
+                if (paSelectedSession.max_reservations && paSelectedSession.max_reservations > 0) {
+                    const banner = document.createElement('div');
+                    banner.className = "p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 font-semibold mb-3 flex items-start space-x-2";
+                    const enText = `Maximum limit: ${paSelectedSession.max_reservations} per person (${paUserBookedCount} already booked)`;
+                    const frText = `Limite maximale : ${paSelectedSession.max_reservations} par personne (${paUserBookedCount} déjà réservé(s))`;
+                    banner.innerHTML = `
+                        <i class="fa-solid fa-circle-info text-amber-500 mt-0.5 text-sm flex-shrink-0"></i>
+                        <span>
+                            <span class="lang-en-only">${enText}</span>
+                            <span class="lang-fr-only notranslate">${frText}</span>
+                        </span>
+                    `;
+                    tiersContainer.appendChild(banner);
+                }
+
                 pricingTiers.forEach((tier, index) => {
                     paTierSelections[tier.name] = 0;
                     const price = parseFloat(tier.price) || 0;
@@ -413,16 +441,24 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                     document.getElementById(`pa-plus-${index}`).addEventListener('click', () => {
                         const totalJoined = Object.values(paTierSelections).reduce((a, b) => a + b, 0);
                         const maxSpots = Math.max(0, paSelectedSession.capacity - (paSelectedSession.joined_count || 0));
-                        if (totalJoined < maxSpots) {
+                        let allowedBookingQty = maxSpots;
+                        if (paSelectedSession.max_reservations && paSelectedSession.max_reservations > 0) {
+                            allowedBookingQty = Math.min(maxSpots, Math.max(0, paSelectedSession.max_reservations - paUserBookedCount));
+                        }
+                        if (totalJoined < allowedBookingQty) {
                             paTierSelections[tier.name]++;
                             updateTotal(pricingTiers);
                         }
                     });
                 });
                 
-                // Select 1 of the first tier if spots available
+                // Select 1 of the first tier if spots available and limit not reached
                 const maxSpots = Math.max(0, paSelectedSession.capacity - (paSelectedSession.joined_count || 0));
-                if (maxSpots > 0 && pricingTiers.length > 0) {
+                let allowedBookingQty = maxSpots;
+                if (paSelectedSession.max_reservations && paSelectedSession.max_reservations > 0) {
+                    allowedBookingQty = Math.min(maxSpots, Math.max(0, paSelectedSession.max_reservations - paUserBookedCount));
+                }
+                if (allowedBookingQty > 0 && pricingTiers.length > 0) {
                     paTierSelections[pricingTiers[0].name] = 1;
                 }
                 
@@ -439,11 +475,16 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                 }
 
                 const maxSpots = Math.max(0, paSelectedSession.capacity - (paSelectedSession.joined_count || 0));
+                let allowedBookingQty = maxSpots;
+                if (paSelectedSession.max_reservations && paSelectedSession.max_reservations > 0) {
+                    allowedBookingQty = Math.min(maxSpots, Math.max(0, paSelectedSession.max_reservations - paUserBookedCount));
+                }
+
                 let totalQty = 0;
                 let subtotal = 0;
                 
                 pricingTiers.forEach((tier, index) => {
-                    const qty = paTierSelections[tier.name];
+                    const qty = paTierSelections[tier.name] || 0;
                     totalQty += qty;
                     subtotal += (qty * parseFloat(tier.price || 0));
                     
@@ -452,9 +493,11 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                     
                     const minusBtn = document.getElementById(`pa-minus-${index}`);
                     if(minusBtn) minusBtn.disabled = qty <= 0;
-                    
+                });
+
+                pricingTiers.forEach((tier, index) => {
                     const plusBtn = document.getElementById(`pa-plus-${index}`);
-                    if(plusBtn) plusBtn.disabled = totalQty >= maxSpots;
+                    if(plusBtn) plusBtn.disabled = totalQty >= allowedBookingQty;
                 });
 
                 document.getElementById('pa-total-amount').textContent = `$${subtotal.toFixed(2)}`;
@@ -473,16 +516,30 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
 
                 if (maxSpots <= 0) {
                     reserveBtn.disabled = true;
-                    reserveBtn.textContent = "Session Full";
+                    reserveBtn.innerHTML = `
+                        <span class="lang-en-only">Session Full</span>
+                        <span class="lang-fr-only notranslate">Séance complète</span>
+                    `;
                     reserveBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                } else if (totalQty === 0) {
+                } else if (paSelectedSession.max_reservations && paSelectedSession.max_reservations > 0 && paUserBookedCount >= paSelectedSession.max_reservations) {
                     reserveBtn.disabled = true;
-                    reserveBtn.textContent = "Reserve Now";
+                    reserveBtn.innerHTML = `
+                        <span class="lang-en-only">Limit Reached</span>
+                        <span class="lang-fr-only notranslate">Limite atteinte</span>
+                    `;
                     reserveBtn.classList.add('opacity-50', 'cursor-not-allowed');
                 } else {
-                    reserveBtn.disabled = false;
-                    reserveBtn.textContent = "Reserve Now";
-                    reserveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    reserveBtn.innerHTML = `
+                        <span class="lang-en-only">Reserve Now</span>
+                        <span class="lang-fr-only notranslate">Réserver</span>
+                    `;
+                    if (totalQty === 0) {
+                        reserveBtn.disabled = true;
+                        reserveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    } else {
+                        reserveBtn.disabled = false;
+                        reserveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
                 }
             }
 
