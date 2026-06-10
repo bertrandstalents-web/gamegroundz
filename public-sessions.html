@@ -483,11 +483,11 @@
                 iconSrc = 'images/swimming_lane.png';
                 alt = 'Swimming Lanes';
                 scaleClass = 'scale-[1.38]';
-            } else if (text.includes('diving') || text.includes('dive') || text.includes('plongeon')) {
+            } else if (text.includes('diving') || text.includes('dive') || text.includes('plongeon') || text.includes('open swim')) {
                 iconSrc = 'images/open_swim.png';
                 alt = 'Diving';
                 scaleClass = 'scale-[1.15]';
-            } else if (text.includes('swim') || text.includes('bath') || text.includes('bain') || text.includes('family') || text.includes('récréat') || text.includes('famill')) {
+            } else if (text.includes('family') || text.includes('récréat') || text.includes('famill') || text.includes('bain libre') || text.includes('bath') || text.includes('bain')) {
                 iconSrc = 'images/family_swim.png';
                 alt = 'Family Swim';
                 scaleClass = 'scale-[0.95]';
@@ -525,12 +525,12 @@
                     iconSrc = 'images/swimming_lane.png';
                     alt = 'Swimming Lanes';
                     scaleClass = 'scale-[1.38]';
-                } else if (text.includes('diving') || text.includes('dive') || text.includes('plongeon')) {
+                } else if (text.includes('diving') || text.includes('dive') || text.includes('plongeon') || text.includes('open swim')) {
                     iconKey = 'diving';
                     iconSrc = 'images/open_swim.png';
                     alt = 'Diving';
                     scaleClass = 'scale-[1.15]';
-                } else if (text.includes('swim') || text.includes('bath') || text.includes('bain') || text.includes('family') || text.includes('récréat') || text.includes('famill')) {
+                } else if (text.includes('family') || text.includes('récréat') || text.includes('famill') || text.includes('bain libre') || text.includes('bath') || text.includes('bain')) {
                     iconKey = 'family';
                     iconSrc = 'images/family_swim.png';
                     alt = 'Family Swim';
@@ -572,9 +572,9 @@
                 return '<span class="lang-en-only">Free Skating</span><span class="lang-fr-only notranslate">Patinage libre</span>';
             } else if (nameLower.includes('lane') || nameLower.includes('couloir')) {
                 return '<span class="lang-en-only">Swimming Lane</span><span class="lang-fr-only notranslate">Couloir de natation</span>';
-            } else if (nameLower.includes('diving') || nameLower.includes('dive') || nameLower.includes('plongeon')) {
+            } else if (nameLower.includes('diving') || nameLower.includes('dive') || nameLower.includes('plongeon') || nameLower.includes('open swim')) {
                 return '<span class="lang-en-only">Open Swim & Dive</span><span class="lang-fr-only notranslate">Baignade libre et plongeon</span>';
-            } else if (nameLower.includes('family') || nameLower.includes('récréat') || nameLower.includes('famill')) {
+            } else if (nameLower.includes('family') || nameLower.includes('récréat') || nameLower.includes('famill') || nameLower.includes('bain libre') || nameLower.includes('bath') || nameLower.includes('bain')) {
                 return '<span class="lang-en-only">Recreational & Family Pool</span><span class="lang-fr-only notranslate">Bassin récréatif et familial</span>';
             }
             return manualNotes;
@@ -585,8 +585,8 @@
             if (text.includes('hockey')) return 'hockey';
             if (text.includes('skat') || text.includes('patinage') || text.includes('glace')) return 'skating';
             if (text.includes('lane') || text.includes('natation') || text.includes('couloirs')) return 'lane';
-            if (text.includes('diving') || text.includes('dive') || text.includes('plongeon')) return 'diving';
-            if (text.includes('swim') || text.includes('bath') || text.includes('bain') || text.includes('family') || text.includes('récréat') || text.includes('famill')) return 'family';
+            if (text.includes('diving') || text.includes('dive') || text.includes('plongeon') || text.includes('open swim')) return 'diving';
+            if (text.includes('family') || text.includes('récréat') || text.includes('famill') || text.includes('bain libre') || text.includes('bath') || text.includes('bain')) return 'family';
             return '';
         }
 
@@ -599,9 +599,9 @@
             } else if (iconKey === 'lane') {
                 return text.includes('lane') || text.includes('natation') || text.includes('couloirs');
             } else if (iconKey === 'diving') {
-                return text.includes('diving') || text.includes('dive') || text.includes('plongeon');
+                return text.includes('diving') || text.includes('dive') || text.includes('plongeon') || text.includes('open swim');
             } else if (iconKey === 'family') {
-                return text.includes('swim') || text.includes('bath') || text.includes('bain') || text.includes('family') || text.includes('récréat') || text.includes('famill');
+                return text.includes('family') || text.includes('récréat') || text.includes('famill') || text.includes('bain libre') || text.includes('bath') || text.includes('bain');
             }
             return false;
         }
