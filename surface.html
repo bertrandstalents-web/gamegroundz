@@ -772,6 +772,41 @@
 
             window.publicSessionSlots = new Map(); // "YYYY-MM-DD|HH:MM" -> public_session object
 
+            function getSessionIconKeyForName(name) {
+                const text = (name || '').toLowerCase();
+                if (text.includes('hockey')) return 'hockey';
+                if (text.includes('skat') || text.includes('patinage') || text.includes('glace')) return 'skating';
+                if (text.includes('lane') || text.includes('natation') || text.includes('couloirs')) return 'lane';
+                if (text.includes('diving') || text.includes('dive') || text.includes('plongeon') || text.includes('open swim')) return 'diving';
+                if (text.includes('family') || text.includes('récréat') || text.includes('famill') || text.includes('bain libre') || text.includes('bath') || text.includes('bain')) return 'family';
+                return '';
+            }
+
+            function handlePublicActivitySlotClick(pubSess) {
+                const currentLang = document.documentElement.getAttribute('data-lang') || 'en';
+                const title = currentLang === 'fr' ? "Activité publique" : "Public Activity";
+                const msg = currentLang === 'fr'
+                    ? `Ce créneau est réservé pour l'activité publique "${pubSess.manual_notes || 'Activité'}". Souhaitez-vous être redirigé vers la page d'inscription de cette activité ?`
+                    : `This slot is reserved for the public activity "${pubSess.manual_notes || 'Activity'}". Would you like to go to the public activity page to sign up?`;
+                
+                const proceedText = currentLang === 'fr' ? "Oui, m'y rendre" : "Yes, take me there";
+                const cancelText = currentLang === 'fr' ? "Annuler" : "Cancel";
+
+                if (typeof window.showConfirmModal === 'function') {
+                    window.showConfirmModal(title, msg, proceedText, cancelText, false).then(confirmed => {
+                        if (confirmed) {
+                            const iconKey = getSessionIconKeyForName(pubSess.manual_notes);
+                            window.location.href = `surface.html?id=${window.currentSurfaceId}&activity=${iconKey}`;
+                        }
+                    });
+                } else {
+                    if (confirm(msg)) {
+                        const iconKey = getSessionIconKeyForName(pubSess.manual_notes);
+                        window.location.href = `surface.html?id=${window.currentSurfaceId}&activity=${iconKey}`;
+                    }
+                }
+            }
+
             let bookedSlotIds = new Set(); // Stores IDs of private slots AND fully loaded public activities
 
             async function fetchBookedSlots() {
@@ -1855,25 +1890,7 @@
                         `;
                         div.onclick = (e) => {
                             e.stopPropagation();
-                            if (!isSelected) {
-                                // Select all slots that belong to this public activity
-                                selectedSlotIds.clear();
-                                window.publicSessionSlots.forEach((ps, key) => {
-                                    if (ps.id === pubSess.id) {
-                                        selectedSlotIds.add(key);
-                                    }
-                                });
-                            } else {
-                                // Deselect all slots that belong to this public activity
-                                window.publicSessionSlots.forEach((ps, key) => {
-                                    if (ps.id === pubSess.id) {
-                                        selectedSlotIds.delete(key);
-                                    }
-                                });
-                            }
-                            render();
-                            renderDailyCalendar();
-                            renderWeeklyCalendar();
+                            handlePublicActivitySlotClick(pubSess);
                         };
                     } else {
                         const slotDiscount = getBestDiscountForSlot(slot.id, validDiscounts);
@@ -2477,27 +2494,14 @@
                             cell.onclick = (e) => {
                                 e.stopPropagation();
                                 if (pubSess) {
-                                    if (!isSelected) {
-                                        selectedSlotIds.clear();
-                                        window.publicSessionSlots.forEach((ps, key) => {
-                                            if (ps.id === pubSess.id) {
-                                                selectedSlotIds.add(key);
-                                            }
-                                        });
-                                    } else {
-                                        window.publicSessionSlots.forEach((ps, key) => {
-                                            if (ps.id === pubSess.id) {
-                                                selectedSlotIds.delete(key);
-                                            }
-                                        });
-                                    }
-                                } else {
-                                    const currentHasPub = Array.from(selectedSlotIds).some(s => window.publicSessionSlots && window.publicSessionSlots.has(s));
-                                    if (!isSelected && currentHasPub) {
-                                        selectedSlotIds.clear();
-                                    }
-                                    toggleTimeSlot(dateStr, slot);
+                                    handlePublicActivitySlotClick(pubSess);
+                                    return;
                                 }
+                                const currentHasPub = Array.from(selectedSlotIds).some(s => window.publicSessionSlots && window.publicSessionSlots.has(s));
+                                if (!isSelected && currentHasPub) {
+                                    selectedSlotIds.clear();
+                                }
+                                toggleTimeSlot(dateStr, slot);
                                 
                                 if(bookingDateInput) {
                                    selectedDateStr = dateStr;
@@ -2581,27 +2585,14 @@
                         row.onclick = (e) => {
                             e.stopPropagation();
                             if (pubSess) {
-                                if (!isSelected) {
-                                    selectedSlotIds.clear();
-                                    window.publicSessionSlots.forEach((ps, key) => {
-                                        if (ps.id === pubSess.id) {
-                                            selectedSlotIds.add(key);
-                                        }
-                                    });
-                                } else {
-                                    window.publicSessionSlots.forEach((ps, key) => {
-                                        if (ps.id === pubSess.id) {
-                                            selectedSlotIds.delete(key);
-                                        }
-                                    });
-                                }
-                            } else {
-                                const currentHasPub = Array.from(selectedSlotIds).some(s => window.publicSessionSlots && window.publicSessionSlots.has(s));
-                                if (!isSelected && currentHasPub) {
-                                    selectedSlotIds.clear();
-                                }
-                                toggleTimeSlot(selectedDateStr, slot);
+                                handlePublicActivitySlotClick(pubSess);
+                                return;
                             }
+                            const currentHasPub = Array.from(selectedSlotIds).some(s => window.publicSessionSlots && window.publicSessionSlots.has(s));
+                            if (!isSelected && currentHasPub) {
+                                selectedSlotIds.clear();
+                            }
+                            toggleTimeSlot(selectedDateStr, slot);
                             render();
                             renderDailyCalendar();
                             renderWeeklyCalendar();
