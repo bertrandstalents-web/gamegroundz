@@ -1059,6 +1059,7 @@
                 
                 // Fetch upcoming public sessions to filter pool surfaces
                 let upcomingSessionSurfaceIds = new Set();
+                window.surfaceSessionsMap = {};
                 try {
                     const sessionsRes = await fetch(`${API_BASE_URL}/api/public_sessions/upcoming/all`, {
                         method: 'GET',
@@ -1067,7 +1068,14 @@
                     if (sessionsRes.ok) {
                         const sessions = await sessionsRes.json();
                         sessions.forEach(s => {
-                            if (s.surface_id) upcomingSessionSurfaceIds.add(Number(s.surface_id));
+                            if (s.surface_id) {
+                                const sId = Number(s.surface_id);
+                                upcomingSessionSurfaceIds.add(sId);
+                                if (!window.surfaceSessionsMap[sId]) {
+                                    window.surfaceSessionsMap[sId] = [];
+                                }
+                                window.surfaceSessionsMap[sId].push(s);
+                            }
                         });
                     }
                 } catch (err) {
@@ -1606,6 +1614,52 @@
             }, 100);
         }
 
+        function getUniqueActivityIconsHtmlForHomepage(surfId) {
+            const sessions = window.surfaceSessionsMap ? (window.surfaceSessionsMap[Number(surfId)] || []) : [];
+            const seenIcons = new Set();
+            let html = '';
+            sessions.forEach(s => {
+                const text = (s.manual_notes || '').toLowerCase();
+                let iconSrc = '';
+                let alt = '';
+                let scaleClass = '';
+                let iconKey = '';
+                
+                if (text.includes('hockey')) {
+                    iconKey = 'hockey';
+                    iconSrc = 'images/open_hockey.png';
+                    alt = 'Hockey';
+                    scaleClass = 'scale-[1.1]';
+                } else if (text.includes('skat') || text.includes('patinage') || text.includes('glace')) {
+                    iconKey = 'skating';
+                    iconSrc = 'images/free_skating.png';
+                    alt = 'Skating';
+                    scaleClass = 'scale-[1.1]';
+                } else if (text.includes('lane') || text.includes('natation') || text.includes('couloirs')) {
+                    iconKey = 'lane';
+                    iconSrc = 'images/swimming_lane.png';
+                    alt = 'Swimming Lanes';
+                    scaleClass = 'scale-[1.38]';
+                } else if (text.includes('diving') || text.includes('dive') || text.includes('plongeon') || text.includes('open swim')) {
+                    iconKey = 'diving';
+                    iconSrc = 'images/open_swim.png';
+                    alt = 'Diving';
+                    scaleClass = 'scale-[1.15]';
+                } else if (text.includes('family') || text.includes('récréat') || text.includes('famill') || text.includes('bain libre') || text.includes('bath') || text.includes('bain')) {
+                    iconKey = 'family';
+                    iconSrc = 'images/family_swim.png';
+                    alt = 'Family Swim';
+                    scaleClass = 'scale-[0.95]';
+                }
+                
+                if (iconKey && !seenIcons.has(iconKey)) {
+                    seenIcons.add(iconKey);
+                    html += `<div class="w-7 h-7 flex items-center justify-center overflow-visible border border-slate-200/60 rounded-md bg-white p-1 hover:scale-105 transition-all duration-200" title="${alt}" onclick="event.stopPropagation(); window.location.href='surface.html?id=${surfId}&activity=${iconKey}'"><img src="${iconSrc}" alt="${alt}" class="max-w-full max-h-full w-auto h-auto object-contain ${scaleClass} notranslate"></div>`;
+                }
+            });
+            return html;
+        }
+
         function generateSurfaceCard(facility) {
             const isInstantBook = facility.is_instant_book === 1;
             let topBadges = '';
@@ -1676,19 +1730,33 @@
                         <p class="text-slate-500 mb-3 flex items-center text-xs truncate">
                             <i class="fa-solid fa-location-dot mr-2 text-slate-400"></i> ${typeof formatShortLocation === 'function' ? formatShortLocation(facility.effective_location || facility.location) : (facility.effective_location || facility.location)}
                         </p>
-                        <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-3 mt-3 gap-2">
-                            <div class="flex items-center flex-wrap gap-2">
-                                <span class="text-[11px] font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded">${typeDisplay}</span>
-                                ${facility.display_slots_today && facility.display_slots_today.length > 0 ? facility.display_slots_today.slice(0, 3).map(slot => `
-                                    <div class="px-1.5 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold ${slot.discount ? 'text-red-600 bg-red-50 border-red-200' : 'text-slate-600'}">
-                                        ${slot.time}${slot.discount ? '<i class="fa-solid fa-tag text-[8px] ml-0.5"></i>' : ''}
-                                    </div>
-                                `).join('') : ''}
+                        ${model === 'drop_in_only' ? `
+                            <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-3 mt-3 gap-2 w-full">
+                                <div class="flex items-center flex-wrap gap-2">
+                                    <span class="text-[11px] font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded">${typeDisplay}</span>
+                                    ${getUniqueActivityIconsHtmlForHomepage(facility.id)}
+                                </div>
+                                <span class="text-[11px] font-semibold text-primary whitespace-nowrap">
+                                    <i class="fa-solid fa-users mr-1"></i>
+                                    <span class="lang-en-only">Public Activities</span>
+                                    <span class="lang-fr-only notranslate">Activités publiques</span>
+                                </span>
                             </div>
-                            ${facility.display_slots_today && facility.display_slots_today.length > 0 ? `
-                                <span class="text-[11px] font-semibold ${isInstantBook ? 'text-primary' : 'text-slate-500'} whitespace-nowrap"><i class="fa-solid fa-bolt mr-1"></i> Available Today</span>
-                            ` : ''}
-                        </div>
+                        ` : `
+                            <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-3 mt-3 gap-2 w-full">
+                                <div class="flex items-center flex-wrap gap-2">
+                                    <span class="text-[11px] font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded">${typeDisplay}</span>
+                                    ${facility.display_slots_today && facility.display_slots_today.length > 0 ? facility.display_slots_today.slice(0, 3).map(slot => `
+                                        <div class="px-1.5 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold ${slot.discount ? 'text-red-600 bg-red-50 border-red-200' : 'text-slate-600'}">
+                                            ${slot.time}${slot.discount ? '<i class="fa-solid fa-tag text-[8px] ml-0.5"></i>' : ''}
+                                        </div>
+                                    `).join('') : ''}
+                                </div>
+                                ${facility.display_slots_today && facility.display_slots_today.length > 0 ? `
+                                    <span class="text-[11px] font-semibold ${isInstantBook ? 'text-primary' : 'text-slate-500'} whitespace-nowrap"><i class="fa-solid fa-bolt mr-1"></i> Available Today</span>
+                                ` : ''}
+                            </div>
+                        `}
                     </div>
                 </div>
             `;
