@@ -499,7 +499,7 @@
             return '';
         }
 
-        function getUniqueActivityIconsHtml(sessions, size = 'large') {
+        function getUniqueActivityIconsHtml(sessions, size = 'large', surfaceId = null, activeIconKey = null) {
             const seenIcons = new Set();
             let html = '';
             
@@ -542,7 +542,19 @@
                     if (size === 'small') {
                         html += `<div class="w-8 h-8 flex items-center justify-center overflow-visible border border-slate-100 rounded-md bg-slate-50 p-1 shadow-sm"><img src="${iconSrc}" alt="${alt}" class="max-w-full max-h-full w-auto h-auto object-contain ${scaleClass} notranslate"></div>`;
                     } else {
-                        html += `<div class="w-11 h-11 flex items-center justify-center overflow-visible border border-slate-200 rounded-xl p-1.5 bg-slate-50 shadow-sm"><img src="${iconSrc}" alt="${alt}" class="max-w-full max-h-full w-auto h-auto object-contain ${scaleClass} notranslate"></div>`;
+                        const inlineActivity = document.getElementById('inline-activity-filter')?.value;
+                        let cursorClass = 'cursor-pointer';
+                        let styleClasses = 'border-slate-200 bg-slate-50';
+                        
+                        if (inlineActivity === 'swim') {
+                            if (activeIconKey === iconKey) {
+                                styleClasses = 'border-primary bg-primary/5 ring-1 ring-primary/30 scale-105';
+                            } else {
+                                styleClasses = 'border-slate-200 bg-slate-50 opacity-60 hover:opacity-100 hover:scale-105 transition-all duration-200';
+                            }
+                        }
+                        
+                        html += `<div class="activity-icon-btn w-11 h-11 flex items-center justify-center overflow-visible border rounded-xl p-1.5 shadow-sm ${styleClasses} ${cursorClass}" data-icon-key="${iconKey}" onclick="handleActivityIconClick(event, '${surfaceId}', '${iconKey}')"><img src="${iconSrc}" alt="${alt}" class="max-w-full max-h-full w-auto h-auto object-contain ${scaleClass} notranslate"></div>`;
                     }
                 }
             });
@@ -568,27 +580,118 @@
             return manualNotes;
         }
 
+        function getSessionIconKey(session) {
+            const text = (session.manual_notes || '').toLowerCase();
+            if (text.includes('hockey')) return 'hockey';
+            if (text.includes('skat') || text.includes('patinage') || text.includes('glace')) return 'skating';
+            if (text.includes('lane') || text.includes('natation') || text.includes('couloirs')) return 'lane';
+            if (text.includes('diving') || text.includes('dive') || text.includes('plongeon')) return 'diving';
+            if (text.includes('swim') || text.includes('bath') || text.includes('bain') || text.includes('family') || text.includes('récréat') || text.includes('famill')) return 'family';
+            return '';
+        }
+
+        function sessionMatchesIconKey(session, iconKey) {
+            const text = (session.manual_notes || '').toLowerCase();
+            if (iconKey === 'hockey') {
+                return text.includes('hockey');
+            } else if (iconKey === 'skating') {
+                return text.includes('skat') || text.includes('patinage') || text.includes('glace');
+            } else if (iconKey === 'lane') {
+                return text.includes('lane') || text.includes('natation') || text.includes('couloirs');
+            } else if (iconKey === 'diving') {
+                return text.includes('diving') || text.includes('dive') || text.includes('plongeon');
+            } else if (iconKey === 'family') {
+                return text.includes('swim') || text.includes('bath') || text.includes('bain') || text.includes('family') || text.includes('récréat') || text.includes('famill');
+            }
+            return false;
+        }
+
+        window.handleActivityIconClick = function(event, surfaceId, iconKey) {
+            const activityFilter = document.getElementById('inline-activity-filter')?.value;
+            if (activityFilter !== 'swim') {
+                return;
+            }
+            
+            event.stopPropagation();
+            event.preventDefault();
+            
+            const sessions = window.surfaceSessionsData[surfaceId];
+            if (!sessions) return;
+            
+            const matchedSession = sessions.find(s => sessionMatchesIconKey(s, iconKey));
+            if (!matchedSession) return;
+            
+            const card = document.querySelector(`[data-card-surface-id="${surfaceId}"]`);
+            if (!card) return;
+            
+            const badgeTextEl = card.querySelector('.badge-activity-name');
+            if (badgeTextEl) {
+                badgeTextEl.innerHTML = translateActivityName(matchedSession.manual_notes);
+            }
+            
+            const dateEl = card.querySelector('.card-session-date');
+            if (dateEl) {
+                dateEl.innerHTML = formatBilingualDate(matchedSession.booking_date);
+            }
+            
+            const timeEl = card.querySelector('.card-session-time');
+            if (timeEl) {
+                const slots = (typeof matchedSession.time_slots === 'string') ? JSON.parse(matchedSession.time_slots) : matchedSession.time_slots;
+                timeEl.innerHTML = slots && slots.length > 0 ? slots[0] : '';
+            }
+            
+            const spotsEl = card.querySelector('.card-session-spots');
+            if (spotsEl) {
+                const spotsRemaining = Math.max(0, (matchedSession.capacity || 0) - (matchedSession.joined_count || 0));
+                spotsEl.textContent = `${spotsRemaining} spots left`;
+                if (spotsRemaining > 0) {
+                    spotsEl.classList.remove('text-red-500');
+                    spotsEl.classList.add('text-primary');
+                } else {
+                    spotsEl.classList.remove('text-primary');
+                    spotsEl.classList.add('text-red-500');
+                }
+            }
+            
+            const moreEl = card.querySelector('.card-session-more-container');
+            if (moreEl) {
+                moreEl.innerHTML = '';
+            }
+            
+            const iconBtns = card.querySelectorAll('.activity-icon-btn');
+            iconBtns.forEach(btn => {
+                const key = btn.getAttribute('data-icon-key');
+                if (key === iconKey) {
+                    btn.className = 'activity-icon-btn w-11 h-11 flex items-center justify-center overflow-visible border rounded-xl p-1.5 shadow-sm border-primary bg-primary/5 ring-1 ring-primary/30 scale-105 cursor-pointer';
+                } else {
+                    btn.className = 'activity-icon-btn w-11 h-11 flex items-center justify-center overflow-visible border rounded-xl p-1.5 shadow-sm border-slate-200 bg-slate-50 opacity-60 hover:opacity-100 hover:scale-105 transition-all duration-200 cursor-pointer';
+                }
+            });
+        };
+
         function createConsolidatedSurfaceCard(group) {
+            window.surfaceSessionsData = window.surfaceSessionsData || {};
+            window.surfaceSessionsData[group.surface_id] = group.sessions;
+
             const firstSession = group.sessions[0];
             const displayImage = getActivityImage(firstSession.manual_notes, group.facility_type, group.image_url);
             
-            // Earliest upcoming session's details
             const displayDate = formatBilingualDate(firstSession.booking_date);
             const slots = (typeof firstSession.time_slots === 'string') ? JSON.parse(firstSession.time_slots) : firstSession.time_slots;
             const timeDisplay = slots && slots.length > 0 ? slots[0] : '';
             const firstSessionSpots = Math.max(0, (firstSession.capacity || 0) - (firstSession.joined_count || 0));
             
-            // Unique icons for all activities on this surface
-            const activityIconsHtml = getUniqueActivityIconsHtml(group.sessions, 'large');
+            const activeIconKey = getSessionIconKey(firstSession);
+            const activityIconsHtml = getUniqueActivityIconsHtml(group.sessions, 'large', group.surface_id, activeIconKey);
             const translatedBadge = translateActivityName(firstSession.manual_notes);
 
             return `
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick='window.location.href="surface.html?id=${group.surface_id}"'>
+                <div data-card-surface-id="${group.surface_id}" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick='window.location.href="surface.html?id=${group.surface_id}"'>
                     <div class="relative h-48 hover-zoom-img-container">
                         <img src="${displayImage}" alt="${group.surface_name || group.facility_name}" class="w-full h-full object-cover bg-slate-100">
                         <div class="absolute top-3 left-3 flex flex-wrap gap-2 z-20">
                             <div class="bg-primary/90 backdrop-blur px-2.5 py-1 rounded-md text-xs font-bold text-white shadow-sm flex items-center">
-                                <i class="fa-solid fa-users mr-1"></i> ${translatedBadge}
+                                <i class="fa-solid fa-users mr-1"></i> <span class="badge-activity-name">${translatedBadge}</span>
                             </div>
                         </div>
                     </div>
@@ -609,19 +712,21 @@
                         </div>
                         <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-3 gap-y-2 text-xs">
                             <div class="flex gap-2 items-center">
-                                <div class="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold text-slate-600">
+                                <div class="card-session-date px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold text-slate-600">
                                     ${displayDate}
                                 </div>
-                                <div class="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold text-slate-600">
+                                <div class="card-session-time px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-bold text-slate-600">
                                     ${timeDisplay}
                                 </div>
-                                ${group.sessions.length > 1 ? `
-                                    <div class="px-2 py-1 bg-primary/10 border border-primary/20 rounded text-[10px] font-bold text-primary">
-                                        +${group.sessions.length - 1} <span class="lang-en-only">more</span><span class="lang-fr-only notranslate">autre(s)</span>
-                                    </div>
-                                ` : ''}
+                                <div class="card-session-more-container flex gap-2">
+                                    ${group.sessions.length > 1 ? `
+                                        <div class="px-2 py-1 bg-primary/10 border border-primary/20 rounded text-[10px] font-bold text-primary">
+                                            +${group.sessions.length - 1} <span class="lang-en-only">more</span><span class="lang-fr-only notranslate">autre(s)</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
                             </div>
-                            <span class="text-xs font-semibold ${firstSessionSpots > 0 ? 'text-primary' : 'text-red-500'}">${firstSessionSpots} spots left</span>
+                            <span class="card-session-spots text-xs font-semibold ${firstSessionSpots > 0 ? 'text-primary' : 'text-red-500'}">${firstSessionSpots} spots left</span>
                         </div>
                     </div>
                 </div>
@@ -878,7 +983,7 @@
                         (actLower === 'swimming lane' && s.manual_notes && (s.manual_notes.toLowerCase().includes('corridor') || s.manual_notes.toLowerCase().includes('longueur'))) ||
                         (actLower === 'recreational and family pool' && s.manual_notes && (s.manual_notes.toLowerCase().includes('bain libre') || s.manual_notes.toLowerCase().includes('récréatif'))) ||
                         (actLower === 'swim' && (
-                            (s.facility_type && s.facility_type.toLowerCase().includes('pool')) ||
+                            (s.surface_type && s.surface_type.toLowerCase().includes('pool')) ||
                             (s.manual_notes && (
                                 s.manual_notes.toLowerCase().includes('swim') || 
                                 s.manual_notes.toLowerCase().includes('pool') || 
