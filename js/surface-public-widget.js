@@ -115,7 +115,10 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
             let activityListHtml = '';
             uniqueActivities.forEach(actName => {
                 const translatedAct = translateActivity(actName);
-                activityListHtml += `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 activity-option" data-activity="${actName}">${translatedAct}</li>`;
+                activityListHtml += `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 activity-option flex justify-between items-center" data-activity="${actName}">
+                    <span>${translatedAct}</span>
+                    <i class="fa-solid fa-check text-primary text-xs checkmark-icon hidden"></i>
+                </li>`;
             });
 
             // Build HTML
@@ -271,10 +274,16 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                     e.stopPropagation();
                     paSelectedActivity = e.currentTarget.getAttribute('data-activity');
                     
-                    document.querySelectorAll('.activity-option').forEach(el => el.innerHTML = el.innerHTML.replace('✓ ', ''));
-                    e.currentTarget.innerHTML = '✓ ' + e.currentTarget.innerHTML;
+                    document.querySelectorAll('.activity-option').forEach(el => {
+                        const icon = el.querySelector('.checkmark-icon');
+                        if (icon) icon.classList.add('hidden');
+                    });
+                    const selectedIcon = e.currentTarget.querySelector('.checkmark-icon');
+                    if (selectedIcon) selectedIcon.classList.remove('hidden');
                     
-                    document.getElementById('pa-selected-activity').textContent = e.currentTarget.textContent.replace('✓ ', '');
+                    const textSpan = e.currentTarget.querySelector('span');
+                    const activityName = textSpan ? textSpan.textContent : e.currentTarget.textContent;
+                    document.getElementById('pa-selected-activity').textContent = activityName;
                     activityDropdown.classList.add('hidden');
 
                     paSelectedDate = null;
@@ -310,7 +319,10 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                 filteredDates.forEach(dStr => {
                     const d = new Date(dStr + 'T12:00:00');
                     const dLabel = d.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: 'numeric', weekday: 'short' });
-                    dateListHtml += `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 date-option" data-date="${dStr}">${dLabel}</li>`;
+                    dateListHtml += `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 date-option flex justify-between items-center" data-date="${dStr}">
+                        <span>${dLabel}</span>
+                        <i class="fa-solid fa-check text-primary text-xs checkmark-icon hidden"></i>
+                    </li>`;
                 });
                 
                 dateDropdownList.innerHTML = dateListHtml;
@@ -319,12 +331,18 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                 dateDropdownList.querySelectorAll('.date-option').forEach(opt => {
                     opt.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        paSelectedDate = e.target.getAttribute('data-date');
+                        paSelectedDate = e.currentTarget.getAttribute('data-date');
                         
-                        document.querySelectorAll('.date-option').forEach(el => el.innerHTML = el.innerHTML.replace('✓ ', ''));
-                        e.target.innerHTML = '✓ ' + e.target.innerHTML;
+                        dateDropdownList.querySelectorAll('.date-option').forEach(el => {
+                            const icon = el.querySelector('.checkmark-icon');
+                            if (icon) icon.classList.add('hidden');
+                        });
+                        const selectedIcon = e.currentTarget.querySelector('.checkmark-icon');
+                        if (selectedIcon) selectedIcon.classList.remove('hidden');
                         
-                        document.getElementById('pa-selected-date').textContent = e.target.textContent.replace('✓ ', '');
+                        const textSpan = e.currentTarget.querySelector('span');
+                        const dateLabel = textSpan ? textSpan.textContent : e.currentTarget.textContent;
+                        document.getElementById('pa-selected-date').textContent = dateLabel;
                         dateDropdown.classList.add('hidden');
                         
                         rebuildTimeDropdown(filteredSessionsByDate[paSelectedDate] || []);
@@ -343,8 +361,9 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                     if (typeof slots === 'string') { try { slots = JSON.parse(slots); } catch(e) { slots = slots.split(','); } }
                     const timeLabel = slots && slots.length > 0 ? slots[0] : 'Time TBD';
                     
-                    timeHtml += `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 time-option flex justify-between" data-idx="${idx}">
+                    timeHtml += `<li class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 time-option flex justify-between items-center" data-idx="${idx}">
                         <span>${timeLabel}</span>
+                        <i class="fa-solid fa-check text-primary text-xs checkmark-icon hidden"></i>
                     </li>`;
                 });
                 
@@ -361,8 +380,12 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                         const idx = ev.currentTarget.getAttribute('data-idx');
                         paSelectedSession = daySessions[idx];
                         
-                        timeList.querySelectorAll('.time-option').forEach(el => el.innerHTML = el.innerHTML.replace('✓ ', ''));
-                        ev.currentTarget.innerHTML = '✓ ' + ev.currentTarget.innerHTML;
+                        timeList.querySelectorAll('.time-option').forEach(el => {
+                            const icon = el.querySelector('.checkmark-icon');
+                            if (icon) icon.classList.add('hidden');
+                        });
+                        const selectedIcon = ev.currentTarget.querySelector('.checkmark-icon');
+                        if (selectedIcon) selectedIcon.classList.remove('hidden');
                         
                         let slots = paSelectedSession.time_slots;
                         if (typeof slots === 'string') { try { slots = JSON.parse(slots); } catch(e) { slots = slots.split(','); } }
