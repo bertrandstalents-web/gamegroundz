@@ -323,17 +323,39 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById(`plus-${index}`).addEventListener('click', () => {
                 const totalJoined = Object.values(tierSelections).reduce((a, b) => a + b, 0);
                 const maxSpots = Math.max(0, activityData.capacity - (activityData.joined_count || 0));
-                
-                let limit = maxSpots;
-                if (activityData.max_reservations !== null && activityData.max_reservations !== undefined && activityData.max_reservations > 0) {
-                    const maxAllowed = Math.max(0, activityData.max_reservations - userBookedCount);
-                    limit = Math.min(maxSpots, maxAllowed);
+                const currentLang = window.currentLang || 'en';
+
+                if (totalJoined >= maxSpots) {
+                    const title = currentLang === 'fr' ? 'Séance complète' : 'Session Full';
+                    const msg = currentLang === 'fr' 
+                        ? 'Aucune place supplémentaire n\'est disponible pour cette séance.' 
+                        : 'No more spots available for this session.';
+                    if (typeof showAlertModal === 'function') {
+                        showAlertModal(title, msg, 'OK', true);
+                    } else {
+                        alert(msg);
+                    }
+                    return;
                 }
 
-                if (totalJoined < limit) {
-                    tierSelections[tier.name]++;
-                    updateTotal();
+                if (activityData.max_reservations !== null && activityData.max_reservations !== undefined && activityData.max_reservations > 0) {
+                    const maxAllowed = Math.max(0, activityData.max_reservations - userBookedCount);
+                    if (totalJoined >= maxAllowed) {
+                        const title = currentLang === 'fr' ? 'Limite de réservation atteinte' : 'Booking Limit Reached';
+                        const msg = currentLang === 'fr'
+                            ? `Vous pouvez réserver un maximum de ${activityData.max_reservations} places par personne pour cette activité. (Vous en avez déjà réservé ${userBookedCount})`
+                            : `You can only book a maximum of ${activityData.max_reservations} spots per person for this activity. (You have already booked ${userBookedCount})`;
+                        if (typeof showAlertModal === 'function') {
+                            showAlertModal(title, msg, 'OK', true);
+                        } else {
+                            alert(msg);
+                        }
+                        return;
+                    }
                 }
+
+                tierSelections[tier.name]++;
+                updateTotal();
             });
         });
         
@@ -370,7 +392,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if(minusBtn) minusBtn.disabled = qty <= 0;
             
             const plusBtn = document.getElementById(`plus-${index}`);
-            if(plusBtn) plusBtn.disabled = totalQty >= limit;
+            if(plusBtn) plusBtn.disabled = false;
         });
 
         // Tax Calculation
