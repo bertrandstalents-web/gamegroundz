@@ -3898,7 +3898,10 @@
                 const actName = mapping[key].name;
                 const cb = document.getElementById(cbId);
                 if (cb) {
-                    const hasActivity = activeActivities[key] && activeActivities[key].length > 0;
+                    const hasActivity = activeActivities[key] && (
+                        Array.isArray(activeActivities[key]) ? activeActivities[key].length > 0 :
+                        (activeActivities[key].tiers && activeActivities[key].tiers.length > 0)
+                    );
                     const isCurrentlyScheduled = currentActivityName && currentActivityName === actName;
                     
                     const row = cb.closest('.flex');
