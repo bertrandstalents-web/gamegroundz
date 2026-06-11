@@ -8067,12 +8067,55 @@
             }
         };
 
+        window.renderCourtCustomFields = function(initialNamesArray = null) {
+            const select = document.getElementById('surf-court-naming-type');
+            if (!select || select.value !== 'custom') return;
+
+            const container = document.getElementById('court-custom-fields-list');
+            if (!container) return;
+
+            const count = parseInt(document.getElementById('surf-court-count').value, 10) || 1;
+            
+            // Collect currently entered values to preserve them on count change
+            const currentInputs = container.querySelectorAll('.court-custom-name-input');
+            const currentValues = Array.from(currentInputs).map(input => input.value.trim());
+
+            // Use initial names if provided, otherwise use current values
+            let names = initialNamesArray || currentValues;
+            
+            // Adjust array size to match the count
+            if (names.length < count) {
+                while (names.length < count) {
+                    names.push('');
+                }
+            } else if (names.length > count) {
+                names = names.slice(0, count);
+            }
+
+            // Render input elements
+            container.innerHTML = names.map((name, index) => {
+                const displayIndex = index + 1;
+                return `
+                    <div class="space-y-1">
+                        <label class="block text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
+                            <span class="lang-en-only">Court #${displayIndex} Name</span>
+                            <span class="lang-fr-only notranslate">Nom du terrain #${displayIndex}</span>
+                        </label>
+                        <input type="text" class="court-custom-name-input w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white text-sm" 
+                            placeholder="e.g. Court #${displayIndex}" 
+                            value="${name.replace(/"/g, '&quot;')}">
+                    </div>
+                `;
+            }).join('');
+        };
+
         window.toggleCourtNamingCustomFields = function() {
             const select = document.getElementById('surf-court-naming-type');
             const container = document.getElementById('court-custom-names-container');
             if (select && container) {
                 if (select.value === 'custom') {
                     container.classList.remove('hidden');
+                    window.renderCourtCustomFields();
                 } else {
                     container.classList.add('hidden');
                 }
@@ -8080,12 +8123,7 @@
         };
 
         window.updateCourtNamesPlaceholder = function() {
-            const count = parseInt(document.getElementById('surf-court-count').value, 10) || 1;
-            const input = document.getElementById('surf-court-custom-names');
-            if (input) {
-                const placeholderNames = Array.from({length: count}, (_, i) => `Court #${i+1}`).join(', ');
-                input.placeholder = `e.g. ${placeholderNames}`;
-            }
+            // No-op to maintain compatibility with legacy callers
         };
 
         window.openSurfaceModal = function() {
@@ -8130,7 +8168,8 @@
                 // Reset Racket Sports Configuration
                 if (document.getElementById('surf-court-count')) document.getElementById('surf-court-count').value = 1;
                 if (document.getElementById('surf-court-naming-type')) document.getElementById('surf-court-naming-type').value = 'auto';
-                if (document.getElementById('surf-court-custom-names')) document.getElementById('surf-court-custom-names').value = '';
+                const customFieldsList = document.getElementById('court-custom-fields-list');
+                if (customFieldsList) customFieldsList.innerHTML = '';
                 document.querySelectorAll('input[name="surf_allowed_activities"]').forEach(cb => cb.checked = false);
                 if (window.toggleCourtNamingCustomFields) window.toggleCourtNamingCustomFields();
                 if (window.updateCourtNamesPlaceholder) window.updateCourtNamesPlaceholder();
@@ -8315,25 +8354,24 @@
             // Reset racket config elements
             document.getElementById('surf-court-count').value = 1;
             document.getElementById('surf-court-naming-type').value = 'auto';
-            document.getElementById('surf-court-custom-names').value = '';
+            const customFieldsList = document.getElementById('court-custom-fields-list');
+            if (customFieldsList) customFieldsList.innerHTML = '';
             document.querySelectorAll('input[name="surf_allowed_activities"]').forEach(cb => cb.checked = false);
 
             if (isRacket) {
                 document.getElementById('surf-court-count').value = surf.court_count || 1;
                 document.getElementById('surf-court-naming-type').value = surf.court_naming_type || 'auto';
                 
-                let customNames = surf.court_custom_names;
-                if (typeof customNames === 'string') {
+                let customNamesArray = [];
+                if (surf.court_custom_names) {
                     try {
-                        const parsed = JSON.parse(customNames);
+                        const parsed = typeof surf.court_custom_names === 'string' ? JSON.parse(surf.court_custom_names) : surf.court_custom_names;
                         if (Array.isArray(parsed)) {
-                            customNames = parsed.join(', ');
+                            customNamesArray = parsed;
                         }
                     } catch(e) {}
-                } else if (Array.isArray(customNames)) {
-                    customNames = customNames.join(', ');
                 }
-                document.getElementById('surf-court-custom-names').value = customNames || '';
+                window.renderCourtCustomFields(customNamesArray);
 
                 if (surf.allowed_activities) {
                     try {
@@ -8510,9 +8548,9 @@
                     court_count = parseInt(document.getElementById('surf-court-count').value, 10) || 1;
                     court_naming_type = document.getElementById('surf-court-naming-type').value || 'auto';
                     
-                    const customNamesInput = document.getElementById('surf-court-custom-names');
-                    if (customNamesInput && customNamesInput.value.trim()) {
-                        court_custom_names = customNamesInput.value.split(',').map(n => n.trim()).filter(Boolean);
+                    if (court_naming_type === 'custom') {
+                        const inputs = document.querySelectorAll('.court-custom-name-input');
+                        court_custom_names = Array.from(inputs).map(input => input.value.trim()).filter(Boolean);
                     }
                     
                     document.querySelectorAll('input[name="surf_allowed_activities"]:checked').forEach(cb => {
@@ -8841,7 +8879,7 @@
                                 <label class="block text-xs font-bold text-slate-700 mb-2">
                                     <span class="lang-en-only">Number of Courts</span><span class="lang-fr-only notranslate">Nombre de terrains</span>
                                 </label>
-                                <input type="number" id="surf-court-count" min="1" value="1" onchange="window.updateCourtNamesPlaceholder()" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
+                                <input type="number" id="surf-court-count" min="1" value="1" onchange="window.updateCourtNamesPlaceholder(); window.renderCourtCustomFields();" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-2">
@@ -8854,11 +8892,13 @@
                             </div>
                         </div>
 
-                        <div id="court-custom-names-container" class="hidden">
-                            <label class="block text-xs font-bold text-slate-700 mb-2">
-                                <span class="lang-en-only">Custom Court Names (comma separated)</span><span class="lang-fr-only notranslate">Noms personnalisés (séparés par des virgules)</span>
+                        <div id="court-custom-names-container" class="hidden bg-slate-100/50 p-4 rounded-xl border border-slate-200/60 mb-2">
+                            <label class="block text-xs font-bold text-slate-700 mb-3">
+                                <span class="lang-en-only">Custom Court Names</span><span class="lang-fr-only notranslate">Noms personnalisés des terrains</span>
                             </label>
-                            <input type="text" id="surf-court-custom-names" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white" placeholder="e.g. Center Court, Court A, Court B">
+                            <div id="court-custom-fields-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Dynamic court name inputs will be generated here -->
+                            </div>
                         </div>
 
                         <div>
