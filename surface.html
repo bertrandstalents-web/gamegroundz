@@ -334,6 +334,14 @@
                                 <div class="absolute right-3 top-6 text-slate-400 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                             </div>
 
+                            <!-- Court Selection (Racket Sports Only) -->
+                            <div id="court-selector-container" class="hidden border-b border-slate-300 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative">
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="court-select">Court</label>
+                                <select id="court-select" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer pr-6">
+                                </select>
+                                <div class="absolute right-3 top-6 text-slate-400 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                            </div>
+
                             <div id="activity-type-container" class="p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-b-xl">
                                 <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="activity-type">Activity Type</label>
                                 <select id="activity-type" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none pr-6">
@@ -716,6 +724,29 @@
                 return parseFloat(basePrice);
             }
             
+            // Racket Sport States & Helpers
+            window.selectedRacketCourt = null;
+            window.surfaceCourts = [];
+            window.racketBookedCourts = new Map();
+
+            function selectSlotRacketOrNormal(slot, targetDateStr) {
+                if (targetDateStr && targetDateStr !== selectedDateStr) {
+                    selectedDateStr = targetDateStr;
+                    const bookingDateInput = document.getElementById('booking-date');
+                    if (bookingDateInput) bookingDateInput.value = targetDateStr;
+                    selectedSlotIds.clear();
+                }
+                const isSelected = selectedSlotIds.has(`${selectedDateStr}|${slot.id}`);
+                const currentHasPub = Array.from(selectedSlotIds).some(s => window.publicSessionSlots && window.publicSessionSlots.has(s));
+                if (!isSelected && currentHasPub) {
+                    selectedSlotIds.clear();
+                }
+                toggleTimeSlot(selectedDateStr, slot);
+                render();
+                renderDailyCalendar();
+                renderWeeklyCalendar();
+            }
+
             // Dynamically generated slots based on operating hours
             let availableSlots = [];
             let facilityOperatingHours = { open: "06:00", close: "23:00" };
@@ -819,6 +850,9 @@
                         const bookings = await response.json();
                         let bookedIds = new Set();
                         window.publicSessionSlots.clear();
+                        window.racketBookedCourts = new Map();
+                        
+                        const surfaceCourts = window.surfaceCourts || [];
                         
                         bookings.forEach(b => {
                             if (b.status === 'cancelled' || b.status === 'rejected') return;
@@ -829,38 +863,54 @@
                                 const isPublic = b.booking_type === 'public_session';
                                 const isFull = isPublic && b.joined_count >= b.capacity;
                                 
+                                const processSlotKey = (id) => {
+                                    const key = `${dStr}|${String(id).trim()}`;
+                                    if (isPublic) {
+                                        window.publicSessionSlots.set(key, b);
+                                    }
+                                    
+                                    if (surfaceCourts.length > 0) {
+                                        if (!window.racketBookedCourts.has(key)) {
+                                            window.racketBookedCourts.set(key, new Set());
+                                        }
+                                        const courtVal = b.court_name || surfaceCourts[0];
+                                        if (isPublic) {
+                                            if (isFull) {
+                                                window.racketBookedCourts.get(key).add(courtVal);
+                                            }
+                                        } else {
+                                            window.racketBookedCourts.get(key).add(courtVal);
+                                        }
+                                    } else {
+                                        if (isPublic) {
+                                            if (isFull) bookedIds.add(key);
+                                        } else {
+                                            bookedIds.add(key);
+                                        }
+                                    }
+                                };
+                                
                                 try {
                                     const slotsArr = JSON.parse(b.time_slots);
                                     if(Array.isArray(slotsArr)) {
-                                        slotsArr.forEach(id => {
-                                            const key = `${dStr}|${String(id)}`;
-                                            if (isPublic) {
-                                                window.publicSessionSlots.set(key, b);
-                                                if (isFull) bookedIds.add(key);
-                                            } else {
-                                                bookedIds.add(key);
-                                            }
-                                        });
+                                        slotsArr.forEach(id => processSlotKey(id));
                                     } else {
-                                        b.time_slots.split(',').forEach(id => {
-                                            const key = `${dStr}|${String(id).trim()}`;
-                                            if (isPublic) {
-                                                window.publicSessionSlots.set(key, b);
-                                                if (isFull) bookedIds.add(key);
-                                            } else bookedIds.add(key);
-                                        });
+                                        b.time_slots.split(',').forEach(id => processSlotKey(id));
                                     }
                                 } catch(e) {
-                                    b.time_slots.split(',').forEach(id => {
-                                        const key = `${dStr}|${String(id).trim()}`;
-                                        if (isPublic) {
-                                            window.publicSessionSlots.set(key, b);
-                                            if (isFull) bookedIds.add(key);
-                                        } else bookedIds.add(key);
-                                    });
+                                    b.time_slots.split(',').forEach(id => processSlotKey(id));
                                 }
                             }
                         });
+                        
+                        if (surfaceCourts.length > 0) {
+                            for (const [key, bookedSet] of window.racketBookedCourts.entries()) {
+                                if (bookedSet.size >= surfaceCourts.length) {
+                                    bookedIds.add(key);
+                                }
+                            }
+                        }
+                        
                         return bookedIds;
                     }
                 } catch (err) {
@@ -909,9 +959,21 @@
                     const parsedSlots = JSON.parse(pendingSlots);
                     if (Array.isArray(parsedSlots)) {
                         parsedSlots.forEach(id => selectedSlotIds.add(String(id)));
+                        if (parsedSlots.length > 0) {
+                            const firstSlot = parsedSlots[0];
+                            if (firstSlot && firstSlot.includes('|')) {
+                                window.selectedStartSlotId = firstSlot.split('|')[1];
+                            }
+                        }
                     }
                 } catch(e) {}
                 sessionStorage.removeItem('pending_booking_slots');
+            }
+
+            const pendingCourt = sessionStorage.getItem('pending_court_name');
+            if (pendingCourt) {
+                window.selectedRacketCourt = pendingCourt;
+                sessionStorage.removeItem('pending_court_name');
             }
 
             
@@ -943,6 +1005,21 @@
                     
                     // Update global state
                     window.currentSurface = facility;
+                    
+                    // Resolve surface courts
+                    window.surfaceCourts = [];
+                    if (facility.court_count > 1) {
+                        try {
+                            window.surfaceCourts = typeof facility.court_custom_names === 'string'
+                                ? JSON.parse(facility.court_custom_names)
+                                : facility.court_custom_names;
+                        } catch(e) {}
+                    }
+                    if (!Array.isArray(window.surfaceCourts) || window.surfaceCourts.length === 0) {
+                        window.surfaceCourts = Array.from({ length: facility.court_count || 1 }, (_, i) => `Court #${i + 1}`);
+                    }
+
+
                     window.pricingUnit = facility.pricing_unit || 'hour';
                     pricingUnitLabel = window.pricingUnit === 'half_day' ? '/ half-day' : (window.pricingUnit === 'full_day' ? '/ day' : '/ hour');
                     pricingUnitLabelShort = window.pricingUnit === 'half_day' ? '/ half-day' : (window.pricingUnit === 'full_day' ? '/ day' : '/hr');
@@ -1566,6 +1643,9 @@
                     // Save state and redirect to login
                     sessionStorage.setItem('pending_booking_slots', JSON.stringify(Array.from(selectedSlotIds)));
                     sessionStorage.setItem('pending_booking_date', selectedDateStr);
+                    if (window.selectedRacketCourt) {
+                        sessionStorage.setItem('pending_court_name', window.selectedRacketCourt);
+                    }
                     sessionStorage.setItem('auto_reserve', 'true');
                     
                     window.location.href = `index.html?login=true&redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
@@ -1590,7 +1670,8 @@
                     return;
                 }
 
-                if (selectedSlotIds.size < 2) {
+                const isRacket = window.currentSurface && ['tennis', 'pickleball', 'squash', 'badminton'].includes(window.currentSurface.type);
+                if (!isRacket && selectedSlotIds.size < 2) {
                     await showAlertModal('Minimum Duration', 'Please select at least two time slots (1 hour minimum).', 'OK', true);
                     return;
                 }
@@ -1704,7 +1785,8 @@
                             // Send booking_date for single-day fallback compatibility if needed anywhere
                             booking_date: selectedDateStr,
                             time_slots: [],
-                            surface_terms_accepted: window.termsAccepted ? true : false
+                            surface_terms_accepted: window.termsAccepted ? true : false,
+                            court_name: window.selectedRacketCourt || null
                         })
                      });
 
@@ -1858,41 +1940,28 @@
                 const maxDate = getMaxBookingDate();
                 const isPastDay = dayDate < todayForCal || dayDate > maxDate;
 
+                const isRacket = window.currentSurface && ['tennis', 'pickleball', 'squash', 'badminton'].includes(window.currentSurface.type);
+
                 availableSlots.forEach(slot => {
                     const isPast = isPastDay || (isToday && slot.id < currentTime24);
                     const slotKey = `${selectedDateStr}|${slot.id}`;
-                    const isBooked = bookedSlotIds.has(slotKey);
                     const pubSess = window.publicSessionSlots ? window.publicSessionSlots.get(slotKey) : null;
-                    const isUnavailable = isBooked || isPast;
                     
-                    // Always unselect past or newly booked slots
-                    if ((isPast || isBooked) && selectedSlotIds.has(slotKey)) {
-                        selectedSlotIds.delete(slotKey);
-                    }
-                    
-                    const isSelected = selectedSlotIds.has(slotKey);
-                    const div = document.createElement('div');
-                    
-                    if (pubSess) {
-                        const priceText = pubSess.participant_price > 0 ? `$${pubSess.participant_price.toFixed(2)}/pp` : `Free`;
-                        div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg cursor-pointer flex justify-between items-center mb-1 transition-custom border ${isSelected ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300'}`;
-                        const resOnlyTag = pubSess.residents_only === 1 || pubSess.residents_only === true ? `<span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-600'} flex items-center shrink-0"><i class="fa-solid fa-house-user mr-1"></i>Residents Only</span>` : '';
-                        div.innerHTML = `
-                            <div class="flex flex-col w-full pr-2">
-                                <span class="flex items-center flex-wrap gap-y-1">
-                                    <span class="shrink-0">${slot.time}</span> 
-                                    <span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-indigo-500 text-white border-indigo-400' : 'bg-white text-indigo-600 border-indigo-100'} border shrink-0">Public Activity</span>
-                                    ${resOnlyTag}
-                                </span>
-                                <span class="text-xs font-medium ${isSelected ? 'text-indigo-200' : 'text-indigo-500'} mt-0.5 truncate">${pubSess.manual_notes || 'Open Session'} • ${pubSess.joined_count || 0}/${pubSess.capacity} joined • ${priceText}</span>
-                            </div>
-                            ${isSelected ? '<i class="fa-solid fa-check text-sm shrink-0"></i>' : ''}
-                        `;
-                        div.onclick = (e) => {
-                            e.stopPropagation();
-                            handlePublicActivitySlotClick(pubSess);
-                        };
-                    } else {
+                    if (isRacket) {
+                        const slotKey = `${selectedDateStr}|${slot.id}`;
+                        const bookedSet = window.racketBookedCourts.get(slotKey);
+                        const bookedCount = bookedSet ? bookedSet.size : 0;
+                        const surfaceCourts = window.surfaceCourts || [];
+                        const freeCourtsCount = surfaceCourts.length - bookedCount;
+                        
+                        const isUnavailable = freeCourtsCount <= 0 || isPast;
+                        
+                        if (isUnavailable && selectedSlotIds.has(slotKey)) {
+                            selectedSlotIds.delete(slotKey);
+                        }
+                        
+                        const isSelected = selectedSlotIds.has(slotKey);
+                        const div = document.createElement('div');
                         const slotDiscount = getBestDiscountForSlot(slot.id, validDiscounts);
                         let discountBadge = '';
                         if (slotDiscount) {
@@ -1909,28 +1978,112 @@
                              const reason = isPast ? "Passed" : "Unavailable";
                              div.innerHTML = `<span class="flex items-center">${slot.time} ${priceBadge} ${discountBadge} <span class="text-[10px] ml-2 uppercase bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">${reason}</span></span>`;
                         } else {
-                             div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg cursor-pointer flex justify-between items-center mb-1 transition-custom ${isSelected ? 'bg-primary/10 text-primary border border-primary/20' : 'hover:bg-slate-100 text-slate-700 border border-transparent'}`;
+                             div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg cursor-pointer flex justify-between items-center mb-1 transition-custom ${isSelected ? 'bg-primary/10 text-primary border border-primary/20 font-bold' : 'hover:bg-slate-100 text-slate-700 border border-transparent'}`;
+                             const courtsAvailableText = `<span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-primary text-white border-primary/45' : 'bg-slate-100 text-slate-600 border-slate-200'} border shrink-0">${freeCourtsCount} court${freeCourtsCount > 1 ? 's' : ''} available</span>`;
                              div.innerHTML = `
-                                <span class="flex items-center">${slot.time} ${priceBadge} ${discountBadge}</span>
+                                <span class="flex items-center">${slot.time} ${priceBadge} ${discountBadge} ${courtsAvailableText}</span>
                                 ${isSelected ? '<i class="fa-solid fa-check text-sm"></i>' : ''}
                             `;
                             div.onclick = (e) => {
                                 e.stopPropagation();
-                                
-                                // Prevent mixing private standard blocks with public activities
-                                const currentHasPub = Array.from(selectedSlotIds).some(s => window.publicSessionSlots && window.publicSessionSlots.has(s));
-                                if (!isSelected && currentHasPub) {
-                                    selectedSlotIds.clear();
-                                }
-                                
-                                toggleTimeSlot(selectedDateStr, slot);
-                                render();
-                                renderDailyCalendar();
-                                renderWeeklyCalendar();
+                                selectSlotRacketOrNormal(slot);
                             };
                         }
+                        slotsList.appendChild(div);
+                        
+                        if (pubSess) {
+                            const isFull = pubSess.joined_count >= pubSess.capacity;
+                            if (!isFull) {
+                                const divPub = document.createElement('div');
+                                const priceText = pubSess.participant_price > 0 ? `$${pubSess.participant_price.toFixed(2)}/pp` : `Free`;
+                                divPub.className = `px-3 py-2.5 text-sm font-semibold rounded-lg cursor-pointer flex justify-between items-center mb-1 transition-custom border bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300`;
+                                const resOnlyTag = pubSess.residents_only === 1 || pubSess.residents_only === true ? `<span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-600 flex items-center shrink-0"><i class="fa-solid fa-house-user mr-1"></i>Residents Only</span>` : '';
+                                divPub.innerHTML = `
+                                    <div class="flex flex-col w-full pr-2">
+                                        <span class="flex items-center flex-wrap gap-y-1">
+                                            <span class="shrink-0">${slot.time}</span> 
+                                            <span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-white text-indigo-600 border border-indigo-100 shrink-0">Public Activity</span>
+                                            ${resOnlyTag}
+                                        </span>
+                                        <span class="text-xs font-medium text-indigo-500 mt-0.5 truncate">${pubSess.manual_notes || 'Open Session'} • ${pubSess.joined_count || 0}/${pubSess.capacity} joined • ${priceText}</span>
+                                    </div>
+                                `;
+                                divPub.onclick = (e) => {
+                                    e.stopPropagation();
+                                    handlePublicActivitySlotClick(pubSess);
+                                };
+                                slotsList.appendChild(divPub);
+                            }
+                        }
+                    } else {
+                        const isBooked = bookedSlotIds.has(slotKey);
+                        const isUnavailable = isBooked || isPast;
+                        
+                        if ((isPast || isBooked) && selectedSlotIds.has(slotKey)) {
+                            selectedSlotIds.delete(slotKey);
+                        }
+                        
+                        const isSelected = selectedSlotIds.has(slotKey);
+                        const div = document.createElement('div');
+                        
+                        if (pubSess) {
+                            const priceText = pubSess.participant_price > 0 ? `$${pubSess.participant_price.toFixed(2)}/pp` : `Free`;
+                            div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg cursor-pointer flex justify-between items-center mb-1 transition-custom border ${isSelected ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300'}`;
+                            const resOnlyTag = pubSess.residents_only === 1 || pubSess.residents_only === true ? `<span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-600'} flex items-center shrink-0"><i class="fa-solid fa-house-user mr-1"></i>Residents Only</span>` : '';
+                            div.innerHTML = `
+                                <div class="flex flex-col w-full pr-2">
+                                    <span class="flex items-center flex-wrap gap-y-1">
+                                        <span class="shrink-0">${slot.time}</span> 
+                                        <span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-indigo-500 text-white border-indigo-400' : 'bg-white text-indigo-600 border-indigo-100'} border shrink-0">Public Activity</span>
+                                        ${resOnlyTag}
+                                    </span>
+                                    <span class="text-xs font-medium ${isSelected ? 'text-indigo-200' : 'text-indigo-500'} mt-0.5 truncate">${pubSess.manual_notes || 'Open Session'} • ${pubSess.joined_count || 0}/${pubSess.capacity} joined • ${priceText}</span>
+                                </div>
+                                ${isSelected ? '<i class="fa-solid fa-check text-sm shrink-0"></i>' : ''}
+                            `;
+                            div.onclick = (e) => {
+                                e.stopPropagation();
+                                handlePublicActivitySlotClick(pubSess);
+                            };
+                        } else {
+                            const slotDiscount = getBestDiscountForSlot(slot.id, validDiscounts);
+                            let discountBadge = '';
+                            if (slotDiscount) {
+                                const amountText = slotDiscount.discount_type === 'percentage' ? `${slotDiscount.value}%` : `$${slotDiscount.value}`;
+                                discountBadge = `<span class="ml-2 text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded-md flex items-center shadow-sm whitespace-nowrap"><i class="fa-solid fa-fire text-red-500 mr-1 text-[10px]"></i> ${amountText} OFF</span>`;
+                            }
+
+                            const hourlyPriceForSlot = getPriceForTimeSlot(slot.time, hourlyRate, pricingRules, isWeekend);
+                            const formattedPrice = hourlyPriceForSlot % 1 === 0 ? hourlyPriceForSlot : hourlyPriceForSlot.toFixed(2);
+                            const priceBadge = `<span class="ml-2 text-[11px] font-medium text-slate-500 bg-slate-200/60 px-1.5 py-0.5 rounded-md">$${formattedPrice}${pricingUnitLabelShort}</span>`;
+                            
+                            if (isUnavailable) {
+                                 div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg flex justify-between items-center mb-1 text-slate-400 bg-slate-100 cursor-not-allowed opacity-50 border border-transparent`;
+                                 const reason = isPast ? "Passed" : "Unavailable";
+                                 div.innerHTML = `<span class="flex items-center">${slot.time} ${priceBadge} ${discountBadge} <span class="text-[10px] ml-2 uppercase bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">${reason}</span></span>`;
+                            } else {
+                                 div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg cursor-pointer flex justify-between items-center mb-1 transition-custom ${isSelected ? 'bg-primary/10 text-primary border border-primary/20' : 'hover:bg-slate-100 text-slate-700 border border-transparent'}`;
+                                 div.innerHTML = `
+                                    <span class="flex items-center">${slot.time} ${priceBadge} ${discountBadge}</span>
+                                    ${isSelected ? '<i class="fa-solid fa-check text-sm"></i>' : ''}
+                                `;
+                                div.onclick = (e) => {
+                                    e.stopPropagation();
+                                    
+                                    const currentHasPub = Array.from(selectedSlotIds).some(s => window.publicSessionSlots && window.publicSessionSlots.has(s));
+                                    if (!isSelected && currentHasPub) {
+                                        selectedSlotIds.clear();
+                                    }
+                                    
+                                    toggleTimeSlot(selectedDateStr, slot);
+                                    render();
+                                    renderDailyCalendar();
+                                    renderWeeklyCalendar();
+                                };
+                            }
+                        }
+                        slotsList.appendChild(div);
                     }
-                    slotsList.appendChild(div);
                 });
 
                 // Update summary text
@@ -1987,10 +2140,72 @@
                                 e.stopPropagation();
                                 selectedSlotIds.delete(`${dStr}|${tId}`);
                                 render();
+                                renderDailyCalendar();
+                                renderWeeklyCalendar();
                             };
                             chipsDiv.appendChild(span);
                         });
                     });
+                }
+
+                // Render/Hide Court Selection
+                const courtSelect = document.getElementById('court-select');
+                const courtContainer = document.getElementById('court-selector-container');
+                const reserveBtn = document.getElementById('reserve-btn');
+                const mobileReserveBtn = document.getElementById('mobile-reserve-btn');
+                
+                let freeCourts = [];
+                if (isRacket && selectedSlotIds.size > 0) {
+                    const surfaceCourts = window.surfaceCourts || [];
+                    freeCourts = [...surfaceCourts];
+                    selectedSlotIds.forEach(slotKey => {
+                        const bookedSet = window.racketBookedCourts.get(slotKey);
+                        if (bookedSet) {
+                            freeCourts = freeCourts.filter(c => !bookedSet.has(c));
+                        }
+                    });
+                }
+                
+                if (isRacket && selectedSlotIds.size > 0) {
+                    if (courtSelect && courtContainer) {
+                        courtContainer.classList.remove('hidden');
+                        if (freeCourts.length > 0) {
+                            courtSelect.innerHTML = '';
+                            freeCourts.forEach(c => {
+                                const opt = document.createElement('option');
+                                opt.value = c;
+                                opt.textContent = c;
+                                courtSelect.appendChild(opt);
+                            });
+                            
+                            if (!window.selectedRacketCourt || !freeCourts.includes(window.selectedRacketCourt)) {
+                                window.selectedRacketCourt = freeCourts[0];
+                            }
+                            courtSelect.value = window.selectedRacketCourt;
+                            courtSelect.disabled = false;
+                            
+                            courtSelect.onchange = (e) => {
+                                window.selectedRacketCourt = e.target.value;
+                            };
+                            
+                            if (reserveBtn) reserveBtn.disabled = false;
+                            if (mobileReserveBtn) mobileReserveBtn.disabled = false;
+                        } else {
+                            courtSelect.innerHTML = `<option value="">No courts available for these combined times</option>`;
+                            courtSelect.value = "";
+                            courtSelect.disabled = true;
+                            window.selectedRacketCourt = null;
+                            
+                            if (reserveBtn) reserveBtn.disabled = true;
+                            if (mobileReserveBtn) mobileReserveBtn.disabled = true;
+                        }
+                    }
+                } else {
+                    if (courtContainer) {
+                        courtContainer.classList.add('hidden');
+                    }
+                    if (reserveBtn) reserveBtn.disabled = false;
+                    if (mobileReserveBtn) mobileReserveBtn.disabled = false;
                 }
 
                 // Calculate pricing
@@ -2497,20 +2712,7 @@
                                     handlePublicActivitySlotClick(pubSess);
                                     return;
                                 }
-                                const currentHasPub = Array.from(selectedSlotIds).some(s => window.publicSessionSlots && window.publicSessionSlots.has(s));
-                                if (!isSelected && currentHasPub) {
-                                    selectedSlotIds.clear();
-                                }
-                                toggleTimeSlot(dateStr, slot);
-                                
-                                if(bookingDateInput) {
-                                   selectedDateStr = dateStr;
-                                   bookingDateInput.value = dateStr;
-                                }
-                                
-                                render();
-                                renderDailyCalendar();
-                                renderWeeklyCalendar();
+                                selectSlotRacketOrNormal(slot, dateStr);
                             };
                         }
                         
@@ -2588,14 +2790,7 @@
                                 handlePublicActivitySlotClick(pubSess);
                                 return;
                             }
-                            const currentHasPub = Array.from(selectedSlotIds).some(s => window.publicSessionSlots && window.publicSessionSlots.has(s));
-                            if (!isSelected && currentHasPub) {
-                                selectedSlotIds.clear();
-                            }
-                            toggleTimeSlot(selectedDateStr, slot);
-                            render();
-                            renderDailyCalendar();
-                            renderWeeklyCalendar();
+                            selectSlotRacketOrNormal(slot);
                         };
                     }
                     
@@ -2670,6 +2865,9 @@
             if (bookingDateInput) {
                 bookingDateInput.addEventListener('change', async (e) => {
                     selectedDateStr = e.target.value;
+                    selectedSlotIds.clear();
+                    window.selectedStartSlotId = null;
+                    window.selectedRacketCourt = null;
                     const newDate = new Date(selectedDateStr + 'T00:00:00');
                     if (!isNaN(newDate.getTime())) {
                         currentDate = new Date(newDate.getFullYear(), newDate.getMonth(), 1);

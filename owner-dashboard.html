@@ -459,8 +459,39 @@
                         </div>
                     </div>
                     
+                    <!-- View Mode Toggle (Only shown for multi-court racket surfaces) -->
+                    <div id="calendar-view-toggle-container" class="hidden flex justify-end gap-2 mb-4">
+                        <button type="button" id="btn-view-standard" class="px-4 py-2 text-sm font-bold bg-primary text-white rounded-xl transition-custom shadow-sm" onclick="window.setCalendarViewMode('standard')">
+                            <span class="lang-en-only">Standard View</span><span class="lang-fr-only notranslate">Vue standard</span>
+                        </button>
+                        <button type="button" id="btn-view-multi" class="px-4 py-2 text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl transition-custom" onclick="window.setCalendarViewMode('multi')">
+                            <span class="lang-en-only">Multi-Court View</span><span class="lang-fr-only notranslate">Vue multi-terrains</span>
+                        </button>
+                    </div>
+
                     <!-- The Interactive Calendar -->
                     <div id="calendar" class="min-h-[600px] mt-4 notranslate"></div>
+
+                    <!-- Custom Multi-Court Day Grid -->
+                    <div id="multi-court-calendar-container" class="hidden mt-4 notranslate">
+                        <!-- Date selector for Multi-Court view -->
+                        <div class="flex items-center justify-between mb-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                            <button type="button" onclick="window.adjustMultiCourtDate(-1)" class="w-10 h-10 rounded-full bg-white border border-slate-200 hover:bg-slate-100 transition-custom flex items-center justify-center text-slate-600">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <span id="multi-court-date-display" class="font-bold text-slate-800"></span>
+                            <button type="button" onclick="window.adjustMultiCourtDate(1)" class="w-10 h-10 rounded-full bg-white border border-slate-200 hover:bg-slate-100 transition-custom flex items-center justify-center text-slate-600">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Grid container -->
+                        <div class="overflow-x-auto border border-slate-200 rounded-2xl bg-white shadow-sm">
+                            <table class="w-full border-collapse min-w-[600px]" id="multi-court-grid-table">
+                                <!-- Generated Dynamically -->
+                            </table>
+                        </div>
+                    </div>
 
                     <!-- Add Event Modal Overlay (AllBooked Style) -->
                     <div id="event-modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -669,6 +700,18 @@
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    <!-- Court Name Dropdown (Racket Sports) -->
+                                    <div id="modal-court-select-container" class="hidden">
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">
+                                            <span class="lang-en-only">Select Court</span><span class="lang-fr-only notranslate">Sélectionner le terrain</span>
+                                            <span class="text-red-500">*</span>
+                                        </label>
+                                        <select id="modal-court-name" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white transition-custom text-slate-800 font-medium">
+                                            <!-- Dynamically populated -->
+                                        </select>
+                                    </div>
+
                                     <div>
                                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Locker Room</span><span class="lang-fr-only notranslate">Vestiaire</span> <span class="bg-slate-200 text-slate-500 ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-normal align-top"><span class="lang-en-only">OPTIONAL</span><span class="lang-fr-only notranslate">OPTIONNEL</span></span></label>
                                         <input type="hidden" id="modal-locker-room">
@@ -3053,6 +3096,295 @@
             }
         });
 
+        window.currentCalendarViewMode = 'standard';
+        window.currentMultiCourtDate = new Date().toISOString().split('T')[0];
+        window.multiCourtPrefillCourtName = null;
+        
+        window.setCalendarViewMode = function(mode) {
+            window.currentCalendarViewMode = mode;
+            const surfaceId = document.getElementById('calendar-facility-select').value;
+            if (surfaceId) {
+                initCalendar(surfaceId);
+            }
+        };
+        
+        window.adjustMultiCourtDate = function(offset) {
+            const d = new Date(window.currentMultiCourtDate + 'T00:00:00');
+            d.setDate(d.getDate() + offset);
+            window.currentMultiCourtDate = d.toISOString().split('T')[0];
+            const surfaceId = document.getElementById('calendar-facility-select').value;
+            if (surfaceId) {
+                initCalendar(surfaceId);
+            }
+        };
+
+        window.isMultiCourtSelecting = false;
+        window.multiCourtSelectCourt = null;
+        window.multiCourtStartSlot = null;
+        window.multiCourtEndSlot = null;
+        
+        const multiCourtTimeSlots = [];
+        for (let h = 6; h <= 23; h++) {
+            for (let m = 0; m < 60; m += 30) {
+                const timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                multiCourtTimeSlots.push(timeStr);
+            }
+        }
+
+        window.startMultiCourtDrag = function(e, court, slot) {
+            e.preventDefault();
+            window.isMultiCourtSelecting = true;
+            window.multiCourtSelectCourt = court;
+            window.multiCourtStartSlot = slot;
+            window.multiCourtEndSlot = slot;
+            window.highlightMultiCourtCells();
+        };
+        
+        window.enterMultiCourtDrag = function(e, court, slot) {
+            if (!window.isMultiCourtSelecting || window.multiCourtSelectCourt !== court) return;
+            window.multiCourtEndSlot = slot;
+            window.highlightMultiCourtCells();
+        };
+        
+        window.endMultiCourtDrag = function(e, court, slot) {
+            if (!window.isMultiCourtSelecting) return;
+            window.isMultiCourtSelecting = false;
+            
+            const slots = multiCourtTimeSlots;
+            const idxStart = slots.indexOf(window.multiCourtStartSlot);
+            const idxEnd = slots.indexOf(window.multiCourtEndSlot);
+            
+            const minIdx = Math.min(idxStart, idxEnd);
+            const maxIdx = Math.max(idxStart, idxEnd);
+            
+            const startSlotSelected = slots[minIdx];
+            const endSlotSelected = slots[maxIdx];
+            
+            const [endHStr, endMStr] = endSlotSelected.split(':');
+            let endH = parseInt(endHStr, 10);
+            let endM = parseInt(endMStr, 10) + 30;
+            if (endM >= 60) {
+                endH += 1;
+                endM -= 60;
+            }
+            const endTimeStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+            
+            const selectInfo = {
+                start: new Date(`${window.currentMultiCourtDate}T${startSlotSelected}:00`),
+                end: new Date(`${window.currentMultiCourtDate}T${endTimeStr}:00`),
+                allDay: false
+            };
+            
+            window.multiCourtPrefillCourtName = court;
+            window.clearMultiCourtHighlights();
+            openEventModal(selectInfo);
+        };
+        
+        window.highlightMultiCourtCells = function() {
+            window.clearMultiCourtHighlights();
+            if (!window.isMultiCourtSelecting) return;
+            
+            const slots = multiCourtTimeSlots;
+            const idxStart = slots.indexOf(window.multiCourtStartSlot);
+            const idxEnd = slots.indexOf(window.multiCourtEndSlot);
+            const minIdx = Math.min(idxStart, idxEnd);
+            const maxIdx = Math.max(idxStart, idxEnd);
+            
+            const cells = document.querySelectorAll('.multi-court-cell');
+            cells.forEach(cell => {
+                const cellCourt = cell.getAttribute('data-court');
+                const cellSlot = cell.getAttribute('data-slot');
+                if (cellCourt !== window.multiCourtSelectCourt) return;
+                
+                const cellIdx = slots.indexOf(cellSlot);
+                if (cellIdx >= minIdx && cellIdx <= maxIdx) {
+                    cell.classList.add('bg-primary/20', 'border-primary/40');
+                }
+            });
+        };
+        
+        window.clearMultiCourtHighlights = function() {
+            const cells = document.querySelectorAll('.multi-court-cell');
+            cells.forEach(cell => {
+                cell.classList.remove('bg-primary/20', 'border-primary/40');
+            });
+        };
+        
+        document.addEventListener('mouseup', () => {
+            if (window.isMultiCourtSelecting) {
+                window.isMultiCourtSelecting = false;
+                window.clearMultiCourtHighlights();
+            }
+        });
+
+        window.handleMultiCourtBookingClick = function(bookingId) {
+            const booking = allBookingsCache.find(b => b.id == bookingId);
+            if (!booking) return;
+            
+            const slots = JSON.parse(booking.time_slots);
+            slots.sort();
+            const startTime = slots[0];
+            const lastSlotParts = slots[slots.length - 1].split(':');
+            let endH = parseInt(lastSlotParts[0], 10);
+            let endM = parseInt(lastSlotParts[1], 10) + 30;
+            if (endM >= 60) {
+                endH += 1;
+                endM -= 60;
+            }
+            const endTimeStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+            
+            const simulatedEvent = {
+                id: booking.id,
+                title: booking.manual_notes || 'Booking',
+                start: new Date(`${booking.booking_date}T${startTime}:00`),
+                end: new Date(`${booking.booking_date}T${endTimeStr}:00`),
+                extendedProps: {
+                    isManual: booking.booking_type === 'manual',
+                    isPublicSession: booking.booking_type === 'public_session',
+                    status: booking.status,
+                    originalNotes: booking.manual_notes,
+                    lockerRoom: booking.locker_room_assignment,
+                    recurringGroupId: booking.recurring_group_id,
+                    playerName: booking.player_name || (localStorage.getItem('gg_language') === 'fr' ? 'Invité' : 'Guest'),
+                    playerEmail: booking.player_email || 'N/A',
+                    playerPhone: booking.player_phone_number || 'N/A',
+                    capacity: booking.capacity || 0,
+                    participant_price: booking.participant_price || 0,
+                    joined_count: booking.joined_count || 0,
+                    description: booking.description || '',
+                    pricing_tiers: booking.pricing_tiers || '[]',
+                    blockColor: booking.block_color || '#3B82F6',
+                    max_reservations: booking.max_reservations || null,
+                    courtName: booking.court_name
+                }
+            };
+            
+            if (booking.booking_type === 'public_session') {
+                openPublicSessionModal(simulatedEvent);
+            } else if (booking.booking_type === 'manual') {
+                openEditEventModal(simulatedEvent);
+            } else {
+                window.clickTimer = setTimeout(async () => {
+                    const confirmCancel = await showConfirmModal(
+                        'Booking Info', 
+                        `Name: ${simulatedEvent.extendedProps.playerName}\nEmail: ${simulatedEvent.extendedProps.playerEmail}\nPhone: ${simulatedEvent.extendedProps.playerPhone}\nStatus: ${simulatedEvent.extendedProps.status}\nCourt: ${booking.court_name || 'N/A'}\n\nWould you like to cancel this booking?`,
+                        'Cancel Booking',
+                        'Close',
+                        true
+                    );
+                    if (confirmCancel) {
+                        openHostCancelModal(simulatedEvent.id);
+                    }
+                }, 100);
+            }
+        };
+
+        window.renderMultiCourtGrid = function(surface, surfaceBookings) {
+            const dateDisplay = document.getElementById('multi-court-date-display');
+            if (dateDisplay) {
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const formatted = new Date(window.currentMultiCourtDate + 'T00:00:00').toLocaleDateString(
+                    localStorage.getItem('gg_language') === 'fr' ? 'fr-FR' : 'en-US', 
+                    options
+                );
+                dateDisplay.textContent = formatted;
+            }
+
+            let courtNames = [];
+            if (surface.court_count > 1) {
+                try {
+                    courtNames = JSON.parse(surface.court_custom_names);
+                } catch(e) {}
+            }
+            if (!Array.isArray(courtNames) || courtNames.length === 0) {
+                courtNames = Array.from({ length: surface.court_count || 1 }, (_, i) => `Court #${i + 1}`);
+            }
+
+            let theadHTML = `
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider w-24">Time</th>
+            `;
+            courtNames.forEach(court => {
+                theadHTML += `<th class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-l border-slate-200">${court}</th>`;
+            });
+            theadHTML += `</tr></thead>`;
+
+            let tbodyHTML = '<tbody>';
+            multiCourtTimeSlots.forEach(slot => {
+                const [hStr, mStr] = slot.split(':');
+                const hour = parseInt(hStr, 10);
+                const period = hour >= 12 ? 'PM' : 'AM';
+                let h12 = hour % 12;
+                if (h12 === 0) h12 = 12;
+                const slotDisplay = `${h12}:${mStr} ${period}`;
+                
+                tbodyHTML += `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50/40 select-none">
+                        <td class="px-4 py-3 text-xs font-bold text-slate-400 whitespace-nowrap align-middle bg-slate-50/20">${slotDisplay}</td>
+                `;
+                
+                courtNames.forEach(court => {
+                    const booking = surfaceBookings.find(b => {
+                        if (b.booking_date !== window.currentMultiCourtDate) return false;
+                        if (b.court_name !== court) return false;
+                        try {
+                            const slots = typeof b.time_slots === 'string' ? JSON.parse(b.time_slots) : b.time_slots;
+                            return Array.isArray(slots) && slots.includes(slot);
+                        } catch(e){}
+                        return false;
+                    });
+                    
+                    if (booking) {
+                        let isFr = localStorage.getItem('gg_language') === 'fr';
+                        let labelText = '';
+                        let cellBg = '';
+                        let cellText = 'text-white';
+                        
+                        if (booking.booking_type === 'public_session') {
+                            labelText = isFr ? `👥 Activité` : `👥 Activity`;
+                            cellBg = 'bg-indigo-500 border-indigo-600';
+                        } else if (booking.booking_type === 'manual') {
+                            labelText = booking.manual_notes || (isFr ? 'Bloqué' : 'Blocked');
+                            cellBg = ''; 
+                        } else {
+                            labelText = booking.player_name || (isFr ? 'Réservé' : 'Booked');
+                            cellBg = 'bg-emerald-500 border-emerald-600';
+                        }
+                        
+                        tbodyHTML += `
+                            <td class="px-2 py-1.5 text-center text-xs font-bold ${cellText} align-middle border-l border-slate-100 cursor-pointer transition-all hover:brightness-95" 
+                                style="${booking.booking_type === 'manual' ? `background-color: ${booking.block_color || '#3B82F6'};` : ''}"
+                                onclick="window.handleMultiCourtBookingClick(${booking.id})">
+                                <div class="py-1 px-2 rounded-lg ${cellBg} shadow-sm text-[11px] truncate max-w-[150px] mx-auto">${labelText}</div>
+                            </td>
+                        `;
+                    } else {
+                        tbodyHTML += `
+                            <td class="px-4 py-3 text-center text-xs text-slate-300 align-middle border-l border-slate-100 cursor-crosshair hover:bg-primary/5 transition-all multi-court-cell"
+                                data-court="${court}"
+                                data-slot="${slot}"
+                                onmousedown="window.startMultiCourtDrag(event, '${court}', '${slot}')"
+                                onmouseenter="window.enterMultiCourtDrag(event, '${court}', '${slot}')"
+                                onmouseup="window.endMultiCourtDrag(event, '${court}', '${slot}')">
+                                <div class="text-[10px] text-slate-300 font-medium select-none pointer-events-none opacity-0 hover:opacity-100">
+                                    ${localStorage.getItem('gg_language') === 'fr' ? 'Bloquer' : 'Block'}
+                                </div>
+                            </td>
+                        `;
+                    }
+                });
+                
+                tbodyHTML += `</tr>`;
+            });
+            tbodyHTML += '</tbody>';
+            
+            const table = document.getElementById('multi-court-grid-table');
+            if (table) {
+                table.innerHTML = theadHTML + tbodyHTML;
+            }
+        };
+
         async function initCalendar(surfaceId) {
             const calendarEl = document.getElementById('calendar');
 
@@ -4020,6 +4352,34 @@
                 window.updatePoolActivitiesVisibility(facId);
             }
 
+            const facility = typeof ownerFacilities !== 'undefined' ? ownerFacilities.find(f => f.id == trueFacId) : null;
+            let surface = facility && facility.surfaces ? facility.surfaces.find(s => s.id == facId) : null;
+            if (!surface && typeof window.currentSurfaces !== 'undefined' && window.currentSurfaces) {
+                surface = window.currentSurfaces.find(s => s.id == facId);
+            }
+            const surfaceType = surface ? surface.type : '';
+
+            const courtSelectContainer = document.getElementById('modal-court-select-container');
+            const courtSelect = document.getElementById('modal-court-name');
+            if (courtSelectContainer && courtSelect) {
+                if (['tennis', 'pickleball', 'squash', 'badminton'].includes(surfaceType) && surface && surface.court_count > 1) {
+                    courtSelectContainer.classList.remove('hidden');
+                    let courtNames = [];
+                    try { courtNames = JSON.parse(surface.court_custom_names); } catch(e){}
+                    if (!Array.isArray(courtNames) || courtNames.length === 0) {
+                        courtNames = Array.from({length: surface.court_count || 1}, (_, i) => `Court #${i+1}`);
+                    }
+                    courtSelect.innerHTML = courtNames.map(court => `<option value="${court}">${court}</option>`).join('');
+                    if (window.multiCourtPrefillCourtName) {
+                        courtSelect.value = window.multiCourtPrefillCourtName;
+                        window.multiCourtPrefillCourtName = null;
+                    }
+                } else {
+                    courtSelectContainer.classList.add('hidden');
+                    courtSelect.innerHTML = '';
+                }
+            }
+
             toggleModalBlockType();
 
             document.getElementById('event-modal-backdrop').classList.remove('hidden');
@@ -4195,6 +4555,27 @@
                 }
                 if (document.getElementById('modal-public-residents-only')) {
                     document.getElementById('modal-public-residents-only').checked = !!eventObj.extendedProps.residents_only;
+                }
+            }
+
+            // Populate and select court name in dropdown if racket sport
+            const courtSelectContainer = document.getElementById('modal-court-select-container');
+            const courtSelect = document.getElementById('modal-court-name');
+            if (courtSelectContainer && courtSelect) {
+                if (['tennis', 'pickleball', 'squash', 'badminton'].includes(surfaceType) && surface && surface.court_count > 1) {
+                    courtSelectContainer.classList.remove('hidden');
+                    let courtNames = [];
+                    try { courtNames = JSON.parse(surface.court_custom_names); } catch(e){}
+                    if (!Array.isArray(courtNames) || courtNames.length === 0) {
+                        courtNames = Array.from({length: surface.court_count || 1}, (_, i) => `Court #${i+1}`);
+                    }
+                    courtSelect.innerHTML = courtNames.map(court => `<option value="${court}">${court}</option>`).join('');
+                    if (eventObj.extendedProps && eventObj.extendedProps.courtName) {
+                        courtSelect.value = eventObj.extendedProps.courtName;
+                    }
+                } else {
+                    courtSelectContainer.classList.add('hidden');
+                    courtSelect.innerHTML = '';
                 }
             }
 
@@ -4755,6 +5136,10 @@
                 return;
             }
 
+            const courtSelectContainer = document.getElementById('modal-court-select-container');
+            const courtSelect = document.getElementById('modal-court-name');
+            const courtName = courtSelect && courtSelectContainer && !courtSelectContainer.classList.contains('hidden') ? courtSelect.value : null;
+
             const payload = {
                 facility_id: parseInt(document.getElementById('modal-true-facility-id').value, 10),
                 surface_id: parseInt(document.getElementById('modal-facility-id').value, 10),
@@ -4781,7 +5166,8 @@
                         }
                     });
                     return JSON.stringify(tiers);
-                })()
+                })(),
+                court_name: courtName
             };
 
             const editId = document.getElementById('modal-edit-booking-id') ? document.getElementById('modal-edit-booking-id').value : '';
@@ -7464,6 +7850,13 @@
             'pickleball': [
                 {value: 'Standard (44\' x 20\')', label: 'Standard (44\' x 20\')'}
             ],
+            'squash': [
+                {value: 'Standard Singles (32\' x 21\')', label: 'Standard Singles (32\' x 21\')'},
+                {value: 'Standard Doubles (45\' x 25\')', label: 'Standard Doubles (45\' x 25\')'}
+            ],
+            'badminton': [
+                {value: 'Standard Singles/Doubles (44\' x 20\')', label: 'Standard Singles/Doubles (44\' x 20\')'}
+            ],
             'pool': [
                 {value: 'Olympic (50m)', label: 'Olympic (50m)'},
                 {value: 'Short Course (25m)', label: 'Short Course (25m)'},
@@ -7633,6 +8026,16 @@
                 }
             }
             if (window.toggleBookingModel) window.toggleBookingModel();
+
+            // Toggle Racket Config container based on surface type
+            const racketConfig = document.getElementById('racket-config-container');
+            if (racketConfig) {
+                if (['tennis', 'pickleball', 'squash', 'badminton'].includes(type)) {
+                    racketConfig.classList.remove('hidden');
+                } else {
+                    racketConfig.classList.add('hidden');
+                }
+            }
             
             if (!list || !input || !display) return;
             
@@ -7661,6 +8064,27 @@
                 display.textContent = 'Select size...';
                 display.classList.remove('text-slate-800');
                 display.classList.add('text-slate-400');
+            }
+        };
+
+        window.toggleCourtNamingCustomFields = function() {
+            const select = document.getElementById('surf-court-naming-type');
+            const container = document.getElementById('court-custom-names-container');
+            if (select && container) {
+                if (select.value === 'custom') {
+                    container.classList.remove('hidden');
+                } else {
+                    container.classList.add('hidden');
+                }
+            }
+        };
+
+        window.updateCourtNamesPlaceholder = function() {
+            const count = parseInt(document.getElementById('surf-court-count').value, 10) || 1;
+            const input = document.getElementById('surf-court-custom-names');
+            if (input) {
+                const placeholderNames = Array.from({length: count}, (_, i) => `Court #${i+1}`).join(', ');
+                input.placeholder = `e.g. ${placeholderNames}`;
             }
         };
 
@@ -7702,6 +8126,15 @@
                 if (document.getElementById('fac-instant')) document.getElementById('fac-instant').checked = true;
                 if (document.getElementById('fac-booking-end-date')) document.getElementById('fac-booking-end-date').value = '';
                 if (document.getElementById('fac-pricing-unit')) document.getElementById('fac-pricing-unit').value = 'hour';
+                
+                // Reset Racket Sports Configuration
+                if (document.getElementById('surf-court-count')) document.getElementById('surf-court-count').value = 1;
+                if (document.getElementById('surf-court-naming-type')) document.getElementById('surf-court-naming-type').value = 'auto';
+                if (document.getElementById('surf-court-custom-names')) document.getElementById('surf-court-custom-names').value = '';
+                document.querySelectorAll('input[name="surf_allowed_activities"]').forEach(cb => cb.checked = false);
+                document.querySelectorAll('input[name="surf_allowed_durations"]').forEach(cb => cb.checked = true); // check all by default
+                if (window.toggleCourtNamingCustomFields) window.toggleCourtNamingCustomFields();
+                if (window.updateCourtNamesPlaceholder) window.updateCourtNamesPlaceholder();
                 
                 const rulesContainer = document.getElementById('pricing-rules-container');
                 if (rulesContainer) {
@@ -7876,6 +8309,62 @@
                     if (typeof window.createRuleRow === 'function') window.createRuleRow();
                 }
             }
+
+            // Populate racket sports fields if applicable
+            const isRacket = ['tennis', 'pickleball', 'squash', 'badminton'].includes(surf.type);
+            
+            // Reset racket config elements
+            document.getElementById('surf-court-count').value = 1;
+            document.getElementById('surf-court-naming-type').value = 'auto';
+            document.getElementById('surf-court-custom-names').value = '';
+            document.querySelectorAll('input[name="surf_allowed_activities"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('input[name="surf_allowed_durations"]').forEach(cb => cb.checked = true); // check all by default
+
+            if (isRacket) {
+                document.getElementById('surf-court-count').value = surf.court_count || 1;
+                document.getElementById('surf-court-naming-type').value = surf.court_naming_type || 'auto';
+                
+                let customNames = surf.court_custom_names;
+                if (typeof customNames === 'string') {
+                    try {
+                        const parsed = JSON.parse(customNames);
+                        if (Array.isArray(parsed)) {
+                            customNames = parsed.join(', ');
+                        }
+                    } catch(e) {}
+                } else if (Array.isArray(customNames)) {
+                    customNames = customNames.join(', ');
+                }
+                document.getElementById('surf-court-custom-names').value = customNames || '';
+
+                if (surf.allowed_activities) {
+                    try {
+                        const activities = typeof surf.allowed_activities === 'string' ? JSON.parse(surf.allowed_activities) : surf.allowed_activities;
+                        if (Array.isArray(activities)) {
+                            activities.forEach(act => {
+                                const cb = document.querySelector(`input[name="surf_allowed_activities"][value="${act}"]`);
+                                if (cb) cb.checked = true;
+                            });
+                        }
+                    } catch(e) {}
+                }
+                
+                if (surf.allowed_durations) {
+                    try {
+                        const durations = typeof surf.allowed_durations === 'string' ? JSON.parse(surf.allowed_durations) : surf.allowed_durations;
+                        if (Array.isArray(durations)) {
+                            // Uncheck all first
+                            document.querySelectorAll('input[name="surf_allowed_durations"]').forEach(cb => cb.checked = false);
+                            durations.forEach(dur => {
+                                const cb = document.querySelector(`input[name="surf_allowed_durations"][value="${dur}"]`);
+                                if (cb) cb.checked = true;
+                            });
+                        }
+                    } catch(e) {}
+                }
+            }
+            if (window.toggleCourtNamingCustomFields) window.toggleCourtNamingCustomFields();
+            if (window.updateCourtNamesPlaceholder) window.updateCourtNamesPlaceholder();
         };
 
         window.handleSurfTermsDocUpload = function(event) {
@@ -8027,6 +8516,34 @@
                     basePrice = minP === Infinity ? 0 : minP;
                 }
 
+                let court_count = 1;
+                let court_naming_type = 'auto';
+                let court_custom_names = [];
+                let allowed_activities = [];
+                let allowed_durations = ['1h', '1.5h', '2h'];
+
+                if (['tennis', 'pickleball', 'squash', 'badminton'].includes(surfType)) {
+                    court_count = parseInt(document.getElementById('surf-court-count').value, 10) || 1;
+                    court_naming_type = document.getElementById('surf-court-naming-type').value || 'auto';
+                    
+                    const customNamesInput = document.getElementById('surf-court-custom-names');
+                    if (customNamesInput && customNamesInput.value.trim()) {
+                        court_custom_names = customNamesInput.value.split(',').map(n => n.trim()).filter(Boolean);
+                    }
+                    
+                    document.querySelectorAll('input[name="surf_allowed_activities"]:checked').forEach(cb => {
+                        allowed_activities.push(cb.value);
+                    });
+                    
+                    allowed_durations = [];
+                    document.querySelectorAll('input[name="surf_allowed_durations"]:checked').forEach(cb => {
+                        allowed_durations.push(cb.value);
+                    });
+                    if (allowed_durations.length === 0) {
+                        allowed_durations = ['1h', '1.5h', '2h'];
+                    }
+                }
+
                 const payload = {
                     name: document.getElementById('surf-name').value,
                     type: surfType,
@@ -8047,7 +8564,12 @@
                     booking_end_date: document.getElementById('fac-booking-end-date') && document.getElementById('fac-booking-end-date').value ? document.getElementById('fac-booking-end-date').value : null,
                     has_processing_fee: document.getElementById('fac-has-processing-fee') && document.getElementById('fac-has-processing-fee').checked ? 1 : 0,
                     processing_fee_amount: document.getElementById('fac-processing-fee-amount') ? parseFloat(document.getElementById('fac-processing-fee-amount').value) : 15.00,
-                    terms_document_url: document.getElementById('surf-terms-doc') ? document.getElementById('surf-terms-doc').value : ''
+                    terms_document_url: document.getElementById('surf-terms-doc') ? document.getElementById('surf-terms-doc').value : '',
+                    court_count: court_count,
+                    court_naming_type: court_naming_type,
+                    court_custom_names: court_custom_names,
+                    allowed_activities: allowed_activities,
+                    allowed_durations: allowed_durations
                 };
 
                 try {
@@ -8324,6 +8846,83 @@
                                     <span class="block text-xs text-slate-500">Private hourly rentals are disabled. You will only schedule Public Activities.</span>
                                 </div>
                             </label>
+                        </div>
+                    </div>
+
+                    <!-- Racket Sports Configuration Container (Shown only for tennis, pickleball, squash, badminton) -->
+                    <div id="racket-config-container" class="hidden mb-6 bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-6 animate-fade-in">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800 mb-1">
+                                <span class="lang-en-only">Court Settings</span><span class="lang-fr-only notranslate">Paramètres des terrains</span>
+                            </h3>
+                            <p class="text-xs text-slate-500 mb-4">
+                                <span class="lang-en-only">Configure multi-court layout and durations for racket sports.</span><span class="lang-fr-only notranslate">Configurez la disposition multi-terrains et les durées pour les sports de raquette.</span>
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-2">
+                                    <span class="lang-en-only">Number of Courts</span><span class="lang-fr-only notranslate">Nombre de terrains</span>
+                                </label>
+                                <input type="number" id="surf-court-count" min="1" value="1" onchange="window.updateCourtNamesPlaceholder()" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-2">
+                                    <span class="lang-en-only">Court Naming Preference</span><span class="lang-fr-only notranslate">Préférence de nommage</span>
+                                </label>
+                                <select id="surf-court-naming-type" onchange="window.toggleCourtNamingCustomFields()" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white">
+                                    <option value="auto">Auto-numbered (Court #1, Court #2...)</option>
+                                    <option value="custom">Custom Names (Center Court, Court A...)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="court-custom-names-container" class="hidden">
+                            <label class="block text-xs font-bold text-slate-700 mb-2">
+                                <span class="lang-en-only">Custom Court Names (comma separated)</span><span class="lang-fr-only notranslate">Noms personnalisés (séparés par des virgules)</span>
+                            </label>
+                            <input type="text" id="surf-court-custom-names" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white" placeholder="e.g. Center Court, Court A, Court B">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-3">
+                                <span class="lang-en-only">Allowed Booking Durations</span><span class="lang-fr-only notranslate">Durées de réservation autorisées</span>
+                            </label>
+                            <div class="flex flex-wrap gap-4">
+                                <label class="flex items-center cursor-pointer group text-sm text-slate-700">
+                                    <input type="checkbox" name="surf_allowed_durations" value="1h" class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary cursor-pointer" checked>
+                                    <span class="ml-2 group-hover:text-dark">1 Hour</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer group text-sm text-slate-700">
+                                    <input type="checkbox" name="surf_allowed_durations" value="1.5h" class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary cursor-pointer" checked>
+                                    <span class="ml-2 group-hover:text-dark">1.5 Hours</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer group text-sm text-slate-700">
+                                    <input type="checkbox" name="surf_allowed_durations" value="2h" class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary cursor-pointer" checked>
+                                    <span class="ml-2 group-hover:text-dark">2 Hours</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-3">
+                                <span class="lang-en-only">Allowed Activities</span><span class="lang-fr-only notranslate">Activités autorisées</span>
+                            </label>
+                            <div class="flex flex-wrap gap-4">
+                                <label class="flex items-center cursor-pointer group text-sm text-slate-700">
+                                    <input type="checkbox" name="surf_allowed_activities" value="singles" class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary cursor-pointer">
+                                    <span class="ml-2 group-hover:text-dark">Singles</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer group text-sm text-slate-700">
+                                    <input type="checkbox" name="surf_allowed_activities" value="doubles" class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary cursor-pointer">
+                                    <span class="ml-2 group-hover:text-dark">Doubles</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer group text-sm text-slate-700">
+                                    <input type="checkbox" name="surf_allowed_activities" value="training" class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary cursor-pointer">
+                                    <span class="ml-2 group-hover:text-dark">Training/Lessons</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 

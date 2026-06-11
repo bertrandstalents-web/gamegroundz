@@ -194,6 +194,11 @@ async function initDatabase() {
             terms_document_url TEXT DEFAULT '',
             status TEXT DEFAULT 'active',
             booking_end_date TEXT,
+            court_count INTEGER DEFAULT 1,
+            allowed_durations TEXT DEFAULT '["1h", "1.5h", "2h"]',
+            court_naming_type TEXT DEFAULT 'auto',
+            court_custom_names TEXT DEFAULT '[]',
+            allowed_activities TEXT DEFAULT '[]',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
 
@@ -232,6 +237,14 @@ async function initDatabase() {
         
         try {
             await client.query(`ALTER TABLE surfaces ADD COLUMN booking_end_date TEXT`);
+        } catch(e) {}
+
+        try {
+            await client.query(`ALTER TABLE surfaces ADD COLUMN court_count INTEGER DEFAULT 1`);
+            await client.query(`ALTER TABLE surfaces ADD COLUMN allowed_durations TEXT DEFAULT '["1h", "1.5h", "2h"]'`);
+            await client.query(`ALTER TABLE surfaces ADD COLUMN court_naming_type TEXT DEFAULT 'auto'`);
+            await client.query(`ALTER TABLE surfaces ADD COLUMN court_custom_names TEXT DEFAULT '[]'`);
+            await client.query(`ALTER TABLE surfaces ADD COLUMN allowed_activities TEXT DEFAULT '[]'`);
         } catch(e) {}
 
         try {
@@ -299,7 +312,8 @@ async function initDatabase() {
             participant_price REAL DEFAULT 0.0,
             surface_terms_accepted INTEGER DEFAULT 0,
             block_color TEXT DEFAULT '#3B82F6',
-            max_reservations INTEGER
+            max_reservations INTEGER,
+            court_name TEXT
         )`);
 
         try {
@@ -313,6 +327,9 @@ async function initDatabase() {
         } catch(e) {}
         try {
             await client.query(`ALTER TABLE bookings ADD COLUMN block_color TEXT DEFAULT '#3B82F6'`);
+        } catch(e) {}
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN court_name TEXT`);
         } catch(e) {}
         
         try {
