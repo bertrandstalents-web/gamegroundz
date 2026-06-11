@@ -335,11 +335,12 @@
                             </div>
 
                             <!-- Court Selection (Racket Sports Only) -->
-                            <div id="court-selector-container" class="hidden border-b border-slate-300 p-3 cursor-pointer hover:bg-slate-50 transition-custom relative">
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="court-select">Court</label>
-                                <select id="court-select" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer pr-6">
-                                </select>
-                                <div class="absolute right-3 top-6 text-slate-400 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                            <div id="court-selector-container" class="hidden border-b border-slate-300 p-3 transition-custom">
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-2">Select Court</label>
+                                <div id="court-chips-list" class="flex flex-wrap gap-2 mt-1">
+                                    <!-- Dynamic court chips go here -->
+                                </div>
+                                <input type="hidden" id="court-select" value="">
                             </div>
 
                             <div id="activity-type-container" class="p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-b-xl">
@@ -1979,10 +1980,16 @@
                              div.innerHTML = `<span class="flex items-center">${slot.time} ${priceBadge} ${discountBadge} <span class="text-[10px] ml-2 uppercase bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">${reason}</span></span>`;
                         } else {
                              div.className = `px-3 py-2.5 text-sm font-semibold rounded-lg cursor-pointer flex justify-between items-center mb-1 transition-custom ${isSelected ? 'bg-primary/10 text-primary border border-primary/20 font-bold' : 'hover:bg-slate-100 text-slate-700 border border-transparent'}`;
-                             const courtsAvailableText = `<span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-primary text-white border-primary/45' : 'bg-slate-100 text-slate-600 border-slate-200'} border shrink-0">${freeCourtsCount} court${freeCourtsCount > 1 ? 's' : ''} available</span>`;
                              div.innerHTML = `
-                                <span class="flex items-center">${slot.time} ${priceBadge} ${discountBadge} ${courtsAvailableText}</span>
-                                ${isSelected ? '<i class="fa-solid fa-check text-sm"></i>' : ''}
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                    <span class="truncate">${slot.time}</span>
+                                    ${priceBadge}
+                                    ${discountBadge}
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <span class="text-[11px] font-medium ${isSelected ? 'text-primary/80' : 'text-emerald-600'}">${freeCourtsCount} available</span>
+                                    ${isSelected ? '<i class="fa-solid fa-check text-sm text-primary"></i>' : ''}
+                                </div>
                             `;
                             div.onclick = (e) => {
                                 e.stopPropagation();
@@ -2167,37 +2174,68 @@
                 }
                 
                 if (isRacket && selectedSlotIds.size > 0) {
-                    if (courtSelect && courtContainer) {
+                    if (courtContainer) {
                         courtContainer.classList.remove('hidden');
-                        if (freeCourts.length > 0) {
-                            courtSelect.innerHTML = '';
-                            freeCourts.forEach(c => {
-                                const opt = document.createElement('option');
-                                opt.value = c;
-                                opt.textContent = c;
-                                courtSelect.appendChild(opt);
-                            });
+                        
+                        const chipsList = document.getElementById('court-chips-list');
+                        if (chipsList) {
+                            chipsList.innerHTML = '';
                             
-                            if (!window.selectedRacketCourt || !freeCourts.includes(window.selectedRacketCourt)) {
-                                window.selectedRacketCourt = freeCourts[0];
+                            const surfaceCourts = window.surfaceCourts || [];
+                            
+                            // Determine which court should be selected
+                            if (freeCourts.length > 0) {
+                                if (!window.selectedRacketCourt || !freeCourts.includes(window.selectedRacketCourt)) {
+                                    window.selectedRacketCourt = freeCourts[0];
+                                }
+                                if (courtSelect) {
+                                    courtSelect.value = window.selectedRacketCourt;
+                                }
+                                if (reserveBtn) reserveBtn.disabled = false;
+                                if (mobileReserveBtn) mobileReserveBtn.disabled = false;
+                            } else {
+                                window.selectedRacketCourt = null;
+                                if (courtSelect) {
+                                    courtSelect.value = '';
+                                }
+                                if (reserveBtn) reserveBtn.disabled = true;
+                                if (mobileReserveBtn) mobileReserveBtn.disabled = true;
                             }
-                            courtSelect.value = window.selectedRacketCourt;
-                            courtSelect.disabled = false;
-                            
-                            courtSelect.onchange = (e) => {
-                                window.selectedRacketCourt = e.target.value;
-                            };
-                            
-                            if (reserveBtn) reserveBtn.disabled = false;
-                            if (mobileReserveBtn) mobileReserveBtn.disabled = false;
-                        } else {
-                            courtSelect.innerHTML = `<option value="">No courts available for these combined times</option>`;
-                            courtSelect.value = "";
-                            courtSelect.disabled = true;
-                            window.selectedRacketCourt = null;
-                            
-                            if (reserveBtn) reserveBtn.disabled = true;
-                            if (mobileReserveBtn) mobileReserveBtn.disabled = true;
+
+                            if (surfaceCourts.length === 0) {
+                                chipsList.innerHTML = '<span class="text-xs text-slate-500 font-medium">No courts configured</span>';
+                            } else {
+                                surfaceCourts.forEach(c => {
+                                    const isFree = freeCourts.includes(c);
+                                    const isSelected = window.selectedRacketCourt === c;
+                                    
+                                    const chip = document.createElement('button');
+                                    chip.type = 'button';
+                                    
+                                    if (!isFree) {
+                                        chip.className = "border border-slate-100 text-slate-400 bg-slate-50/70 font-medium px-3 py-1.5 rounded-xl text-xs cursor-not-allowed opacity-50 line-through select-none";
+                                        chip.textContent = c;
+                                        chip.disabled = true;
+                                    } else {
+                                        if (isSelected) {
+                                            chip.className = "border border-primary/20 text-primary bg-primary/10 font-bold px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all duration-200 shadow-sm";
+                                            chip.innerHTML = `<span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[5px] text-primary"></i> ${c}</span>`;
+                                        } else {
+                                            chip.className = "border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 font-semibold px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all duration-200 shadow-sm";
+                                            chip.textContent = c;
+                                        }
+                                        
+                                        chip.onclick = (e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            window.selectedRacketCourt = c;
+                                            if (courtSelect) courtSelect.value = c;
+                                            render(); // Redraw the chips & checkouts
+                                        };
+                                    }
+                                    chipsList.appendChild(chip);
+                                });
+                            }
                         }
                     }
                 } else {
