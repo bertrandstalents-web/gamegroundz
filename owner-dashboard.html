@@ -623,7 +623,7 @@
                                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"><span class="lang-en-only">Capacity Limit</span><span class="lang-fr-only notranslate">Limite de capacité</span><span class="text-red-500">*</span></label>
                                             <input type="number" id="modal-public-capacity" min="1" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom text-slate-800 font-medium shadow-sm">
                                         </div>
-                                        <div>
+                                        <div id="modal-public-max-reservations-container">
                                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">
                                                 <span class="lang-en-only">Max Reservations Per Person</span>
                                                 <span class="lang-fr-only notranslate">Limite de réservation par personne</span>
@@ -3610,6 +3610,7 @@
             const poolContainer = document.getElementById('modal-pool-activities-container');
             const standardCapacityDiv = document.getElementById('modal-public-capacity').closest('div');
             const standardTitleWrapper = document.getElementById('modal-block-notes').closest('div');
+            const maxResContainer = document.getElementById('modal-public-max-reservations-container');
 
             if (blockType === 'discount') {
                 if(offlineFields) offlineFields.classList.add('hidden');
@@ -3625,6 +3626,7 @@
 
                 if(poolContainer) poolContainer.classList.add('hidden');
                 if(standardCapacityDiv) standardCapacityDiv.classList.remove('hidden');
+                if(maxResContainer) maxResContainer.classList.add('hidden');
 
                 if(submitBtn) submitBtn.innerHTML = isDiscountEditMode ? 'Save Changes' : 'Add Discount';
             } else if (blockType === 'public_session') {
@@ -3652,6 +3654,7 @@
                     if (standardCapacityDiv) standardCapacityDiv.classList.add('hidden');
                     if (standardTitleWrapper) standardTitleWrapper.classList.add('hidden');
                     if (notesInput) notesInput.required = false;
+                    if (maxResContainer) maxResContainer.classList.add('hidden');
                     
                     // Force public session checked and disable other options for pools
                     const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
@@ -3666,6 +3669,7 @@
                     if (poolContainer) poolContainer.classList.add('hidden');
                     if (standardCapacityDiv) standardCapacityDiv.classList.remove('hidden');
                     if (standardTitleWrapper) standardTitleWrapper.classList.remove('hidden');
+                    if (maxResContainer) maxResContainer.classList.remove('hidden');
                     
                     const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
                     typeRadios.forEach(r => { r.disabled = false; });
@@ -3731,6 +3735,7 @@
                 if (poolContainer) poolContainer.classList.add('hidden');
                 if (standardCapacityDiv) standardCapacityDiv.classList.remove('hidden');
                 if (standardTitleWrapper) standardTitleWrapper.classList.remove('hidden');
+                if (maxResContainer) maxResContainer.classList.add('hidden');
                 
                 const typeRadios = document.querySelectorAll('input[name="modal-block-type"]');
                 typeRadios.forEach(r => { r.disabled = false; });
