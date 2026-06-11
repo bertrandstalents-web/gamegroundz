@@ -3,6 +3,55 @@
  * Handles GDPR/CCPA compliance and dynamic injection of Google Analytics (G-9PGN9ZHVP6)
  */
 
+// Global network block interceptor for fetch API responses.
+// Corporate firewalls, captive portals, and proxies often intercept requests and return HTML pages.
+// We intercept Response.prototype.json globally to catch these cases and throw a user-friendly error
+// instead of letting the JSON parser crash with developer-oriented SyntaxErrors like "Unexpected token '<'".
+(function() {
+    if (typeof Response !== 'undefined' && Response.prototype && Response.prototype.json) {
+        const originalJson = Response.prototype.json;
+        Response.prototype.json = async function() {
+            const contentType = this.headers.get('content-type');
+            const clone = this.clone();
+            let bodyText = null;
+            let textExtracted = false;
+
+            const getBodyText = async () => {
+                if (!textExtracted) {
+                    try {
+                        bodyText = await clone.text();
+                    } catch (e) {
+                        bodyText = '';
+                    }
+                    textExtracted = true;
+                }
+                return bodyText;
+            };
+            
+            // Check if response is explicitly not JSON but we are attempting to parse it
+            if (contentType && !contentType.includes('application/json')) {
+                const text = await getBodyText();
+                if (text && text.trim().startsWith('<')) {
+                    throw new Error('Network block detected. Your connection appears to be blocked by a corporate firewall, proxy, or login gateway. Please try disabling your VPN, using a different network, or contacting your IT support.');
+                }
+            }
+            
+            // Try parsing using original JSON parser
+            try {
+                return await originalJson.call(this);
+            } catch (err) {
+                // If it fails because of HTML tags inside the body, check again
+                const text = await getBodyText();
+                if (text && text.trim().startsWith('<')) {
+                    throw new Error('Network block detected. Your connection appears to be blocked by a corporate firewall, proxy, or login gateway. Please try disabling your VPN, using a different network, or contacting your IT support.');
+                }
+                
+                throw new Error('Server returned an invalid response. Please try again later.');
+            }
+        };
+    }
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
     const CONSENT_KEY = 'gg_cookie_consent';
     const GA_MEASUREMENT_ID = 'G-9PGN9ZHVP6';
