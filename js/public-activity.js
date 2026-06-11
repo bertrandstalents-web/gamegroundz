@@ -12,6 +12,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     let activityData = null;
     let pricingTiers = [];
     let tierSelections = {}; // e.g. { "Adult (18+)": 1, "Child": 0 }
+    let userBookedCount = 0;
+
+    function getTaxInfo(location) {
+        if (!location) return { rate: 0.14975, name: 'QST + GST' };
+        const loc = location.toLowerCase();
+        
+        if (/\b(qc|quebec|québec)\b/.test(loc)) return { rate: 0.14975, name: 'QST + GST' };
+        if (/\b(on|ontario)\b/.test(loc)) return { rate: 0.13, name: 'HST' };
+        if (/\b(bc|british columbia)\b/.test(loc)) return { rate: 0.12, name: 'GST + PST' };
+        if (/\b(mb|manitoba)\b/.test(loc)) return { rate: 0.12, name: 'GST + RST' };
+        if (/\b(sk|saskatchewan)\b/.test(loc)) return { rate: 0.11, name: 'GST + PST' };
+        if (/\b(ab|alberta)\b/.test(loc)) return { rate: 0.05, name: 'GST' };
+        
+        if (/\b(ns|nova scotia|nb|new brunswick|pe|prince edward island|nl|newfoundland)\b/.test(loc)) {
+            return { rate: 0.15, name: 'HST' };
+        }
+        if (/\b(nt|northwest territories|nu|nunavut|yt|yukon)\b/.test(loc)) {
+            return { rate: 0.05, name: 'GST' };
+        }
+        
+        return { rate: 0.14975, name: 'QST + GST' };
+    }
 
     async function showAlertModal(title, message, btnText = 'OK', isError = false) {
         return new Promise((resolve) => {
@@ -49,6 +71,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             activityData = await res.json();
             
             if (activityData.error) throw new Error(activityData.error);
+            
+            // Fetch user booked count if logged in
+            try {
+                const statusRes = await fetch(`${API_BASE_URL}/api/public_sessions/single/${bookingId}/my-status`, { credentials: 'include' });
+                if (statusRes.ok) {
+                    const statusData = await statusRes.json();
+                    userBookedCount = statusData.user_booked_count || 0;
+                }
+            } catch (statusErr) {
+                console.warn("Failed to fetch user booking status:", statusErr);
+            }
             
             renderActivityDetails();
             renderPricingTiers();
@@ -291,7 +324,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const totalJoined = Object.values(tierSelections).reduce((a, b) => a + b, 0);
                 const maxSpots = Math.max(0, activityData.capacity - (activityData.joined_count || 0));
                 
-                if (totalJoined < maxSpots) {
+                let limit = maxSpots;
+                if (activityData.max_reservations !== null && activityData.max_reservations !== undefined && activityData.max_reservations > 0) {
+                    const maxAllowed = Math.max(0, activityData.max_reservations - userBookedCount);
+                    limit = Math.min(maxSpots, maxAllowed);
+                }
+
+                if (totalJoined < limit) {
                     tierSelections[tier.name]++;
                     updateTotal();
                 }
@@ -310,6 +349,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function updateTotal() {
         const maxSpots = Math.max(0, activityData.capacity - (activityData.joined_count || 0));
+        let limit = maxSpots;
+        if (activityData.max_reservations !== null && activityData.max_reservations !== undefined && activityData.max_reservations > 0) {
+            const maxAllowed = Math.max(0, activityData.max_reservations - userBookedCount);
+            limit = Math.min(maxSpots, maxAllowed);
+        }
+
         let totalQty = 0;
         let subtotal = 0;
         
@@ -325,11 +370,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             if(minusBtn) minusBtn.disabled = qty <= 0;
             
             const plusBtn = document.getElementById(`plus-${index}`);
-            if(plusBtn) plusBtn.disabled = totalQty >= maxSpots;
+            if(plusBtn) plusBtn.disabled = totalQty >= limit;
         });
 
+        // Tax Calculation
+        const taxInfo = getTaxInfo(activityData.location);
+        const taxRate = taxInfo.rate;
+        const taxAmount = subtotal * taxRate;
+        const total = subtotal + taxAmount;
+
         document.getElementById('subtotal-amount').textContent = `$${subtotal.toFixed(2)}`;
-        document.getElementById('total-amount').textContent = `$${subtotal.toFixed(2)}`;
+        
+        const taxRow = document.getElementById('tax-row');
+        const taxDetails = document.getElementById('tax-details');
+        const taxAmountEl = document.getElementById('tax-amount');
+        
+        if (taxRow && taxAmountEl) {
+            if (taxAmount > 0) {
+                taxRow.classList.remove('hidden');
+                if (taxDetails) {
+                    taxDetails.textContent = `${taxInfo.name} ${(taxInfo.rate * 100).toFixed(2).replace(/\.?0+$/, '')}%`;
+                }
+                taxAmountEl.textContent = `$${taxAmount.toFixed(2)}`;
+            } else {
+                taxRow.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('total-amount').textContent = `$${total.toFixed(2)}`;
         
         // Setup starting at text
         let minPrice = Infinity;
@@ -339,7 +407,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (minPrice === Infinity) minPrice = 0;
         
         document.getElementById('checkout-price-display').textContent = `$${minPrice.toFixed(2)}`;
-        document.getElementById('mobile-footer-price').innerHTML = `$${subtotal.toFixed(2)} <span class="text-xs font-normal text-slate-500">Total</span>`;
+        document.getElementById('mobile-footer-price').innerHTML = `$${total.toFixed(2)} <span class="text-xs font-normal text-slate-500">Total</span>`;
         
         const btn = document.getElementById('reserve-btn');
         const mBtn = document.getElementById('mobile-reserve-btn');
@@ -350,6 +418,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.classList.add('opacity-50', 'cursor-not-allowed');
             mBtn.disabled = true;
             mBtn.innerHTML = "Full";
+        } else if (activityData.max_reservations > 0 && userBookedCount >= activityData.max_reservations) {
+            btn.disabled = true;
+            btn.innerHTML = "Limit Reached";
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            mBtn.disabled = true;
+            mBtn.innerHTML = "Limit Reached";
         } else if (totalQty === 0) {
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
