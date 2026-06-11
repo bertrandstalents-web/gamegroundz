@@ -1,6 +1,27 @@
 window.initPublicActivityWidget = function(facility, surfaceIdParam) {
     const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
     const currentLang = document.documentElement.getAttribute('data-lang') || 'en';
+    function getTaxInfo(location) {
+        if (!location) return { rate: 0.14975, name: 'QST + GST' };
+        const loc = location.toLowerCase();
+        
+        if (/\b(qc|quebec|québec)\b/.test(loc)) return { rate: 0.14975, name: 'QST + GST' };
+        if (/\b(on|ontario)\b/.test(loc)) return { rate: 0.13, name: 'HST' };
+        if (/\b(bc|british columbia)\b/.test(loc)) return { rate: 0.12, name: 'GST + PST' };
+        if (/\b(mb|manitoba)\b/.test(loc)) return { rate: 0.12, name: 'GST + RST' };
+        if (/\b(sk|saskatchewan)\b/.test(loc)) return { rate: 0.11, name: 'GST + PST' };
+        if (/\b(ab|alberta)\b/.test(loc)) return { rate: 0.05, name: 'GST' };
+        
+        if (/\b(ns|nova scotia|nb|new brunswick|pe|prince edward island|nl|newfoundland)\b/.test(loc)) {
+            return { rate: 0.15, name: 'HST' };
+        }
+        if (/\b(nt|northwest territories|nu|nunavut|yt|yukon)\b/.test(loc)) {
+            return { rate: 0.05, name: 'GST' };
+        }
+        
+        return { rate: 0.14975, name: 'QST + GST' };
+    }
+
     const translateActivity = (name) => {
         const mapping = {
             'Swimming Lane': { en: 'Swimming Lanes', fr: 'Couloirs de Natation' },
@@ -182,7 +203,26 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                         <span class="lang-fr-only notranslate">Vous ne serez pas facturé immédiatement</span>
                     </p>
                     
-                    <div class="flex justify-between font-extrabold text-dark text-lg pt-4 px-1 border-t border-slate-200">
+                    <!-- Price breakdown -->
+                    <div class="space-y-3 text-slate-600 pb-4 border-b border-slate-100 mt-4">
+                        <div class="flex justify-between text-sm font-medium">
+                            <span>
+                                <span class="lang-en-only">Subtotal</span>
+                                <span class="lang-fr-only notranslate">Sous-total</span>
+                            </span>
+                            <span id="pa-subtotal-amount" class="text-slate-700">$0.00</span>
+                        </div>
+                        <div id="pa-tax-row" class="flex justify-between text-sm text-slate-500 hidden">
+                            <span>
+                                <span class="lang-en-only">Taxes</span>
+                                <span class="lang-fr-only notranslate">Taxes</span>
+                                <span id="pa-tax-details" class="text-xs text-slate-400 block font-normal"></span>
+                            </span>
+                            <span id="pa-tax-amount" class="text-slate-700">$0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between font-extrabold text-dark text-lg pt-4 px-1">
                         <span>
                             <span class="lang-en-only">Total</span>
                             <span class="lang-fr-only notranslate">Total</span>
@@ -479,6 +519,8 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                     document.getElementById('pa-selected-summary').innerHTML = 'No tickets selected';
                     reserveBtn.disabled = true;
                     reserveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    document.getElementById('pa-subtotal-amount').textContent = '$0.00';
+                    document.getElementById('pa-tax-row').classList.add('hidden');
                     document.getElementById('pa-total-amount').textContent = '$0.00';
                     return;
                 }
@@ -509,7 +551,31 @@ window.initPublicActivityWidget = function(facility, surfaceIdParam) {
                     if(plusBtn) plusBtn.disabled = false;
                 });
 
-                document.getElementById('pa-total-amount').textContent = `$${subtotal.toFixed(2)}`;
+                // Tax Calculation based on facility location
+                const taxInfo = getTaxInfo(facility.location);
+                const taxRate = taxInfo.rate;
+                const taxAmount = subtotal * taxRate;
+                const total = subtotal + taxAmount;
+
+                document.getElementById('pa-subtotal-amount').textContent = `$${subtotal.toFixed(2)}`;
+                
+                const taxRow = document.getElementById('pa-tax-row');
+                const taxDetails = document.getElementById('pa-tax-details');
+                const taxAmountEl = document.getElementById('pa-tax-amount');
+                
+                if (taxRow && taxAmountEl) {
+                    if (taxAmount > 0) {
+                        taxRow.classList.remove('hidden');
+                        if (taxDetails) {
+                            taxDetails.textContent = `${taxInfo.name} ${(taxInfo.rate * 100).toFixed(2).replace(/\.?0+$/, '')}%`;
+                        }
+                        taxAmountEl.textContent = `$${taxAmount.toFixed(2)}`;
+                    } else {
+                        taxRow.classList.add('hidden');
+                    }
+                }
+
+                document.getElementById('pa-total-amount').textContent = `$${total.toFixed(2)}`;
                 
                 // Update summary
                 const d = new Date(paSelectedDate + 'T12:00:00');
