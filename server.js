@@ -144,10 +144,15 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
                         );
 
                         let hasConflict = false;
-                        let requestedCourt = payload.court_name;
+                        let requestedCourts = payload.court_names;
+                        if (!Array.isArray(requestedCourts)) {
+                            requestedCourts = payload.court_name ? [payload.court_name] : [];
+                        }
+
+                        const requestedZones = payload.zones_booked || 1;
 
                         if (isRacket) {
-                            if (!requestedCourt) {
+                            if (requestedCourts.length === 0) {
                                 // Auto-resolve court
                                 let courtNames = [];
                                 if (surfaceObj.court_count > 1) {
@@ -171,29 +176,30 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
                                         } catch(e){}
                                     });
                                     if (!courtConflict) {
-                                        requestedCourt = court;
+                                        requestedCourts = [court];
                                         break;
                                     }
                                 }
-                                if (!requestedCourt) requestedCourt = courtNames[0];
+                                if (requestedCourts.length === 0) requestedCourts = [courtNames[0]];
                             }
 
-                            existingBookings.forEach(booking => {
-                                if (String(booking.surface_id) !== String(surface_id)) return;
-                                if (booking.court_name !== requestedCourt) return;
-                                try {
-                                    const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
-                                    const dateStr = booking.booking_date;
-                                    const newSlotsForDate = multi_day_slots[dateStr] || [];
-                                    if (Array.isArray(slots) && slots.some(s => newSlotsForDate.includes(s))) {
-                                        hasConflict = true;
-                                    }
-                                } catch(e){}
+                            requestedCourts.forEach(court => {
+                                existingBookings.forEach(booking => {
+                                    if (String(booking.surface_id) !== String(surface_id)) return;
+                                    if (booking.court_name !== court) return;
+                                    try {
+                                        const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
+                                        const dateStr = booking.booking_date;
+                                        const newSlotsForDate = multi_day_slots[dateStr] || [];
+                                        if (Array.isArray(slots) && slots.some(s => newSlotsForDate.includes(s))) {
+                                            hasConflict = true;
+                                        }
+                                    } catch(e){}
+                                });
                             });
                         } else {
                             const isSharedZone = payload.is_shared_zone || false;
                             const totalZones = payload.total_zones || 1;
-                            const requestedZones = payload.zones_booked || 1;
                             const zonesPerSlot = {};
 
                             existingBookings.forEach(booking => {
@@ -233,17 +239,20 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
                             throw err;
                         }
 
-                        const requestedZones = payload.zones_booked || 1;
+                        const courtCount = requestedCourts.length || 1;
+                        const pricePerCourt = price / courtCount;
 
                         for (const [date, slots] of Object.entries(multi_day_slots)) {
                             const slotsStr = JSON.stringify(slots);
-                            const lockers = await allocateLockerRooms(client, surface_id, date, slots);
+                            for (const court of requestedCourts) {
+                                const lockers = await allocateLockerRooms(client, surface_id, date, slots);
 
-                            const result = await client.query(
-                                "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment, surface_terms_accepted, zones_booked, court_name) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9, $10, $11, $12) RETURNING id",
-                                [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers, payload.surface_terms_accepted || 0, requestedZones, requestedCourt]
-                            );
-                            sendBookingEmails(result.rows[0].id);
+                                const result = await client.query(
+                                    "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment, surface_terms_accepted, zones_booked, court_name) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9, $10, $11, $12) RETURNING id",
+                                    [user_id, facility_id, surface_id, date, slotsStr, pricePerCourt, session.id, recurringGroupId, lockers, payload.surface_terms_accepted || 0, requestedZones, court]
+                                );
+                                sendBookingEmails(result.rows[0].id);
+                            }
                         }
                     });
                 }
@@ -3998,7 +4007,14 @@ app.post('/api/create-checkout-session', (req, res) => {
                     let hasConflict = false;
                     const isRacket = ['tennis', 'pickleball', 'squash', 'badminton'].includes(facility.surface_type);
                     
-                    let requestedCourt = req.body.court_name || null;
+                    let requestedCourts = req.body.court_names;
+                    if (!Array.isArray(requestedCourts)) {
+                        requestedCourts = req.body.court_name ? [req.body.court_name] : [];
+                    }
+
+                    let requestedZones = 1;
+                    let isSharedZone = false;
+                    let totalZones = 1;
                     
                     if (isRacket) {
                         // Generate all possible court names
@@ -4012,7 +4028,7 @@ app.post('/api/create-checkout-session', (req, res) => {
                             courtNames = Array.from({ length: facility.court_count || 1 }, (_, i) => `Court #${i + 1}`);
                         }
                         
-                        if (!requestedCourt) {
+                        if (requestedCourts.length === 0) {
                             // Find first fully available court
                             for (const court of courtNames) {
                                 let courtConflict = false;
@@ -4029,36 +4045,36 @@ app.post('/api/create-checkout-session', (req, res) => {
                                     } catch(e){}
                                 });
                                 if (!courtConflict) {
-                                    requestedCourt = court;
+                                    requestedCourts = [court];
                                     break;
                                 }
                             }
-                            if (!requestedCourt) requestedCourt = courtNames[0]; // fallback
+                            if (requestedCourts.length === 0) requestedCourts = [courtNames[0]]; // fallback
                         }
                         
-                        // Check if the selected court is free
-                        existingBookings.forEach(booking => {
-                            if (String(booking.surface_id) !== String(requestSurfaceId)) return;
-                            if (booking.court_name !== requestedCourt) return;
-                            
-                            try {
-                                const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
-                                const dateStr = booking.booking_date;
-                                const newSlotsForDate = parsedMultiDaySlots[dateStr] || [];
+                        // Check if each selected court is free
+                        requestedCourts.forEach(court => {
+                            existingBookings.forEach(booking => {
+                                if (String(booking.surface_id) !== String(requestSurfaceId)) return;
+                                if (booking.court_name !== court) return;
                                 
-                                if (Array.isArray(slots)) {
-                                    slots.forEach(slot => {
-                                        if (newSlotsForDate.includes(slot)) {
-                                            hasConflict = true;
-                                        }
-                                    });
-                                }
-                            } catch (e) {}
+                                try {
+                                    const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
+                                    const dateStr = booking.booking_date;
+                                    const newSlotsForDate = parsedMultiDaySlots[dateStr] || [];
+                                    
+                                    if (Array.isArray(slots)) {
+                                        slots.forEach(slot => {
+                                            if (newSlotsForDate.includes(slot)) {
+                                                hasConflict = true;
+                                            }
+                                        });
+                                    }
+                                } catch (e) {}
+                            });
                         });
                     } else {
                         // Parse surface pricing rules for shared_zone logic
-                        let isSharedZone = false;
-                        let totalZones = 1;
                         if (facility.pricing_rules) {
                             try {
                                 const pr = typeof facility.pricing_rules === 'string' ? JSON.parse(facility.pricing_rules) : facility.pricing_rules;
@@ -4069,7 +4085,7 @@ app.post('/api/create-checkout-session', (req, res) => {
                             } catch(e){}
                         }
                         
-                        const requestedZones = parseInt(req.body.zones_requested || 1, 10);
+                        requestedZones = parseInt(req.body.zones_requested || 1, 10);
                         
                         // Track zones booked per slot per date for this surface
                         const zonesPerSlot = {}; // e.g. { "2023-10-10": { "10:00": 2, "10:30": 2 } }
@@ -4122,6 +4138,13 @@ app.post('/api/create-checkout-session', (req, res) => {
                         });
                     }
 
+                    // Apply the multiplier to secureTotalPrice
+                    const courtMultiplier = isRacket ? (requestedCourts.length || 1) : 1;
+                    secureTotalPrice *= courtMultiplier;
+
+                    const finalAmount = secureTotalPrice + processingFee + ((secureTotalPrice + processingFee) * taxRate);
+                    const finalAmountCents = Math.round(finalAmount * 100);
+
                     // 4. Proceed with Stripe Session
                     const checkoutToken = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(7));
                     
@@ -4134,7 +4157,8 @@ app.post('/api/create-checkout-session', (req, res) => {
                         zones_booked: requestedZones,
                         is_shared_zone: isSharedZone,
                         total_zones: totalZones,
-                        court_name: requestedCourt
+                        court_name: requestedCourts[0] || null,
+                        court_names: requestedCourts
                     });;
 
                     db.run("INSERT INTO pending_checkouts (id, payload) VALUES (?, ?)", [checkoutToken, payloadToStore], async function(err) {
@@ -4288,10 +4312,15 @@ app.post('/api/bookings/confirm', async (req, res) => {
                             );
 
                             let hasConflict = false;
-                            let requestedCourt = payload.court_name;
+                            let requestedCourts = payload.court_names;
+                            if (!Array.isArray(requestedCourts)) {
+                                requestedCourts = payload.court_name ? [payload.court_name] : [];
+                            }
+
+                            const requestedZones = payload.zones_booked || 1;
 
                             if (isRacket) {
-                                if (!requestedCourt) {
+                                if (requestedCourts.length === 0) {
                                     // Auto-resolve court
                                     let courtNames = [];
                                     if (surfaceObj.court_count > 1) {
@@ -4315,29 +4344,30 @@ app.post('/api/bookings/confirm', async (req, res) => {
                                             } catch(e){}
                                         });
                                         if (!courtConflict) {
-                                            requestedCourt = court;
+                                            requestedCourts = [court];
                                             break;
                                         }
                                     }
-                                    if (!requestedCourt) requestedCourt = courtNames[0];
+                                    if (requestedCourts.length === 0) requestedCourts = [courtNames[0]];
                                 }
 
-                                existingBookings.forEach(booking => {
-                                    if (String(booking.surface_id) !== String(surface_id)) return;
-                                    if (booking.court_name !== requestedCourt) return;
-                                    try {
-                                        const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
-                                        const dateStr = booking.booking_date;
-                                        const newSlotsForDate = multi_day_slots[dateStr] || [];
-                                        if (Array.isArray(slots) && slots.some(s => newSlotsForDate.includes(s))) {
-                                            hasConflict = true;
-                                        }
-                                    } catch(e){}
+                                requestedCourts.forEach(court => {
+                                    existingBookings.forEach(booking => {
+                                        if (String(booking.surface_id) !== String(surface_id)) return;
+                                        if (booking.court_name !== court) return;
+                                        try {
+                                            const slots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
+                                            const dateStr = booking.booking_date;
+                                            const newSlotsForDate = multi_day_slots[dateStr] || [];
+                                            if (Array.isArray(slots) && slots.some(s => newSlotsForDate.includes(s))) {
+                                                hasConflict = true;
+                                            }
+                                        } catch(e){}
+                                    });
                                 });
                             } else {
                                 const isSharedZone = payload.is_shared_zone || false;
                                 const totalZones = payload.total_zones || 1;
-                                const requestedZones = payload.zones_booked || 1;
                                 const zonesPerSlot = {};
 
                                 existingBookings.forEach(booking => {
@@ -4377,15 +4407,20 @@ app.post('/api/bookings/confirm', async (req, res) => {
                                 throw err;
                             }
 
+                            const courtCount = requestedCourts.length || 1;
+                            const pricePerCourt = price / courtCount;
+
                             for (const [date, slots] of Object.entries(multi_day_slots)) {
                                 const slotsStr = JSON.stringify(slots);
-                                const lockers = await allocateLockerRooms(client, surface_id, date, slots);
+                                for (const court of requestedCourts) {
+                                    const lockers = await allocateLockerRooms(client, surface_id, date, slots);
 
-                                const result = await client.query(
-                                    "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment, surface_terms_accepted, zones_booked, court_name) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9, $10, $11, $12) RETURNING id",
-                                    [user_id, facility_id, surface_id, date, slotsStr, price, session.id, recurringGroupId, lockers, payload.surface_terms_accepted || 0, requestedZones, requestedCourt]
-                                );
-                                sendBookingEmails(result.rows[0].id);
+                                    const result = await client.query(
+                                        "INSERT INTO bookings (user_id, facility_id, surface_id, booking_date, time_slots, total_price, status, booking_type, payment_status, stripe_session_id, recurring_group_id, locker_room_assignment, surface_terms_accepted, zones_booked, court_name) VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', 'online', 'paid', $7, $8, $9, $10, $11, $12) RETURNING id",
+                                        [user_id, facility_id, surface_id, date, slotsStr, pricePerCourt, session.id, recurringGroupId, lockers, payload.surface_terms_accepted || 0, requestedZones, court]
+                                    );
+                                    sendBookingEmails(result.rows[0].id);
+                                }
                             }
                         });
                         res.json({ success: true, message: "Bookings confirmed" });
