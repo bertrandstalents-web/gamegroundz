@@ -306,7 +306,7 @@
                         </div>
 
                         <!-- Booking Form -->
-                        <div class="border border-slate-300 rounded-xl mb-4 relative">
+                        <div id="booking-form-card" class="border border-slate-300 rounded-xl mb-4 relative">
                             <div class="flex border-b border-slate-300 relative">
                                 <div class="flex-1 p-3 border-r border-slate-300 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-tl-xl">
                                     <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="booking-date">Date</label>
@@ -341,17 +341,6 @@
                                     <!-- Dynamic court chips go here -->
                                 </div>
                                 <input type="hidden" id="court-select" value="">
-                            </div>
-
-                            <div id="activity-type-container" class="p-3 cursor-pointer hover:bg-slate-50 transition-custom relative rounded-b-xl">
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer" for="activity-type">Activity Type</label>
-                                <select id="activity-type" class="w-full text-sm font-medium text-slate-700 bg-transparent outline-none cursor-pointer appearance-none pr-6">
-                                    <option value="practice">Hockey Practice</option>
-                                    <option value="game">Hockey Game (Adult League)</option>
-                                    <option value="skating">Free Skating</option>
-                                    <option value="event">Private Event</option>
-                                </select>
-                                <div class="absolute right-3 top-6 text-slate-400 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                             </div>
 
                             <div id="public-session-admission-container" class="hidden p-3 hover:bg-slate-50 transition-custom relative rounded-b-xl">
@@ -1113,59 +1102,6 @@
                         }
                     }
                     
-                    // Dynamically populate Activity Type dropdown
-                    const activityTypeSelect = document.getElementById('activity-type');
-                    if (activityTypeSelect) {
-                        let activityOptions = '';
-                        switch(facility.type) {
-                            case 'pool':
-                                activityOptions = `
-                                    <option value="swimming_lane">Swimming Lane</option>
-                                    <option value="open_swim">Open Swim and Diving Board</option>
-                                    <option value="recreational">Recreational and Family Pool</option>
-                                    <option value="event">Private Event</option>
-                                `;
-                                break;
-                            case 'ice':
-                                activityOptions = `
-                                    <option value="practice">Hockey Practice</option>
-                                    <option value="game">Hockey Game (Adult League)</option>
-                                    <option value="skating">Free Skating</option>
-                                    <option value="event">Private Event</option>
-                                `;
-                                break;
-                            case 'soccer':
-                            case 'football':
-                                activityOptions = `
-                                    <option value="practice">Team Practice</option>
-                                    <option value="game">Game / Match</option>
-                                    <option value="training">Private Training</option>
-                                    <option value="event">Private Event</option>
-                                `;
-                                break;
-                            case 'tennis':
-                            case 'pickleball':
-                                activityOptions = `
-                                    <option value="casual">Casual Play</option>
-                                    <option value="match">Competitive Match</option>
-                                    <option value="lesson">Private Lesson</option>
-                                    <option value="event">Private Event</option>
-                                `;
-                                break;
-                            case 'basketball':
-                            case 'gym':
-                            default:
-                                activityOptions = `
-                                    <option value="practice">Practice / Training</option>
-                                    <option value="game">Game / Scrimmage</option>
-                                    <option value="casual">Casual Pickup</option>
-                                    <option value="event">Private Event</option>
-                                `;
-                                break;
-                        }
-                        activityTypeSelect.innerHTML = activityOptions;
-                    }
-
                     // Update UI elements
                     document.title = `${facility.name} | GameGroundz`;
                     
@@ -1843,6 +1779,61 @@
                     }
                 }
             });
+            function updateDynamicRounding() {
+                const card = document.getElementById('booking-form-card');
+                const headerRow = card ? card.querySelector('.flex.border-b') : null;
+                const headerDate = headerRow ? headerRow.children[0] : null;
+                const headerTime = headerRow ? headerRow.children[1] : null;
+                
+                const switcher = document.getElementById('surface-switcher-container');
+                const courtSelector = document.getElementById('court-selector-container');
+                const admission = document.getElementById('public-session-admission-container');
+                
+                // Reset all classes to defaults
+                if (headerRow) {
+                    headerRow.classList.add('border-b', 'border-slate-300');
+                }
+                if (headerDate) {
+                    headerDate.classList.remove('rounded-bl-xl');
+                }
+                if (headerTime) {
+                    headerTime.classList.remove('rounded-br-xl');
+                }
+                
+                if (switcher) {
+                    switcher.classList.add('border-b', 'border-slate-300');
+                    switcher.classList.remove('rounded-b-xl');
+                }
+                if (courtSelector) {
+                    courtSelector.classList.add('border-b', 'border-slate-300');
+                    courtSelector.classList.remove('rounded-b-xl');
+                }
+                if (admission) {
+                    admission.classList.remove('rounded-b-xl');
+                }
+                
+                // Find the last visible one
+                if (admission && !admission.classList.contains('hidden')) {
+                    admission.classList.add('rounded-b-xl');
+                } else if (courtSelector && !courtSelector.classList.contains('hidden')) {
+                    courtSelector.classList.remove('border-b', 'border-slate-300');
+                    courtSelector.classList.add('rounded-b-xl');
+                } else if (switcher && !switcher.classList.contains('hidden')) {
+                    switcher.classList.remove('border-b', 'border-slate-300');
+                    switcher.classList.add('rounded-b-xl');
+                } else {
+                    if (headerRow) {
+                        headerRow.classList.remove('border-b', 'border-slate-300');
+                    }
+                    if (headerDate) {
+                        headerDate.classList.add('rounded-bl-xl');
+                    }
+                    if (headerTime) {
+                        headerTime.classList.add('rounded-br-xl');
+                    }
+                }
+            }
+
             function render() {
                 // Determine weekend status based on selectedDateStr
                 const dateObj = new Date(selectedDateStr + 'T12:00:00');
@@ -1987,7 +1978,6 @@
                                     ${discountBadge}
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0">
-                                    <span class="text-[11px] font-medium ${isSelected ? 'text-primary/80' : 'text-emerald-600'}">${freeCourtsCount} available</span>
                                     ${isSelected ? '<i class="fa-solid fa-check text-sm text-primary"></i>' : ''}
                                 </div>
                             `;
@@ -2162,26 +2152,28 @@
                 const mobileReserveBtn = document.getElementById('mobile-reserve-btn');
                 
                 let freeCourts = [];
-                if (isRacket && selectedSlotIds.size > 0) {
-                    const surfaceCourts = window.surfaceCourts || [];
-                    freeCourts = [...surfaceCourts];
-                    selectedSlotIds.forEach(slotKey => {
-                        const bookedSet = window.racketBookedCourts.get(slotKey);
-                        if (bookedSet) {
-                            freeCourts = freeCourts.filter(c => !bookedSet.has(c));
-                        }
-                    });
+                const surfaceCourts = window.surfaceCourts || [];
+                if (isRacket) {
+                    if (selectedSlotIds.size > 0) {
+                        freeCourts = [...surfaceCourts];
+                        selectedSlotIds.forEach(slotKey => {
+                            const bookedSet = window.racketBookedCourts.get(slotKey);
+                            if (bookedSet) {
+                                freeCourts = freeCourts.filter(c => !bookedSet.has(c));
+                            }
+                        });
+                    } else {
+                        freeCourts = [...surfaceCourts];
+                    }
                 }
                 
-                if (isRacket && selectedSlotIds.size > 0) {
+                if (isRacket) {
                     if (courtContainer) {
                         courtContainer.classList.remove('hidden');
                         
                         const chipsList = document.getElementById('court-chips-list');
                         if (chipsList) {
                             chipsList.innerHTML = '';
-                            
-                            const surfaceCourts = window.surfaceCourts || [];
                             
                             // Determine which court should be selected
                             if (freeCourts.length > 0) {
@@ -2191,15 +2183,19 @@
                                 if (courtSelect) {
                                     courtSelect.value = window.selectedRacketCourt;
                                 }
-                                if (reserveBtn) reserveBtn.disabled = false;
-                                if (mobileReserveBtn) mobileReserveBtn.disabled = false;
+                                if (selectedSlotIds.size > 0) {
+                                    if (reserveBtn) reserveBtn.disabled = false;
+                                    if (mobileReserveBtn) mobileReserveBtn.disabled = false;
+                                }
                             } else {
                                 window.selectedRacketCourt = null;
                                 if (courtSelect) {
                                     courtSelect.value = '';
                                 }
-                                if (reserveBtn) reserveBtn.disabled = true;
-                                if (mobileReserveBtn) mobileReserveBtn.disabled = true;
+                                if (selectedSlotIds.size > 0) {
+                                    if (reserveBtn) reserveBtn.disabled = true;
+                                    if (mobileReserveBtn) mobileReserveBtn.disabled = true;
+                                }
                             }
 
                             if (surfaceCourts.length === 0) {
@@ -2247,11 +2243,9 @@
                 }
 
                 // Calculate pricing
-                const activityContainer = document.getElementById('activity-type-container');
                 const pSessAdmissionContainer = document.getElementById('public-session-admission-container');
 
                 if (isPublicSessionCheckout) {
-                    if (activityContainer) activityContainer.classList.add('hidden');
                     if (pSessAdmissionContainer) pSessAdmissionContainer.classList.remove('hidden');
 
                     const pubSess = window.publicSessionSlots.get(Array.from(selectedSlotIds)[0]);
@@ -2314,6 +2308,7 @@
                     if (reserveBtn) reserveBtn.textContent = 'Join Session';
                     if (mobileReserveBtn) mobileReserveBtn.textContent = 'Join Session';
                 } else {
+                    if (pSessAdmissionContainer) pSessAdmissionContainer.classList.add('hidden');
                     if (reserveBtn) reserveBtn.textContent = 'Reserve Now';
                     if (mobileReserveBtn) mobileReserveBtn.textContent = 'Reserve Now';
                     
@@ -2481,6 +2476,7 @@
                     taxEl.textContent = `$0.00`;
                     totalEl.textContent = `$0.00`;
                 } // End of private session calc block
+                updateDynamicRounding();
              }
             } // End of render function
 
