@@ -1736,11 +1736,13 @@
     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
-                <h2 class="text-2xl font-bold text-dark flex flex-wrap items-center gap-3">
-                    Manage Surfaces
+                <div class="flex flex-wrap items-center gap-3">
+                    <h2 class="text-2xl font-bold text-dark">
+                        Manage Surfaces
+                    </h2>
                     <select id="surface-facility-selector" onchange="manageSurfaces(this.value)" class="text-base font-medium bg-white border border-slate-300 rounded-lg pl-4 pr-10 h-[50px] custom-dropdown-select text-slate-800 focus:outline-none focus:border-primary hidden cursor-pointer shadow-sm" style="appearance: none; -webkit-appearance: none; -moz-appearance: none;">
                     </select>
-                </h2>
+                </div>
                 <p class="text-slate-500 text-sm mt-1" id="surfaces-facility-name">Select a facility first.</p>
             </div>
             <button type="button" onclick="openSurfaceModal()" class="w-full md:w-auto bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl font-bold transition-custom shadow-sm flex items-center justify-center">
@@ -7827,13 +7829,34 @@
             const nameText = document.getElementById('surfaces-facility-name');
             
             if (selector && typeof ownerFacilities !== 'undefined' && ownerFacilities.length > 0) {
+                // Destroy Choices.js instance if it already exists
+                if (window.choicesInstances && window.choicesInstances['surface-facility-selector']) {
+                    window.choicesInstances['surface-facility-selector'].destroy();
+                    delete window.choicesInstances['surface-facility-selector'];
+                }
+
                 selector.innerHTML = ownerFacilities.map(f => `<option value="${f.id}" ${f.id == facId ? 'selected' : ''}>${f.name}</option>`).join('');
                 selector.classList.remove('hidden');
                 if (nameText) nameText.classList.add('hidden');
+
+                // Initialize Choices.js
+                if (window.choicesInstances && typeof Choices !== 'undefined') {
+                    window.choicesInstances['surface-facility-selector'] = new Choices(selector, {
+                        searchEnabled: false,
+                        itemSelectText: '',
+                        shouldSort: false
+                    });
+                }
             } else if (fac && nameText) {
                 nameText.textContent = `Facility: ${fac.name}`;
                 nameText.classList.remove('hidden');
-                if (selector) selector.classList.add('hidden');
+                if (selector) {
+                    if (window.choicesInstances && window.choicesInstances['surface-facility-selector']) {
+                        window.choicesInstances['surface-facility-selector'].destroy();
+                        delete window.choicesInstances['surface-facility-selector'];
+                    }
+                    selector.classList.add('hidden');
+                }
             }
             
             switchTab('surfaces');
