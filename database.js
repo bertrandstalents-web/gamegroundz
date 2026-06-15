@@ -9,6 +9,10 @@ const pool = new Pool({
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : { rejectUnauthorized: false } // Neon requires SSL
 });
 
+pool.on('error', (err, client) => {
+    console.error('Unexpected error on idle database client:', err.message || err);
+});
+
 // Helper to convert SQLite ? to Postgres $1, $2, etc.
 function adaptQuery(sql, params = []) {
     let i = 1;
