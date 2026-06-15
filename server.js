@@ -722,7 +722,7 @@ app.post('/api/users/signup', async (req, res) => {
 
 // User Login
 app.post('/api/auth/login', (req, res) => {
-    let { email, password } = req.body;
+    let { email, password, stayLoggedIn } = req.body;
     
     if (!email || !password) {
         return res.status(400).json({ error: "Email and password are required" });
@@ -756,13 +756,29 @@ app.post('/api/auth/login', (req, res) => {
         req.session.userName = user.name;
         req.session.email = user.email;
         
+        const cookieMaxAge = stayLoggedIn ? 1000 * 60 * 60 * 24 * 365 : 1000 * 60 * 60 * 24 * 7; // 1 year vs 1 week
+        
+        // Adjust Express session cookie maxAge
+        req.session.cookie.maxAge = cookieMaxAge;
+
         // Set auth_token cookie to satisfy requirements
         res.cookie('auth_token', user.id.toString(), {
             httpOnly: true, // Secure against XSS
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+            maxAge: cookieMaxAge
         });
+
+        // Set stay_logged_in cookie for client-side detection (not httpOnly so JS can read it)
+        if (stayLoggedIn) {
+            res.cookie('stay_logged_in', 'true', {
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: cookieMaxAge
+            });
+        } else {
+            res.clearCookie('stay_logged_in');
+        }
 
         res.json({ 
             message: "Logged in successfully", 
@@ -967,6 +983,8 @@ app.post('/api/auth/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) return res.status(500).json({ error: "Could not log out" });
         res.clearCookie('connect.sid');
+        res.clearCookie('auth_token');
+        res.clearCookie('stay_logged_in');
         res.json({ message: "Logged out successfully" });
     });
 });

@@ -17,8 +17,16 @@
             setTimeout(() => { isResetting = false; }, 1000);
         }
     }
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
 
     function checkIdleTime() {
+        if (getCookie('stay_logged_in') === 'true') {
+            return;
+        }
         if (Date.now() - lastActivityTime >= INACTIVITY_LIMIT_MS) {
             handleIdleTimeout();
         }

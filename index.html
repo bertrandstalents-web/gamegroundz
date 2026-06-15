@@ -869,6 +869,10 @@
                     <button type="submit" id="auth-submit-btn" class="w-full bg-primary hover:bg-primaryHover text-white py-3.5 rounded-xl font-bold text-lg transition-custom shadow-glow mt-2" data-i18n="submit_btn">
                         Continue
                     </button>
+                    <div id="stay-logged-in-container" class="flex items-center gap-2 mt-4 select-none">
+                        <input type="checkbox" id="auth-stay-logged-in" class="h-4.5 w-4.5 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer">
+                        <label for="auth-stay-logged-in" class="text-sm font-semibold text-slate-500 cursor-pointer" data-i18n="stay_logged_in">Stay Logged in</label>
+                    </div>
                     <div id="login-error" style="color:#dc2626; font-size:14px; margin-top:8px; display:none;"></div>
                     <div id="auth-error" class="hidden text-red-500 text-sm font-medium mt-2 text-center"></div>
                 </form>
@@ -1838,6 +1842,7 @@
 
         // Modal Translations Dictionary
         const modalTranslations = {
+            'stay_logged_in': { en: 'Stay Logged in', fr: 'Rester Connecté(e)' },
             'login_title': { en: 'Welcome to <span class="notranslate">GameGroundz</span>', fr: 'Bienvenue sur <span class="notranslate">GameGroundz</span>' },
             'email_placeholder': { en: 'Email Address', fr: 'Courriel' },
             'password_placeholder': { en: 'Password', fr: 'Mot de passe' },
@@ -1897,6 +1902,15 @@
                     }
                 }
             });
+
+            const stayLoggedInContainer = document.getElementById('stay-logged-in-container');
+            if (stayLoggedInContainer) {
+                if (isLoginMode) {
+                    stayLoggedInContainer.classList.remove('hidden');
+                } else {
+                    stayLoggedInContainer.classList.add('hidden');
+                }
+            }
         }
 
         // Auth Modal Logic
@@ -2318,7 +2332,10 @@
                     try { interestedSurfaces = JSON.parse(surfacesInput.value); } catch(e){}
                 }
 
-                const body = isLoginMode ? { email, password } : { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture, residency_city: authMunicipalitySearch ? authMunicipalitySearch.value.trim() : null, residency_document_url, interestedSurfaces, preferred_language };
+                const stayLoggedInCheckbox = document.getElementById('auth-stay-logged-in');
+                const stayLoggedIn = stayLoggedInCheckbox ? stayLoggedInCheckbox.checked : false;
+
+                const body = isLoginMode ? { email, password, stayLoggedIn } : { first_name, last_name, phone_number, email, password, role_choice, company_name, profile_picture, residency_city: authMunicipalitySearch ? authMunicipalitySearch.value.trim() : null, residency_document_url, interestedSurfaces, preferred_language };
 
                 const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
                 
