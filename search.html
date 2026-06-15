@@ -35,6 +35,40 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="js/cookieConsent.js"></script>
 
+    <style>
+        /* Desktop Sidebar Minimization Transitions */
+        @media (min-width: 1024px) {
+            #filters-sidebar {
+                transition: width 0.3s ease-in-out, margin-right 0.3s ease-in-out !important;
+            }
+            #filters-sidebar.collapsed {
+                width: 20px !important;
+                margin-right: -1rem !important; /* offsets flex gap-8 while leaving a small spacing */
+            }
+            #filters-sidebar .sidebar-inner {
+                transition: width 0.3s ease-in-out, padding 0.3s ease-in-out, opacity 0.3s ease-in-out, border-color 0.3s ease-in-out !important;
+                width: 100%;
+                overflow: hidden;
+            }
+            #filters-sidebar .sidebar-inner > * {
+                transition: opacity 0.2s ease-in-out !important;
+            }
+            #filters-sidebar.collapsed .sidebar-inner {
+                width: 20px !important;
+                padding: 0 !important;
+                opacity: 1 !important; /* Keep it visible as a line/strip */
+                pointer-events: none !important;
+                overflow: hidden !important; /* Override Tailwind's overflow-y-auto */
+            }
+            #filters-sidebar.collapsed .sidebar-inner > * {
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+            #filters-sidebar.collapsed #toggle-sidebar-icon {
+                transform: rotate(180deg);
+            }
+        }
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
 
@@ -127,105 +161,112 @@
                 <div class="w-12 h-1.5 bg-slate-300 rounded-full"></div>
             </div>
 
-            <!-- Inner container -->
-            <div class="bg-white lg:rounded-2xl lg:shadow-sm lg:border lg:border-slate-200 p-6 lg:sticky lg:top-28 overflow-y-auto flex-1 pb-24 lg:pb-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-bold text-lg text-dark">Filters</h3>
-                    <button class="text-sm text-primary hover:text-primaryHover font-medium lg:hidden" id="mobile-filter-close-text">Close</button>
-                    <button class="text-sm text-primary hover:text-primaryHover font-medium hidden lg:block">Clear All</button>
-                </div>
-                
-                <!-- Filter: Sport Type -->
-                <div class="mb-6">
-                    <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Sport Surface</h4>
-                    <div class="space-y-2">
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="all" id="filter-all" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer" checked>
-                            <span class="ml-3 text-slate-600 group-hover:text-dark">All Surfaces</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="ice" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark">Ice Rink</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="soccer" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="lang-en-only">Soccer Field (Turf)</span><span class="lang-fr-only notranslate">Terrain de soccer (gazon)</span></span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="basketball" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="lang-en-only">Basketball Court</span><span class="lang-fr-only notranslate">Terrain de basketball</span></span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="pickleball" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="lang-en-only">Pickleball Court</span><span class="lang-fr-only notranslate">Terrain de pickleball</span></span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="pool" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark">Swimming Pool</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="tennis" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="lang-en-only">Tennis Court</span><span class="lang-fr-only notranslate">Court de tennis</span></span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="football" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="lang-en-only">Football Field</span><span class="lang-fr-only notranslate">Terrain de football</span></span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="gym" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark">Gymnasium</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="deck-hockey" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark notranslate">Deck-Hockey</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="squash" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark notranslate">Squash</span>
-                        </label>
-                        <label class="flex items-center group cursor-pointer">
-                            <input type="checkbox" value="badminton" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
-                            <span class="ml-3 text-slate-600 group-hover:text-dark notranslate">Badminton</span>
-                        </label>
+            <!-- Desktop Sticky Wrapper -->
+            <div class="flex-1 flex flex-col h-full lg:h-auto lg:sticky lg:top-28 relative">
+                <!-- Inner container -->
+                <div class="sidebar-inner bg-white lg:rounded-2xl lg:shadow-sm lg:border lg:border-slate-200 p-6 overflow-y-auto flex-1 pb-24 lg:pb-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg text-dark">Filters</h3>
+                        <button class="text-sm text-primary hover:text-primaryHover font-medium lg:hidden" id="mobile-filter-close-text">Close</button>
+                        <button class="text-sm text-primary hover:text-primaryHover font-medium hidden lg:block">Clear All</button>
                     </div>
-                </div>
-
-                <!-- Filter: Environment -->
-                <div class="mb-6 border-t border-slate-100 pt-6">
-                    <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Environment</h4>
-                    <div class="flex bg-slate-100 p-1 rounded-xl">
-                        <button class="env-btn flex-1 py-1.5 text-sm font-medium bg-white text-dark rounded-lg shadow-sm" data-active="true">Any</button>
-                        <button class="env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark">Indoor</button>
-                        <button class="env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark">Outdoor</button>
+                    
+                    <!-- Filter: Sport Type -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Sport Surface</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="checkbox" value="all" id="filter-all" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer" checked>
+                                <span class="ml-3 text-slate-600 group-hover:text-dark">All Surfaces</span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="checkbox" value="ice" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                                <span class="ml-3 text-slate-600 group-hover:text-dark">Ice Rink</span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="checkbox" value="soccer" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                                <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="lang-en-only">Soccer Field (Turf)</span><span class="lang-fr-only notranslate">Terrain de soccer (gazon)</span></span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="checkbox" value="basketball" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                                <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="lang-en-only">Basketball Court</span><span class="lang-fr-only notranslate">Terrain de basketball</span></span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="checkbox" value="pickleball" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                                <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="lang-en-only">Pickleball Court</span><span class="lang-fr-only notranslate">Terrain de pickleball</span></span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="checkbox" value="pool" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                                <span class="ml-3 text-slate-600 group-hover:text-dark">Swimming Pool</span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="checkbox" value="tennis" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                                <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="lang-en-only">Tennis Court</span><span class="lang-fr-only notranslate">Court de tennis</span></span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="checkbox" value="football" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                                <span class="ml-3 text-slate-600 group-hover:text-dark"><span class="lang-en-only">Football Field</span><span class="lang-fr-only notranslate">Terrain de football</span></span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="checkbox" value="gym" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                                <span class="ml-3 text-slate-600 group-hover:text-dark">Gymnasium</span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="checkbox" value="deck-hockey" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                                <span class="ml-3 text-slate-600 group-hover:text-dark notranslate">Deck-Hockey</span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="checkbox" value="squash" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                                <span class="ml-3 text-slate-600 group-hover:text-dark notranslate">Squash</span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="checkbox" value="badminton" class="type-filter w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer">
+                                <span class="ml-3 text-slate-600 group-hover:text-dark notranslate">Badminton</span>
+                            </label>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Filter: Price -->
-                <div class="mb-6 border-t border-slate-100 pt-6">
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="font-semibold text-slate-800 text-sm uppercase tracking-wide">Price per Hour</h4>
+                    <!-- Filter: Environment -->
+                    <div class="mb-6 border-t border-slate-100 pt-6">
+                        <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Environment</h4>
+                        <div class="flex bg-slate-100 p-1 rounded-xl">
+                            <button class="env-btn flex-1 py-1.5 text-sm font-medium bg-white text-dark rounded-lg shadow-sm" data-active="true">Any</button>
+                            <button class="env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark">Indoor</button>
+                            <button class="env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark">Outdoor</button>
+                        </div>
                     </div>
-                    <input type="range" id="price-range" class="w-full accent-primary h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="300" value="200" step="10">
-                    <div class="flex justify-between text-sm text-slate-500 mt-2 font-medium">
-                        <span>$0</span>
-                        <span id="price-display">Up to $200</span>
+
+                    <!-- Filter: Price -->
+                    <div class="mb-6 border-t border-slate-100 pt-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-semibold text-slate-800 text-sm uppercase tracking-wide">Price per Hour</h4>
+                        </div>
+                        <input type="range" id="price-range" class="w-full accent-primary h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="300" value="200" step="10">
+                        <div class="flex justify-between text-sm text-slate-500 mt-2 font-medium">
+                            <span>$0</span>
+                            <span id="price-display">Up to $200</span>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Filter: Date & Time -->
-                <div class="mb-6 border-t border-slate-100 pt-6">
-                    <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Availability</h4>
-                    <input type="text" id="sidebarDateSearch" placeholder="Any Date" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-3 cursor-pointer" onclick="if(this.showPicker) this.showPicker();">
-                    <select id="sidebarTimeSearch" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary">
-                        <option value="">Any Time</option>
-                        <option value="morning">Morning (Midnight - 12pm)</option>
-                        <option value="afternoon">Afternoon (12pm - 5pm)</option>
-                        <option value="night">Night (5pm - Midnight)</option>
-                    </select>
-                </div>
+                    <!-- Filter: Date & Time -->
+                    <div class="mb-6 border-t border-slate-100 pt-6">
+                        <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Availability</h4>
+                        <input type="text" id="sidebarDateSearch" placeholder="Any Date" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-3 cursor-pointer" onclick="if(this.showPicker) this.showPicker();">
+                        <select id="sidebarTimeSearch" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            <option value="">Any Time</option>
+                            <option value="morning">Morning (Midnight - 12pm)</option>
+                            <option value="afternoon">Afternoon (12pm - 5pm)</option>
+                            <option value="night">Night (5pm - Midnight)</option>
+                        </select>
+                    </div>
 
-                <button id="apply-filters-btn" class="w-full bg-dark hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-custom flex items-center justify-center mt-auto lg:mt-0">
-                    Apply Filters
+                    <button id="apply-filters-btn" class="w-full bg-dark hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-custom flex items-center justify-center mt-auto lg:mt-0">
+                        Apply Filters
+                    </button>
+                </div>
+                <!-- Toggle Button -->
+                <button id="toggle-sidebar-btn" class="hidden lg:flex absolute top-[300px] -right-3 z-[70] bg-white border border-slate-200 w-6 h-10 rounded-r-lg shadow-md items-center justify-center hover:bg-slate-50 transition-custom focus:outline-none cursor-pointer">
+                    <i class="fa-solid fa-chevron-left text-slate-500 text-[10px] transition-transform duration-300" id="toggle-sidebar-icon"></i>
                 </button>
             </div>
         </aside>
@@ -1193,6 +1234,14 @@
             if(closeFiltersHandle) closeFiltersHandle.addEventListener('click', closeFilters);
             if(closeFiltersText) closeFiltersText.addEventListener('click', closeFilters);
             if(filterOverlay) filterOverlay.addEventListener('click', closeFilters);
+
+            // Desktop Sidebar Collapse Logic
+            const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
+            if (toggleSidebarBtn) {
+                toggleSidebarBtn.addEventListener('click', () => {
+                    filtersSidebar.classList.toggle('collapsed');
+                });
+            }
 
             // We also want the Apply Filters button on mobile to close the modal
             const applyFiltersMobileBtn = document.getElementById('apply-filters-btn');
