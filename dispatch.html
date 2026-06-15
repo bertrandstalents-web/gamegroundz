@@ -118,8 +118,8 @@
             text-transform: uppercase;
         }
 
-        .col-time { width: 30%; white-space: nowrap; }
-        .col-activity { width: 50%; }
+        .col-time { width: 35%; white-space: nowrap; }
+        .col-activity { width: 45%; }
         .col-locker { width: 20%; text-align: right; }
 
         .booking-row {
@@ -174,6 +174,91 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+        }
+
+        /* Light Mode Theme Classes */
+        body.light-theme {
+            background-color: #f8fafc !important; /* slate-50 */
+            color: #0f172a !important; /* slate-900 */
+        }
+        body.light-theme .dispatch-header {
+            background: #ffffff !important;
+            border-bottom-color: var(--gg-primary) !important;
+        }
+        body.light-theme .header-brand .notranslate {
+            color: #0f172a !important;
+        }
+        body.light-theme .header-title {
+            color: #0f172a !important;
+            border-left-color: rgba(15, 23, 42, 0.15) !important;
+        }
+        body.light-theme .header-date {
+            color: #475569 !important;
+        }
+        body.light-theme .header-time {
+            color: #0f172a !important;
+        }
+        body.light-theme .facility-column {
+            background-color: #ffffff !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05) !important;
+        }
+        body.light-theme .columns-header {
+            background-color: #f1f5f9 !important;
+            color: #475569 !important;
+            border-bottom-color: #e2e8f0 !important;
+        }
+        body.light-theme .booking-row {
+            color: #1e293b !important;
+            border-bottom-color: #e2e8f0 !important;
+        }
+        body.light-theme .booking-row:nth-child(even) {
+            background-color: #f8fafc !important;
+        }
+        body.light-theme .booking-row.active {
+            background-color: rgba(16, 185, 129, 0.08) !important;
+        }
+        body.light-theme .booking-row.active .col-time {
+            color: #059669 !important;
+        }
+        body.light-theme .dispatch-footer {
+            background-color: #e2e8f0 !important;
+            border-top: 1px solid #cbd5e1 !important;
+        }
+        body.light-theme .dispatch-footer span {
+            color: #475569 !important;
+        }
+
+        /* Scale Classes */
+        body.scale-large .booking-row {
+            font-size: 2.25rem !important;
+            padding: 1.75rem !important;
+        }
+        body.scale-large .facility-header {
+            font-size: 2.5rem !important;
+            padding: 1.75rem !important;
+        }
+        body.scale-large .columns-header {
+            font-size: 1.5rem !important;
+            padding: 1.25rem 1.75rem !important;
+        }
+        body.scale-large .booking-row .col-time {
+            font-size: clamp(1.4rem, 1.8vw, 1.8rem) !important;
+        }
+
+        body.scale-xlarge .booking-row {
+            font-size: 2.75rem !important;
+            padding: 2rem !important;
+        }
+        body.scale-xlarge .facility-header {
+            font-size: 3rem !important;
+            padding: 2rem !important;
+        }
+        body.scale-xlarge .columns-header {
+            font-size: 1.75rem !important;
+            padding: 1.5rem 2rem !important;
+        }
+        body.scale-xlarge .booking-row .col-time {
+            font-size: clamp(1.6rem, 2.2vw, 2.2rem) !important;
         }
     </style>
 </head>
@@ -329,13 +414,26 @@
                 return;
             }
 
+            // Filter surfaces if surface_id query parameter is specified
+            const urlParams = new URLSearchParams(window.location.search);
+            const surfaceIdParam = urlParams.get('surface_id');
+            let surfacesToRender = data.surfaces;
+            if (surfaceIdParam && surfaceIdParam !== 'all') {
+                surfacesToRender = data.surfaces.filter(s => String(s.id) === String(surfaceIdParam));
+            }
+
+            if (surfacesToRender.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="width:100%;">Selected surface not found.</div>';
+                return;
+            }
+
             // Update Facility Header
             const facHeader = document.getElementById('facility-name-header');
             const facText = document.getElementById('facility-name-text');
             facText.textContent = data.facilityName;
             facHeader.style.display = 'flex'; // Use flex so the child centering works
 
-            data.surfaces.forEach(surf => {
+            surfacesToRender.forEach(surf => {
                 const bookings = surf.bookings || [];
                 
                 // Build Column
@@ -399,6 +497,36 @@
                 container.appendChild(col);
             });
         }
+
+        // Apply TV Layout Options from Query Parameters on page load
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // 1. Theme (Light vs Dark Mode)
+            const themeParam = urlParams.get('theme');
+            if (themeParam === 'light') {
+                document.body.classList.add('light-theme');
+            }
+
+            // 2. Scale
+            const scaleParam = urlParams.get('scale');
+            if (scaleParam === 'large') {
+                document.body.classList.add('scale-large');
+            } else if (scaleParam === 'xlarge') {
+                document.body.classList.add('scale-xlarge');
+            }
+
+            // 3. Show Lockers
+            const showLockersParam = urlParams.get('show_lockers');
+            if (showLockersParam === 'false') {
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    .col-locker { display: none !important; }
+                    .col-activity { width: 65% !important; }
+                `;
+                document.head.appendChild(style);
+            }
+        })();
 
         // Fetch immediately and every 2 minutes
         fetchDispatchData();

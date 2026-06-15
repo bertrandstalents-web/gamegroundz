@@ -245,25 +245,6 @@
                 <h1 class="text-2xl md:text-3xl font-extrabold text-dark tracking-tight mb-1 md:mb-2" id="dashboard-title"><span class="lang-en-only">Host Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord de l'hôte</span></h1>
                 <p class="text-slate-500 text-sm md:text-lg"><span class="lang-en-only">Manage your facilities and upcoming reservations.</span><span class="lang-fr-only notranslate">Gérez vos installations et les réservations à venir.</span></p>
             </div>
-            <div class="hidden md:flex items-center gap-3 relative z-40">
-                <!-- Custom Dropdown Container -->
-                <div class="relative custom-select-wrapper" id="dispatch-dropdown-wrapper">
-                    <input type="hidden" id="dispatch-facility-select" value="">
-                    <div id="dispatch-dropdown-button" class="w-[240px] px-4 py-2.5 border border-slate-200 rounded-xl bg-white cursor-pointer flex justify-between items-center text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" onclick="toggleDispatchDropdown(event)">
-                        <span id="dispatch-dropdown-text" class="truncate mr-2"><span class="lang-en-only">Select facility...</span><span class="lang-fr-only notranslate">Sélectionnez une installation...</span></span>
-                        <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" id="dispatch-dropdown-icon"></i>
-                    </div>
-                    <!-- Dropdown Menu -->
-                    <div id="dispatch-dropdown-menu" class="absolute top-full left-0 mt-1.5 w-full bg-white border border-slate-200 rounded-xl shadow-lg hidden max-h-60 overflow-y-auto transform opacity-0 scale-95 transition-all duration-200 origin-top">
-                        <ul id="dispatch-dropdown-list" class="py-1.5">
-                            <!-- Options injected by JS -->
-                        </ul>
-                    </div>
-                </div>
-                <button onclick="launchDispatch()" class="flex items-center bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold transition-custom shadow-sm text-sm whitespace-nowrap">
-                    <i class="fa-solid fa-tv mr-2"></i> <span class="lang-en-only">Launch Dispatch TV</span><span class="lang-fr-only notranslate">Lancer Dispatch TV</span>
-                </button>
-            </div>
         </div>
 
         <!-- Auth Guard Message (Hidden by default) -->
@@ -294,6 +275,7 @@
                             <li data-tab="discounts"><button id="tab-btn-discounts" onclick="switchTab('discounts')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tags w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Discounts</span><span class="lang-fr-only notranslate">Rabais</span></button></li>
                             <li data-tab="wallet"><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Wallet &amp; Payouts</span><span class="lang-fr-only notranslate">Portefeuille et paiements</span></button></li>
                             <li data-tab="profile"><button id="tab-btn-profile" onclick="switchTab('profile')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-user w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></button></li>
+                            <li data-tab="dispatch"><button id="tab-btn-dispatch" onclick="switchTab('dispatch')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tv w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Launch to TV</span><span class="lang-fr-only notranslate">Lancer sur TV</span></button></li>
 
                             <li id="nav-item-our-people" class="hidden" data-tab="our-people"><button id="tab-btn-our-people" onclick="switchTab('our-people')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-users w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Our People</span><span class="lang-fr-only notranslate">Notre équipe</span></button></li>
                         </ul>
@@ -1159,6 +1141,119 @@
                 </div>
             </div>
 
+            <!-- Tab: Launch to TV -->
+            <div id="tab-dispatch" class="col-span-2 lg:col-span-none hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8 max-w-3xl">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-dark mb-2">
+                            <span class="lang-en-only">Launch Dispatch TV</span>
+                            <span class="lang-fr-only notranslate">Lancer Dispatch TV</span>
+                        </h2>
+                        <p class="text-slate-500 text-sm">
+                            <span class="lang-en-only">Configure and launch a live schedule display for your facility's TV monitors.</span>
+                            <span class="lang-fr-only notranslate">Configurez et lancez un affichage des horaires en direct pour les écrans de votre établissement.</span>
+                        </p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Facility Select -->
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                <span class="lang-en-only">Select Facility</span>
+                                <span class="lang-fr-only notranslate">Sélectionner l'installation</span>
+                            </label>
+                            <select id="dispatch-tab-facility-select" onchange="onDispatchFacilityChange()" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
+                                <option value=""><span class="lang-en-only">Select facility...</span><span class="lang-fr-only notranslate">Sélectionnez une installation...</span></option>
+                            </select>
+                        </div>
+
+                        <!-- Surface Select (Populated dynamically) -->
+                        <div id="dispatch-surface-container" class="hidden">
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                <span class="lang-en-only">Select Surface</span>
+                                <span class="lang-fr-only notranslate">Sélectionner la surface</span>
+                            </label>
+                            <select id="dispatch-tab-surface-select" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
+                                <option value="all"><span class="lang-en-only">All Surfaces (Multi-Column Board)</span><span class="lang-fr-only notranslate">Toutes les surfaces</span></option>
+                            </select>
+                        </div>
+
+                        <!-- Theme Options (Dark / Light Mode) -->
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                <span class="lang-en-only">Display Theme</span>
+                                <span class="lang-fr-only notranslate">Thème d'affichage</span>
+                            </label>
+                            <div class="flex gap-4">
+                                <label class="flex-1 border border-slate-200 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-custom">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-regular fa-sun text-slate-500"></i>
+                                        <span class="text-sm font-medium text-slate-700"><span class="lang-en-only">Light Mode</span><span class="lang-fr-only notranslate">Mode clair</span></span>
+                                    </div>
+                                    <input type="radio" name="dispatch-theme" value="light" checked class="w-4 h-4 text-primary bg-slate-100 border-slate-300 focus:ring-primary">
+                                </label>
+                                <label class="flex-1 border border-slate-200 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-custom">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-regular fa-moon text-slate-500"></i>
+                                        <span class="text-sm font-medium text-slate-700"><span class="lang-en-only">Dark Mode</span><span class="lang-fr-only notranslate">Mode sombre</span></span>
+                                    </div>
+                                    <input type="radio" name="dispatch-theme" value="dark" class="w-4 h-4 text-primary bg-slate-100 border-slate-300 focus:ring-primary">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Display Options -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Font Scale -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                    <span class="lang-en-only">Display Scale (Font Size)</span>
+                                    <span class="lang-fr-only notranslate">Taille du texte</span>
+                                </label>
+                                <select id="dispatch-tab-scale-select" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
+                                    <option value="normal"><span class="lang-en-only">Normal</span><span class="lang-fr-only notranslate">Normal</span></option>
+                                    <option value="large"><span class="lang-en-only">Large</span><span class="lang-fr-only notranslate">Grand</span></option>
+                                    <option value="xlarge"><span class="lang-en-only">Extra Large</span><span class="lang-fr-only notranslate">Très grand</span></option>
+                                </select>
+                            </div>
+
+                            <!-- Show Locker Rooms -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                    <span class="lang-en-only">Locker Rooms</span>
+                                    <span class="lang-fr-only notranslate">Vestiaires</span>
+                                </label>
+                                <label class="flex items-center border border-slate-200 rounded-xl p-3 cursor-pointer hover:bg-slate-50 transition-custom">
+                                    <input type="checkbox" id="dispatch-tab-show-lockers" checked class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary">
+                                    <span class="ml-3 text-sm font-medium text-slate-700">
+                                        <span class="lang-en-only">Show Locker Rooms</span>
+                                        <span class="lang-fr-only notranslate">Afficher les vestiaires</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Launch Button -->
+                        <div class="pt-4 border-t border-slate-100">
+                            <button onclick="launchDispatchFromTab()" class="w-full md:w-auto flex items-center justify-center bg-dark hover:bg-slate-800 text-white px-8 py-3.5 rounded-xl font-bold transition-custom shadow-md text-sm gap-2">
+                                <i class="fa-solid fa-tv"></i>
+                                <span class="lang-en-only">Launch TV Board</span>
+                                <span class="lang-fr-only notranslate">Lancer le tableau TV</span>
+                            </button>
+                        </div>
+
+                        <!-- Instruction Alert -->
+                        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex gap-3 text-slate-600">
+                            <i class="fa-solid fa-circle-info text-primary mt-0.5"></i>
+                            <div class="text-xs space-y-1">
+                                <p class="font-semibold text-slate-700"><span class="lang-en-only">Smart TV / Screen Instructions</span><span class="lang-fr-only notranslate">Instructions pour Smart TV / Écran</span></p>
+                                <p><span class="lang-en-only">To get the best experience, load the link in your TV's browser and press F11 (or use the browser's menu) to display the screen in fullscreen.</span><span class="lang-fr-only notranslate">Pour une expérience optimale, chargez le lien dans le navigateur de votre téléviseur et appuyez sur F11 (ou utilisez le menu du navigateur) pour afficher l'écran en plein écran.</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Tab: Analytics -->
             <div id="tab-analytics" class="col-span-2 lg:col-span-none hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
@@ -1771,6 +1866,22 @@
             }).join(', ');
         }
 
+        function updateRevenueDashboardVisibility() {
+            const revDash = document.getElementById('live-revenue-dashboard');
+            if (!revDash) return;
+            
+            const analyticsBtn = document.getElementById('tab-btn-analytics');
+            const hasFacilities = analyticsBtn && analyticsBtn.parentElement && !analyticsBtn.parentElement.classList.contains('hidden');
+            
+            const activeTab = window.location.hash.replace('#', '') || 'facilities';
+            
+            if (activeTab === 'analytics' && hasFacilities) {
+                revDash.style.display = '';
+            } else {
+                revDash.style.display = 'none';
+            }
+        }
+
         window.switchTab = function(tabId) {
             if (window.history.replaceState) {
                 window.history.replaceState(null, null, '#' + tabId);
@@ -1788,7 +1899,7 @@
             };
 
             // Hide all potential tabs
-            const allTabs = ['facilities', 'surfaces', 'analytics', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile', 'our-people', 'settings'];
+            const allTabs = ['facilities', 'surfaces', 'analytics', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile', 'our-people', 'settings', 'dispatch'];
             allTabs.forEach(t => hideIfExists(`tab-${t}`));
 
             // Show selected tab
@@ -1798,6 +1909,8 @@
             } else {
                 console.warn(`Tab content for ${tabId} not found.`);
             }
+            
+            updateRevenueDashboardVisibility();
             
             if (tabId === 'our-people') {
                 loadOurPeople();
@@ -1809,7 +1922,7 @@
             }
 
             // Reset tab button styles
-            const btns = ['facilities', 'surfaces', 'analytics', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile', 'our-people'];
+            const btns = ['facilities', 'surfaces', 'analytics', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile', 'our-people', 'dispatch'];
             btns.forEach(btn => {
                 const el = document.getElementById(`tab-btn-${btn}`);
                 if(el) el.className = 'w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
@@ -1913,80 +2026,77 @@
             }
         }
 
-        function toggleDispatchDropdown(event) {
-            if (event) event.stopPropagation();
-            const menu = document.getElementById('dispatch-dropdown-menu');
-            const icon = document.getElementById('dispatch-dropdown-icon');
+        window.onDispatchFacilityChange = async function() {
+            const facId = document.getElementById('dispatch-tab-facility-select').value;
+            const surfaceContainer = document.getElementById('dispatch-surface-container');
+            const surfaceSelect = document.getElementById('dispatch-tab-surface-select');
             
-            if (menu.classList.contains('hidden')) {
-                menu.classList.remove('hidden');
-                setTimeout(() => {
-                    menu.classList.remove('opacity-0', 'scale-95');
-                    menu.classList.add('opacity-100', 'scale-100');
-                    icon.classList.add('rotate-180');
-                }, 10);
-            } else {
-                closeDispatchDropdown();
-            }
-        }
-
-        function closeDispatchDropdown() {
-            const menu = document.getElementById('dispatch-dropdown-menu');
-            const icon = document.getElementById('dispatch-dropdown-icon');
-            if (!menu || menu.classList.contains('hidden')) return;
-            
-            menu.classList.remove('opacity-100', 'scale-100');
-            menu.classList.add('opacity-0', 'scale-95');
-            icon.classList.remove('rotate-180');
-            
-            setTimeout(() => {
-                menu.classList.add('hidden');
-            }, 200);
-        }
-
-        function selectDispatchFacility(id, name, closeMenu = true) {
-            document.getElementById('dispatch-facility-select').value = id;
-            const textEl = document.getElementById('dispatch-dropdown-text');
-            textEl.textContent = name;
-            textEl.classList.add('text-dark');
-            
-            const listItems = document.querySelectorAll('#dispatch-dropdown-list li');
-            listItems.forEach(li => {
-                if (li.textContent.trim() === name) {
-                    li.classList.add('bg-primary/5', 'text-primary');
-                    li.classList.remove('text-slate-700');
-                    if (!li.querySelector('i')) {
-                        li.innerHTML = `<span class="flex-1">${name}</span><i class="fa-solid fa-check text-primary ml-2"></i>`;
-                    }
-                } else {
-                    li.classList.remove('bg-primary/5', 'text-primary');
-                    li.classList.add('text-slate-700');
-                    if (li.querySelector('i')) {
-                        // The textContent includes the text of the span. We just need the original name.
-                        const spanText = li.querySelector('span').textContent;
-                        li.innerHTML = `<span>${spanText}</span>`;
-                    }
-                }
-            });
-
-            if (closeMenu) closeDispatchDropdown();
-        }
-
-        document.addEventListener('click', function(e) {
-            const wrapper = document.getElementById('dispatch-dropdown-wrapper');
-            if (wrapper && !wrapper.contains(e.target)) {
-                closeDispatchDropdown();
-            }
-        });
-
-        function launchDispatch() {
-            const val = document.getElementById('dispatch-facility-select').value;
-            if (!val) {
-                showAlertModal('Required', 'Please select a facility to dispatch first.', 'OK', true);
+            if (!facId) {
+                surfaceContainer.classList.add('hidden');
                 return;
             }
-            window.open(`dispatch.html?facility_id=${val}`, '_blank');
-        }
+            
+            try {
+                const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+                const res = await fetch(`${API_BASE_URL}/api/facilities/${facId}?_t=${Date.now()}`);
+                const data = await res.json();
+                const surfaces = data.surfaces || [];
+                const isFr = localStorage.getItem('gg_language') === 'fr';
+                
+                // Populate surface dropdown
+                let optionsHtml = `<option value="all">${isFr ? 'Toutes les surfaces (Tableau multi-colonnes)' : 'All Surfaces (Multi-Column Board)'}</option>`;
+                surfaces.forEach(s => {
+                    // Clean up surface name for display
+                    let displayName = s.name;
+                    if (displayName.startsWith(data.name + ' - ')) {
+                        displayName = displayName.substring(data.name.length + 3);
+                    }
+                    optionsHtml += `<option value="${s.id}">${displayName}</option>`;
+                });
+                
+                surfaceSelect.innerHTML = optionsHtml;
+                surfaceContainer.classList.remove('hidden');
+            } catch (err) {
+                console.error('Error fetching facility surfaces for dispatch:', err);
+            }
+        };
+
+        window.launchDispatchFromTab = function() {
+            const facId = document.getElementById('dispatch-tab-facility-select').value;
+            if (!facId) {
+                const isFr = localStorage.getItem('gg_language') === 'fr';
+                showAlertModal(
+                    isFr ? 'Requis' : 'Required',
+                    isFr ? 'Veuillez sélectionner une installation à lancer.' : 'Please select a facility to launch first.',
+                    'OK',
+                    true
+                );
+                return;
+            }
+            
+            const surfaceId = document.getElementById('dispatch-tab-surface-select').value;
+            const theme = document.querySelector('input[name="dispatch-theme"]:checked').value;
+            const scale = document.getElementById('dispatch-tab-scale-select').value;
+            const showLockers = document.getElementById('dispatch-tab-show-lockers').checked;
+            
+            let url = `dispatch.html?facility_id=${facId}`;
+            if (surfaceId && surfaceId !== 'all') {
+                url += `&surface_id=${surfaceId}`;
+            }
+            if (theme === 'dark') {
+                url += `&theme=dark`;
+            } else if (theme === 'light') {
+                url += `&theme=light`;
+            }
+            if (scale && scale !== 'normal') {
+                url += `&scale=${scale}`;
+            }
+            if (!showLockers) {
+                url += `&show_lockers=false`;
+            }
+            
+            window.open(url, '_blank');
+        };
 
         function renderFacilities(facilities) {
             const container = document.getElementById('host-facilities-list');
@@ -2002,11 +2112,12 @@
             
             if (facilities.length === 0) {
                 // Hide advanced host tools for users with no facilities
-                if (revDash) revDash.classList.add('hidden');
                 advTabs.forEach(id => {
                     const btn = document.getElementById(id);
                     if (btn && btn.parentElement) btn.parentElement.classList.add('hidden');
                 });
+                
+                updateRevenueDashboardVisibility();
                 
                 container.innerHTML = `
                     <div class="text-center py-12 text-slate-500 col-span-full bg-slate-50 rounded-2xl border border-slate-200">
@@ -2017,11 +2128,11 @@
                 return;
             } else {
                 // Show advanced host tools
-                if (revDash) revDash.classList.remove('hidden');
                 advTabs.forEach(id => {
                     const btn = document.getElementById(id);
                     if (btn && btn.parentElement) btn.parentElement.classList.remove('hidden');
                 });
+                updateRevenueDashboardVisibility();
             }
 
             const isMunicipality = facilities.some(f => f.facility_type === 'Municipality / City');
@@ -2083,32 +2194,30 @@
                 }
             });
 
-            // Populate Calendar form select and Discount form select
+            // Populate Calendar form select, Discount form select and Dispatch tab select
             const selectEl = document.getElementById('calendar-facility-select');
             const discSelectEl = document.getElementById('discount-facility-select');
-            const dispatchInputEl = document.getElementById('dispatch-facility-select');
-            const dispatchListEl = document.getElementById('dispatch-dropdown-list');
-            const dispatchTextEl = document.getElementById('dispatch-dropdown-text');
+            const dispatchTabSelectEl = document.getElementById('dispatch-tab-facility-select');
             
             const prevVal = selectEl ? selectEl.value : '';
             const prevDiscVal = discSelectEl ? discSelectEl.value : '';
-            const prevDispatchVal = dispatchInputEl ? dispatchInputEl.value : '';
+            const prevDispatchTabVal = dispatchTabSelectEl ? dispatchTabSelectEl.value : '';
             
             if(selectEl) selectEl.innerHTML = '<option value="" disabled selected>Choose a surface</option>';
             if(discSelectEl) discSelectEl.innerHTML = '<option value="" disabled selected>Choose a surface</option>';
-            if(dispatchListEl) dispatchListEl.innerHTML = '';
+            
+            if (dispatchTabSelectEl) {
+                const isFr = localStorage.getItem('gg_language') === 'fr';
+                dispatchTabSelectEl.innerHTML = `<option value="">${isFr ? 'Sélectionnez une installation...' : 'Select facility...'}</option>`;
+            }
 
             facilities.forEach(fac => {
                 try {
-                    if (dispatchListEl) {
-                        let li = document.createElement('li');
-                        li.className = 'px-4 py-2.5 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 transition-colors flex items-center justify-between';
-                        li.innerHTML = `<span>${fac.name || 'Unnamed Facility'}</span>`;
-                        li.onclick = (e) => {
-                            e.stopPropagation();
-                            selectDispatchFacility(fac.id, fac.name);
-                        };
-                        dispatchListEl.appendChild(li);
+                    if (dispatchTabSelectEl) {
+                        let opt = document.createElement('option');
+                        opt.value = fac.id;
+                        opt.textContent = fac.name || 'Unnamed Facility';
+                        dispatchTabSelectEl.appendChild(opt);
                     }
 
                     if (fac.surfaces && fac.surfaces.length > 0) {
@@ -2180,15 +2289,11 @@
                 discSelectEl.value = "";
             }
 
-            if (prevDispatchVal && facilities.some(f => f.id.toString() === prevDispatchVal)) {
-                const fac = facilities.find(f => f.id.toString() === prevDispatchVal);
-                selectDispatchFacility(fac.id, fac.name, false);
-            } else if (dispatchInputEl) {
-                dispatchInputEl.value = "";
-                if(dispatchTextEl) {
-                    dispatchTextEl.innerHTML = '<span class="lang-en-only">Select facility...</span><span class="lang-fr-only notranslate">Sélectionnez une installation...</span>';
-                    dispatchTextEl.classList.remove('text-dark');
-                }
+            if (prevDispatchTabVal && dispatchTabSelectEl && Array.from(dispatchTabSelectEl.options).some(o => o.value === prevDispatchTabVal)) {
+                dispatchTabSelectEl.value = prevDispatchTabVal;
+                onDispatchFacilityChange();
+            } else if (dispatchTabSelectEl) {
+                dispatchTabSelectEl.value = "";
             }
 
             // Initialize Sortable on the facilities container
@@ -6852,7 +6957,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const hash = window.location.hash.replace('#', '');
-            const validTabs = ['facilities', 'surfaces', 'analytics', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile', 'our-people', 'settings'];
+            const validTabs = ['facilities', 'surfaces', 'analytics', 'reservations', 'calendar', 'add-new', 'discounts', 'wallet', 'profile', 'our-people', 'settings', 'dispatch'];
             if (hash && validTabs.includes(hash) && typeof switchTab === 'function') {
                 switchTab(hash);
             } else if (typeof switchTab === 'function') {
