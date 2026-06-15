@@ -1162,7 +1162,7 @@
                                 <span class="lang-en-only">Select Facility</span>
                                 <span class="lang-fr-only notranslate">Sélectionner l'installation</span>
                             </label>
-                            <select id="dispatch-tab-facility-select" onchange="onDispatchFacilityChange()" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
+                            <select id="dispatch-tab-facility-select" onchange="onDispatchFacilityChange()" class="w-full px-4 h-12 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
                                 <option value=""><span class="lang-en-only">Select facility...</span><span class="lang-fr-only notranslate">Sélectionnez une installation...</span></option>
                             </select>
                         </div>
@@ -1173,7 +1173,7 @@
                                 <span class="lang-en-only">Select Surface</span>
                                 <span class="lang-fr-only notranslate">Sélectionner la surface</span>
                             </label>
-                            <select id="dispatch-tab-surface-select" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
+                            <select id="dispatch-tab-surface-select" class="w-full px-4 h-12 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
                                 <option value="all"><span class="lang-en-only">All Surfaces (Multi-Column Board)</span><span class="lang-fr-only notranslate">Toutes les surfaces</span></option>
                             </select>
                         </div>
@@ -1185,14 +1185,14 @@
                                 <span class="lang-fr-only notranslate">Thème d'affichage</span>
                             </label>
                             <div class="flex gap-4">
-                                <label class="flex-1 border border-slate-200 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-custom">
+                                <label class="flex-1 border border-slate-200 rounded-xl h-12 px-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-custom">
                                     <div class="flex items-center gap-2">
                                         <i class="fa-regular fa-sun text-slate-500"></i>
                                         <span class="text-sm font-medium text-slate-700"><span class="lang-en-only">Light Mode</span><span class="lang-fr-only notranslate">Mode clair</span></span>
                                     </div>
                                     <input type="radio" name="dispatch-theme" value="light" checked class="w-4 h-4 text-primary bg-slate-100 border-slate-300 focus:ring-primary">
                                 </label>
-                                <label class="flex-1 border border-slate-200 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-custom">
+                                <label class="flex-1 border border-slate-200 rounded-xl h-12 px-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-custom">
                                     <div class="flex items-center gap-2">
                                         <i class="fa-regular fa-moon text-slate-500"></i>
                                         <span class="text-sm font-medium text-slate-700"><span class="lang-en-only">Dark Mode</span><span class="lang-fr-only notranslate">Mode sombre</span></span>
@@ -1210,7 +1210,7 @@
                                     <span class="lang-en-only">Display Scale (Font Size)</span>
                                     <span class="lang-fr-only notranslate">Taille du texte</span>
                                 </label>
-                                <select id="dispatch-tab-scale-select" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
+                                <select id="dispatch-tab-scale-select" class="w-full px-4 h-12 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
                                     <option value="normal"><span class="lang-en-only">Normal</span><span class="lang-fr-only notranslate">Normal</span></option>
                                     <option value="large"><span class="lang-en-only">Large</span><span class="lang-fr-only notranslate">Grand</span></option>
                                     <option value="xlarge"><span class="lang-en-only">Extra Large</span><span class="lang-fr-only notranslate">Très grand</span></option>
@@ -1223,7 +1223,7 @@
                                     <span class="lang-en-only">Locker Rooms</span>
                                     <span class="lang-fr-only notranslate">Vestiaires</span>
                                 </label>
-                                <label class="flex items-center border border-slate-200 rounded-xl p-3 cursor-pointer hover:bg-slate-50 transition-custom">
+                                <label class="flex items-center border border-slate-200 rounded-xl h-12 px-4 cursor-pointer hover:bg-slate-50 transition-custom">
                                     <input type="checkbox" id="dispatch-tab-show-lockers" checked class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary">
                                     <span class="ml-3 text-sm font-medium text-slate-700">
                                         <span class="lang-en-only">Show Locker Rooms</span>
