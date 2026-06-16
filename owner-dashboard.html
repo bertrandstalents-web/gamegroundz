@@ -371,7 +371,7 @@
                     </div>
                     <div class="grid grid-cols-2 md:flex md:flex-wrap items-center gap-4 mb-6 border-b border-slate-100 pb-6">
                         <div class="relative w-full md:w-auto" id="res-status-dropdown-container">
-                            <button type="button" onclick="document.getElementById('res-status-dropdown-menu').classList.toggle('hidden')" class="px-4 h-[50px] border-2 border-primary bg-primary/10 text-primary hover:bg-primary/20 transition-custom font-bold rounded-lg focus:outline-none flex items-center justify-between gap-2 w-full md:min-w-[200px] cursor-pointer shadow-sm">
+                            <button type="button" onclick="document.getElementById('res-status-dropdown-menu').classList.toggle('hidden')" class="px-4 h-[50px] border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-custom font-medium rounded-lg focus:outline-none flex items-center justify-between gap-2 w-full md:min-w-[200px] cursor-pointer shadow-sm">
                                 <span id="res-status-btn-text">Upcoming, Past</span>
                                 <i class="fa-solid fa-chevron-down text-sm"></i>
                             </button>
@@ -1100,7 +1100,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1"><span class="lang-en-only">Preferred Language</span><span class="lang-fr-only notranslate">Langue préférée</span></label>
-                                <select id="prof-language" required="" class="w-full pl-4 pr-10 h-[50px] border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white custom-dropdown-select" style="appearance: none; -webkit-appearance: none; -moz-appearance: none;">
+                                <select id="prof-language" required="" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white appearance-none cursor-pointer font-medium text-slate-800 shadow-sm custom-dropdown-select">
                                     <option value="en">English</option>
                                     <option value="fr">Français</option>
                                 </select>
@@ -1189,8 +1189,8 @@
                                 <span class="lang-en-only">Select Facility</span>
                                 <span class="lang-fr-only notranslate">Sélectionner l'installation</span>
                             </label>
-                            <select id="dispatch-tab-facility-select" onchange="onDispatchFacilityChange()" class="w-full px-4 h-12 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
-                                <option value=""><span class="lang-en-only">Select facility...</span><span class="lang-fr-only notranslate">Sélectionnez une installation...</span></option>
+                            <select id="dispatch-tab-facility-select" onchange="onDispatchFacilityChange()" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white appearance-none cursor-pointer font-medium text-slate-800 shadow-sm custom-dropdown-select">
+                                <option id="dispatch-opt-select-facility" value="">Select facility...</option>
                             </select>
                         </div>
 
@@ -1200,8 +1200,8 @@
                                 <span class="lang-en-only">Select Surface</span>
                                 <span class="lang-fr-only notranslate">Sélectionner la surface</span>
                             </label>
-                            <select id="dispatch-tab-surface-select" class="w-full px-4 h-12 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
-                                <option value="all"><span class="lang-en-only">All Surfaces (Multi-Column Board)</span><span class="lang-fr-only notranslate">Toutes les surfaces</span></option>
+                            <select id="dispatch-tab-surface-select" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white appearance-none cursor-pointer font-medium text-slate-800 shadow-sm custom-dropdown-select">
+                                <option id="dispatch-opt-all-surfaces" value="all">All Surfaces (Multi-Column Board)</option>
                             </select>
                         </div>
 
@@ -1237,10 +1237,10 @@
                                     <span class="lang-en-only">Display Scale (Font Size)</span>
                                     <span class="lang-fr-only notranslate">Taille du texte</span>
                                 </label>
-                                <select id="dispatch-tab-scale-select" class="w-full px-4 h-12 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
-                                    <option value="normal"><span class="lang-en-only">Normal</span><span class="lang-fr-only notranslate">Normal</span></option>
-                                    <option value="large"><span class="lang-en-only">Large</span><span class="lang-fr-only notranslate">Grand</span></option>
-                                    <option value="xlarge"><span class="lang-en-only">Extra Large</span><span class="lang-fr-only notranslate">Très grand</span></option>
+                                <select id="dispatch-tab-scale-select" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-custom bg-white appearance-none cursor-pointer font-medium text-slate-800 shadow-sm custom-dropdown-select">
+                                    <option id="scale-opt-normal" value="normal">Normal</option>
+                                    <option id="scale-opt-large" value="large">Large</option>
+                                    <option id="scale-opt-xlarge" value="xlarge">Extra Large</option>
                                 </select>
                             </div>
 
@@ -2067,6 +2067,10 @@
             const surfaceSelect = document.getElementById('dispatch-tab-surface-select');
             
             if (!facId) {
+                if (window.choicesInstances && window.choicesInstances['dispatch-tab-surface-select']) {
+                    window.choicesInstances['dispatch-tab-surface-select'].destroy();
+                    delete window.choicesInstances['dispatch-tab-surface-select'];
+                }
                 surfaceContainer.classList.add('hidden');
                 return;
             }
@@ -2089,8 +2093,21 @@
                     optionsHtml += `<option value="${s.id}">${displayName}</option>`;
                 });
                 
+                if (window.choicesInstances && window.choicesInstances['dispatch-tab-surface-select']) {
+                    window.choicesInstances['dispatch-tab-surface-select'].destroy();
+                    delete window.choicesInstances['dispatch-tab-surface-select'];
+                }
+                
                 surfaceSelect.innerHTML = optionsHtml;
                 surfaceContainer.classList.remove('hidden');
+                
+                if (window.choicesInstances && typeof Choices !== 'undefined') {
+                    window.choicesInstances['dispatch-tab-surface-select'] = new Choices(surfaceSelect, {
+                        searchEnabled: false,
+                        itemSelectText: '',
+                        shouldSort: false
+                    });
+                }
             } catch (err) {
                 console.error('Error fetching facility surfaces for dispatch:', err);
             }
@@ -2311,7 +2328,7 @@
             
             // Refresh Choices.js UI if it's already initialized
             if (window.choicesInstances) {
-                ['calendar-facility-select', 'discount-facility-select', 'res-facility-filter'].forEach(id => {
+                ['calendar-facility-select', 'discount-facility-select', 'res-facility-filter', 'dispatch-tab-facility-select'].forEach(id => {
                     const select = document.getElementById(id);
                     if (select && window.choicesInstances[id]) {
                         window.choicesInstances[id].destroy();
@@ -2427,7 +2444,7 @@
                             
                             // Refresh Choices.js UI
                             if (window.choicesInstances) {
-                                ['calendar-facility-select', 'discount-facility-select', 'res-facility-filter'].forEach(id => {
+                                ['calendar-facility-select', 'discount-facility-select', 'res-facility-filter', 'dispatch-tab-facility-select'].forEach(id => {
                                     const select = document.getElementById(id);
                                     if (select && window.choicesInstances[id]) {
                                         window.choicesInstances[id].destroy();
@@ -9362,6 +9379,13 @@
         const analyticsOptWeek = document.getElementById('analytics-opt-week');
         const analyticsOptMonth = document.getElementById('analytics-opt-month');
         const analyticsOptAllFac = document.getElementById('analytics-opt-all-fac');
+
+        const dispatchOptSelectFacility = document.getElementById('dispatch-opt-select-facility');
+        const dispatchOptAllSurfaces = document.getElementById('dispatch-opt-all-surfaces');
+        const scaleOptNormal = document.getElementById('scale-opt-normal');
+        const scaleOptLarge = document.getElementById('scale-opt-large');
+        const scaleOptXlarge = document.getElementById('scale-opt-xlarge');
+
         const isMobile = window.innerWidth <= 768;
         
         if (lang === 'fr') {
@@ -9378,6 +9402,12 @@
             if (analyticsOptWeek) analyticsOptWeek.text = "Semaine";
             if (analyticsOptMonth) analyticsOptMonth.text = "Mois";
             if (analyticsOptAllFac) analyticsOptAllFac.text = "Toutes installations";
+
+            if (dispatchOptSelectFacility) dispatchOptSelectFacility.text = "Sélectionnez une installation...";
+            if (dispatchOptAllSurfaces) dispatchOptAllSurfaces.text = "Toutes les surfaces (Tableau multi-colonnes)";
+            if (scaleOptNormal) scaleOptNormal.text = "Normal";
+            if (scaleOptLarge) scaleOptLarge.text = "Grand";
+            if (scaleOptXlarge) scaleOptXlarge.text = "Très grand";
         } else {
             if (filterAllSurfaces) filterAllSurfaces.text = "All Surfaces";
             if (optAll) optAll.text = "All Dates";
@@ -9392,6 +9422,12 @@
             if (analyticsOptWeek) analyticsOptWeek.text = "This Week";
             if (analyticsOptMonth) analyticsOptMonth.text = "This Month";
             if (analyticsOptAllFac) analyticsOptAllFac.text = "All Facilities";
+
+            if (dispatchOptSelectFacility) dispatchOptSelectFacility.text = "Select facility...";
+            if (dispatchOptAllSurfaces) dispatchOptAllSurfaces.text = "All Surfaces (Multi-Column Board)";
+            if (scaleOptNormal) scaleOptNormal.text = "Normal";
+            if (scaleOptLarge) scaleOptLarge.text = "Large";
+            if (scaleOptXlarge) scaleOptXlarge.text = "Extra Large";
         }
     }
     
@@ -9480,8 +9516,7 @@
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Target all selects that should be upgraded (appearance-none or explicit classes)
-            const selects = document.querySelectorAll('select.appearance-none, select#fac-host-type, select#fac-env, select#fac-listing-status, select#fac-pricing-unit, select#facility-surface-filter');
+            const selects = document.querySelectorAll('select.appearance-none, select#fac-host-type, select#fac-env, select#fac-listing-status, select#fac-pricing-unit, select#facility-surface-filter, select#prof-language, select#dispatch-tab-facility-select, select#dispatch-tab-surface-select, select#dispatch-tab-scale-select');
             
             window.choicesInstances = {}; // Store instances if we need to access them later
 
