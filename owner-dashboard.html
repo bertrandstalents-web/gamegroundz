@@ -1291,15 +1291,15 @@
                         </div>
                         <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
                             <!-- Timeframe Filter -->
-                            <select id="analytics-time-filter" class="flex-1 md:flex-none px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm min-w-[150px]" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em; padding-right: 2.5rem;" onchange="updateAnalyticsState()">
-                                <option value="today">Today</option>
-                                <option value="weekly" selected="">This Week</option>
-                                <option value="monthly">This Month</option>
+                            <select id="analytics-time-filter" class="notranslate flex-1 md:flex-none px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm min-w-[150px]" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em; padding-right: 2.5rem;" onchange="updateAnalyticsState()">
+                                <option id="analytics-opt-today" value="today">Today</option>
+                                <option id="analytics-opt-week" value="weekly" selected="">This Week</option>
+                                <option id="analytics-opt-month" value="monthly">This Month</option>
                             </select>
                             
                             <!-- Facility Filter -->
-                            <select id="analytics-fac-filter" class="flex-1 md:flex-none px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm min-w-[200px]" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em; padding-right: 2.5rem;" onchange="updateAnalyticsState()">
-                                <option value="all" selected="">All Facilities</option>
+                            <select id="analytics-fac-filter" class="notranslate flex-1 md:flex-none px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm min-w-[200px]" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em; padding-right: 2.5rem;" onchange="updateAnalyticsState()">
+                                <option id="analytics-opt-all-fac" value="all" selected="">All Facilities</option>
                                 <!-- Populated dynamically -->
                             </select>
                         </div>
@@ -9359,6 +9359,12 @@
         const optMonth = document.getElementById('opt-month');
         const optYear = document.getElementById('opt-year');
         const optCustom = document.getElementById('opt-custom');
+
+        const analyticsOptToday = document.getElementById('analytics-opt-today');
+        const analyticsOptWeek = document.getElementById('analytics-opt-week');
+        const analyticsOptMonth = document.getElementById('analytics-opt-month');
+        const analyticsOptAllFac = document.getElementById('analytics-opt-all-fac');
+        const isMobile = window.innerWidth <= 768;
         
         if (lang === 'fr') {
             if (filterAllSurfaces) filterAllSurfaces.text = "Toutes les surfaces";
@@ -9369,6 +9375,11 @@
             if (optMonth) optMonth.text = "Mois";
             if (optYear) optYear.text = "Année";
             if (optCustom) optCustom.text = "Plage personnalisée";
+
+            if (analyticsOptToday) analyticsOptToday.text = "Aujourd'hui";
+            if (analyticsOptWeek) analyticsOptWeek.text = isMobile ? "Semaine" : "Cette semaine";
+            if (analyticsOptMonth) analyticsOptMonth.text = isMobile ? "Mois" : "Ce mois-ci";
+            if (analyticsOptAllFac) analyticsOptAllFac.text = isMobile ? "Toutes installations" : "Toutes les installations";
         } else {
             if (filterAllSurfaces) filterAllSurfaces.text = "All Surfaces";
             if (optAll) optAll.text = "All Dates";
@@ -9378,6 +9389,11 @@
             if (optMonth) optMonth.text = "This Month";
             if (optYear) optYear.text = "This Year";
             if (optCustom) optCustom.text = "Custom Range";
+
+            if (analyticsOptToday) analyticsOptToday.text = "Today";
+            if (analyticsOptWeek) analyticsOptWeek.text = "This Week";
+            if (analyticsOptMonth) analyticsOptMonth.text = "This Month";
+            if (analyticsOptAllFac) analyticsOptAllFac.text = "All Facilities";
         }
     }
     
@@ -9457,6 +9473,7 @@
                 if (facContainer && facContainer.sortableInstance) {
                     facContainer.sortableInstance.option('disabled', window.innerWidth <= 768);
                 }
+                updateDashboardTranslations(document.documentElement.getAttribute('data-lang') || localStorage.getItem('gg_language') || 'en');
             });
         }
     });
