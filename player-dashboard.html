@@ -121,25 +121,29 @@
             <!-- Sidebar Navigation -->
             <div class="w-full lg:w-[280px] flex-shrink-0">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3 lg:p-4 sticky top-28 w-full">
-                    <ul class="flex lg:flex-col overflow-x-auto lg:overflow-x-visible space-x-2 lg:space-x-0 lg:space-y-1 hide-scrollbar snap-x snap-mandatory pb-1 lg:pb-0">
-                        <li class="flex-shrink-0 snap-start">
-                            <button id="nav-btn-bookings" onclick="switchNav('bookings')" class="w-full text-left flex items-center px-4 py-2 lg:py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom whitespace-nowrap text-sm lg:text-base">
-                                <i class="fa-solid fa-calendar-check w-6"></i> Bookings
+                    <ul class="flex flex-row w-full gap-1 lg:flex-col lg:space-y-1 lg:overflow-x-visible" id="sidebar-menu">
+                        <li class="flex-1 lg:flex-none">
+                            <button id="nav-btn-bookings" onclick="switchNav('bookings')" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-2 lg:px-4 lg:py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom">
+                                <i class="fa-solid fa-calendar-check text-lg lg:text-base w-6 lg:mr-3 flex justify-center items-center"></i>
+                                <span class="lang-en-only hidden lg:inline">Bookings</span><span class="lang-fr-only notranslate hidden lg:inline">Réservations</span>
                             </button>
                         </li>
-                        <li class="flex-shrink-0 snap-start">
-                            <button id="nav-btn-saved" onclick="switchNav('saved')" class="w-full text-left flex items-center px-4 py-2 lg:py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom whitespace-nowrap text-sm lg:text-base">
-                                <i class="fa-regular fa-heart w-6"></i> Saved Surfaces
+                        <li class="flex-1 lg:flex-none">
+                            <button id="nav-btn-profile" onclick="switchNav('profile')" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-2 lg:px-4 lg:py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom">
+                                <i class="fa-solid fa-user text-lg lg:text-base w-6 lg:mr-3 flex justify-center items-center"></i>
+                                <span class="lang-en-only hidden lg:inline">Profile</span><span class="lang-fr-only notranslate hidden lg:inline">Profil</span>
                             </button>
                         </li>
-                        <li class="flex-shrink-0 snap-start">
-                            <button id="nav-btn-profile" onclick="switchNav('profile')" class="w-full text-left flex items-center px-4 py-2 lg:py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom whitespace-nowrap text-sm lg:text-base">
-                                <i class="fa-solid fa-user w-6"></i> Profile
+                        <li class="flex-1 lg:flex-none">
+                            <button id="nav-btn-saved" onclick="switchNav('saved')" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-2 lg:px-4 lg:py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom">
+                                <i class="fa-regular fa-heart text-lg lg:text-base w-6 lg:mr-3 flex justify-center items-center"></i>
+                                <span class="lang-en-only hidden lg:inline">Saved Surfaces</span><span class="lang-fr-only notranslate hidden lg:inline">Surfaces sauvegardées</span>
                             </button>
                         </li>
-                        <li class="flex-shrink-0 snap-start">
-                            <button class="w-full text-left flex items-center px-4 py-2 lg:py-3 text-slate-400 cursor-not-allowed rounded-xl font-medium transition-custom whitespace-nowrap text-sm lg:text-base">
-                                <i class="fa-solid fa-credit-card w-6"></i> Payments (Soon)
+                        <li class="flex-1 lg:flex-none">
+                            <button class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-2 lg:px-4 lg:py-3 text-slate-400 cursor-not-allowed rounded-xl font-medium transition-custom">
+                                <i class="fa-solid fa-credit-card text-lg lg:text-base w-6 lg:mr-3 flex justify-center items-center"></i>
+                                <span class="lang-en-only hidden lg:inline">Payments (Soon)</span><span class="lang-fr-only notranslate hidden lg:inline">Paiements (bientôt)</span>
                             </button>
                         </li>
                     </ul>
@@ -652,12 +656,12 @@
             document.getElementById('section-profile').classList.add('hidden');
             document.getElementById('section-saved').classList.add('hidden');
             
-            document.getElementById('nav-btn-bookings').className = 'w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
-            document.getElementById('nav-btn-profile').className = 'w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
-            document.getElementById('nav-btn-saved').className = 'w-full text-left flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
+            document.getElementById('nav-btn-bookings').className = 'w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-2 lg:px-4 lg:py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
+            document.getElementById('nav-btn-profile').className = 'w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-2 lg:px-4 lg:py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
+            document.getElementById('nav-btn-saved').className = 'w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-2 lg:px-4 lg:py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom';
 
             document.getElementById(`section-${section}`).classList.remove('hidden');
-            document.getElementById(`nav-btn-${section}`).className = 'w-full text-left flex items-center px-4 py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom';
+            document.getElementById(`nav-btn-${section}`).className = 'w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-2 lg:px-4 lg:py-3 bg-primary/10 text-primary rounded-xl font-bold transition-custom';
 
             if (section === 'saved' && !window.savedLoaded) {
                 loadSavedSurfaces();
