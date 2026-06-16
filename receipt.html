@@ -38,6 +38,26 @@
         }
     </style>
     <script src="js/cookieConsent.js"></script>
+    <script>
+        // Set language attribute early to avoid flash of incorrect language
+        {
+            const savedLang = localStorage.getItem('gg_language') || 'en';
+            document.documentElement.setAttribute('data-lang', savedLang);
+        }
+
+        // Early switchLanguage stub to support immediate calls
+        window.switchLanguage = function(lang) {
+            localStorage.setItem('gg_language', lang);
+            document.documentElement.setAttribute('data-lang', lang);
+            const gtCookieVal = lang === 'fr' ? '/en/fr' : '/en/en';
+            document.cookie = `googtrans=${gtCookieVal}; path=/`;
+            if (window.location.hostname) {
+                document.cookie = `googtrans=${gtCookieVal}; domain=${window.location.hostname}; path=/`;
+                document.cookie = `googtrans=${gtCookieVal}; domain=.${window.location.hostname}; path=/`;
+            }
+            window.location.reload();
+        };
+    </script>
 
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen py-10 px-4 flex justify-center">
@@ -46,10 +66,10 @@
         <!-- Action Buttons -->
         <div class="flex justify-between items-center mb-6 no-print">
             <button onclick="window.close()" class="text-slate-500 hover:text-dark font-medium transition-custom">
-                <i class="fa-solid fa-arrow-left mr-2"></i>Close
+                <i class="fa-solid fa-arrow-left mr-2"></i><span class="lang-en-only">Close</span><span class="lang-fr-only notranslate">Fermer</span>
             </button>
             <button onclick="window.print()" class="bg-primary hover:bg-primaryHover text-white px-6 py-2.5 rounded-xl font-bold transition-custom shadow-sm flex items-center">
-                <i class="fa-solid fa-download mr-2"></i>Download PDF
+                <i class="fa-solid fa-download mr-2"></i><span class="lang-en-only">Download PDF</span><span class="lang-fr-only notranslate">Télécharger le PDF</span>
             </button>
         </div>
 
@@ -67,20 +87,20 @@
                         <span class="font-bold text-2xl tracking-tight text-dark notranslate">Game<span class="text-primary">Groundz</span></span>
                     </div>
                     <div class="text-left sm:text-right">
-                        <h1 class="text-2xl font-black tracking-wider text-slate-300 uppercase mb-1">Receipt</h1>
-                        <p class="text-sm text-slate-500 font-medium" id="receipt-id">Receipt #</p>
+                        <h1 class="text-2xl font-black tracking-wider text-slate-300 uppercase mb-1"><span class="lang-en-only">Receipt</span><span class="lang-fr-only notranslate">Reçu</span></h1>
+                        <p class="text-sm text-slate-500 font-medium" id="receipt-id"><span class="lang-en-only">Receipt #</span><span class="lang-fr-only notranslate">Reçu #</span></p>
                     </div>
                 </div>
 
                 <!-- Parties Info -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-10 pb-8 border-b border-slate-100">
                     <div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Billed To</p>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"><span class="lang-en-only">Billed To</span><span class="lang-fr-only notranslate">Facturé à</span></p>
                         <h3 class="text-lg font-bold text-dark mb-1" id="cust-name">-</h3>
                         <p class="text-slate-600 text-sm" id="cust-email">-</p>
                     </div>
                     <div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Provided By</p>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"><span class="lang-en-only">Provided By</span><span class="lang-fr-only notranslate">Fourni par</span></p>
                         <h3 class="text-lg font-bold text-dark mb-1" id="host-name">-</h3>
                         <p class="text-slate-600 text-sm mb-1 notranslate" id="facility-name">-</p>
                         <p class="text-slate-500 text-sm" id="facility-location">-</p>
@@ -89,19 +109,19 @@
 
                 <!-- Booking Details -->
                 <div class="mb-10">
-                    <h3 class="text-lg font-bold text-dark mb-4">Reservation Details</h3>
+                    <h3 class="text-lg font-bold text-dark mb-4"><span class="lang-en-only">Reservation Details</span><span class="lang-fr-only notranslate">Détails de la réservation</span></h3>
                     <div class="bg-slate-50 rounded-xl p-5 border border-slate-100">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Date</p>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1"><span class="lang-en-only">Date</span><span class="lang-fr-only notranslate">Date</span></p>
                                 <p class="font-medium text-dark" id="booking-date">-</p>
                             </div>
                             <div>
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Time</p>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1"><span class="lang-en-only">Time</span><span class="lang-fr-only notranslate">Temps</span></p>
                                 <p class="font-medium text-dark" id="booking-time">-</p>
                             </div>
                             <div>
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Status</p>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1"><span class="lang-en-only">Status</span><span class="lang-fr-only notranslate">Statut</span></p>
                                 <p class="font-medium text-primary capitalize" id="booking-status">-</p>
                             </div>
                             <div id="activity-row" class="hidden">
@@ -133,24 +153,37 @@
 
                 <!-- Footer -->
                 <div class="mt-16 pt-6 border-t border-slate-100 text-center">
-                    <p class="text-sm text-slate-500 font-medium mb-1">Thank you for booking with GameGroundz!</p>
-                    <p class="text-xs text-slate-400">If you have any questions concerning this receipt, please contact support.</p>
+                    <p class="text-sm text-slate-500 font-medium mb-1">
+                        <span class="lang-en-only">Thank you for booking with GameGroundz!</span>
+                        <span class="lang-fr-only notranslate">Merci d'avoir réservé avec GameGroundz!</span>
+                    </p>
+                    <p class="text-xs text-slate-400">
+                        <span class="lang-en-only">If you have any questions concerning this receipt, please contact support.</span>
+                        <span class="lang-fr-only notranslate">Si vous avez des questions concernant ce reçu, veuillez contacter le support.</span>
+                    </p>
                 </div>
             </div>
             
             <!-- Loading Overlay -->
             <div id="loading" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
                 <i class="fa-solid fa-spinner fa-spin text-primary text-4xl mb-4"></i>
-                <p class="text-slate-600 font-medium font-sans">Generating receipt...</p>
+                <p class="text-slate-600 font-medium font-sans">
+                    <span class="lang-en-only">Generating receipt...</span>
+                    <span class="lang-fr-only notranslate">Génération du reçu...</span>
+                </p>
             </div>
 
             <!-- Error Overlay -->
             <div id="error-overlay" class="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center p-8 text-center hidden">
                 <i class="fa-solid fa-circle-exclamation text-red-500 text-5xl mb-4"></i>
-                <h2 class="text-2xl font-bold text-dark mb-2">Receipt Unavailable</h2>
+                <h2 class="text-2xl font-bold text-dark mb-2">
+                    <span class="lang-en-only">Receipt Unavailable</span>
+                    <span class="lang-fr-only notranslate">Reçu indisponible</span>
+                </h2>
                 <p class="text-slate-600 mb-6" id="error-msg">We couldn't load the receipt details.</p>
                 <button onclick="window.close()" class="bg-dark hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-bold transition-custom no-print">
-                    Go Back
+                    <span class="lang-en-only">Go Back</span>
+                    <span class="lang-fr-only notranslate">Retourner</span>
                 </button>
             </div>
         </div>
@@ -210,10 +243,31 @@
             const errorOverlay = document.getElementById('error-overlay');
             const errorMsg = document.getElementById('error-msg');
 
+            const loadI18n = () => {
+                if (!document.querySelector('script[src="js/i18n.js"]')) {
+                    const script = document.createElement('script');
+                    script.src = 'js/i18n.js';
+                    document.body.appendChild(script);
+                }
+            };
+
             const showError = (message) => {
-                errorMsg.textContent = message;
+                let msgEn = message;
+                let msgFr = message;
+                if (message.includes('No booking ID')) {
+                    msgEn = 'No booking ID was provided in the URL.';
+                    msgFr = "Aucun identifiant de réservation n'a été fourni dans l'URL.";
+                } else if (message.includes('permission')) {
+                    msgEn = 'You do not have permission to view this receipt. Please make sure you are logged in.';
+                    msgFr = "Vous n'avez pas l'autorisation de voir ce reçu. Veuillez vous connecter.";
+                } else if (message.includes('Failed to fetch') || message.includes('load the receipt')) {
+                    msgEn = "We couldn't load the receipt details.";
+                    msgFr = "Nous n'avons pas pu charger les détails du reçu.";
+                }
+                errorMsg.innerHTML = `<span class="lang-en-only">${msgEn}</span><span class="lang-fr-only notranslate">${msgFr}</span>`;
                 errorOverlay.classList.remove('hidden');
                 loadingUI.classList.add('hidden');
+                loadI18n();
             };
 
             if (!bookingId) {
@@ -240,7 +294,10 @@
 
                 // Populate data
                 const receiptNum = booking.id.toString().padStart(6, '0');
-                document.getElementById('receipt-id').textContent = `Receipt #${receiptNum}`;
+                const receiptIdElem = document.getElementById('receipt-id');
+                if (receiptIdElem) {
+                    receiptIdElem.innerHTML = `<span class="lang-en-only">Receipt #${receiptNum}</span><span class="lang-fr-only notranslate">Reçu #${receiptNum}</span>`;
+                }
                 
                 document.getElementById('cust-name').textContent = booking.player_name || 'Guest User';
                 document.getElementById('cust-email').textContent = booking.player_email || '';
@@ -256,15 +313,31 @@
                 } catch(e) {
                     dateObj = new Date(booking.booking_date);
                 }
-                document.getElementById('booking-date').textContent = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                
+                const dateEn = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                const dateFr = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                document.getElementById('booking-date').innerHTML = `<span class="lang-en-only">${dateEn}</span><span class="lang-fr-only notranslate">${dateFr}</span>`;
                 
                 let parsedSlots = [];
                 try {
                     parsedSlots = typeof booking.time_slots === 'string' ? JSON.parse(booking.time_slots) : booking.time_slots;
                 } catch(e) {}
-                document.getElementById('booking-time').textContent = formatTimeSlots(parsedSlots) || 'Time TBD';
                 
-                document.getElementById('booking-status').textContent = booking.status;
+                const timeText = formatTimeSlots(parsedSlots);
+                if (timeText) {
+                    document.getElementById('booking-time').textContent = timeText;
+                } else {
+                    document.getElementById('booking-time').innerHTML = `<span class="lang-en-only">Time TBD</span><span class="lang-fr-only notranslate">Heure à déterminer</span>`;
+                }
+                
+                const statusText = booking.status || '';
+                const statusMapping = {
+                    'confirmed': { en: 'Confirmed', fr: 'Confirmé' },
+                    'cancelled': { en: 'Cancelled', fr: 'Annulé' },
+                    'pending': { en: 'Pending', fr: 'En attente' }
+                };
+                const mappedStatus = statusMapping[statusText.toLowerCase()] || { en: statusText, fr: statusText };
+                document.getElementById('booking-status').innerHTML = `<span class="lang-en-only">${mappedStatus.en}</span><span class="lang-fr-only notranslate">${mappedStatus.fr}</span>`;
 
                 // Set activity name if it's a public session
                 if (booking.booking_type === 'public_session' && booking.manual_notes) {
@@ -272,7 +345,23 @@
                     const activityVal = document.getElementById('booking-activity');
                     if (activityRow && activityVal) {
                         activityRow.classList.remove('hidden');
-                        activityVal.textContent = booking.manual_notes;
+                        
+                        const actMapping = {
+                            'Swimming Lane': { en: 'Swimming Lane', fr: 'Couloir de natation' },
+                            'Swimming Lanes': { en: 'Swimming Lanes', fr: 'Couloirs de natation' },
+                            'Open Swim and Diving Board': { en: 'Open Swim & Diving', fr: 'Baignade libre et plongeon' },
+                            'Recreational and Family Pool': { en: 'Recreational and Family Pool', fr: 'Piscine récréative et familiale' },
+                            'Free Skating': { en: 'Free Skating', fr: 'Patin libre' },
+                            'Open Hockey': { en: 'Open Hockey', fr: 'Hockey libre' },
+                            'Open Hockey (18+)': { en: 'Open Hockey 18+', fr: 'Hockey libre 18+' }
+                        };
+                        const actName = booking.manual_notes;
+                        const lookupAct = (name) => {
+                            const key = Object.keys(actMapping).find(k => k.toLowerCase() === name.toLowerCase());
+                            return key ? actMapping[key] : null;
+                        };
+                        const mappedAct = lookupAct(actName) || { en: actName, fr: actName };
+                        activityVal.innerHTML = `<span class="lang-en-only">${mappedAct.en}</span><span class="lang-fr-only notranslate">${mappedAct.fr}</span>`;
                     }
                 }
 
@@ -314,13 +403,13 @@
                 document.getElementById('total-amt').textContent = `$${total.toFixed(2)}`;
 
                 loadingUI.classList.add('hidden');
+                loadI18n();
 
             } catch (error) {
                 showError(error.message);
             }
         });
     </script>
-    <script src="js/i18n.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
