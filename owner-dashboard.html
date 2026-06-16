@@ -1751,20 +1751,26 @@
 <!-- Tab: Surfaces -->
 <div id="tab-surfaces" class="col-span-2 hidden">
     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
-        <div class="flex flex-row justify-between items-center mb-6 gap-4">
-            <div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <h2 class="text-2xl font-bold text-dark">
-                        Manage Surfaces
-                    </h2>
-                    <select id="surface-facility-selector" onchange="manageSurfaces(this.value)" class="text-base font-medium bg-white border border-slate-300 rounded-lg pl-4 pr-10 h-[50px] custom-dropdown-select text-slate-800 focus:outline-none focus:border-primary hidden cursor-pointer shadow-sm" style="appearance: none; -webkit-appearance: none; -moz-appearance: none;">
+        <div class="mb-6">
+            <!-- Line 1: Title and Add Button -->
+            <div class="flex flex-row justify-between items-center mb-4 gap-4">
+                <h2 class="text-2xl font-bold text-dark whitespace-nowrap">
+                    <span class="lang-en-only">Manage Surfaces</span><span class="lang-fr-only notranslate">Gérer les surfaces</span>
+                </h2>
+                <div class="flex items-center gap-2 md:gap-4 w-auto">
+                    <button type="button" onclick="openSurfaceModal()" class="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl font-bold transition-custom shadow-sm flex items-center justify-center text-sm whitespace-nowrap">
+                        <i class="fa-solid fa-plus mr-1"></i> <span class="lang-en-only">Add Surface</span><span class="lang-fr-only notranslate">Ajouter</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Line 2: Selector and Subtitle -->
+            <div class="flex flex-col gap-2">
+                <div>
+                    <select id="surface-facility-selector" onchange="manageSurfaces(this.value)" class="text-base font-medium bg-white border border-slate-300 rounded-lg pl-4 pr-10 h-[50px] custom-dropdown-select text-slate-800 focus:outline-none focus:border-primary hidden cursor-pointer shadow-sm w-full md:w-auto md:min-w-[250px]" style="appearance: none; -webkit-appearance: none; -moz-appearance: none;">
                     </select>
                 </div>
                 <p class="text-slate-500 text-sm mt-1" id="surfaces-facility-name">Select a facility first.</p>
             </div>
-            <button type="button" onclick="openSurfaceModal()" class="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl font-bold transition-custom shadow-sm flex items-center justify-center text-sm whitespace-nowrap">
-                <i class="fa-solid fa-plus mr-2"></i> Add Surface
-            </button>
         </div>
 
         <div id="surfaces-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
