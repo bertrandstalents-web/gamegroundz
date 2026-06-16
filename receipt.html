@@ -104,6 +104,10 @@
                                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Status</p>
                                 <p class="font-medium text-primary capitalize" id="booking-status">-</p>
                             </div>
+                            <div id="activity-row" class="hidden">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1"><span class="lang-en-only">Activity</span><span class="lang-fr-only notranslate">Activité</span></p>
+                                <p class="font-medium text-dark" id="booking-activity">-</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -113,15 +117,15 @@
                     <div class="w-full sm:w-1/2">
                         <div id="receipt-breakdown"></div>
                         <div class="flex justify-between items-center py-3 border-b border-slate-100">
-                            <span class="text-slate-600 font-medium">Subtotal</span>
+                            <span class="text-slate-600 font-medium"><span class="lang-en-only">Subtotal</span><span class="lang-fr-only notranslate">Sous-total</span></span>
                             <span class="text-dark font-medium" id="subtotal-amt">-</span>
                         </div>
                         <div class="flex justify-between items-center py-3 border-b border-slate-100">
-                            <span class="text-slate-600 font-medium">Platform Fee</span>
-                            <span class="text-dark font-medium">Included</span>
+                            <span class="text-slate-600 font-medium"><span class="lang-en-only">Platform Fee</span><span class="lang-fr-only notranslate">Frais de plateforme</span></span>
+                            <span class="text-dark font-medium"><span class="lang-en-only">Included</span><span class="lang-fr-only notranslate">Compris</span></span>
                         </div>
                         <div class="flex justify-between items-center py-4 mt-2">
-                            <span class="text-lg font-bold text-dark">Total Paid</span>
+                            <span class="text-lg font-bold text-dark"><span class="lang-en-only">Total Paid</span><span class="lang-fr-only notranslate">Total payé</span></span>
                             <span class="text-2xl font-black text-primary" id="total-amt">-</span>
                         </div>
                     </div>
@@ -262,6 +266,16 @@
                 
                 document.getElementById('booking-status').textContent = booking.status;
 
+                // Set activity name if it's a public session
+                if (booking.booking_type === 'public_session' && booking.manual_notes) {
+                    const activityRow = document.getElementById('activity-row');
+                    const activityVal = document.getElementById('booking-activity');
+                    if (activityRow && activityVal) {
+                        activityRow.classList.remove('hidden');
+                        activityVal.textContent = booking.manual_notes;
+                    }
+                }
+
                 const total = booking.total_price || 0;
                 
                 let breakdownHTML = '';
@@ -269,7 +283,7 @@
                     if (booking.quantity_adult > 0) {
                         breakdownHTML += `
                         <div class="flex justify-between items-center py-3 border-b border-slate-100">
-                            <span class="text-slate-600 font-medium">${booking.quantity_adult}x Adult Ticket</span>
+                            <span class="text-slate-600 font-medium">${booking.quantity_adult}x <span class="lang-en-only">${booking.quantity_adult > 1 ? 'Adult Tickets' : 'Adult Ticket'}</span><span class="lang-fr-only notranslate">${booking.quantity_adult > 1 ? 'billets adultes' : 'billet adulte'}</span></span>
                             <span class="text-dark font-medium">$${(booking.cost_adults || 0).toFixed(2)}</span>
                         </div>
                         `;
@@ -277,7 +291,7 @@
                     if (booking.quantity_kid > 0) {
                         breakdownHTML += `
                         <div class="flex justify-between items-center py-3 border-b border-slate-100">
-                            <span class="text-slate-600 font-medium">${booking.quantity_kid}x Kid Ticket</span>
+                            <span class="text-slate-600 font-medium">${booking.quantity_kid}x <span class="lang-en-only">${booking.quantity_kid > 1 ? 'Kid Tickets' : 'Kid Ticket'}</span><span class="lang-fr-only notranslate">${booking.quantity_kid > 1 ? 'billets enfants' : 'billet enfant'}</span></span>
                             <span class="text-dark font-medium">$${(booking.cost_kids || 0).toFixed(2)}</span>
                         </div>
                         `;
@@ -285,7 +299,7 @@
                 } else if (parsedSlots.length > 0) {
                     breakdownHTML += `
                     <div class="flex justify-between items-center py-3 border-b border-slate-100">
-                        <span class="text-slate-600 font-medium">Facility Booking (${parsedSlots.length} slots)</span>
+                        <span class="text-slate-600 font-medium"><span class="lang-en-only">Facility Booking (${parsedSlots.length} ${parsedSlots.length > 1 ? 'slots' : 'slot'})</span><span class="lang-fr-only notranslate">Réservation d'installation (${parsedSlots.length} ${parsedSlots.length > 1 ? 'plages' : 'plage'})</span></span>
                         <span class="text-dark font-medium">$${total.toFixed(2)}</span>
                     </div>
                     `;
