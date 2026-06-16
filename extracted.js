@@ -733,7 +733,7 @@
                     mobileProfileBtn.href = profileHref;
                     mobileProfileBtn.innerHTML = `
                         <i class="fa-solid fa-user-check text-xl mb-1 pb-0.5 text-primary"></i>
-                        <span class="text-[10px] font-medium text-primary">Profile</span>
+                        <span class="text-[10px] font-medium text-primary"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></span>
                     `;
                 }
 

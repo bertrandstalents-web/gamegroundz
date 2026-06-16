@@ -1,8 +1,24 @@
-// i18n.js - Handles global translation state and custom toggle for Google Translate
+// Helper to get cookie value by name
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
 
 // 1. Get saved language
 const savedLang = localStorage.getItem('gg_language') || 'en';
 document.documentElement.setAttribute('data-lang', savedLang);
+
+// Ensure Google Translate cookie matches local storage preference
+const expectedCookieVal = savedLang === 'en' ? '/en/en' : `/en/${savedLang}`;
+const currentCookie = getCookie('googtrans');
+if (currentCookie !== expectedCookieVal) {
+    document.cookie = `googtrans=${expectedCookieVal}; path=/`;
+    if (window.location.hostname) {
+        document.cookie = `googtrans=${expectedCookieVal}; domain=${window.location.hostname}; path=/`;
+        document.cookie = `googtrans=${expectedCookieVal}; domain=.${window.location.hostname}; path=/`;
+    }
+}
 
 // 2. Inject Google Translate script dynamically
 (function() {
