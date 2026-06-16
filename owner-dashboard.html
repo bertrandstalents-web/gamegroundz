@@ -161,6 +161,9 @@
                 font-size: 0.7rem !important;
                 line-height: 1.1 !important;
             }
+            .choices-w-full-mobile .choices {
+                width: 100% !important;
+            }
         }
     </style>
     <!-- Choices.js CSS -->
@@ -264,20 +267,20 @@
             <div class="grid grid-cols-2 lg:flex lg:flex-row gap-4 md:gap-8">
                 
                 <!-- Sidebar Navigation -->
-                <div class="col-span-1 lg:w-[280px] flex-shrink-0">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 md:p-4 sticky top-28 h-full lg:h-auto">
-                        <ul class="space-y-0.5 md:space-y-1" id="sidebar-menu">
-                            <li data-tab="facilities"><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-list w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">My Facilities</span><span class="lang-fr-only notranslate">Mes installations</span></button></li>
-                            <li data-tab="surfaces"><button id="tab-btn-surfaces" onclick="switchTab('surfaces')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-layer-group w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Surfaces</span><span class="lang-fr-only notranslate">Surfaces</span></button></li>
-                            <li data-tab="analytics"><button id="tab-btn-analytics" onclick="switchTab('analytics')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-chart-pie w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Analytics</span><span class="lang-fr-only notranslate">Statistiques</span></button></li>
-                            <li data-tab="reservations"><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Reservations</span><span class="lang-fr-only notranslate">Réservations</span></button></li>
-                            <li data-tab="calendar"><button id="tab-btn-calendar" onclick="switchTab('calendar')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-regular fa-calendar w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Calendar</span><span class="lang-fr-only notranslate">Calendrier</span></button></li>
-                            <li data-tab="discounts"><button id="tab-btn-discounts" onclick="switchTab('discounts')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tags w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Discounts</span><span class="lang-fr-only notranslate">Rabais</span></button></li>
-                            <li data-tab="wallet"><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Wallet &amp; Payouts</span><span class="lang-fr-only notranslate">Portefeuille et paiements</span></button></li>
-                            <li data-tab="profile"><button id="tab-btn-profile" onclick="switchTab('profile')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-user w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></button></li>
-                            <li data-tab="dispatch"><button id="tab-btn-dispatch" onclick="switchTab('dispatch')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tv w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Launch to TV</span><span class="lang-fr-only notranslate">Lancer sur TV</span></button></li>
+                <div class="col-span-2 lg:w-[280px] flex-shrink-0">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 md:p-4 sticky top-28 h-auto lg:h-auto">
+                        <ul class="flex flex-row overflow-x-auto gap-2 md:space-y-1 lg:flex-col lg:space-y-0.5 lg:overflow-x-visible" id="sidebar-menu">
+                            <li data-tab="facilities"><button id="tab-btn-facilities" onclick="switchTab('facilities')" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-3 lg:px-4 lg:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-list w-6 lg:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only hidden lg:inline">My Facilities</span><span class="lang-fr-only notranslate hidden lg:inline">Mes installations</span></button></li>
+                            <li data-tab="surfaces"><button id="tab-btn-surfaces" onclick="switchTab('surfaces')" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-3 lg:px-4 lg:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-layer-group w-6 lg:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only hidden lg:inline">Surfaces</span><span class="lang-fr-only notranslate hidden lg:inline">Surfaces</span></button></li>
+                            <li data-tab="analytics"><button id="tab-btn-analytics" onclick="switchTab('analytics')" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-3 lg:px-4 lg:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-chart-pie w-6 lg:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only hidden lg:inline">Analytics</span><span class="lang-fr-only notranslate hidden lg:inline">Statistiques</span></button></li>
+                            <li data-tab="reservations"><button id="tab-btn-reservations" onclick="switchTab('reservations')" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-3 lg:px-4 lg:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-calendar-check w-6 lg:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only hidden lg:inline">Reservations</span><span class="lang-fr-only notranslate hidden lg:inline">Réservations</span></button></li>
+                            <li data-tab="calendar"><button id="tab-btn-calendar" onclick="switchTab('calendar')" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-3 lg:px-4 lg:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-regular fa-calendar w-6 lg:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only hidden lg:inline">Calendar</span><span class="lang-fr-only notranslate hidden lg:inline">Calendrier</span></button></li>
+                            <li data-tab="discounts"><button id="tab-btn-discounts" onclick="switchTab('discounts')" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-3 lg:px-4 lg:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tags w-6 lg:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only hidden lg:inline">Discounts</span><span class="lang-fr-only notranslate hidden lg:inline">Rabais</span></button></li>
+                            <li data-tab="wallet"><button id="tab-btn-wallet" onclick="switchTab('wallet')" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-3 lg:px-4 lg:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-wallet w-6 lg:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only hidden lg:inline">Wallet &amp; Payouts</span><span class="lang-fr-only notranslate hidden lg:inline">Portefeuille et paiements</span></button></li>
+                            <li data-tab="profile"><button id="tab-btn-profile" onclick="switchTab('profile')" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-3 lg:px-4 lg:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-user w-6 lg:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only hidden lg:inline">Profile</span><span class="lang-fr-only notranslate hidden lg:inline">Profil</span></button></li>
+                            <li data-tab="dispatch" class="hidden lg:block"><button id="tab-btn-dispatch" onclick="switchTab('dispatch')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-tv w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Launch to TV</span><span class="lang-fr-only notranslate">Lancer sur TV</span></button></li>
 
-                            <li id="nav-item-our-people" class="hidden" data-tab="our-people"><button id="tab-btn-our-people" onclick="switchTab('our-people')" class="w-full text-left flex items-center px-4 py-2 md:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-users w-6 mr-2 md:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only">Our People</span><span class="lang-fr-only notranslate">Notre équipe</span></button></li>
+                            <li id="nav-item-our-people" class="hidden" data-tab="our-people"><button id="tab-btn-our-people" onclick="switchTab('our-people')" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-3 lg:px-4 lg:py-3 text-sm md:text-base text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom"><i class="fa-solid fa-users w-6 lg:mr-3 cursor-grab sort-handle"></i> <span class="lang-en-only hidden lg:inline">Our People</span><span class="lang-fr-only notranslate hidden lg:inline">Notre équipe</span></button></li>
                         </ul>
                     </div>
                 </div>
@@ -286,9 +289,9 @@
                 <div class="col-span-2 lg:flex-1 min-w-0 contents lg:block">
 
                     <!-- Live Revenue Dashboard -->
-                    <div id="live-revenue-dashboard" class="col-span-1 lg:col-span-none lg:mb-8 flex flex-col h-full w-full lg:block lg:h-auto">
+                    <div id="live-revenue-dashboard" class="col-span-2 lg:col-span-none lg:mb-8 flex flex-col w-full lg:block lg:h-auto">
                         <h2 class="hidden lg:block text-lg md:text-2xl font-bold text-dark mb-3 md:mb-4"><span class="lang-en-only">Live Revenue Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord des revenus en direct</span></h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 flex-1 h-full lg:flex-none lg:h-auto">
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 w-full lg:h-auto">
                             <!-- Today's Revenue -->
                             <div onclick="switchTab('analytics')" class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 p-3 lg:p-6 flex flex-col justify-center h-full lg:justify-start lg:h-auto cursor-pointer hover:-translate-y-1 hover:shadow-md hover:border-primary/30 transition-custom transform duration-300 relative group">
                                 <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 rounded-2xl md:rounded-3xl transition-opacity duration-300 pointer-events-none"></div>
@@ -340,78 +343,76 @@
             <!-- Tab: Reservations -->
             <div id="tab-reservations" class="col-span-2 lg:col-span-none hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 md:p-8">
-                    <div class="flex flex-col md:flex-row gap-4 mb-6 items-start md:items-center justify-between border-b border-slate-100 pb-6">
-                        <div class="flex flex-wrap items-center gap-4">
-                            <div class="relative" id="res-status-dropdown-container">
-                                <button type="button" onclick="document.getElementById('res-status-dropdown-menu').classList.toggle('hidden')" class="px-4 h-[50px] border-2 border-primary bg-primary/10 text-primary hover:bg-primary/20 transition-custom font-bold rounded-lg focus:outline-none flex items-center justify-between gap-2 min-w-[200px] cursor-pointer shadow-sm">
-                                    <span id="res-status-btn-text">Upcoming, Past</span>
-                                    <i class="fa-solid fa-chevron-down text-sm"></i>
-                                </button>
-                                
-                                <!-- Dropdown menu -->
-                                <div id="res-status-dropdown-menu" class="hidden absolute left-0 top-full mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden text-sm">
-                                    <div class="p-3 space-y-2 max-h-60 overflow-y-auto">
-                                        <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
-                                            <input type="checkbox" value="upcoming" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked="" onchange="updateStatusBtnText(); applyReservationFilters();">
-                                            <span class="font-medium text-slate-700">Upcoming Reservations</span>
-                                        </label>
-                                        <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
-                                            <input type="checkbox" value="past" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked="" onchange="updateStatusBtnText(); applyReservationFilters();">
-                                            <span class="font-medium text-slate-700">Past Reservations</span>
-                                        </label>
-                                        <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
-                                            <input type="checkbox" value="archived" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" onchange="updateStatusBtnText(); applyReservationFilters();">
-                                            <span class="font-medium text-slate-700">Archived Reservations</span>
-                                        </label>
-                                    </div>
+                    <div class="grid grid-cols-2 md:flex md:flex-wrap items-center gap-4 mb-6 border-b border-slate-100 pb-6">
+                        <div class="relative w-full md:w-auto" id="res-status-dropdown-container">
+                            <button type="button" onclick="document.getElementById('res-status-dropdown-menu').classList.toggle('hidden')" class="px-4 h-[50px] border-2 border-primary bg-primary/10 text-primary hover:bg-primary/20 transition-custom font-bold rounded-lg focus:outline-none flex items-center justify-between gap-2 w-full md:min-w-[200px] cursor-pointer shadow-sm">
+                                <span id="res-status-btn-text">Upcoming, Past</span>
+                                <i class="fa-solid fa-chevron-down text-sm"></i>
+                            </button>
+                            
+                            <!-- Dropdown menu -->
+                            <div id="res-status-dropdown-menu" class="hidden absolute left-0 top-full mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden text-sm">
+                                <div class="p-3 space-y-2 max-h-60 overflow-y-auto">
+                                    <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
+                                        <input type="checkbox" value="upcoming" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked="" onchange="updateStatusBtnText(); applyReservationFilters();">
+                                        <span class="font-medium text-slate-700">Upcoming Reservations</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
+                                        <input type="checkbox" value="past" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked="" onchange="updateStatusBtnText(); applyReservationFilters();">
+                                        <span class="font-medium text-slate-700">Past Reservations</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
+                                        <input type="checkbox" value="archived" class="res-status-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" onchange="updateStatusBtnText(); applyReservationFilters();">
+                                        <span class="font-medium text-slate-700">Archived Reservations</span>
+                                    </label>
                                 </div>
-                            </div>
-                            
-                            <div class="relative" id="res-type-dropdown-container">
-                                <button type="button" onclick="document.getElementById('res-type-dropdown-menu').classList.toggle('hidden')" class="px-4 h-[50px] border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-custom font-medium rounded-lg focus:outline-none flex items-center justify-between gap-2 min-w-[180px] cursor-pointer shadow-sm">
-                                    <span id="res-type-btn-text">Online, Offline</span>
-                                    <i class="fa-solid fa-chevron-down text-sm"></i>
-                                </button>
-                                
-                                <!-- Dropdown menu -->
-                                <div id="res-type-dropdown-menu" class="hidden absolute left-0 top-full mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden text-sm">
-                                    <div class="p-3 space-y-2 max-h-60 overflow-y-auto">
-                                        <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
-                                            <input type="checkbox" value="online" class="res-type-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked="" onchange="updateTypeBtnText(); applyReservationFilters();">
-                                            <span class="font-medium text-slate-700">Online Bookings</span>
-                                        </label>
-                                        <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
-                                            <input type="checkbox" value="offline" class="res-type-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked="" onchange="updateTypeBtnText(); applyReservationFilters();">
-                                            <span class="font-medium text-slate-700">Offline Bookings</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="choices-container-180" style="width: 180px; min-width: 180px; max-width: 180px;">
-                                <select id="res-date-filter" class="px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm w-[180px] notranslate custom-dropdown-select force-w-180" onchange="applyReservationFilters()">
-                                    <option id="opt-all" value="all">All Dates</option>
-                                    <option id="opt-today" value="today" selected="">Today</option>
-                                    <option id="opt-tomorrow" value="tomorrow">Tomorrow</option>
-                                    <option id="opt-week" value="week">This Week</option>
-                                    <option id="opt-month" value="month">This Month</option>
-                                    <option id="opt-year" value="year">This Year</option>
-                                    <option id="opt-custom" value="advanced">Custom Range</option>
-                                </select>
-                            </div>
-                            
-                            <div id="res-date-advanced" class="hidden items-center gap-2">
-                                <input type="date" id="res-start-date" class="px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm text-slate-700 shadow-sm" onchange="applyReservationFilters()">
-                                <span class="text-slate-400 text-sm font-medium">to</span>
-                                <input type="date" id="res-end-date" class="px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm text-slate-700 shadow-sm" onchange="applyReservationFilters()">
                             </div>
                         </div>
                         
-                        <div>
+                        <div class="relative w-full md:w-auto" id="res-type-dropdown-container">
+                            <button type="button" onclick="document.getElementById('res-type-dropdown-menu').classList.toggle('hidden')" class="px-4 h-[50px] border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-custom font-medium rounded-lg focus:outline-none flex items-center justify-between gap-2 w-full md:min-w-[180px] cursor-pointer shadow-sm">
+                                <span id="res-type-btn-text">Online, Offline</span>
+                                <i class="fa-solid fa-chevron-down text-sm"></i>
+                            </button>
+                            
+                            <!-- Dropdown menu -->
+                            <div id="res-type-dropdown-menu" class="hidden absolute left-0 top-full mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden text-sm">
+                                <div class="p-3 space-y-2 max-h-60 overflow-y-auto">
+                                    <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
+                                        <input type="checkbox" value="online" class="res-type-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked="" onchange="updateTypeBtnText(); applyReservationFilters();">
+                                        <span class="font-medium text-slate-700">Online Bookings</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-custom">
+                                        <input type="checkbox" value="offline" class="res-type-checkbox w-4 h-4 text-primary bg-white border-slate-300 rounded focus:ring-primary" checked="" onchange="updateTypeBtnText(); applyReservationFilters();">
+                                        <span class="font-medium text-slate-700">Offline Bookings</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="choices-container-180 w-full md:w-[180px] md:min-w-[180px] md:max-w-[180px]">
+                            <select id="res-date-filter" class="px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm w-full md:w-[180px] notranslate custom-dropdown-select force-w-180" onchange="applyReservationFilters()">
+                                <option id="opt-all" value="all">All Dates</option>
+                                <option id="opt-today" value="today" selected="">Today</option>
+                                <option id="opt-tomorrow" value="tomorrow">Tomorrow</option>
+                                <option id="opt-week" value="week">This Week</option>
+                                <option id="opt-month" value="month">This Month</option>
+                                <option id="opt-year" value="year">This Year</option>
+                                <option id="opt-custom" value="advanced">Custom Range</option>
+                            </select>
+                        </div>
+                        
+                        <div class="choices-w-full-mobile w-full md:w-auto">
                             <select id="res-facility-filter" class="px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-custom bg-white appearance-none cursor-pointer text-slate-700 font-medium shadow-sm custom-dropdown-select" onchange="applyReservationFilters()">
                                 <option value="all">All Facilities</option>
                                 <!-- Populated dynamically by JS -->
                             </select>
+                        </div>
+
+                        <div id="res-date-advanced" class="hidden items-center gap-2 col-span-2 w-full md:w-auto md:col-span-none">
+                            <input type="date" id="res-start-date" class="px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm text-slate-700 shadow-sm" onchange="applyReservationFilters()">
+                            <span class="text-slate-400 text-sm font-medium">to</span>
+                            <input type="date" id="res-end-date" class="px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm text-slate-700 shadow-sm" onchange="applyReservationFilters()">
                         </div>
                     </div>
 
@@ -2308,6 +2309,7 @@
                     container.sortableInstance = Sortable.create(container, {
                         animation: 150,
                         ghostClass: 'opacity-50',
+                        disabled: window.innerWidth <= 768,
                     onEnd: function (evt) {
                         const orderIds = Array.from(container.children).map(child => child.getAttribute('data-id'));
                         
@@ -9413,6 +9415,10 @@
             // Re-evaluate on window resize
             window.addEventListener('resize', () => {
                 sidebarSortable.option('disabled', window.innerWidth <= 768);
+                const facContainer = document.getElementById('host-facilities-list');
+                if (facContainer && facContainer.sortableInstance) {
+                    facContainer.sortableInstance.option('disabled', window.innerWidth <= 768);
+                }
             });
         }
     });
