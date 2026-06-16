@@ -135,6 +135,12 @@
                             </button>
                         </li>
                         <li class="flex-1 lg:flex-none">
+                            <a href="search.html" id="nav-btn-search" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-2 lg:px-4 lg:py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom">
+                                <i class="fa-solid fa-search text-lg lg:text-base w-6 lg:mr-3 flex justify-center items-center"></i>
+                                <span class="lang-en-only hidden lg:inline">Search</span><span class="lang-fr-only notranslate hidden lg:inline">Recherche</span>
+                            </a>
+                        </li>
+                        <li class="flex-1 lg:flex-none">
                             <button id="nav-btn-saved" onclick="switchNav('saved')" class="w-full text-center lg:text-left flex items-center justify-center lg:justify-start p-2 lg:px-4 lg:py-3 text-slate-600 hover:bg-slate-50 hover:text-dark rounded-xl font-medium transition-custom">
                                 <i class="fa-regular fa-heart text-lg lg:text-base w-6 lg:mr-3 flex justify-center items-center"></i>
                                 <span class="lang-en-only hidden lg:inline">Saved Surfaces</span><span class="lang-fr-only notranslate hidden lg:inline">Surfaces sauvegardées</span>
@@ -1281,31 +1287,7 @@
                 });
             }
             
-            // Check login status for mobile profile button
-            const storedUserStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
-            if (storedUserStr) {
-                try {
-                    const user = JSON.parse(storedUserStr);
-                    const bottomNav = document.getElementById('mobile-bottom-nav');
-                    if (bottomNav) {
-                        if (user && (user.role === 'host' || user.role === 'admin')) {
-                            bottomNav.classList.add('hidden');
-                        } else {
-                            bottomNav.classList.remove('hidden');
-                        }
-                    }
-                    const mobileProfileBtn = document.getElementById('mobile-bottom-profile-btn');
-                    if (mobileProfileBtn) {
-                        const profileHref = user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'host' ? 'owner-dashboard.html' : 'player-dashboard.html');
-                        mobileProfileBtn.onclick = null;
-                        mobileProfileBtn.href = profileHref;
-                        mobileProfileBtn.innerHTML = `
-                            <i class="fa-solid fa-user text-xl mb-1 pb-0.5"></i>
-                            <span class="text-[10px] font-medium"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></span>
-                        `;
-                    }
-                } catch(e) {}
-            }
+            // Done bottom nav logic cleanup
         });
     </script>
     <!-- Cancel Booking Modal -->
@@ -1386,25 +1368,7 @@
     <script src="js/modals.js"></script>
     <script src="js/auth.js"></script>
     </script>
-    <!-- Mobile Bottom Tab Bar -->
-    <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pt-2 pb-4 px-2 z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-        <a href="index.html" class="flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-800 transition-custom">
-            <i class="fa-solid fa-compass text-lg mb-0.5"></i>
-            <span class="text-[10px] font-medium"><span class="lang-en-only">Explore</span><span class="lang-fr-only notranslate">Explorer</span></span>
-        </a>
-        <a href="search.html" class="flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-800 transition-custom">
-            <i class="fa-solid fa-search text-lg mb-0.5"></i>
-            <span class="text-[10px] font-medium"><span class="lang-en-only">Search</span><span class="lang-fr-only notranslate">Recherche</span></span>
-        </a>
-        <a href="player-dashboard.html" class="flex flex-col items-center py-1 px-2 text-primary">
-            <i class="fa-solid fa-calendar-check text-lg mb-0.5 pt-0.5"></i>
-            <span class="text-[10px] font-bold mt-0.5"><span class="lang-en-only">Bookings</span><span class="lang-fr-only notranslate">Réservations</span></span>
-        </a>
-        <a href="#" onclick="switchNav('profile'); return false;" class="flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-800 transition-custom" id="mobile-bottom-profile-btn">
-            <i class="fa-solid fa-user text-lg mb-0.5 pb-0.5"></i>
-            <span class="text-[10px] font-medium"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></span>
-        </a>
-    </div>
+
 
 
     <script>
