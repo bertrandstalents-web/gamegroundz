@@ -97,7 +97,9 @@
                     <div>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"><span class="lang-en-only">Billed To</span><span class="lang-fr-only notranslate">Facturé à</span></p>
                         <h3 class="text-lg font-bold text-dark mb-1" id="cust-name">-</h3>
-                        <p class="text-slate-600 text-sm" id="cust-email">-</p>
+                        <p class="text-slate-600 text-sm mb-0.5" id="cust-email">-</p>
+                        <p class="text-slate-500 text-sm mb-0.5" id="cust-phone"></p>
+                        <p class="text-slate-500 text-sm mt-1" id="cust-residency"></p>
                     </div>
                     <div>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"><span class="lang-en-only">Provided By</span><span class="lang-fr-only notranslate">Fourni par</span></p>
@@ -140,10 +142,7 @@
                             <span class="text-slate-600 font-medium"><span class="lang-en-only">Subtotal</span><span class="lang-fr-only notranslate">Sous-total</span></span>
                             <span class="text-dark font-medium" id="subtotal-amt">-</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 border-b border-slate-100">
-                            <span class="text-slate-600 font-medium"><span class="lang-en-only">Platform Fee</span><span class="lang-fr-only notranslate">Frais de plateforme</span></span>
-                            <span class="text-dark font-medium"><span class="lang-en-only">Included</span><span class="lang-fr-only notranslate">Compris</span></span>
-                        </div>
+
                         <div class="flex justify-between items-center py-4 mt-2">
                             <span class="text-lg font-bold text-dark"><span class="lang-en-only">Total Paid</span><span class="lang-fr-only notranslate">Total payé</span></span>
                             <span class="text-2xl font-black text-primary" id="total-amt">-</span>
@@ -302,6 +301,29 @@
                 document.getElementById('cust-name').textContent = booking.player_name || 'Guest User';
                 document.getElementById('cust-email').textContent = booking.player_email || '';
 
+                const phoneElem = document.getElementById('cust-phone');
+                if (phoneElem) {
+                    phoneElem.textContent = booking.player_phone || '';
+                }
+
+                const residencyElem = document.getElementById('cust-residency');
+                if (residencyElem) {
+                    if (booking.player_residency_status === 'verified') {
+                        const city = booking.player_residency_city || '';
+                        residencyElem.innerHTML = `
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                                <span class="lang-en-only">Resident${city ? ` (${city})` : ''}</span>
+                                <span class="lang-fr-only notranslate">Résident${city ? ` (${city})` : ''}</span>
+                            </span>`;
+                    } else {
+                        residencyElem.innerHTML = `
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-50 text-slate-600 border border-slate-200">
+                                <span class="lang-en-only">Non-Resident</span>
+                                <span class="lang-fr-only notranslate">Non-résident</span>
+                            </span>`;
+                    }
+                }
+
                 document.getElementById('host-name').textContent = booking.host_company_name || booking.host_name || 'GameGroundz Host';
                 document.getElementById('facility-name').textContent = booking.facility_name;
                 document.getElementById('facility-location').textContent = booking.location;
@@ -369,19 +391,31 @@
                 
                 let breakdownHTML = '';
                 if (booking.booking_type === 'public_session') {
-                    if (booking.quantity_adult > 0) {
+                    const hasAdult = (booking.quantity_adult && booking.quantity_adult > 0);
+                    const hasKid = (booking.quantity_kid && booking.quantity_kid > 0);
+                    
+                    if (hasAdult) {
                         breakdownHTML += `
                         <div class="flex justify-between items-center py-3 border-b border-slate-100">
-                            <span class="text-slate-600 font-medium">${booking.quantity_adult}x <span class="lang-en-only">${booking.quantity_adult > 1 ? 'Adult Tickets' : 'Adult Ticket'}</span><span class="lang-fr-only notranslate">${booking.quantity_adult > 1 ? 'billets adultes' : 'billet adulte'}</span></span>
+                            <span class="text-slate-600 font-medium">${booking.quantity_adult}x <span class="lang-en-only">${booking.quantity_adult > 1 ? 'Adult Tickets' : 'Adult Ticket'}</span> <span class="lang-fr-only notranslate">${booking.quantity_adult > 1 ? 'billets adultes' : 'billet adulte'}</span></span>
                             <span class="text-dark font-medium">$${(booking.cost_adults || 0).toFixed(2)}</span>
                         </div>
                         `;
                     }
-                    if (booking.quantity_kid > 0) {
+                    if (hasKid) {
                         breakdownHTML += `
                         <div class="flex justify-between items-center py-3 border-b border-slate-100">
-                            <span class="text-slate-600 font-medium">${booking.quantity_kid}x <span class="lang-en-only">${booking.quantity_kid > 1 ? 'Kid Tickets' : 'Kid Ticket'}</span><span class="lang-fr-only notranslate">${booking.quantity_kid > 1 ? 'billets enfants' : 'billet enfant'}</span></span>
+                            <span class="text-slate-600 font-medium">${booking.quantity_kid}x <span class="lang-en-only">${booking.quantity_kid > 1 ? 'Kid Tickets' : 'Kid Ticket'}</span> <span class="lang-fr-only notranslate">${booking.quantity_kid > 1 ? 'billets enfants' : 'billet enfant'}</span></span>
                             <span class="text-dark font-medium">$${(booking.cost_kids || 0).toFixed(2)}</span>
+                        </div>
+                        `;
+                    }
+                    if (!hasAdult && !hasKid) {
+                        const qty = booking.quantity || 1;
+                        breakdownHTML += `
+                        <div class="flex justify-between items-center py-3 border-b border-slate-100">
+                            <span class="text-slate-600 font-medium">${qty}x <span class="lang-en-only">${qty > 1 ? 'Tickets' : 'Ticket'}</span> <span class="lang-fr-only notranslate">${qty > 1 ? 'billets' : 'billet'}</span></span>
+                            <span class="text-dark font-medium">$${(booking.total_price || 0).toFixed(2)}</span>
                         </div>
                         `;
                     }

@@ -3155,7 +3155,8 @@ app.get('/api/bookings/receipt/:id', (req, res) => {
     const query = `
         SELECT b.*, 
                f.name as facility_name, f.location, f.host_id,
-               u.name as player_name, u.email as player_email,
+               u.name as player_name, u.email as player_email, u.phone_number as player_phone,
+               u.residency_status as player_residency_status, u.residency_city as player_residency_city,
                h.name as host_name, h.email as host_email, h.company_name as host_company_name
         FROM bookings b
         JOIN facilities f ON b.facility_id = f.id
@@ -3176,7 +3177,7 @@ app.get('/api/bookings/receipt/:id', (req, res) => {
         
         if (!hasBaseAccess && row.booking_type === 'public_session') {
             // Check if they are a participant
-            db.get("SELECT psp.quantity, psp.quantity_adult, psp.quantity_kid, u2.name as player_name, u2.email as player_email FROM public_session_participants psp JOIN users u2 ON psp.user_id = u2.id WHERE psp.booking_id = ? AND psp.user_id = ? AND psp.payment_status = 'paid'", [id, req.session.userId], (err, pspRow) => {
+            db.get("SELECT psp.quantity, psp.quantity_adult, psp.quantity_kid, u2.name as player_name, u2.email as player_email, u2.phone_number as player_phone, u2.residency_status as player_residency_status, u2.residency_city as player_residency_city FROM public_session_participants psp JOIN users u2 ON psp.user_id = u2.id WHERE psp.booking_id = ? AND psp.user_id = ? AND psp.payment_status = 'paid'", [id, req.session.userId], (err, pspRow) => {
                 if (err || !pspRow) return res.status(403).json({ error: "Forbidden: You don't have access to this receipt" });
                 // Override receipt data just for them
                 const costAdults = (pspRow.quantity_adult || 0) * (row.participant_price || 0);
@@ -3184,6 +3185,10 @@ app.get('/api/bookings/receipt/:id', (req, res) => {
                 row.total_price = costAdults + costKids;
                 row.player_name = pspRow.player_name;
                 row.player_email = pspRow.player_email;
+                row.player_phone = pspRow.player_phone;
+                row.player_residency_status = pspRow.player_residency_status;
+                row.player_residency_city = pspRow.player_residency_city;
+                row.quantity = pspRow.quantity || 1;
                 row.quantity_adult = pspRow.quantity_adult || 0;
                 row.quantity_kid = pspRow.quantity_kid || 0;
                 row.cost_adults = costAdults;
@@ -3191,7 +3196,21 @@ app.get('/api/bookings/receipt/:id', (req, res) => {
                 res.json(row);
             });
         } else if (hasBaseAccess) {
-            res.json(row);
+            // If the user has base access and this is a public session, we still want to grab their participant info (e.g. quantity) if they joined as a player
+            if (row.booking_type === 'public_session') {
+                db.get("SELECT quantity, quantity_adult, quantity_kid, cost_adults, cost_kids FROM public_session_participants WHERE booking_id = ? AND user_id = ? AND payment_status = 'paid'", [id, row.user_id], (err, pspRow) => {
+                    if (!err && pspRow) {
+                        row.quantity = pspRow.quantity || 1;
+                        row.quantity_adult = pspRow.quantity_adult || 0;
+                        row.quantity_kid = pspRow.quantity_kid || 0;
+                        row.cost_adults = pspRow.cost_adults || 0;
+                        row.cost_kids = pspRow.cost_kids || 0;
+                    }
+                    res.json(row);
+                });
+            } else {
+                res.json(row);
+            }
         } else {
             return res.status(403).json({ error: "Forbidden: You don't have access to this receipt" });
         }
