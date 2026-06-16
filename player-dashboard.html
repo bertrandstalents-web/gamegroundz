@@ -1270,6 +1270,14 @@
             if (storedUserStr) {
                 try {
                     const user = JSON.parse(storedUserStr);
+                    const bottomNav = document.getElementById('mobile-bottom-nav');
+                    if (bottomNav) {
+                        if (user && (user.role === 'host' || user.role === 'admin')) {
+                            bottomNav.classList.add('hidden');
+                        } else {
+                            bottomNav.classList.remove('hidden');
+                        }
+                    }
                     const mobileProfileBtn = document.getElementById('mobile-bottom-profile-btn');
                     if (mobileProfileBtn) {
                         const profileHref = user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'host' ? 'owner-dashboard.html' : 'player-dashboard.html');
@@ -1363,7 +1371,7 @@
     <script src="js/auth.js"></script>
     </script>
     <!-- Mobile Bottom Tab Bar -->
-    <div class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pt-2 pb-4 px-2 z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+    <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pt-2 pb-4 px-2 z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
         <a href="index.html" class="flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-800 transition-custom">
             <i class="fa-solid fa-compass text-lg mb-0.5"></i>
             <span class="text-[10px] font-medium"><span class="lang-en-only">Explore</span><span class="lang-fr-only notranslate">Explorer</span></span>
