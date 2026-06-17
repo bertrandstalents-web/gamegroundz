@@ -987,25 +987,58 @@
 
         const getUserLocationSilently = async () => {
             try {
+                // Check localStorage cache first
+                const cached = localStorage.getItem('gg_cached_location');
+                if (cached) {
+                    try {
+                        const parsed = JSON.parse(cached);
+                        // Cache for 24 hours
+                        if (Date.now() - parsed.timestamp < 86400000) {
+                            return parsed.coords;
+                        }
+                    } catch (e) {}
+                }
+
                 if (navigator.permissions && window.isSecureContext) {
                     const perm = await navigator.permissions.query({name: 'geolocation'});
                     if (perm.state === 'granted') {
-                        return new Promise((resolve) => {
+                        const coords = await new Promise((resolve) => {
                             navigator.geolocation.getCurrentPosition(
                                 (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
                                 () => resolve(null),
                                 { timeout: 3000, maximumAge: 600000 }
                             );
                         });
+                        if (coords) {
+                            localStorage.setItem('gg_cached_location', JSON.stringify({ coords, timestamp: Date.now() }));
+                            return coords;
+                        }
                     }
                 }
                 const res = await fetch('https://ipapi.co/json/');
                 const data = await res.json();
                 if (data && data.latitude && data.longitude) {
-                    return { lat: data.latitude, lng: data.longitude };
+                    const coords = { lat: parseFloat(data.latitude), lng: parseFloat(data.longitude) };
+                    localStorage.setItem('gg_cached_location', JSON.stringify({ coords, timestamp: Date.now() }));
+                    return coords;
+                }
+                
+                // Fallback to expired cache if fetch fails
+                if (cached) {
+                    try {
+                        return JSON.parse(cached).coords;
+                    } catch(e) {}
                 }
                 return null;
             } catch (e) {
+                // Fallback to expired cache if try fails
+                try {
+                    const cached = localStorage.getItem('gg_cached_location');
+                    if (cached) {
+                        return JSON.parse(cached).coords;
+                    }
+                } catch(err) {}
+                return null;
             }
         };
 
