@@ -2214,13 +2214,21 @@
                         const chipsDiv = groupDiv.querySelector(`#chips-${dStr}`);
                         const sortedTimes = groupedSlots[dStr].sort();
                         
-                        sortedTimes.forEach(tId => {
-                            let ampm = 'AM';
-                            let [h, m] = tId.split(':');
-                            h = parseInt(h);
-                            if (h >= 12) { ampm = 'PM'; if (h > 12) h -= 12; }
-                            if (h === 0) h = 12;
-                            const tLabel = `${h}:${m} ${ampm}`;
+                        if (sortedTimes.length > 0) {
+                            const startTimeStr = sortedTimes[0];
+                            const lastTimeStr = sortedTimes[sortedTimes.length - 1];
+                            const [endH, endM] = lastTimeStr.split(':').map(Number);
+                            const totalEndMins = endH * 60 + endM + 30;
+                            const finalEndH = Math.floor(totalEndMins / 60);
+                            const finalEndM = totalEndMins % 60;
+                            const endTimeStr = `${String(finalEndH).padStart(2, '0')}:${String(finalEndM).padStart(2, '0')}`;
+                            
+                            const durationHours = sortedTimes.length * 0.5;
+                            const wholeHours = Math.floor(durationHours);
+                            const mins = (durationHours % 1) * 60;
+                            const durationStr = `${wholeHours}h${String(mins).padStart(2, '0')}`;
+                            
+                            const chipText = `${startTimeStr} – ${endTimeStr} · ${durationStr}`;
 
                             const span = document.createElement('span');
                             if (isPublicSessionCheckout) {
@@ -2228,16 +2236,22 @@
                             } else {
                                 span.className = 'px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-sm font-semibold flex items-center shadow-sm';
                             }
-                            span.innerHTML = `${tLabel} <i class="fa-solid fa-xmark ml-2 text-xs opacity-60 hover:opacity-100 cursor-pointer"></i>`;
+                            span.innerHTML = `${chipText} <i class="fa-solid fa-xmark ml-2 text-xs opacity-60 hover:opacity-100 cursor-pointer"></i>`;
                             span.querySelector('i').onclick = (e) => {
                                 e.stopPropagation();
-                                selectedSlotIds.delete(`${dStr}|${tId}`);
+                                const keysToDelete = [];
+                                selectedSlotIds.forEach(key => {
+                                    if (key.startsWith(`${dStr}|`)) {
+                                        keysToDelete.push(key);
+                                    }
+                                });
+                                keysToDelete.forEach(key => selectedSlotIds.delete(key));
                                 render();
                                 renderDailyCalendar();
                                 renderWeeklyCalendar();
                             };
                             chipsDiv.appendChild(span);
-                        });
+                        }
                     });
                 }
 
