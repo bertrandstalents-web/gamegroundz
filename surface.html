@@ -789,6 +789,8 @@
             }
             
             let selectedSlotIds = new Set(); // Start with no slots selected
+            window.timeSlotSelectedOnce = false;
+            window.courtSelectedOnce = false;
             window.publicSessionQuantity = 1;
 
             const trigger = document.getElementById('time-slot-trigger');
@@ -2105,10 +2107,22 @@
                                         selectedSlotIds.clear();
                                     }
                                     
+                                    const wasEmptyBefore = (selectedSlotIds.size === 0);
+                                    
                                     toggleTimeSlot(selectedDateStr, slot);
                                     render();
                                     renderDailyCalendar();
                                     renderWeeklyCalendar();
+                                    
+                                    if (selectedSlotIds.size === 0) {
+                                        window.timeSlotSelectedOnce = false;
+                                    } else if (wasEmptyBefore && !window.timeSlotSelectedOnce) {
+                                        window.timeSlotSelectedOnce = true;
+                                        const timeSlotDropdown = document.getElementById('time-slot-dropdown');
+                                        if (timeSlotDropdown) {
+                                            timeSlotDropdown.classList.add('hidden');
+                                        }
+                                    }
                                 };
                             }
                         }
@@ -2286,6 +2300,16 @@
                                             } else {
                                                 window.selectedRacketCourts.push(c);
                                                 render();
+                                            }
+                                            
+                                            if (window.selectedRacketCourts.length <= 1) {
+                                                window.courtSelectedOnce = false;
+                                            } else if (!window.courtSelectedOnce) {
+                                                window.courtSelectedOnce = true;
+                                                const courtPopover = document.getElementById('court-dropdown-popover');
+                                                if (courtPopover) {
+                                                    courtPopover.classList.add('hidden');
+                                                }
                                             }
                                         };
                                         row.onclick = toggleCourtSelection;
@@ -2674,6 +2698,8 @@
                             if (bookingDateInput) {
                                 bookingDateInput.value = dateStr;
                             }
+                            window.timeSlotSelectedOnce = false;
+                            window.courtSelectedOnce = false;
                             // Do NOT clear selected slots to preserve multi-day selection
                             
                             // Highlight time slots as if they reloaded (visual cue)
@@ -2977,6 +3003,13 @@
                     selectedSlotIds.clear();
                     window.selectedStartSlotId = null;
                     window.selectedRacketCourt = null;
+                    window.timeSlotSelectedOnce = false;
+                    window.courtSelectedOnce = false;
+                    
+                    try {
+                        e.target.blur();
+                    } catch(err) {}
+
                     const newDate = new Date(selectedDateStr + 'T00:00:00');
                     if (!isNaN(newDate.getTime())) {
                         currentDate = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
