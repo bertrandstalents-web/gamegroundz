@@ -167,11 +167,16 @@
                 <div class="sidebar-inner bg-white lg:rounded-2xl lg:shadow-sm lg:border lg:border-slate-200 p-6 overflow-y-auto flex-1 pb-24 lg:pb-6">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="font-bold text-lg text-dark">Filters</h3>
+                        <button id="apply-filters-btn" class="hidden lg:flex bg-dark hover:bg-slate-800 text-white px-4 py-1.5 rounded-full font-bold text-xs transition-custom items-center justify-center">
+                            <span class="lang-en-only">Apply Filters</span><span class="lang-fr-only notranslate">Appliquer les filtres</span>
+                        </button>
                         <button id="apply-filters-btn-mobile" class="lg:hidden bg-dark hover:bg-slate-800 text-white px-4 py-1.5 rounded-full font-bold text-xs transition-custom flex items-center justify-center">
                             <span class="lang-en-only">Apply Filters</span><span class="lang-fr-only notranslate">Appliquer les filtres</span>
                         </button>
                         <button class="text-sm text-primary hover:text-primaryHover font-medium lg:hidden" id="mobile-filter-close-text">Close</button>
-                        <button class="text-sm text-primary hover:text-primaryHover font-medium hidden lg:block">Clear All</button>
+                        <button class="text-sm text-primary hover:text-primaryHover font-medium hidden lg:block">
+                            <span class="lang-en-only">Clear All</span><span class="lang-fr-only notranslate">Effacer tout</span>
+                        </button>
                     </div>
                     
                     <!-- Filter: Sport Type -->
@@ -233,9 +238,15 @@
                     <div class="mb-6 border-t border-slate-100 pt-6">
                         <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Environment</h4>
                         <div class="flex bg-slate-100 p-1 rounded-xl">
-                            <button class="env-btn flex-1 py-1.5 text-sm font-medium bg-white text-dark rounded-lg shadow-sm" data-active="true">Any</button>
-                            <button class="env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark">Indoor</button>
-                            <button class="env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark">Outdoor</button>
+                            <button class="env-btn flex-1 py-1.5 text-sm font-medium bg-white text-dark rounded-lg shadow-sm" data-active="true" data-env="any">
+                                <span class="lang-en-only">Any</span><span class="lang-fr-only notranslate">Tout</span>
+                            </button>
+                            <button class="env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark" data-env="indoor">
+                                <span class="lang-en-only">Indoor</span><span class="lang-fr-only notranslate">Intérieur</span>
+                            </button>
+                            <button class="env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark" data-env="outdoor">
+                                <span class="lang-en-only">Outdoor</span><span class="lang-fr-only notranslate">Extérieur</span>
+                            </button>
                         </div>
                     </div>
 
@@ -254,18 +265,19 @@
                     <!-- Filter: Date & Time -->
                     <div class="mb-6 border-t border-slate-100 pt-6">
                         <h4 class="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wide">Availability</h4>
-                        <input type="text" id="sidebarDateSearch" placeholder="Any Date" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-3 cursor-pointer" onclick="if(this.showPicker) this.showPicker();">
-                        <select id="sidebarTimeSearch" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary">
-                            <option value="">Any Time</option>
+                        <input type="text" id="sidebarDateSearch" placeholder="Any Date"
+                               onmousedown="this.type='date';"
+                               onfocus="this.type='date'; if(this.showPicker) this.showPicker();"
+                               onblur="if(!this.value) this.type='text'"
+                               class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-3 cursor-pointer"
+                               onclick="if(this.showPicker) this.showPicker();">
+                        <select id="sidebarTimeSearch" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none cursor-pointer custom-dropdown-select">
+                            <option value="" class="notranslate">Moment</option>
                             <option value="morning">Morning (Midnight - 12pm)</option>
                             <option value="afternoon">Afternoon (12pm - 5pm)</option>
                             <option value="night">Night (5pm - Midnight)</option>
                         </select>
                     </div>
-
-                    <button id="apply-filters-btn" class="hidden lg:flex w-full bg-dark hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-custom items-center justify-center lg:mt-0">
-                        Apply Filters
-                    </button>
                 </div>
                 <!-- Toggle Button -->
                 <button id="toggle-sidebar-btn" class="hidden lg:flex absolute top-[300px] -right-3 z-[70] bg-white border border-slate-200 w-6 h-10 rounded-r-lg shadow-md items-center justify-center hover:bg-slate-50 transition-custom focus:outline-none cursor-pointer">
@@ -307,15 +319,7 @@
                 </div>
                 <p class="text-slate-500 text-sm mt-1 hidden md:block" id="results-count">Showing 24 available surfaces</p>
                 
-                <div class="hidden md:flex items-center space-x-2">
-                    <span class="text-sm font-medium text-slate-500">Sort by:</span>
-                    <select class="border-none bg-transparent font-semibold text-dark outline-none cursor-pointer focus:ring-0 text-sm">
-                        <option>Recommended</option>
-                        <option>Price: Low to High</option>
-                        <option>Price: High to Low</option>
-                        <option>Highest Rated</option>
-                    </select>
-                </div>
+
             </div>
 
             <!-- Results and Map Area -->
@@ -581,17 +585,18 @@
         let selectedEnv = '';
         envButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
+                const targetBtn = e.currentTarget;
                 // Reset all
                 envButtons.forEach(b => {
                     b.className = 'env-btn flex-1 py-1.5 text-sm font-medium text-slate-500 hover:text-dark transition-custom';
                     b.removeAttribute('data-active');
                 });
                 // Set active
-                e.target.className = 'env-btn flex-1 py-1.5 text-sm font-medium bg-white text-dark rounded-lg shadow-sm transition-custom';
-                e.target.setAttribute('data-active', 'true');
+                targetBtn.className = 'env-btn flex-1 py-1.5 text-sm font-medium bg-white text-dark rounded-lg shadow-sm transition-custom';
+                targetBtn.setAttribute('data-active', 'true');
 
-                if (e.target.innerText === 'Any') selectedEnv = '';
-                else selectedEnv = e.target.innerText.toLowerCase();
+                const envVal = targetBtn.getAttribute('data-env');
+                selectedEnv = envVal === 'any' ? '' : envVal;
             });
         });
 
@@ -1050,6 +1055,25 @@
         // Load initially
         document.addEventListener('DOMContentLoaded', async () => {
             initMap();
+
+            // Initialize dynamic wording for French/English filters
+            const savedLang = localStorage.getItem('gg_language') || 'en';
+            const isFr = savedLang === 'fr';
+
+            const dateInput = document.getElementById('sidebarDateSearch');
+            if (dateInput) {
+                dateInput.placeholder = isFr ? 'Choisir une date' : 'Any Date';
+                if (dateInput.value) {
+                    dateInput.type = 'date';
+                } else {
+                    dateInput.type = 'text';
+                }
+            }
+
+            const timeInput = document.getElementById('sidebarTimeSearch');
+            if (timeInput && timeInput.options.length > 0) {
+                timeInput.options[0].textContent = isFr ? 'Période' : 'Moment';
+            }
             
             // Check for explicit URL parameters first
             const urlParams = new URLSearchParams(window.location.search);
