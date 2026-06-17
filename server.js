@@ -3224,11 +3224,11 @@ app.post('/api/bookings/:id/cancel', async (req, res) => {
     const bookingId = req.params.id;
     const { reason } = req.body;
 
-    db.get("SELECT * FROM bookings WHERE id = ? AND user_id = ?", [bookingId, req.session.userId], async (err, booking) => {
+    db.get("SELECT * FROM bookings WHERE id = ?", [bookingId], async (err, booking) => {
         if (err || !booking) return res.status(404).json({ error: "Booking not found" });
 
-        // Check if >= 48 hours
         try {
+            // Check if >= 48 hours
             let earliestSlot = "23:59";
             const slots = JSON.parse(booking.time_slots);
             if (slots && slots.length > 0) earliestSlot = [...slots].sort()[0];
@@ -3247,33 +3247,80 @@ app.post('/api/bookings/:id/cancel', async (req, res) => {
                 return res.status(400).json({ error: "Cancellations are only allowed at least 48 hours prior to the event." });
             }
 
-            // Process Refund
-            if (booking.stripe_session_id) {
-                const session = await stripe.checkout.sessions.retrieve(booking.stripe_session_id);
-                if (session && session.payment_intent) {
-                    await stripe.refunds.create(
-                        { 
-                            payment_intent: session.payment_intent,
-                            reverse_transfer: true,
-                            refund_application_fee: true
-                        },
-                        { idempotencyKey: `refund-booking-${bookingId}` }
-                    );
+            if (booking.booking_type === 'public_session') {
+                // Public session booking cancellation
+                db.get("SELECT * FROM public_session_participants WHERE booking_id = ? AND user_id = ? AND payment_status = 'paid'", [bookingId, req.session.userId], async (pspErr, pspRow) => {
+                    if (pspErr || !pspRow) {
+                        return res.status(404).json({ error: "Participation booking record not found or already cancelled/refunded." });
+                    }
+
+                    try {
+                        // Process Stripe Refund for the participant
+                        if (pspRow.stripe_session_id) {
+                            const session = await stripe.checkout.sessions.retrieve(pspRow.stripe_session_id);
+                            if (session && session.payment_intent) {
+                                await stripe.refunds.create(
+                                    { 
+                                        payment_intent: session.payment_intent,
+                                        reverse_transfer: true,
+                                        refund_application_fee: true
+                                    },
+                                    { idempotencyKey: `refund-booking-psp-${pspRow.id}` }
+                                );
+                            }
+                        }
+
+                        // Update participant record to refunded
+                        db.run("UPDATE public_session_participants SET payment_status = 'refunded' WHERE id = ?", [pspRow.id], (updateErr) => {
+                            if (updateErr) return res.status(500).json({ error: "Failed to update participant status." });
+                            
+                            // Send public session cancel emails
+                            try {
+                                sendPublicSessionCancelEmails(pspRow.id, 'player');
+                            } catch(e) { console.error("Could not send public session cancel emails", e); }
+                            
+                            res.json({ message: "Booking canceled and refunded successfully." });
+                        });
+
+                    } catch (refundErr) {
+                        console.error("Public Session Stripe refund error:", refundErr);
+                        res.status(500).json({ error: "Error processing refund for public session" });
+                    }
+                });
+            } else {
+                // Private booking cancellation
+                if (booking.user_id !== req.session.userId) {
+                    return res.status(403).json({ error: "Unauthorized: You do not own this booking" });
                 }
+
+                // Process Refund
+                if (booking.stripe_session_id) {
+                    const session = await stripe.checkout.sessions.retrieve(booking.stripe_session_id);
+                    if (session && session.payment_intent) {
+                        await stripe.refunds.create(
+                            { 
+                                payment_intent: session.payment_intent,
+                                reverse_transfer: true,
+                                refund_application_fee: true
+                            },
+                            { idempotencyKey: `refund-booking-${bookingId}` }
+                        );
+                    }
+                }
+
+                // Send cancellation emails
+                try {
+                    const emailDetails = await getBookingDetailsForEmail(bookingId);
+                    if (emailDetails) emailService.sendCancellationEmail(emailDetails, 'player');
+                } catch(e) { console.error("Could not send cancel email", e); }
+
+                // Save cancellation to a log/notes or just soft delete.
+                const cancelSql = `UPDATE bookings SET status = 'cancelled', cancelled_at = NOW(), cancelled_by_user_id = $1, cancellation_reason = 'Cancelled by player' WHERE id = $2`;
+                db.run(cancelSql, [req.session.userId, bookingId], function(dbErr) {
+                    if (dbErr) return res.status(500).json({ error: "Failed to cancel booking" });
+                    res.json({ message: "Booking canceled and refunded successfully." });
+                });
             }
-
-            // Send cancellation emails
-            try {
-                const emailDetails = await getBookingDetailsForEmail(bookingId);
-                if (emailDetails) emailService.sendCancellationEmail(emailDetails, 'player');
-            } catch(e) { console.error("Could not send cancel email", e); }
-
-            // Save cancellation to a log/notes or just soft delete.
-            const cancelSql = `UPDATE bookings SET status = 'cancelled', cancelled_at = NOW(), cancelled_by_user_id = $1, cancellation_reason = 'Cancelled by player' WHERE id = $2`;
-            db.run(cancelSql, [req.session.userId, bookingId], function(err) {
-                if (err) return res.status(500).json({ error: "Failed to cancel booking" });
-                res.json({ message: "Booking canceled and refunded successfully." });
-            });
 
         } catch (e) {
             console.error("Cancellation Error:", e);
