@@ -732,6 +732,7 @@
                     const bookingDateInput = document.getElementById('booking-date');
                     if (bookingDateInput) bookingDateInput.value = targetDateStr;
                     selectedSlotIds.clear();
+                    window.selectedRacketCourts = [];
                 }
                 const isSelected = selectedSlotIds.has(`${selectedDateStr}|${slot.id}`);
                 const currentHasPub = Array.from(selectedSlotIds).some(s => window.publicSessionSlots && window.publicSessionSlots.has(s));
@@ -2018,7 +2019,19 @@
                             `;
                             div.onclick = (e) => {
                                 e.stopPropagation();
+                                
+                                const wasEmptyBefore = (selectedSlotIds.size === 0);
                                 selectSlotRacketOrNormal(slot);
+                                
+                                if (selectedSlotIds.size === 0) {
+                                    window.timeSlotSelectedOnce = false;
+                                } else if (wasEmptyBefore && !window.timeSlotSelectedOnce) {
+                                    window.timeSlotSelectedOnce = true;
+                                    const timeSlotDropdown = document.getElementById('time-slot-dropdown');
+                                    if (timeSlotDropdown) {
+                                        timeSlotDropdown.classList.add('hidden');
+                                    }
+                                }
                             };
                         }
                         slotsList.appendChild(div);
@@ -2227,11 +2240,6 @@
                             // Filter out any selected courts that are no longer free
                             window.selectedRacketCourts = (window.selectedRacketCourts || []).filter(c => freeCourts.includes(c));
                             
-                            // If none selected, auto-select first free court
-                            if (window.selectedRacketCourts.length === 0 && freeCourts.length > 0) {
-                                window.selectedRacketCourts = [freeCourts[0]];
-                            }
-                            
                             // Keep window.selectedRacketCourt in sync with the first one for backward compatibility
                             window.selectedRacketCourt = window.selectedRacketCourts.length > 0 ? window.selectedRacketCourts[0] : null;
                             
@@ -2291,21 +2299,18 @@
                                             e.preventDefault();
                                             e.stopPropagation();
                                             const idx = window.selectedRacketCourts.indexOf(c);
+                                            let added = false;
                                             if (idx > -1) {
-                                                // Only allow unchecking if we have more than 1 court selected
-                                                if (window.selectedRacketCourts.length > 1) {
-                                                    window.selectedRacketCourts.splice(idx, 1);
-                                                    render();
-                                                }
+                                                window.selectedRacketCourts.splice(idx, 1);
+                                                render();
                                             } else {
                                                 window.selectedRacketCourts.push(c);
+                                                added = true;
                                                 render();
                                             }
                                             
-                                            if (window.selectedRacketCourts.length <= 1) {
-                                                window.courtSelectedOnce = false;
-                                            } else if (!window.courtSelectedOnce) {
-                                                window.courtSelectedOnce = true;
+                                            // Close dropdown if we just added a court (checked it), and the new count is 1 or 2
+                                            if (added && (window.selectedRacketCourts.length === 1 || window.selectedRacketCourts.length === 2)) {
                                                 const courtPopover = document.getElementById('court-dropdown-popover');
                                                 if (courtPopover) {
                                                     courtPopover.classList.add('hidden');
@@ -2697,9 +2702,9 @@
                             selectedDateStr = dateStr;
                             if (bookingDateInput) {
                                 bookingDateInput.value = dateStr;
-                            }
                             window.timeSlotSelectedOnce = false;
                             window.courtSelectedOnce = false;
+                            window.selectedRacketCourts = [];
                             // Do NOT clear selected slots to preserve multi-day selection
                             
                             // Highlight time slots as if they reloaded (visual cue)
@@ -3003,6 +3008,7 @@
                     selectedSlotIds.clear();
                     window.selectedStartSlotId = null;
                     window.selectedRacketCourt = null;
+                    window.selectedRacketCourts = [];
                     window.timeSlotSelectedOnce = false;
                     window.courtSelectedOnce = false;
                     
