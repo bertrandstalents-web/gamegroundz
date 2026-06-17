@@ -292,17 +292,17 @@
                 <!-- Search Box -->
                 <div class="glass-dark p-3 rounded-2xl md:rounded-full shadow-2xl backdrop-blur-md max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-2 border border-slate-700/50">
                     <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom relative">
-                        <i class="fa-solid fa-location-dot text-slate-400 mr-3"></i>
+                        <i class="fa-solid fa-location-dot text-slate-400 mr-3 text-lg"></i>
                         <div class="relative w-full flex items-center">
-                            <input type="text" id="locationSearch" autocomplete="off" placeholder="Where" class="bg-transparent text-white w-full outline-none placeholder-slate-400 font-medium pr-10">
+                            <input type="text" id="locationSearch" autocomplete="off" placeholder="Where" class="bg-transparent text-white w-full outline-none placeholder-slate-400 font-medium pr-10 text-base md:text-[17px]">
                             <button id="home-locate-me-btn" type="button" class="absolute right-0 text-slate-400 hover:text-white transition-custom focus:outline-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700" title="Use my current location">
                                 <i class="fa-solid fa-location-crosshairs"></i>
                             </button>
                         </div>
                     </div>
                     <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom">
-                        <i class="fa-solid fa-futbol text-slate-400 mr-3"></i>
-                        <select id="homeSportSearch" class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer">
+                        <i class="fa-solid fa-futbol text-slate-400 mr-3 text-lg"></i>
+                        <select id="homeSportSearch" class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer custom-dropdown-select-white text-base md:text-[17px]">
                             <option value="" class="text-slate-800">Surface</option>
                             <option value="ice" class="text-slate-800">Ice Rink</option>
                             <option value="soccer" class="text-slate-800">Soccer Field</option>
@@ -316,12 +316,12 @@
                         </select>
                     </div>
                     <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom relative cursor-pointer" onclick="const d = document.getElementById('homeDateSearch'); d.focus(); if(d.showPicker) d.showPicker();">
-                        <i class="fa-regular fa-calendar text-slate-400 mr-3"></i>
-                        <input type="text" id="homeDateSearch" placeholder="Date" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'" class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer placeholder-slate-400" style="color-scheme: dark;">
+                        <i class="fa-regular fa-calendar text-slate-400 mr-3 text-lg"></i>
+                        <input type="text" id="homeDateSearch" placeholder="Date" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'" class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer placeholder-slate-400 text-base md:text-[17px]" style="color-scheme: dark; font-size: 18px;">
                     </div>
                     <div class="flex-1 w-full flex items-center bg-slate-800/50 rounded-xl md:rounded-full px-4 py-3 border border-slate-700/50 focus-within:border-primary/50 transition-custom">
-                        <i class="fa-regular fa-clock text-slate-400 mr-3"></i>
-                        <select id="homeTimeSearch" class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer">
+                        <i class="fa-regular fa-clock text-slate-400 mr-3 text-lg"></i>
+                        <select id="homeTimeSearch" class="bg-transparent text-white w-full outline-none font-medium appearance-none cursor-pointer custom-dropdown-select-white text-base md:text-[17px]">
                             <option value="" class="text-slate-800">Time</option>
                             <option value="morning" class="text-slate-800">Morning (Midnight - 12pm)</option>
                             <option value="afternoon" class="text-slate-800">Afternoon (12pm - 5pm)</option>
