@@ -1015,7 +1015,7 @@
                         }
                     }
                 }
-                const res = await fetch('https://ipapi.co/json/');
+                const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
                 const data = await res.json();
                 if (data && data.latitude && data.longitude) {
                     const coords = { lat: parseFloat(data.latitude), lng: parseFloat(data.longitude) };
