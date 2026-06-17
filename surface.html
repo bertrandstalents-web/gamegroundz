@@ -2145,7 +2145,43 @@
 
                 // Update summary text
                 const count = selectedSlotIds.size;
-                slotsSummary.textContent = count === 0 ? "Select Times" : `${count} Slot${count > 1 ? 's' : ''} Selected`;
+                if (count === 0) {
+                    const currentLang = document.documentElement.getAttribute('data-lang') || localStorage.getItem('gg_language') || 'en';
+                    slotsSummary.textContent = currentLang === 'fr' ? "Sélectionner une plage horaire" : "Select Times";
+                } else {
+                    const prefix = `${selectedDateStr}|`;
+                    const selectedIndices = [];
+                    availableSlots.forEach((slot, idx) => {
+                        if (selectedSlotIds.has(prefix + slot.id)) {
+                            selectedIndices.push(idx);
+                        }
+                    });
+                    
+                    selectedIndices.sort((a, b) => a - b);
+                    
+                    if (selectedIndices.length > 0) {
+                        const firstIdx = selectedIndices[0];
+                        const lastIdx = selectedIndices[selectedIndices.length - 1];
+                        
+                        const startTimeStr = availableSlots[firstIdx].id;
+                        
+                        const [endH, endM] = availableSlots[lastIdx].id.split(':').map(Number);
+                        const totalEndMins = endH * 60 + endM + 30;
+                        const finalEndH = Math.floor(totalEndMins / 60);
+                        const finalEndM = totalEndMins % 60;
+                        const endTimeStr = `${String(finalEndH).padStart(2, '0')}:${String(finalEndM).padStart(2, '0')}`;
+                        
+                        const durationHours = count * 0.5;
+                        const wholeHours = Math.floor(durationHours);
+                        const mins = (durationHours % 1) * 60;
+                        const durationStr = `${wholeHours}h${String(mins).padStart(2, '0')}`;
+                        
+                        slotsSummary.textContent = `${startTimeStr} – ${endTimeStr} · ${durationStr}`;
+                    } else {
+                        const currentLang = document.documentElement.getAttribute('data-lang') || localStorage.getItem('gg_language') || 'en';
+                        slotsSummary.textContent = currentLang === 'fr' ? "Sélectionner une plage horaire" : "Select Times";
+                    }
+                }
 
                 // Update chips (Group by Date)
                 selectedContainer.innerHTML = '';
@@ -2506,11 +2542,9 @@
                     const tax = (discountedSubtotal + processingFee) * taxRate;
                     currentTotal = discountedSubtotal + processingFee + tax; // update global total
 
-                    if (hours === 1) {
-                        priceCalcEl.innerHTML = `$${(subtotal / courtCount).toFixed(0)} x 1 hour${courtCount > 1 ? ` x ${courtCount} courts` : ''}`;
-                    } else {
-                        priceCalcEl.innerHTML = `Multiple slots (avg $${((subtotal / courtCount)/hours).toFixed(0)}${pricingUnitLabelShort})${courtCount > 1 ? ` x ${courtCount} courts` : ''}`;
-                    }
+                    const avgRate = (subtotal / courtCount) / hours;
+                    const formattedAvg = avgRate % 1 === 0 ? avgRate.toFixed(0) : avgRate.toFixed(2);
+                    priceCalcEl.innerHTML = `$${formattedAvg} x ${hours} hour${hours !== 1 ? 's' : ''}${courtCount > 1 ? ` x ${courtCount} courts` : ''}`;
 
                     // Insert Discount UI element into the list if it exists
                     const discountElId = 'discount-amount';
@@ -2595,23 +2629,53 @@
             ];
 
             function toggleTimeSlot(dateStr, slotObj) {
-                const slotKey = `${dateStr}|${slotObj.id}`;
-                const isSelected = selectedSlotIds.has(slotKey);
-                
-                if (isSelected) {
-                    selectedSlotIds.delete(slotKey);
+                let opHours = { open: facilityOperatingHours.open || "06:00", close: facilityOperatingHours.close || "23:00" };
+                let slots = generateDailySlots(opHours);
+                const clickIdx = slots.findIndex(s => s.id === slotObj.id);
+                if (clickIdx === -1) return;
+
+                const prefix = `${dateStr}|`;
+                const selectedIndices = [];
+                selectedSlotIds.forEach(key => {
+                    if (key.startsWith(prefix)) {
+                        const tId = key.substring(prefix.length);
+                        const idx = slots.findIndex(s => s.id === tId);
+                        if (idx !== -1) {
+                            selectedIndices.push(idx);
+                        }
+                    }
+                });
+
+                selectedIndices.sort((a, b) => a - b);
+
+                if (selectedIndices.length === 0) {
+                    selectedSlotIds.add(`${dateStr}|${slotObj.id}`);
+                    if (clickIdx + 1 < slots.length) {
+                        const nextSlot = slots[clickIdx + 1];
+                        if (!bookedSlotIds.has(`${dateStr}|${nextSlot.id}`)) {
+                            selectedSlotIds.add(`${dateStr}|${nextSlot.id}`);
+                        }
+                    }
                 } else {
-                    selectedSlotIds.add(slotKey);
-                    
-                    let daySlotsCount = 0;
-                    selectedSlotIds.forEach(k => { if(k.startsWith(dateStr)) daySlotsCount++; });
-                    
-                    if (daySlotsCount === 1) {
-                        let opHours = { open: facilityOperatingHours.open || "06:00", close: facilityOperatingHours.close || "23:00" };
-                        let slots = generateDailySlots(opHours);
-                        const currentIndex = slots.findIndex(s => s.id === slotObj.id);
-                        if (currentIndex !== -1 && currentIndex + 1 < slots.length) {
-                            const nextSlot = slots[currentIndex + 1];
+                    const firstIdx = selectedIndices[0];
+                    const lastIdx = selectedIndices[selectedIndices.length - 1];
+
+                    if (clickIdx === firstIdx - 1 || clickIdx === lastIdx + 1) {
+                        selectedSlotIds.add(`${dateStr}|${slotObj.id}`);
+                    } else if (clickIdx === firstIdx || clickIdx === lastIdx) {
+                        selectedSlotIds.delete(`${dateStr}|${slotObj.id}`);
+                    } else {
+                        const keysToDelete = [];
+                        selectedSlotIds.forEach(key => {
+                            if (key.startsWith(prefix)) {
+                                keysToDelete.push(key);
+                            }
+                        });
+                        keysToDelete.forEach(key => selectedSlotIds.delete(key));
+
+                        selectedSlotIds.add(`${dateStr}|${slotObj.id}`);
+                        if (clickIdx + 1 < slots.length) {
+                            const nextSlot = slots[clickIdx + 1];
                             if (!bookedSlotIds.has(`${dateStr}|${nextSlot.id}`)) {
                                 selectedSlotIds.add(`${dateStr}|${nextSlot.id}`);
                             }
@@ -2709,11 +2773,14 @@
                             // Do NOT clear selected slots to preserve multi-day selection
                             
                             // Highlight time slots as if they reloaded (visual cue)
+                            const currentLang = document.documentElement.getAttribute('data-lang') || localStorage.getItem('gg_language') || 'en';
+                            const defaultText = currentLang === 'fr' ? "Sélectionner une plage horaire" : "Select Times";
+                            const loadingText = currentLang === 'fr' ? "Chargement des créneaux..." : "Loading slots...";
                             const slotsSummary = document.getElementById('slots-summary');
-                            if (slotsSummary) slotsSummary.textContent = "Loading slots...";
+                            if (slotsSummary) slotsSummary.textContent = loadingText;
                             
                             bookedSlotIds = await fetchBookedSlots();
-                            if (slotsSummary) slotsSummary.textContent = "Select Times";
+                            if (slotsSummary) slotsSummary.textContent = defaultText;
                             render(); // update widget pricing
                             renderCalendar(); // redraw monthly calendar blocks
                         };
@@ -3023,11 +3090,14 @@
                     }
                     renderCalendar();
 
+                    const currentLang = document.documentElement.getAttribute('data-lang') || localStorage.getItem('gg_language') || 'en';
+                    const defaultText = currentLang === 'fr' ? "Sélectionner une plage horaire" : "Select Times";
+                    const loadingText = currentLang === 'fr' ? "Chargement des créneaux..." : "Loading slots...";
                     const slotsSummary = document.getElementById('slots-summary');
-                    if (slotsSummary) slotsSummary.textContent = "Loading slots...";
+                    if (slotsSummary) slotsSummary.textContent = loadingText;
                     
                     bookedSlotIds = await fetchBookedSlots();
-                    if (slotsSummary) slotsSummary.textContent = "Select Times";
+                    if (slotsSummary) slotsSummary.textContent = defaultText;
                     render();
                     updatePeriodDisplay();
                 };
