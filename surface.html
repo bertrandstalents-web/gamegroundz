@@ -2176,7 +2176,7 @@
                         const mins = (durationHours % 1) * 60;
                         const durationStr = `${wholeHours}h${String(mins).padStart(2, '0')}`;
                         
-                        slotsSummary.textContent = `${startTimeStr} – ${endTimeStr} · ${durationStr}`;
+                        slotsSummary.innerHTML = `${startTimeStr} – ${endTimeStr} · <strong class="font-bold">${durationStr}</strong>`;
                     } else {
                         const currentLang = document.documentElement.getAttribute('data-lang') || localStorage.getItem('gg_language') || 'en';
                         slotsSummary.textContent = currentLang === 'fr' ? "Sélectionner une plage horaire" : "Select Times";
@@ -2228,7 +2228,7 @@
                             const mins = (durationHours % 1) * 60;
                             const durationStr = `${wholeHours}h${String(mins).padStart(2, '0')}`;
                             
-                            const chipText = `${startTimeStr} – ${endTimeStr} · ${durationStr}`;
+                            const chipText = `${startTimeStr} – ${endTimeStr} · <strong class="font-bold">${durationStr}</strong>`;
 
                             const span = document.createElement('span');
                             if (isPublicSessionCheckout) {
