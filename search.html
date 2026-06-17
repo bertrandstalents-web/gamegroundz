@@ -167,11 +167,11 @@
                 <div class="sidebar-inner bg-white lg:rounded-2xl lg:shadow-sm lg:border lg:border-slate-200 p-6 overflow-y-auto flex-1 pb-24 lg:pb-6">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="font-bold text-lg text-dark">Filters</h3>
-                        <button id="apply-filters-btn" class="hidden lg:flex bg-dark hover:bg-slate-800 text-white px-4 py-1.5 rounded-full font-bold text-xs transition-custom items-center justify-center">
-                            <span class="lang-en-only">Apply Filters</span><span class="lang-fr-only notranslate">Appliquer les filtres</span>
+                        <button id="apply-filters-btn" class="hidden lg:flex bg-dark hover:bg-slate-800 text-white px-4 py-1.5 rounded-full font-bold text-xs transition-custom items-center justify-center whitespace-nowrap">
+                            <span class="lang-en-only">Apply Filters</span><span class="lang-fr-only notranslate">Appliquer filtres</span>
                         </button>
-                        <button id="apply-filters-btn-mobile" class="lg:hidden bg-dark hover:bg-slate-800 text-white px-4 py-1.5 rounded-full font-bold text-xs transition-custom flex items-center justify-center">
-                            <span class="lang-en-only">Apply Filters</span><span class="lang-fr-only notranslate">Appliquer les filtres</span>
+                        <button id="apply-filters-btn-mobile" class="lg:hidden bg-dark hover:bg-slate-800 text-white px-4 py-1.5 rounded-full font-bold text-xs transition-custom flex items-center justify-center whitespace-nowrap">
+                            <span class="lang-en-only">Apply Filters</span><span class="lang-fr-only notranslate">Appliquer filtres</span>
                         </button>
                         <button class="text-sm text-primary hover:text-primaryHover font-medium lg:hidden" id="mobile-filter-close-text">Close</button>
                         <button class="text-sm text-primary hover:text-primaryHover font-medium hidden lg:block">
@@ -272,7 +272,7 @@
                                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-3 cursor-pointer"
                                onclick="if(this.showPicker) this.showPicker();">
                         <select id="sidebarTimeSearch" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none cursor-pointer custom-dropdown-select">
-                            <option value="" class="notranslate">Moment</option>
+                            <option value="" class="notranslate">Any time</option>
                             <option value="morning">Morning (Midnight - 12pm)</option>
                             <option value="afternoon">Afternoon (12pm - 5pm)</option>
                             <option value="night">Night (5pm - Midnight)</option>
@@ -1072,7 +1072,7 @@
 
             const timeInput = document.getElementById('sidebarTimeSearch');
             if (timeInput && timeInput.options.length > 0) {
-                timeInput.options[0].textContent = isFr ? 'Période' : 'Moment';
+                timeInput.options[0].textContent = isFr ? 'En tout temps' : 'Any time';
             }
             
             // Check for explicit URL parameters first
