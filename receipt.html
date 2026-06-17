@@ -89,6 +89,7 @@
                     <div class="text-left sm:text-right">
                         <h1 class="text-2xl font-black tracking-wider text-slate-300 uppercase mb-1"><span class="lang-en-only">Receipt</span><span class="lang-fr-only notranslate">Reçu</span></h1>
                         <p class="text-sm text-slate-500 font-medium" id="receipt-id"><span class="lang-en-only">Receipt #</span><span class="lang-fr-only notranslate">Reçu #</span></p>
+                        <p class="text-xs text-slate-400 mt-0.5" id="receipt-date"></p>
                     </div>
                 </div>
 
@@ -296,6 +297,24 @@
                 const receiptIdElem = document.getElementById('receipt-id');
                 if (receiptIdElem) {
                     receiptIdElem.innerHTML = `<span class="lang-en-only">Receipt #${receiptNum}</span><span class="lang-fr-only notranslate">Reçu #${receiptNum}</span>`;
+                }
+
+                const receiptDateElem = document.getElementById('receipt-date');
+                if (receiptDateElem) {
+                    if (booking.created_at) {
+                        const createdAtObj = new Date(booking.created_at);
+                        const optionsEn = { month: 'long', day: 'numeric', year: 'numeric' };
+                        const optionsFr = { month: 'long', day: 'numeric', year: 'numeric' };
+                        const dateCreatedEn = createdAtObj.toLocaleDateString('en-US', optionsEn);
+                        const dateCreatedFr = createdAtObj.toLocaleDateString('fr-FR', optionsFr);
+                        
+                        receiptDateElem.innerHTML = `
+                            <span class="lang-en-only">Reserved on: ${dateCreatedEn}</span>
+                            <span class="lang-fr-only notranslate">Réservé le : ${dateCreatedFr}</span>
+                        `;
+                    } else {
+                        receiptDateElem.textContent = '';
+                    }
                 }
                 
                 document.getElementById('cust-name').textContent = booking.player_name || 'Guest User';

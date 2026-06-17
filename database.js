@@ -317,8 +317,15 @@ async function initDatabase() {
             surface_terms_accepted INTEGER DEFAULT 0,
             block_color TEXT DEFAULT '#3B82F6',
             max_reservations INTEGER,
-            court_name TEXT
+            court_name TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
+
+        try {
+            await client.query(`ALTER TABLE bookings ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`);
+        } catch(e) {
+            console.error("Migration bookings.created_at error:", e.message);
+        }
 
         try {
             await client.query(`ALTER TABLE bookings ADD COLUMN review_email_sent INTEGER DEFAULT 0`);
