@@ -167,6 +167,9 @@
                 <div class="sidebar-inner bg-white lg:rounded-2xl lg:shadow-sm lg:border lg:border-slate-200 p-6 overflow-y-auto flex-1 pb-24 lg:pb-6">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="font-bold text-lg text-dark">Filters</h3>
+                        <button id="apply-filters-btn-mobile" class="lg:hidden bg-dark hover:bg-slate-800 text-white px-4 py-1.5 rounded-full font-bold text-xs transition-custom flex items-center justify-center">
+                            <span class="lang-en-only">Apply Filters</span><span class="lang-fr-only notranslate">Appliquer les filtres</span>
+                        </button>
                         <button class="text-sm text-primary hover:text-primaryHover font-medium lg:hidden" id="mobile-filter-close-text">Close</button>
                         <button class="text-sm text-primary hover:text-primaryHover font-medium hidden lg:block">Clear All</button>
                     </div>
@@ -260,7 +263,7 @@
                         </select>
                     </div>
 
-                    <button id="apply-filters-btn" class="w-full bg-dark hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-custom flex items-center justify-center mt-auto lg:mt-0">
+                    <button id="apply-filters-btn" class="hidden lg:flex w-full bg-dark hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-custom items-center justify-center lg:mt-0">
                         Apply Filters
                     </button>
                 </div>
@@ -596,6 +599,7 @@
         const facilitiesGrid = document.getElementById('facilitiesGrid');
         const resultsCountEl = document.getElementById('results-count');
         const applyBtn = document.getElementById('apply-filters-btn');
+        const applyBtnMobile = document.getElementById('apply-filters-btn-mobile');
         const pagination = document.getElementById('pagination');
 
         function getPrimaryImageUrl(urlStr) {
@@ -958,48 +962,58 @@
         }
 
         // Apply Filters API Call
-        if(applyBtn && resultsCountEl) {
-            applyBtn.addEventListener('click', async () => {
-                currentPage = 1; // reset string on filter
-                const originalText = applyBtn.innerHTML;
-                applyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Filtering...';
-                applyBtn.disabled = true;
+        async function runFilterAction(btnToAnimate) {
+            currentPage = 1; // reset string on filter
+            const originalText = btnToAnimate.innerHTML;
+            const isFr = localStorage.getItem('gg_language') === 'fr';
+            btnToAnimate.innerHTML = isFr 
+                ? '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Filtrage...' 
+                : '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Filtering...';
+            btnToAnimate.disabled = true;
 
-                const maxPrice = priceRange ? parseInt(priceRange.value) : 300;
-                
-                // Get checked types
-                const typeCheckboxes = document.querySelectorAll('.type-filter:checked');
-                const selectedTypes = [];
-                let isAll = false;
-                typeCheckboxes.forEach(cb => {
-                    if(cb.value === 'all') isAll = true;
-                    else selectedTypes.push(cb.value);
-                });
-
-                const navSearch = document.getElementById('navLocationSearch');
-                const rawSearchQuery = navSearch ? navSearch.value.trim() : '';
-                
-                let isLocation = false;
-                if (rawSearchQuery) {
-                    isLocation = await panMapToLocation(rawSearchQuery);
-                }
-                const searchQuery = isLocation ? '' : rawSearchQuery;
-
-                const dateVal = document.getElementById('sidebarDateSearch') ? document.getElementById('sidebarDateSearch').value : '';
-                const timeVal = document.getElementById('sidebarTimeSearch') ? document.getElementById('sidebarTimeSearch').value : '';
-
-                fetchFacilities({ 
-                    maxPrice: maxPrice,
-                    environment: selectedEnv,
-                    types: isAll ? [] : selectedTypes,
-                    search: searchQuery,
-                    date: dateVal,
-                    time: timeVal
-                }, true).finally(() => {
-                    applyBtn.innerHTML = originalText;
-                    applyBtn.disabled = false;
-                });
+            const maxPrice = priceRange ? parseInt(priceRange.value) : 300;
+            
+            // Get checked types
+            const typeCheckboxes = document.querySelectorAll('.type-filter:checked');
+            const selectedTypes = [];
+            let isAll = false;
+            typeCheckboxes.forEach(cb => {
+                if(cb.value === 'all') isAll = true;
+                else selectedTypes.push(cb.value);
             });
+
+            const navSearch = document.getElementById('navLocationSearch');
+            const rawSearchQuery = navSearch ? navSearch.value.trim() : '';
+            
+            let isLocation = false;
+            if (rawSearchQuery) {
+                isLocation = await panMapToLocation(rawSearchQuery);
+            }
+            const searchQuery = isLocation ? '' : rawSearchQuery;
+
+            const dateVal = document.getElementById('sidebarDateSearch') ? document.getElementById('sidebarDateSearch').value : '';
+            const timeVal = document.getElementById('sidebarTimeSearch') ? document.getElementById('sidebarTimeSearch').value : '';
+
+            fetchFacilities({ 
+                maxPrice: maxPrice,
+                environment: selectedEnv,
+                types: isAll ? [] : selectedTypes,
+                search: searchQuery,
+                date: dateVal,
+                time: timeVal
+            }, true).finally(() => {
+                btnToAnimate.innerHTML = originalText;
+                btnToAnimate.disabled = false;
+            });
+        }
+
+        if(resultsCountEl) {
+            if(applyBtn) {
+                applyBtn.addEventListener('click', () => runFilterAction(applyBtn));
+            }
+            if(applyBtnMobile) {
+                applyBtnMobile.addEventListener('click', () => runFilterAction(applyBtnMobile));
+            }
         }
 
         // Type filter "All" logic
@@ -1308,7 +1322,7 @@
             }
 
             // We also want the Apply Filters button on mobile to close the modal
-            const applyFiltersMobileBtn = document.getElementById('apply-filters-btn');
+            const applyFiltersMobileBtn = document.getElementById('apply-filters-btn-mobile');
             if(applyFiltersMobileBtn) {
                 applyFiltersMobileBtn.addEventListener('click', () => {
                     if(window.innerWidth < 1024) closeFilters(); // lg breakpoint
