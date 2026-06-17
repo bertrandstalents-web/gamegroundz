@@ -127,7 +127,7 @@
                         <h1 class="text-[28px] sm:text-2xl font-bold text-dark leading-tight">Public Activities<span class="hidden sm:inline"> in your area</span></h1>
                         
                         <div class="flex justify-between w-full sm:w-auto items-start sm:items-center">
-                            <div class="flex flex-row gap-2 relative">
+                            <div class="flex flex-row gap-2 relative items-center">
                                 <!-- Custom Date Dropdown -->
                                 <div class="relative inline-block text-left text-sm font-normal">
                                     <button id="custom-date-btn" class="flex items-center justify-between bg-white border border-slate-200 hover:border-primary text-slate-700 font-semibold rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm transition-custom min-w-[120px]">
@@ -169,6 +169,11 @@
                                     </div>
                                     <input type="hidden" id="inline-activity-filter" value="">
                                 </div>
+
+                                <!-- Mobile Map Button -->
+                                <button id="mobile-map-toggle" class="lg:hidden flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 rounded-full w-[36px] h-[36px] shadow-sm transition-custom focus:outline-none focus:ring-2 focus:ring-slate-500/30 flex-shrink-0">
+                                    <i class="fa-regular fa-map text-sm"></i>
+                                </button>
                             </div>
 
 
@@ -1481,26 +1486,51 @@
             const mobileCloseMapBtn = document.getElementById('mobile-close-map-btn');
 
             const desktopMapClasses = ['lg:block', 'w-[450px]', 'h-[calc(100vh-120px)]', 'sticky', 'top-28', 'rounded-2xl', 'z-10'];
-            const mobileMapClasses = ['fixed', 'inset-0', 'z-[80]', 'w-full', 'h-[100dvh]', 'rounded-none'];
 
             if(mobileMapToggle) {
                 mobileMapToggle.addEventListener('click', () => {
-                    resultsView.classList.add('hidden');
-                    mapView.classList.remove('hidden', ...desktopMapClasses);
-                    mapView.classList.add(...mobileMapClasses);
+                    const isMapActive = document.body.classList.toggle('mobile-map-active');
                     
-                    // Trigger Leaflet resize calculation
+                    if (isMapActive) {
+                        mapView.classList.remove('hidden', ...desktopMapClasses);
+                        
+                        // Hide pagination when map is active
+                        const paginationEl = document.getElementById('pagination');
+                        if(paginationEl) paginationEl.classList.add('hidden');
+
+                        const icon = mobileMapToggle.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('fa-map', 'fa-regular');
+                            icon.classList.add('fa-list', 'fa-solid');
+                        }
+                    } else {
+                        mapView.classList.add('hidden', ...desktopMapClasses);
+                        
+                        const icon = mobileMapToggle.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('fa-list', 'fa-solid');
+                            icon.classList.add('fa-map', 'fa-regular');
+                        }
+                    }
+                    
+                    // Trigger Leaflet resize calculation (twice to ensure layouts finish rendering)
                     if (typeof map !== 'undefined' && map !== null) {
                         setTimeout(() => { map.invalidateSize(); }, 100);
+                        setTimeout(() => { map.invalidateSize(); }, 300);
                     }
                 });
             }
 
             if(mobileCloseMapBtn) {
                 mobileCloseMapBtn.addEventListener('click', () => {
-                    mapView.classList.remove(...mobileMapClasses);
+                    document.body.classList.remove('mobile-map-active');
                     mapView.classList.add('hidden', ...desktopMapClasses);
-                    resultsView.classList.remove('hidden');
+                    
+                    const icon = mobileMapToggle ? mobileMapToggle.querySelector('i') : null;
+                    if (icon) {
+                        icon.classList.remove('fa-list', 'fa-solid');
+                        icon.classList.add('fa-map', 'fa-regular');
+                    }
                 });
             }
         });
@@ -1509,14 +1539,7 @@
     <script src="js/modals.js"></script>
     <script src="js/i18n.js"></script>
 
-    <!-- Mobile FAB for Map -->
-    <div class="lg:hidden fixed bottom-24 left-0 w-full flex justify-center z-40 pointer-events-none">
-        <div class="bg-dark text-white rounded-full flex shadow-xl pointer-events-auto">
-            <button id="mobile-map-toggle" class="px-6 py-3 font-bold text-sm flex items-center hover:bg-slate-800 rounded-full transition-custom">
-                <i class="fa-regular fa-map mr-2"></i> <span class="lang-en-only">Map</span><span class="lang-fr-only notranslate">Carte</span>
-            </button>
-        </div>
-    </div>
+
 
 
 
