@@ -126,60 +126,65 @@
                     <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-3" id="header-filters-wrapper">
                         <h1 class="text-[28px] sm:text-2xl font-bold text-dark leading-tight" id="header-title">Public Activities<span class="hidden sm:inline"> in your area</span></h1>
                         
-                        <div class="flex justify-between w-full sm:w-auto items-start sm:items-center" id="filters-row-wrapper">
+                        <div class="flex justify-between w-full sm:w-auto items-start sm:items-center mt-2" id="filters-row-wrapper">
                             <div class="flex flex-row gap-2 relative items-center w-full justify-between">
-                                <div class="flex flex-row gap-2" id="dropdowns-group">
-                                    <!-- Custom Date Dropdown -->
-                                    <div class="relative inline-block text-left text-sm font-normal">
-                                        <button id="custom-date-btn" class="flex items-center justify-between bg-white border border-slate-200 hover:border-primary text-slate-700 font-semibold rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm transition-custom min-w-[120px]">
-                                            <span id="custom-date-label">This Week</span>
-                                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-2"></i>
-                                        </button>
-                                        <div id="custom-date-menu" class="hidden absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 overflow-hidden transform origin-top-left transition-all">
-                                            <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="">Any Date</div>
-                                            <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="today">Today</div>
-                                            <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="tomorrow">Tomorrow</div>
-                                            <div class="date-option px-4 py-2 bg-slate-50 text-primary font-bold cursor-pointer transition-custom" data-value="week">This Week</div>
-                                            <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom border-t border-slate-50 mt-1 pt-2" data-value="custom">
-                                                <i class="fa-regular fa-calendar mr-2"></i>Custom Date...
+                                <!-- Mobile results count on left -->
+                                <p class="text-slate-500 text-sm font-semibold sm:hidden" id="results-count-mobile">Showing 24 upcoming sessions</p>
+
+                                <div class="flex items-center gap-2">
+                                    <div class="flex flex-row gap-2" id="dropdowns-group">
+                                        <!-- Custom Date Dropdown -->
+                                        <div class="relative inline-block text-left text-sm font-normal">
+                                            <button id="custom-date-btn" class="flex items-center justify-between bg-white border border-slate-200 hover:border-primary text-slate-700 font-semibold rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm transition-custom min-w-[120px]">
+                                                <span id="custom-date-label">This Week</span>
+                                                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-2"></i>
+                                            </button>
+                                            <div id="custom-date-menu" class="hidden absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 overflow-hidden transform origin-top-left transition-all">
+                                                <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="">Any Date</div>
+                                                <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="today">Today</div>
+                                                <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom" data-value="tomorrow">Tomorrow</div>
+                                                <div class="date-option px-4 py-2 bg-slate-50 text-primary font-bold cursor-pointer transition-custom" data-value="week">This Week</div>
+                                                <div class="date-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom border-t border-slate-50 mt-1 pt-2" data-value="custom">
+                                                    <i class="fa-regular fa-calendar mr-2"></i>Custom Date...
+                                                </div>
                                             </div>
+                                            <input type="date" id="inline-custom-date" class="absolute opacity-0 w-0 h-0 p-0 pointer-events-none" style="bottom: 0; left: 50%;">
+                                            <input type="hidden" id="inline-date-filter" value="week">
                                         </div>
-                                        <input type="date" id="inline-custom-date" class="absolute opacity-0 w-0 h-0 p-0 pointer-events-none" style="bottom: 0; left: 50%;">
-                                        <input type="hidden" id="inline-date-filter" value="week">
+
+                                        <!-- Custom Activity Dropdown -->
+                                        <div class="relative inline-block text-left text-sm font-normal">
+                                            <button id="custom-activity-btn" class="flex items-center justify-between bg-white border border-slate-200 hover:border-primary text-slate-700 font-semibold rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm transition-custom max-w-[200px]">
+                                                <span id="custom-activity-label" class="truncate">Activity Type</span>
+                                                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-2"></i>
+                                            </button>
+                                            <div id="custom-activity-menu" class="hidden absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 overflow-y-auto max-h-[60vh] transform origin-top-left transition-all custom-scrollbar">
+                                                <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom font-bold" data-value="" data-label="Activity Type">Any Activity</div>
+                                                
+                                                <div class="px-4 py-1.5 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ice Rink</div>
+                                                <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free skating" data-label="Free Skating"><span class="lang-en-only">Free Skating</span><span class="lang-fr-only notranslate">Patinage libre</span></div>
+                                                <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="open hockey" data-label="Open Hockey"><span class="lang-en-only">Open Hockey</span><span class="lang-fr-only notranslate">Hockey libre</span></div>
+                                                <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="open hockey (18+)" data-label="Open Hockey (18+)"><span class="lang-en-only">Open Hockey (18+)</span><span class="lang-fr-only notranslate">Hockey libre (18+)</span></div>
+                                                
+                                                <div class="px-4 py-1.5 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-t border-slate-50 pt-3">Swimming Pool</div>
+                                                <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="swim" data-label="Swimming"><span class="lang-en-only">Swimming</span><span class="lang-fr-only notranslate">Baignade</span></div>
+                                                <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="swimming lane" data-label="Swimming Lane">Swimming Lane</div>
+                                                <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="open swim and diving board" data-label="Open Swim & Dive">Open Swim and Diving Board</div>
+                                                <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="recreational and family pool" data-label="Rec & Family Pool">Recreational and Family Pool</div>
+                                            </div>
+                                            <input type="hidden" id="inline-activity-filter" value="">
+                                        </div>
                                     </div>
 
-                                    <!-- Custom Activity Dropdown -->
-                                    <div class="relative inline-block text-left text-sm font-normal">
-                                        <button id="custom-activity-btn" class="flex items-center justify-between bg-white border border-slate-200 hover:border-primary text-slate-700 font-semibold rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm transition-custom max-w-[200px]">
-                                            <span id="custom-activity-label" class="truncate">Activity Type</span>
-                                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-2"></i>
-                                        </button>
-                                        <div id="custom-activity-menu" class="hidden absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 overflow-y-auto max-h-[60vh] transform origin-top-left transition-all custom-scrollbar">
-                                            <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-700 hover:text-primary transition-custom font-bold" data-value="" data-label="Activity Type">Any Activity</div>
-                                            
-                                            <div class="px-4 py-1.5 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ice Rink</div>
-                                            <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="free skating" data-label="Free Skating"><span class="lang-en-only">Free Skating</span><span class="lang-fr-only notranslate">Patinage libre</span></div>
-                                            <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="open hockey" data-label="Open Hockey"><span class="lang-en-only">Open Hockey</span><span class="lang-fr-only notranslate">Hockey libre</span></div>
-                                            <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="open hockey (18+)" data-label="Open Hockey (18+)"><span class="lang-en-only">Open Hockey (18+)</span><span class="lang-fr-only notranslate">Hockey libre (18+)</span></div>
-                                            
-                                            <div class="px-4 py-1.5 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-t border-slate-50 pt-3">Swimming Pool</div>
-                                            <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="swim" data-label="Swimming"><span class="lang-en-only">Swimming</span><span class="lang-fr-only notranslate">Baignade</span></div>
-                                            <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="swimming lane" data-label="Swimming Lane">Swimming Lane</div>
-                                            <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="open swim and diving board" data-label="Open Swim & Dive">Open Swim and Diving Board</div>
-                                            <div class="activity-option px-4 py-2 hover:bg-slate-50 cursor-pointer text-slate-600 hover:text-primary transition-custom pl-6" data-value="recreational and family pool" data-label="Rec & Family Pool">Recreational and Family Pool</div>
-                                        </div>
-                                        <input type="hidden" id="inline-activity-filter" value="">
-                                    </div>
+                                    <!-- Mobile Map Button -->
+                                    <button id="mobile-map-toggle" class="lg:hidden flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 rounded-full w-[36px] h-[36px] shadow-sm transition-custom focus:outline-none focus:ring-2 focus:ring-slate-500/30 flex-shrink-0">
+                                        <i class="fa-regular fa-map text-sm"></i>
+                                    </button>
                                 </div>
-
-                                <!-- Mobile Map Button -->
-                                <button id="mobile-map-toggle" class="lg:hidden flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 rounded-full w-[36px] h-[36px] shadow-sm transition-custom focus:outline-none focus:ring-2 focus:ring-slate-500/30 flex-shrink-0">
-                                    <i class="fa-regular fa-map text-sm"></i>
-                                </button>
                             </div>
                         </div>
                     </div>
-                    <p class="text-slate-500 text-sm mt-3 sm:mt-1" id="results-count">Showing 24 upcoming sessions</p>
+                    <p class="text-slate-500 text-sm mt-3 sm:mt-1 hidden sm:block" id="results-count">Showing 24 upcoming sessions</p>
                 </div>
                 
                 <!-- Desktop Sort -->
@@ -234,6 +239,13 @@
     </div>
 
     <script>
+        function updateResultsCount(htmlContent) {
+            const resultsCountEl = document.getElementById('results-count');
+            const resultsCountMobileEl = document.getElementById('results-count-mobile');
+            if (resultsCountEl) resultsCountEl.innerHTML = htmlContent;
+            if (resultsCountMobileEl) resultsCountMobileEl.innerHTML = htmlContent;
+        }
+
         // Navbar blur and sticky behavior
         window.addEventListener('scroll', () => {
             const nav = document.getElementById('navbar');
@@ -312,8 +324,7 @@
         
         async function ipLocationFallback() {
             try {
-                const resultsCountEl = document.getElementById('results-count');
-                if (resultsCountEl) resultsCountEl.innerHTML = `Using approximate location <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i>`;
+                updateResultsCount(`Using approximate location <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i>`);
                 
                 const response = await fetch('https://get.geojs.io/v1/ip/geo.json');
                 const data = await response.json();
@@ -868,7 +879,7 @@
             if (visibleFacilities.length === 0) {
                  const msgSuffix = isMapVisible ? ' in this map area' : '';
                  facilitiesGrid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 text-lg">No sessions match your criteria${msgSuffix}.</div>`;
-                 resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">0</span> upcoming sessions`;
+                 updateResultsCount(`Showing <span class="font-bold text-dark">0</span> upcoming sessions`);
             } else {
                 // Group visible sessions by surface
                 const groupedSurfaces = {};
@@ -895,7 +906,7 @@
                     facilitiesGrid.innerHTML += createConsolidatedSurfaceCard(group);
                 });
                 const msgSuffix = isMapVisible ? ' in this area' : '';
-                resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">${Object.keys(groupedSurfaces).length}</span> surfaces${msgSuffix}`;
+                updateResultsCount(`Showing <span class="font-bold text-dark">${Object.keys(groupedSurfaces).length}</span> surfaces${msgSuffix}`);
             }
             
             pagination.classList.add('hidden');
@@ -1015,7 +1026,7 @@
                 facilitiesGrid.innerHTML = '';
                 if (data.length === 0) {
                     facilitiesGrid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 text-lg">No sessions match your criteria. Try adjusting your filters.</div>';
-                    resultsCountEl.innerHTML = `Showing <span class="font-bold text-dark">0</span> upcoming sessions`;
+                    updateResultsCount(`Showing <span class="font-bold text-dark">0</span> upcoming sessions`);
                     pagination.classList.add('hidden');
                     updateMapMarkers([]);
                 } else {
@@ -1138,8 +1149,7 @@
                 
             } else if ("geolocation" in navigator && window.isSecureContext) {
                 // No explicit location, try geolocation to center the map on the user
-                const resultsCountEl = document.getElementById('results-count');
-                if (resultsCountEl) resultsCountEl.innerHTML = `Locating you <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i>`;
+                updateResultsCount(`Locating you <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i>`);
                 
                 navigator.geolocation.getCurrentPosition(
                     (position) => {

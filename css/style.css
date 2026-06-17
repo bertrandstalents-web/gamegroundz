@@ -272,10 +272,14 @@ body.mobile-map-active #results-view {
 
 body.mobile-map-active #facilitiesGrid > div {
     flex: 0 0 auto !important;
-    min-width: 280px !important;
-    max-width: 280px !important;
+    min-width: 210px !important;
+    max-width: 210px !important;
     scroll-snap-align: start !important;
     margin: 0 !important;
+}
+
+body.mobile-map-active #facilitiesGrid > div .shrink-0.flex.items-center.gap-1.5 {
+    display: none !important;
 }
 
 body.mobile-map-active #facilitiesGrid > .col-span-full {
@@ -444,10 +448,9 @@ body.mobile-map-active #facilitiesGrid > div .absolute.bottom-3.right-3 {
 
     /* Hide dropdown filters and results count when map is active on mobile */
     body.mobile-map-active #dropdowns-group,
-    body.mobile-map-active #mobile-inline-filters-btn {
-        display: none !important;
-    }
-    body.mobile-map-active #results-count {
+    body.mobile-map-active #mobile-inline-filters-btn,
+    body.mobile-map-active #results-count,
+    body.mobile-map-active #results-count-mobile {
         display: none !important;
     }
 
@@ -461,17 +464,13 @@ body.mobile-map-active #facilitiesGrid > div .absolute.bottom-3.right-3 {
     }
     body.mobile-map-active #filters-row-wrapper {
         width: auto !important;
+        margin: 0 !important;
     }
 
     /* Make Leaflet map fill map-view */
     body.mobile-map-active #map {
         height: 100% !important;
         width: 100% !important;
-    }
-
-    /* Hide search header, results subtitle, and sort dropdown */
-    body.mobile-map-active #search-header-container {
-        display: none !important;
     }
 
     /* Hide mobile bottom tab bar */
