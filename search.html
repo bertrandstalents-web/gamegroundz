@@ -472,7 +472,10 @@
                     } catch(e) {}
                 }
 
-                updateResultsCount(`Using approximate location <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i>`);
+                updateResultsCount(`
+                    <span class="lang-en-only">Using approximate location <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i></span>
+                    <span class="lang-fr-only notranslate">Utilisation d'une position approximative <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i></span>
+                `);
                 
                 const response = await fetch('https://get.geojs.io/v1/ip/geo.json');
                 const data = await response.json();
@@ -833,13 +836,20 @@
             if (visibleFacilities.length === 0) {
                  const msgSuffix = isMapVisible ? ' in this map area' : '';
                  facilitiesGrid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 text-lg">No facilities match your criteria${msgSuffix}.</div>`;
-                 updateResultsCount(`Showing <span class="font-bold text-dark">0</span> available facilities`);
+                 updateResultsCount(`
+                     <span class="lang-en-only">Showing <span class="font-bold text-dark">0</span> available facilities</span>
+                     <span class="lang-fr-only notranslate">Affichage de <span class="font-bold text-dark">0</span> établissements disponibles</span>
+                 `);
             } else {
-                visibleFacilities.forEach(facility => {
-                    facilitiesGrid.innerHTML += createFacilityCard(facility);
-                });
-                const msgSuffix = isMapVisible ? ' in this area' : '';
-                updateResultsCount(`Showing <span class="font-bold text-dark">${visibleFacilities.length}</span> facilities${msgSuffix}`);
+                 visibleFacilities.forEach(facility => {
+                     facilitiesGrid.innerHTML += createFacilityCard(facility);
+                 });
+                 const msgSuffix = isMapVisible ? ' in this area' : '';
+                 const count = visibleFacilities.length;
+                 updateResultsCount(`
+                     <span class="lang-en-only">Showing <span class="font-bold text-dark">${count}</span> facilities${msgSuffix}</span>
+                     <span class="lang-fr-only notranslate">Affichage de <span class="font-bold text-dark">${count}</span> établissements${msgSuffix === ' in this area' ? ' dans cette zone' : ''}</span>
+                 `);
             }
             
             // Hide pagination since we are scrolling the map now
@@ -935,7 +945,10 @@
                 facilitiesGrid.innerHTML = '';
                 if (data.length === 0) {
                     facilitiesGrid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 text-lg">No facilities match your criteria. Try adjusting your filters.</div>';
-                    updateResultsCount(`Showing <span class="font-bold text-dark">0</span> available facilities`);
+                    updateResultsCount(`
+                        <span class="lang-en-only">Showing <span class="font-bold text-dark">0</span> available facilities</span>
+                        <span class="lang-fr-only notranslate">Affichage de <span class="font-bold text-dark">0</span> établissements disponibles</span>
+                    `);
                     pagination.classList.add('hidden');
                     updateMapMarkers([]);
                 } else {
@@ -1122,7 +1135,10 @@
                 
             } else if ("geolocation" in navigator && window.isSecureContext) {
                 // No explicit location, try geolocation to center the map on the user
-                updateResultsCount(`Locating you <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i>`);
+                updateResultsCount(`
+                    <span class="lang-en-only">Locating you <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i></span>
+                    <span class="lang-fr-only notranslate">Localisation en cours <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i></span>
+                `);
                 
                 navigator.geolocation.getCurrentPosition(
                     (position) => {

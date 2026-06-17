@@ -186,16 +186,7 @@
                     <p class="text-slate-500 text-sm mt-3 sm:mt-1 hidden sm:block" id="results-count">Showing 24 upcoming sessions</p>
                 </div>
                 
-                <!-- Desktop Sort -->
-                <div class="hidden sm:flex items-center space-x-2">
-                    <span class="text-sm font-medium text-slate-500">Sort by:</span>
-                    <select class="border-none bg-transparent font-semibold text-dark outline-none cursor-pointer focus:ring-0 text-sm">
-                        <option>Recommended</option>
-                        <option>Price: Low to High</option>
-                        <option>Price: High to Low</option>
-                        <option>Highest Rated</option>
-                    </select>
-                </div>
+
             </div>
 
             <!-- Results and Map Area -->
@@ -341,7 +332,10 @@
                     } catch(e) {}
                 }
 
-                updateResultsCount(`Using approximate location <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i>`);
+                updateResultsCount(`
+                    <span class="lang-en-only">Using approximate location <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i></span>
+                    <span class="lang-fr-only notranslate">Utilisation d'une position approximative <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i></span>
+                `);
                 
                 const response = await fetch('https://get.geojs.io/v1/ip/geo.json');
                 const data = await response.json();
@@ -901,7 +895,10 @@
             if (visibleFacilities.length === 0) {
                  const msgSuffix = ' in this area';
                  facilitiesGrid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 text-lg">No sessions match your criteria${msgSuffix}.</div>`;
-                 updateResultsCount(`Showing <span class="font-bold text-dark">0</span> upcoming sessions in this area`);
+                 updateResultsCount(`
+                     <span class="lang-en-only">Showing <span class="font-bold text-dark">0</span> upcoming sessions in this area</span>
+                     <span class="lang-fr-only notranslate">Affichage de <span class="font-bold text-dark">0</span> sessions à venir dans cette zone</span>
+                 `);
             } else {
                 // Group visible sessions by surface
                 const groupedSurfaces = {};
@@ -928,7 +925,11 @@
                     facilitiesGrid.innerHTML += createConsolidatedSurfaceCard(group);
                 });
                 const msgSuffix = ' in this area';
-                updateResultsCount(`Showing <span class="font-bold text-dark">${Object.keys(groupedSurfaces).length}</span> surfaces${msgSuffix}`);
+                const count = Object.keys(groupedSurfaces).length;
+                updateResultsCount(`
+                    <span class="lang-en-only">Showing <span class="font-bold text-dark">${count}</span> surfaces${msgSuffix}</span>
+                    <span class="lang-fr-only notranslate">Affichage de <span class="font-bold text-dark">${count}</span> surfaces dans cette zone</span>
+                `);
             }
             
             pagination.classList.add('hidden');
@@ -1048,7 +1049,10 @@
                 facilitiesGrid.innerHTML = '';
                 if (data.length === 0) {
                     facilitiesGrid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 text-lg">No sessions match your criteria. Try adjusting your filters.</div>';
-                    updateResultsCount(`Showing <span class="font-bold text-dark">0</span> upcoming sessions in this area`);
+                    updateResultsCount(`
+                        <span class="lang-en-only">Showing <span class="font-bold text-dark">0</span> upcoming sessions in this area</span>
+                        <span class="lang-fr-only notranslate">Affichage de <span class="font-bold text-dark">0</span> sessions à venir dans cette zone</span>
+                    `);
                     pagination.classList.add('hidden');
                     updateMapMarkers([]);
                 } else {
@@ -1171,7 +1175,10 @@
                 
             } else if ("geolocation" in navigator && window.isSecureContext) {
                 // No explicit location, try geolocation to center the map on the user
-                updateResultsCount(`Locating you <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i>`);
+                updateResultsCount(`
+                    <span class="lang-en-only">Locating you <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i></span>
+                    <span class="lang-fr-only notranslate">Localisation en cours <i class="fa-solid fa-spinner fa-spin ml-1 text-primary"></i></span>
+                `);
                 
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
