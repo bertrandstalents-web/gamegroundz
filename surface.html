@@ -338,7 +338,7 @@
                             <div id="court-selector-container" class="hidden border-b border-slate-300 p-3 transition-custom relative">
                                 <label class="block text-[10px] font-bold uppercase tracking-wider text-dark mb-1 cursor-pointer">Select Courts</label>
                                 <div id="court-dropdown-trigger" class="w-full text-sm font-medium text-slate-700 bg-transparent cursor-pointer flex justify-between items-center py-1">
-                                    <span id="court-dropdown-summary">Select Courts</span>
+                                    <span id="court-dropdown-summary" class="notranslate">Select Courts</span>
                                     <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
                                 </div>
                                 
@@ -2298,16 +2298,24 @@
                                 courtSelect.value = window.selectedRacketCourts.join(',');
                             }
                             
+                            const currentLang = localStorage.getItem('gg_language') || 'en';
+
                             // Update Summary Label
                             if (window.selectedRacketCourts.length === 0) {
-                                summary.textContent = "Select Courts";
-                                summary.className = "text-slate-400 text-sm font-medium";
+                                summary.textContent = currentLang === 'fr' ? "Sélectionner des terrains" : "Select Courts";
+                                summary.className = "text-slate-400 text-sm font-medium notranslate";
                             } else if (window.selectedRacketCourts.length === 1) {
-                                summary.textContent = window.selectedRacketCourts[0];
-                                summary.className = "text-slate-700 text-sm font-medium";
+                                let displayName = window.selectedRacketCourts[0];
+                                if (currentLang === 'fr') {
+                                    displayName = displayName.replace(/Court\s*#/gi, 'Terrain n° ').replace(/Court\s*n°/gi, 'Terrain n° ').replace(/Court/gi, 'Terrain');
+                                }
+                                summary.textContent = displayName;
+                                summary.className = "text-slate-700 text-sm font-medium notranslate";
                             } else {
-                                summary.textContent = `${window.selectedRacketCourts.length} Courts Selected`;
-                                summary.className = "text-primary text-sm font-semibold";
+                                summary.textContent = currentLang === 'fr' 
+                                    ? `${window.selectedRacketCourts.length} terrains sélectionnés` 
+                                    : `${window.selectedRacketCourts.length} Courts Selected`;
+                                summary.className = "text-primary text-sm font-semibold notranslate";
                             }
                             
                             // Enable/Disable Reserve Buttons
@@ -2336,7 +2344,13 @@
                                     if (!isFree) {
                                         nameSpan.className = "line-through";
                                     }
-                                    nameSpan.textContent = c;
+                                    nameSpan.classList.add('notranslate');
+                                    
+                                    let displayName = c;
+                                    if (currentLang === 'fr') {
+                                        displayName = displayName.replace(/Court\s*#/gi, 'Terrain n° ').replace(/Court\s*n°/gi, 'Terrain n° ').replace(/Court/gi, 'Terrain');
+                                    }
+                                    nameSpan.textContent = displayName;
                                     row.appendChild(nameSpan);
                                     
                                     const checkbox = document.createElement('input');
