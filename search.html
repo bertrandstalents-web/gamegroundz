@@ -274,14 +274,29 @@
         <!-- Search Results -->
         <div class="flex-1">
             <div id="search-header-container" class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-6 gap-2 md:gap-4">
-                <div>
-                    <h1 class="text-2xl font-bold text-dark">
+                <div class="w-full md:w-auto flex flex-col md:flex-row md:items-center gap-4 md:gap-3" id="header-filters-wrapper">
+                    <h1 class="text-2xl font-bold text-dark leading-tight" id="header-title">
                         <span class="lang-en-only">Sports Surfaces in your area</span>
                         <span class="lang-fr-only notranslate hidden md:inline">Terrains de sport dans votre région</span>
                         <span class="lang-fr-only notranslate md:hidden">Surfaces dans votre région</span>
                     </h1>
-                    <p class="text-slate-500 text-sm mt-1" id="results-count">Showing 24 available surfaces</p>
+                    
+                    <div class="flex justify-between w-full md:w-auto items-center md:hidden" id="filters-row-wrapper">
+                        <div class="flex flex-row gap-2 relative items-center w-full justify-between">
+                            <!-- Mobile Filters button -->
+                            <button id="mobile-inline-filters-btn" class="flex items-center justify-center bg-white border border-slate-200 hover:border-primary text-slate-700 font-semibold rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm transition-custom text-sm">
+                                <i class="fa-solid fa-sliders mr-2 text-slate-400"></i>
+                                <span class="lang-en-only">Filters</span><span class="lang-fr-only notranslate">Filtres</span>
+                            </button>
+
+                            <!-- Mobile Map button -->
+                            <button id="mobile-map-toggle" class="flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 rounded-full w-[36px] h-[36px] shadow-sm transition-custom focus:outline-none focus:ring-2 focus:ring-slate-500/30 flex-shrink-0">
+                                <i class="fa-regular fa-map text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
+                <p class="text-slate-500 text-sm mt-1" id="results-count">Showing 24 available surfaces</p>
                 
                 <div class="hidden md:flex items-center space-x-2">
                     <span class="text-sm font-medium text-slate-500">Sort by:</span>
@@ -1208,13 +1223,12 @@
                     (function(){ const _u = {...data.user}; delete _u.profile_picture; localStorage.setItem('gg_user', JSON.stringify(_u)); })();
                 }
             } catch (e) { }
-        });
 
-        // Mobile Filter & Map Logic
-        document.addEventListener('DOMContentLoaded', () => {
+            // Mobile Filter & Map Logic
             const filtersSidebar = document.getElementById('filters-sidebar');
             const filterOverlay = document.getElementById('mobile-filter-overlay');
             const openFiltersBtn = document.getElementById('open-filters-btn');
+            const mobileInlineFiltersBtn = document.getElementById('mobile-inline-filters-btn');
             const closeFiltersHandle = document.getElementById('close-filters-handle');
             const closeFiltersText = document.getElementById('mobile-filter-close-text');
             
@@ -1239,6 +1253,7 @@
             }
 
             if(openFiltersBtn) openFiltersBtn.addEventListener('click', openFilters);
+            if(mobileInlineFiltersBtn) mobileInlineFiltersBtn.addEventListener('click', openFilters);
             if(closeFiltersHandle) closeFiltersHandle.addEventListener('click', closeFilters);
             if(closeFiltersText) closeFiltersText.addEventListener('click', closeFilters);
             if(filterOverlay) filterOverlay.addEventListener('click', closeFilters);
@@ -1261,73 +1276,76 @@
 
             // Mobile Map Toggle
             const mobileMapToggle = document.getElementById('mobile-map-toggle');
-            const resultsView = document.getElementById('results-view');
             const mapView = document.getElementById('map-view');
             const mobileCloseMapBtn = document.getElementById('mobile-close-map-btn');
 
-            const desktopMapClasses = ['lg:block', 'w-[450px]', 'h-[calc(100vh-120px)]', 'sticky', 'top-28', 'rounded-2xl', 'z-10'];
-            const mobileMapClasses = ['fixed', 'top-0', 'left-0', 'right-0', 'z-[80]', 'w-full', 'h-[45dvh]', 'rounded-b-2xl', 'shadow-md'];
-
             if(mobileMapToggle) {
                 mobileMapToggle.addEventListener('click', () => {
-                    const isMapActive = document.body.classList.toggle('mobile-map-active');
+                    const isMapActive = !document.body.classList.contains('mobile-map-active');
                     
                     if (isMapActive) {
-                        // Map is now active
-                        mapView.classList.remove('hidden', ...desktopMapClasses);
+                        mapView.classList.remove('hidden');
+                        
+                        // Force DOM reflow to make transition start from hidden/offset state
+                        mapView.offsetHeight;
+                        
+                        document.body.classList.add('mobile-map-active');
+                        
                         // Hide pagination when map is active
                         const paginationEl = document.getElementById('pagination');
                         if(paginationEl) paginationEl.classList.add('hidden');
-                        
-                        // Change FAB text from "Carte" to "Liste"
-                        const mapTextEn = mobileMapToggle.querySelector('.lang-en-only');
-                        const mapTextFr = mobileMapToggle.querySelector('.lang-fr-only');
-                        if (mapTextEn) mapTextEn.innerText = 'List';
-                        if (mapTextFr) mapTextFr.innerText = 'Liste';
+
                         const icon = mobileMapToggle.querySelector('i');
                         if (icon) {
-                            icon.classList.remove('fa-map');
-                            icon.classList.add('fa-list');
+                            icon.classList.remove('fa-map', 'fa-regular');
+                            icon.classList.add('fa-list', 'fa-solid');
                         }
                     } else {
-                        // Map is deactivated, revert to list
-                        mapView.classList.add('hidden', ...desktopMapClasses);
+                        document.body.classList.remove('mobile-map-active');
                         
-                        // Change FAB text back to "Carte"
-                        const mapTextEn = mobileMapToggle.querySelector('.lang-en-only');
-                        const mapTextFr = mobileMapToggle.querySelector('.lang-fr-only');
-                        if (mapTextEn) mapTextEn.innerText = 'Map';
-                        if (mapTextFr) mapTextFr.innerText = 'Carte';
                         const icon = mobileMapToggle.querySelector('i');
                         if (icon) {
-                            icon.classList.remove('fa-list');
-                            icon.classList.add('fa-map');
+                            icon.classList.remove('fa-list', 'fa-solid');
+                            icon.classList.add('fa-map', 'fa-regular');
                         }
+                        
+                        // Wait for transition to complete before hiding
+                        setTimeout(() => {
+                            if (!document.body.classList.contains('mobile-map-active')) {
+                                mapView.classList.add('hidden');
+                            }
+                        }, 500);
                     }
                     
-                    // Trigger Leaflet resize calculation (twice to ensure layout shift completes)
+                    // Trigger Leaflet resize calculation (multiple times to ensure layout finishes rendering)
                     if (typeof map !== 'undefined' && map !== null) {
                         setTimeout(() => { map.invalidateSize(); }, 100);
                         setTimeout(() => { map.invalidateSize(); }, 300);
+                        setTimeout(() => { map.invalidateSize(); }, 500);
                     }
                 });
             }
 
             if(mobileCloseMapBtn) {
-                // Since we removed the "X" button from the map view in the new design,
-                // this button is technically hidden, but we keep the logic just in case
                 mobileCloseMapBtn.addEventListener('click', () => {
                     document.body.classList.remove('mobile-map-active');
-                    mapView.classList.add('hidden', ...desktopMapClasses);
                     
-                    const mapTextEn = mobileMapToggle.querySelector('.lang-en-only');
-                    const mapTextFr = mobileMapToggle.querySelector('.lang-fr-only');
-                    if (mapTextEn) mapTextEn.innerText = 'Map';
-                    if (mapTextFr) mapTextFr.innerText = 'Carte';
-                    const icon = mobileMapToggle.querySelector('i');
+                    const icon = mobileMapToggle ? mobileMapToggle.querySelector('i') : null;
                     if (icon) {
-                        icon.classList.remove('fa-list');
-                        icon.classList.add('fa-map');
+                        icon.classList.remove('fa-list', 'fa-solid');
+                        icon.classList.add('fa-map', 'fa-regular');
+                    }
+                    
+                    setTimeout(() => {
+                        if (!document.body.classList.contains('mobile-map-active')) {
+                            mapView.classList.add('hidden');
+                        }
+                    }, 500);
+                    
+                    if (typeof map !== 'undefined' && map !== null) {
+                        setTimeout(() => { map.invalidateSize(); }, 100);
+                        setTimeout(() => { map.invalidateSize(); }, 300);
+                        setTimeout(() => { map.invalidateSize(); }, 500);
                     }
                 });
             }
@@ -1337,23 +1355,6 @@
     <script src="js/modals.js"></script>
     <script src="js/i18n.js"></script>
 
-    <!-- Mobile FABs for Map & Filters -->
-    <div id="mobile-fabs-container" class="lg:hidden fixed bottom-24 left-0 w-full flex justify-center z-40 pointer-events-none">
-        <div class="bg-dark text-white rounded-full flex shadow-xl pointer-events-auto divide-x divide-slate-700">
-            <button id="open-filters-btn" class="px-6 py-3 font-bold text-sm flex items-center hover:bg-slate-800 rounded-l-full transition-custom">
-                <i class="fa-solid fa-sliders mr-2"></i> <span class="lang-en-only">Filters</span><span class="lang-fr-only notranslate">Filtres</span>
-            </button>
-            <button id="mobile-map-toggle" class="px-6 py-3 font-bold text-sm flex items-center hover:bg-slate-800 rounded-r-full transition-custom">
-                <i class="fa-regular fa-map mr-2"></i> <span class="lang-en-only">Map</span><span class="lang-fr-only notranslate">Carte</span>
-            </button>
-        </div>
-    </div>
-
-
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const userStr = localStorage.getItem('gg_user') || localStorage.getItem('user');
             if (userStr) {
                 try {
                     const u = JSON.parse(userStr);

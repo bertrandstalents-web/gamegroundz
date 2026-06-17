@@ -356,6 +356,11 @@ body.mobile-map-active #facilitiesGrid > div .absolute.bottom-3.right-3 {
 
 /* Mobile Media Queries for Viewport-constrained Fluid Layout */
 @media (max-width: 1023px) {
+    /* Hide Leaflet zoom controls (+/-) on mobile viewports */
+    .leaflet-control-zoom {
+        display: none !important;
+    }
+
     /* Prevent page vertical scroll and lock to viewport */
     body.mobile-map-active {
         overflow: hidden !important;
@@ -438,7 +443,8 @@ body.mobile-map-active #facilitiesGrid > div .absolute.bottom-3.right-3 {
     }
 
     /* Hide dropdown filters and results count when map is active on mobile */
-    body.mobile-map-active #dropdowns-group {
+    body.mobile-map-active #dropdowns-group,
+    body.mobile-map-active #mobile-inline-filters-btn {
         display: none !important;
     }
     body.mobile-map-active #results-count {
