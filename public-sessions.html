@@ -123,10 +123,10 @@
         <div class="flex-1">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 sm:gap-0">
                 <div class="w-full sm:w-auto">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-3" id="header-filters-wrapper">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3" id="header-filters-wrapper">
                         <h1 class="text-[28px] sm:text-2xl font-bold text-dark leading-tight" id="header-title">Public Activities<span class="hidden sm:inline"> in your area</span></h1>
                         
-                        <p class="text-slate-500 text-sm font-semibold sm:hidden mt-1" id="results-count-mobile">Showing 24 upcoming sessions</p>
+                        <p class="text-slate-500 text-sm font-semibold sm:hidden mt-0.5 mb-0.5" id="results-count-mobile">Showing 24 upcoming sessions</p>
 
                         <div class="flex justify-between w-full sm:w-auto items-start sm:items-center mt-2" id="filters-row-wrapper">
                             <div class="flex flex-row gap-2 relative items-center w-full justify-between">
@@ -899,9 +899,9 @@
             facilitiesGrid.innerHTML = '';
             
             if (visibleFacilities.length === 0) {
-                 const msgSuffix = isMapVisible ? ' in this map area' : '';
+                 const msgSuffix = ' in this area';
                  facilitiesGrid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 text-lg">No sessions match your criteria${msgSuffix}.</div>`;
-                 updateResultsCount(`Showing <span class="font-bold text-dark">0</span> upcoming sessions`);
+                 updateResultsCount(`Showing <span class="font-bold text-dark">0</span> upcoming sessions in this area`);
             } else {
                 // Group visible sessions by surface
                 const groupedSurfaces = {};
@@ -927,7 +927,7 @@
                 Object.values(groupedSurfaces).forEach(group => {
                     facilitiesGrid.innerHTML += createConsolidatedSurfaceCard(group);
                 });
-                const msgSuffix = isMapVisible ? ' in this area' : '';
+                const msgSuffix = ' in this area';
                 updateResultsCount(`Showing <span class="font-bold text-dark">${Object.keys(groupedSurfaces).length}</span> surfaces${msgSuffix}`);
             }
             
@@ -1048,7 +1048,7 @@
                 facilitiesGrid.innerHTML = '';
                 if (data.length === 0) {
                     facilitiesGrid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 text-lg">No sessions match your criteria. Try adjusting your filters.</div>';
-                    updateResultsCount(`Showing <span class="font-bold text-dark">0</span> upcoming sessions`);
+                    updateResultsCount(`Showing <span class="font-bold text-dark">0</span> upcoming sessions in this area`);
                     pagination.classList.add('hidden');
                     updateMapMarkers([]);
                 } else {
