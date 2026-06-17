@@ -1522,7 +1522,7 @@
                             if (!document.body.classList.contains('mobile-map-active')) {
                                 mapView.classList.add('hidden');
                             }
-                        }, 400);
+                        }, 500);
                     }
                     
                     // Trigger Leaflet resize calculation (multiple times to ensure layout finishes rendering)
@@ -1548,7 +1548,7 @@
                         if (!document.body.classList.contains('mobile-map-active')) {
                             mapView.classList.add('hidden');
                         }
-                    }, 400);
+                    }, 500);
                     
                     if (typeof map !== 'undefined' && map !== null) {
                         setTimeout(() => { map.invalidateSize(); }, 100);

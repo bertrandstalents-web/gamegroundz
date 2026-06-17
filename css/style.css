@@ -367,13 +367,21 @@ body.mobile-map-active #facilitiesGrid > div .absolute.bottom-3.right-3 {
 
     /* Constrain main content container to take available height below navbar */
     body.mobile-map-active .flex-1.max-w-\[1400px\] {
-        padding: 0.5rem 0 0 0 !important;
-        margin: 0 !important;
-        height: calc(100vh - 72px) !important;
-        height: calc(100dvh - 72px) !important;
+        padding: 2rem 1rem 0 1rem !important; /* Keep default 32px top and 16px horizontal padding to fix title and button X-positions */
+        margin: 0 auto !important;
+        height: calc(100vh - 80px) !important;
+        height: calc(100dvh - 80px) !important;
         display: flex !important;
         flex-direction: column !important;
         gap: 0 !important;
+    }
+
+    /* Keep the vertical height chain intact so that children elements stretch correctly */
+    body.mobile-map-active .flex-1.max-w-\[1400px\] > .flex-1 {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        overflow: hidden !important;
     }
 
     /* Hide the sidebar filters in mobile map mode */
@@ -403,7 +411,7 @@ body.mobile-map-active #facilitiesGrid > div .absolute.bottom-3.right-3 {
 
     /* Mobile map transition base style when not active */
     #map-view {
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease !important;
+        transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease !important;
         transform: translateY(110%) !important;
         opacity: 0 !important;
     }
@@ -412,10 +420,11 @@ body.mobile-map-active #facilitiesGrid > div .absolute.bottom-3.right-3 {
     body.mobile-map-active #map-view {
         display: block !important;
         position: relative !important; /* Dynamic flow! Sits naturally below carousel */
+        top: auto !important; /* Reset desktop top-28 (112px) sticky offset */
         flex: 1 !important; /* Stretches to fill the remaining screen space */
-        height: calc(100% - 8px) !important;
-        width: calc(100% - 16px) !important;
-        margin: 0 8px 8px 8px !important;
+        height: auto !important; /* Let flex control height so it expands to occupy full remaining screen space */
+        width: calc(100% + 16px) !important; /* Negative horizontal margin offsets */
+        margin: 0 -8px 8px -8px !important; /* Pull card closer to edges leaving exactly 8px (~1.5mm) margin spacing */
         border-radius: 1.25rem !important;
         border: 1px solid rgba(15, 23, 42, 0.08) !important;
         box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1) !important;
@@ -423,7 +432,7 @@ body.mobile-map-active #facilitiesGrid > div .absolute.bottom-3.right-3 {
         z-index: 10 !important;
         
         /* Slide up target active state */
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease !important;
+        transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease !important;
         transform: translateY(0) !important;
         opacity: 1 !important;
     }
