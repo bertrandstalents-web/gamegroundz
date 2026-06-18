@@ -10,6 +10,7 @@ if (!process.env.TEST_DATABASE_URL) {
 describe('Booking Race Condition', () => {
     let agent;
     let facilityId;
+    let hostId;
 
     beforeAll(async () => {
         agent = request.agent(app);
@@ -22,7 +23,6 @@ describe('Booking Race Condition', () => {
         const testPassword = "Password123";
         const hashedPassword = require('bcryptjs').hashSync(testPassword, 10);
         
-        let hostId;
         await new Promise((resolve, reject) => {
             db.run("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'host')", 
                 ["Test Host", testEmail, hashedPassword], function(err) {
@@ -83,4 +83,32 @@ describe('Booking Race Condition', () => {
         expect(successResponses.length).toBe(1);
         expect(conflictResponses.length).toBe(9);
     }, 30000);
+
+    afterAll(async () => {
+        // Clean up from DB
+        if (facilityId) {
+            await new Promise((resolve) => {
+                db.run("DELETE FROM bookings WHERE facility_id = ?", [facilityId], () => {
+                    db.run("DELETE FROM facilities WHERE id = ?", [facilityId], () => {
+                        if (hostId) {
+                            db.run("DELETE FROM users WHERE id = ?", [hostId], () => {
+                                resolve();
+                            });
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+            });
+        } else if (hostId) {
+            await new Promise((resolve) => {
+                db.run("DELETE FROM users WHERE id = ?", [hostId], () => {
+                    resolve();
+                });
+            });
+        }
+        
+        // Clean up connections so Jest exits cleanly
+        await db.pool.end();
+    });
 });

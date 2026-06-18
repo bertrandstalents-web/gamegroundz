@@ -88,4 +88,32 @@ describe('Booking Cancellation (Soft Delete)', () => {
         // 4. Re-book the same slot, should succeed (no conflict)
         await agent.post('/api/host/block-time').send(payload).expect(201);
     }, 30000);
+
+    afterAll(async () => {
+        // Clean up from DB
+        if (facilityId) {
+            await new Promise((resolve) => {
+                db.run("DELETE FROM bookings WHERE facility_id = ?", [facilityId], () => {
+                    db.run("DELETE FROM facilities WHERE id = ?", [facilityId], () => {
+                        if (hostId) {
+                            db.run("DELETE FROM users WHERE id = ?", [hostId], () => {
+                                resolve();
+                            });
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+            });
+        } else if (hostId) {
+            await new Promise((resolve) => {
+                db.run("DELETE FROM users WHERE id = ?", [hostId], () => {
+                    resolve();
+                });
+            });
+        }
+        
+        // Clean up connections so Jest exits cleanly
+        await db.pool.end();
+    });
 });

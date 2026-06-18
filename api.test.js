@@ -1,7 +1,6 @@
 const request = require('supertest');
 const app = require('./server'); // Path to express app
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const db = require('./database');
 
 describe('GameGroundz API Endpoints', () => {
     let testFacilityId;
@@ -13,13 +12,10 @@ describe('GameGroundz API Endpoints', () => {
             .post('/api/auth/register')
             .send({ name: 'Test Admin', email: 'testadmin@example.com', password: 'password123' });
         
-        // Upgrade to admin in DB manually
-        return new Promise((resolve, reject) => {
-            const dbPath = path.resolve(__dirname, 'gamegroundz.db');
-            const db = new sqlite3.Database(dbPath);
-            db.run("UPDATE users SET role = 'admin' WHERE email = 'testadmin@example.com'", function(err) {
-                db.close();
-                if(err) reject(err);
+        // Upgrade to admin in DB manually using the correct database instance
+        await new Promise((resolve, reject) => {
+            db.run("UPDATE users SET role = 'admin' WHERE email = 'testadmin@example.com'", [], function(err) {
+                if (err) reject(err);
                 else resolve();
             });
         });
@@ -87,5 +83,16 @@ describe('GameGroundz API Endpoints', () => {
          expect(res.body).toHaveProperty('discount_amount');
          // We expect total_price = base_price - discount_amount
          expect(res.body.total_price).toBe(res.body.base_price - res.body.discount_amount);
+    });
+
+    afterAll(async () => {
+        // Clean up testadmin user
+        await new Promise((resolve) => {
+            db.run("DELETE FROM users WHERE email = 'testadmin@example.com'", [], () => {
+                resolve();
+            });
+        });
+        // Close DB pool connections so Jest exits cleanly
+        await db.pool.end();
     });
 });

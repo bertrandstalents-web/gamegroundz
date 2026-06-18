@@ -4,11 +4,24 @@ const fs = require('fs');
 const path = require('path');
 
 // Parse DATABASE_URL if available, otherwise it will fail to connect (which is expected until user sets it)
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : { rejectUnauthorized: false } // Neon requires SSL
-});
+let connectionString = process.env.DATABASE_URL;
 
+if (process.env.NODE_ENV === 'test') {
+    if (!process.env.TEST_DATABASE_URL) {
+        console.error("FATAL: TEST_DATABASE_URL is not set in test environment. Refusing to run tests against the production database.");
+        throw new Error("TEST_DATABASE_URL is not set in test environment.");
+    }
+    if (process.env.TEST_DATABASE_URL === process.env.DATABASE_URL) {
+        console.error("FATAL: TEST_DATABASE_URL cannot be equal to DATABASE_URL. Refusing to run tests against the production database.");
+        throw new Error("TEST_DATABASE_URL cannot be equal to DATABASE_URL.");
+    }
+    connectionString = process.env.TEST_DATABASE_URL;
+}
+
+const pool = new Pool({
+    connectionString: connectionString,
+    ssl: { rejectUnauthorized: false } // Neon requires SSL
+});
 pool.on('error', (err, client) => {
     console.error('Unexpected error on idle database client:', err.message || err);
 });

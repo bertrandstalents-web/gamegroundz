@@ -85,6 +85,21 @@ describe('Booking Max Reservation Limits', () => {
     });
 
     afterAll(async () => {
+        // Clean up from DB
+        await new Promise((resolve) => {
+            db.run("DELETE FROM public_session_participants WHERE user_id = ? OR booking_id IN (SELECT id FROM bookings WHERE facility_id = ?)", [playerId, facilityId], () => {
+                db.run("DELETE FROM bookings WHERE facility_id = ? OR user_id = ?", [facilityId, playerId], () => {
+                    db.run("DELETE FROM surfaces WHERE facility_id = ?", [facilityId], () => {
+                        db.run("DELETE FROM facilities WHERE id = ?", [facilityId], () => {
+                            db.run("DELETE FROM users WHERE id IN (?, ?)", [hostId, playerId], () => {
+                                resolve();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+        
         // Clean up connections so Jest exits cleanly
         await db.pool.end();
     });
