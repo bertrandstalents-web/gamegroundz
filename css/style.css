@@ -513,9 +513,23 @@ body.mobile-map-active #mobile-close-map-btn {
 
 /* Desktop Sports categories bar hover slide-down effect */
 @media (min-width: 1024px) {
+    /* Make the parent navbar transparent on desktop so we can apply glass bg to top-menu-wrapper instead */
+    #navbar {
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+    
+    #navbar .top-menu-wrapper {
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important; /* subtle divider line */
+    }
+
     #categories-bar {
         position: relative;
-        z-index: 30; /* z-30 to slide behind the relative z-50 top menu bar */
+        z-index: 40; /* z-40 to be on top of z-30 trigger zone, but behind z-50 top menu bar */
         margin-top: -68px;
         transform: translateY(-20px);
         opacity: 0;
