@@ -46,6 +46,21 @@
         .fc-timegrid-slot-label-cushion { color: #64748b; font-size: 0.8rem; font-weight: 500; }
         .fc-day-today { background-color: #f0fdf4 !important; } /* Light primary background for today */
         
+        /* Sticky Calendar Header for Desktop, Mobile, and Tablet (aligned below sticky main navbar) */
+        .fc .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
+            top: 80px !important;
+            background: #f8fafc !important; /* solid background matching th styling */
+            z-index: 100 !important; /* higher z-index to stay above calendar events */
+        }
+        /* Sticky Multi-Court Grid Table Header */
+        #multi-court-grid-table thead th {
+            position: sticky;
+            top: 80px;
+            z-index: 20;
+            background: #f8fafc !important; /* solid background color */
+            box-shadow: inset 0 -2px 0 #e2e8f0; /* simulate the bottom border */
+        }
+        
         /* Event Styling */
         .fc-event { border: none !important; border-radius: 6px !important; padding: 2px 4px !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
         .fc-event:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -3773,6 +3788,7 @@
             const calendarConfig = {
                 locale: localStorage.getItem('gg_language') === 'fr' ? 'fr' : 'en',
                 initialView: previousView,
+                stickyHeaderDates: true,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
