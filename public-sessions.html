@@ -34,7 +34,19 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="js/cookieConsent.js"></script>
-
+    <style>
+        @keyframes marker-bounce {
+            0%, 100% {
+                top: 0px;
+            }
+            50% {
+                top: -12px;
+            }
+        }
+        .marker-bounce-animation {
+            animation: marker-bounce 0.6s ease-in-out infinite !important;
+        }
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
 
@@ -183,12 +195,10 @@
                             </div>
                         </div>
                     </div>
-                    <p class="text-slate-500 text-sm mt-3 sm:mt-1 hidden sm:block" id="results-count">Showing 24 upcoming sessions</p>
                 </div>
-                
-
+                <p class="text-slate-500 text-sm mt-3 sm:mt-1 hidden sm:block" id="results-count">Showing 24 upcoming sessions</p>
             </div>
-
+                
             <!-- Results and Map Area -->
             <div class="flex flex-col lg:flex-row gap-6 mt-6">
                 
@@ -721,7 +731,7 @@
             const translatedBadge = translateActivityName(firstSession.manual_notes);
 
             return `
-                <div data-card-surface-id="${group.surface_id}" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick='window.location.href="surface.html?id=${group.surface_id}&activity=${activeIconKey}"'>
+                <div data-card-surface-id="${group.surface_id}" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer public-session-card" onclick='window.location.href="surface.html?id=${group.surface_id}&activity=${activeIconKey}"'>
                     <div class="relative h-48 hover-zoom-img-container">
                         <img src="${displayImage}" alt="${group.surface_name || group.facility_name}" class="w-full h-full object-cover bg-slate-100">
                         <div class="absolute top-3 left-3 flex flex-wrap gap-2 z-20">
@@ -807,6 +817,7 @@
 
             Object.values(groupedFacilities).forEach(group => {
                 const marker = L.marker([group.lat, group.lng]).addTo(map);
+                marker.surfaceIds = [...new Set(group.items.map(s => s.surface_id))];
                 let popupContent = `<div class="max-h-[300px] overflow-y-auto space-y-4 pr-2 custom-scrollbar">`;
                 
                 // Group the coordinate group's sessions by surface_id
@@ -1636,6 +1647,43 @@
                         }
                     }
                 } catch(e) {}
+            }
+        });
+
+        // Connect hovered public session cards to map markers on desktop
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('facilitiesGrid');
+            if (grid) {
+                grid.addEventListener('mouseover', (e) => {
+                    if (!window.matchMedia('(hover: hover)').matches) return;
+                    const card = e.target.closest('.public-session-card');
+                    if (!card) return;
+                    const surfaceId = card.getAttribute('data-card-surface-id');
+                    if (!surfaceId) return;
+
+                    // Find corresponding marker and add animation, remove from others
+                    markers.forEach(marker => {
+                        if (marker.surfaceIds && marker.surfaceIds.map(String).includes(String(surfaceId))) {
+                            if (marker._icon) {
+                                marker._icon.classList.add('marker-bounce-animation');
+                            }
+                        } else {
+                            if (marker._icon) {
+                                marker._icon.classList.remove('marker-bounce-animation');
+                            }
+                        }
+                    });
+                });
+
+                grid.addEventListener('mouseout', (e) => {
+                    const card = e.target.closest('.public-session-card');
+                    if (!card) return;
+                    markers.forEach(marker => {
+                        if (marker._icon) {
+                            marker._icon.classList.remove('marker-bounce-animation');
+                        }
+                    });
+                });
             }
         });
     </script>

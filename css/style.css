@@ -505,3 +505,54 @@ body.mobile-map-active #mobile-close-map-btn {
     background-size: 1.2em !important;
     padding-right: 2.5rem !important;
 }
+
+/* Hide Leaflet map attribution globally across all viewport sizes */
+.leaflet-control-attribution {
+    display: none !important;
+}
+
+/* Desktop Sports categories bar hover slide-down effect */
+@media (min-width: 1024px) {
+    /* Make the parent navbar transparent on desktop so we can apply glass bg to top-menu-wrapper instead */
+    #navbar:has(.top-menu-wrapper) {
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border-bottom: none !important;
+        box-shadow: none !important;
+    }
+    
+    #navbar .top-menu-wrapper {
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        border-bottom: none !important; /* remove divider line */
+    }
+
+    #categories-bar {
+        position: relative;
+        z-index: 40; /* z-40 to be on top of z-30 trigger zone, but behind z-50 top menu bar */
+        background: rgba(255, 255, 255, 0.97) !important;
+        margin-top: -68px;
+        transform: translateY(-20px);
+        opacity: 0;
+        pointer-events: none;
+        /* Slow transition (0.7s) when collapsing/hiding */
+        transition: margin-top 0.7s cubic-bezier(0.4, 0, 0.2, 1), 
+                    transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), 
+                    opacity 0.7s ease !important;
+    }
+    
+    /* Open when hover trigger is hovered OR categories bar itself is hovered */
+    .nav-hover-trigger:hover ~ #categories-bar,
+    #categories-bar:hover {
+        margin-top: 0px;
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+        /* Fast transition (0.3s) when expanding/opening */
+        transition: margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                    opacity 0.3s ease !important;
+    }
+}
