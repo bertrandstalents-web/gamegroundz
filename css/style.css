@@ -510,3 +510,23 @@ body.mobile-map-active #mobile-close-map-btn {
 .leaflet-control-attribution {
     display: none !important;
 }
+
+/* Desktop Sports categories bar hover slide-down effect */
+@media (min-width: 1024px) {
+    #categories-bar {
+        margin-top: -68px;
+        transform: translateY(-20px);
+        opacity: 0;
+        pointer-events: none;
+        transition: margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                    opacity 0.3s ease !important;
+    }
+    
+    #navbar:hover #categories-bar {
+        margin-top: 0px;
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
