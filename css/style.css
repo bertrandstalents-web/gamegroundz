@@ -530,6 +530,7 @@ body.mobile-map-active #mobile-close-map-btn {
     #categories-bar {
         position: relative;
         z-index: 40; /* z-40 to be on top of z-30 trigger zone, but behind z-50 top menu bar */
+        background: rgba(255, 255, 255, 0.97) !important;
         margin-top: -68px;
         transform: translateY(-20px);
         opacity: 0;
