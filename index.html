@@ -2416,6 +2416,8 @@
                         const isFR = window.currentLang === 'fr';
                         if (err.message && err.message.toLowerCase().includes('suspended')) {
                             errorDiv.textContent = isFR ? 'Ce compte a été suspendu. Veuillez contacter le support.' : 'This account has been suspended. Please contact support.';
+                        } else if (err.message && err.message.toLowerCase().includes('verify')) {
+                            errorDiv.textContent = isFR ? 'Veuillez vérifier votre adresse courriel avant de vous connecter. Vérifiez votre boîte de réception pour le lien de vérification.' : 'Please verify your email address before logging in. Check your inbox for the verification link.';
                         } else {
                             errorDiv.textContent = isFR ? 'Courriel ou mot de passe incorrect.' : 'Incorrect email or password.';
                         }
