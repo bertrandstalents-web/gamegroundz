@@ -68,6 +68,17 @@
                 transform: rotate(180deg);
             }
         }
+        @keyframes marker-bounce {
+            0%, 100% {
+                top: 0px;
+            }
+            50% {
+                top: -12px;
+            }
+        }
+        .marker-bounce-animation {
+            animation: marker-bounce 0.6s ease-in-out infinite !important;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
@@ -665,7 +676,7 @@
             }
 
             return `
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer" onclick="window.location.href='surface.html?id=${facility.id}'">
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-custom group cursor-pointer facility-card" data-facility-id="${facility.id}" onclick="window.location.href='surface.html?id=${facility.id}'">
                     <div class="relative h-48 hover-zoom-img-container">
                         <img src="${getPrimaryImageUrl(facility.primary_image || facility.image_url)}" alt="${facility.name}" class="w-full h-full object-cover bg-slate-100">
                         <div class="absolute top-3 left-3 right-3 flex flex-wrap gap-2 z-20 max-w-[calc(100%-1.5rem)]">
@@ -765,6 +776,7 @@
             // Render each grouped marker
             Object.values(groupedFacilities).forEach(group => {
                 const marker = L.marker([group.lat, group.lng]).addTo(map);
+                marker.facilityIds = group.items.map(f => f.id);
                 
                 let popupContent = `<div class="max-h-[300px] overflow-y-auto space-y-4 pr-2 custom-scrollbar">`;
                 
@@ -1480,6 +1492,43 @@
                         }
                     }
                 } catch(e) {}
+            }
+        });
+
+        // Connect hovered facility cards to map markers on desktop
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('facilitiesGrid');
+            if (grid) {
+                grid.addEventListener('mouseover', (e) => {
+                    if (!window.matchMedia('(hover: hover)').matches) return;
+                    const card = e.target.closest('.facility-card');
+                    if (!card) return;
+                    const facilityId = card.getAttribute('data-facility-id');
+                    if (!facilityId) return;
+
+                    // Find corresponding marker and add animation, remove from others
+                    markers.forEach(marker => {
+                        if (marker.facilityIds && marker.facilityIds.map(String).includes(String(facilityId))) {
+                            if (marker._icon) {
+                                marker._icon.classList.add('marker-bounce-animation');
+                            }
+                        } else {
+                            if (marker._icon) {
+                                marker._icon.classList.remove('marker-bounce-animation');
+                            }
+                        }
+                    });
+                });
+
+                grid.addEventListener('mouseout', (e) => {
+                    const card = e.target.closest('.facility-card');
+                    if (!card) return;
+                    markers.forEach(marker => {
+                        if (marker._icon) {
+                            marker._icon.classList.remove('marker-bounce-animation');
+                        }
+                    });
+                });
             }
         });
     </script>
