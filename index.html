@@ -38,62 +38,69 @@
     
     <!-- Navbar -->
     <nav class="fixed w-full z-50 glass transition-custom border-b border-slate-200" id="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
-                <!-- Logo -->
-                <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='index.html'">
-                    <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
-                    <span class="font-bold text-2xl tracking-tight text-dark notranslate">Game<span class="text-primary">Groundz</span></span>
-                </div>
-                               <!-- Right Side Navigation Container -->
-                <div class="flex items-center space-x-4 lg:space-x-8">
-                    <!-- Desktop Only Links -->
-                    <div class="hidden md:flex items-center space-x-4 lg:space-x-8">
-                        <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom whitespace-nowrap text-sm lg:text-base"><span class="lang-en-only">Find a Surface</span><span class="lang-fr-only notranslate">Trouver une surface</span></a>
-                        <a href="public-sessions.html" class="text-slate-600 hover:text-primary font-medium transition-custom whitespace-nowrap text-sm lg:text-base"><span class="lang-en-only">Public Activities</span><span class="lang-fr-only notranslate">Activités publiques</span></a>
-                        
-                        <div class="h-6 w-px bg-slate-300"></div>
+        <!-- Top Menu Bar Wrapper (Opaque on desktop to mask categories bar slide) -->
+        <div class="relative z-50 bg-transparent lg:bg-white w-full">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='index.html'">
+                        <i class="fa-solid fa-layer-group text-primary text-3xl mr-2"></i>
+                        <span class="font-bold text-2xl tracking-tight text-dark notranslate">Game<span class="text-primary">Groundz</span></span>
                     </div>
-                        
-                    <!-- Profile Puck -->
-                    <div class="relative flex items-center mt-2 md:mt-0">
-                            <button id="profile-puck-btn" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-custom shadow-sm overflow-hidden focus:outline-none z-10">
-                                <i class="fa-solid fa-user text-lg text-slate-400" id="puck-icon"></i>
-                                <span id="puck-initials" class="hidden text-sm font-bold text-slate-700 uppercase notranslate"></span>
-                                <img id="puck-img" class="hidden w-full h-full object-cover" src="" alt="Profile">
-                            </button>
+                                   <!-- Right Side Navigation Container -->
+                    <div class="flex items-center space-x-4 lg:space-x-8">
+                        <!-- Desktop Only Links -->
+                        <div class="hidden md:flex items-center space-x-4 lg:space-x-8">
+                            <a href="search.html" class="text-slate-600 hover:text-primary font-medium transition-custom whitespace-nowrap text-sm lg:text-base"><span class="lang-en-only">Find a Surface</span><span class="lang-fr-only notranslate">Trouver une surface</span></a>
+                            <a href="public-sessions.html" class="text-slate-600 hover:text-primary font-medium transition-custom whitespace-nowrap text-sm lg:text-base"><span class="lang-en-only">Public Activities</span><span class="lang-fr-only notranslate">Activités publiques</span></a>
                             
-                            <!-- Dropdown -->
-                            <div id="puck-dropdown" class="hidden absolute top-12 right-0 w-48 bg-white rounded-xl shadow-lg border border-slate-100 pb-2 z-50 transform origin-top-right transition-all">
-                                <!-- Language Toggle -->
-                                <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl mb-2">
-                                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Language</span>
-                                    <div class="flex items-center space-x-1">
-                                        <button onclick="window.switchLanguage('en')" id="dropdown-lang-btn-en" class="px-2 py-0.5 rounded text-xs font-bold bg-white text-dark shadow-sm border border-slate-200 cursor-pointer notranslate">EN</button>
-                                        <button onclick="window.switchLanguage('fr')" id="dropdown-lang-btn-fr" class="px-2 py-0.5 rounded text-xs font-bold text-slate-500 hover:text-dark border border-transparent cursor-pointer notranslate">FR</button>
-                                    </div>
-                                </div>
+                            <div class="h-6 w-px bg-slate-300"></div>
+                        </div>
+                            
+                        <!-- Profile Puck -->
+                        <div class="relative flex items-center mt-2 md:mt-0">
+                                <button id="profile-puck-btn" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-custom shadow-sm overflow-hidden focus:outline-none z-10">
+                                    <i class="fa-solid fa-user text-lg text-slate-400" id="puck-icon"></i>
+                                    <span id="puck-initials" class="hidden text-sm font-bold text-slate-700 uppercase notranslate"></span>
+                                    <img id="puck-img" class="hidden w-full h-full object-cover" src="" alt="Profile">
+                                </button>
                                 
-                                <div id="puck-logged-out">
-                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); openAuthModal(event);"><span class="lang-en-only">Log in</span><span class="lang-fr-only notranslate">Se connecter</span></a>
-                                    <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); toggleAuthMode(event); openAuthModal(event);"><span class="lang-en-only">Sign up</span><span class="lang-fr-only notranslate">S'inscrire</span></a>
-                                </div>
-                                <div id="puck-logged-in" class="hidden">
-                                    <div class="px-4 py-2 border-b border-slate-100 mb-1">
-                                        <span class="block text-sm font-bold text-slate-800 truncate" id="puck-name">User</span>
-                                        <span class="block text-xs text-slate-500 truncate" id="puck-email">user@example.com</span>
+                                <!-- Dropdown -->
+                                <div id="puck-dropdown" class="hidden absolute top-12 right-0 w-48 bg-white rounded-xl shadow-lg border border-slate-100 pb-2 z-50 transform origin-top-right transition-all">
+                                    <!-- Language Toggle -->
+                                    <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl mb-2">
+                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Language</span>
+                                        <div class="flex items-center space-x-1">
+                                            <button onclick="window.switchLanguage('en')" id="dropdown-lang-btn-en" class="px-2 py-0.5 rounded text-xs font-bold bg-white text-dark shadow-sm border border-slate-200 cursor-pointer notranslate">EN</button>
+                                            <button onclick="window.switchLanguage('fr')" id="dropdown-lang-btn-fr" class="px-2 py-0.5 rounded text-xs font-bold text-slate-500 hover:text-dark border border-transparent cursor-pointer notranslate">FR</button>
+                                        </div>
                                     </div>
-                                    <a href="#" id="puck-dashboard" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord</span></a>
-                                    <a href="player-dashboard.html#profile" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('player-dashboard.html')){ try{ switchNav('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); return false;}catch(e){} }"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></a>
-                                    <button id="puck-logout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom"><span class="lang-en-only">Log out</span><span class="lang-fr-only notranslate">Se déconnecter</span></button>
+                                    
+                                    <div id="puck-logged-out">
+                                        <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); openAuthModal(event);"><span class="lang-en-only">Log in</span><span class="lang-fr-only notranslate">Se connecter</span></a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); toggleAuthMode(event); openAuthModal(event);"><span class="lang-en-only">Sign up</span><span class="lang-fr-only notranslate">S'inscrire</span></a>
+                                    </div>
+                                    <div id="puck-logged-in" class="hidden">
+                                        <div class="px-4 py-2 border-b border-slate-100 mb-1">
+                                            <span class="block text-sm font-bold text-slate-800 truncate" id="puck-name">User</span>
+                                            <span class="block text-xs text-slate-500 truncate" id="puck-email">user@example.com</span>
+                                        </div>
+                                        <a href="#" id="puck-dashboard" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary"><span class="lang-en-only">Dashboard</span><span class="lang-fr-only notranslate">Tableau de bord</span></a>
+                                        <a href="player-dashboard.html#profile" id="puck-profile" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary" onclick="if(window.location.pathname.includes('player-dashboard.html')){ try{ switchNav('profile'); document.getElementById('puck-dropdown').classList.add('hidden'); document.body.classList.remove('nav-open'); return false;}catch(e){} }"><span class="lang-en-only">Profile</span><span class="lang-fr-only notranslate">Profil</span></a>
+                                        <button id="puck-logout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-custom"><span class="lang-en-only">Log out</span><span class="lang-fr-only notranslate">Se déconnecter</span></button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
                         <a href="owner-dashboard.html" id="list-facility-btn" class="hidden md:inline-block bg-dark hover:bg-slate-800 text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-full font-medium transition-custom shadow-md hover:shadow-lg whitespace-nowrap text-sm lg:text-base"><span class="lang-en-only">List Your Facility</span><span class="lang-fr-only notranslate">Inscrire votre installation</span></a>
-            </div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- Hover Trigger Zone (Desktop only) -->
+        <div class="nav-hover-trigger absolute left-0 right-0 z-40 hidden lg:block" style="top: 60px; height: 60px;"></div>
 
         <!-- Horizontal Categories Bar (Sticky with Navbar) -->
         <div id="categories-bar" class="w-full bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-sm z-40 relative group">
