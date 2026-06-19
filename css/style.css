@@ -505,3 +505,8 @@ body.mobile-map-active #mobile-close-map-btn {
     background-size: 1.2em !important;
     padding-right: 2.5rem !important;
 }
+
+/* Hide Leaflet map attribution globally across all viewport sizes */
+.leaflet-control-attribution {
+    display: none !important;
+}
