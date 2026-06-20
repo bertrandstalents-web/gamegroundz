@@ -46,56 +46,13 @@
         .fc-timegrid-slot-label-cushion { color: #64748b; font-size: 0.8rem; font-weight: 500; }
         .fc-day-today { background-color: #f0fdf4 !important; } /* Light primary background for today */
         
-        /* Sticky Calendar Toolbar (Navigation, Week display) */
-        .fc .fc-header-toolbar {
+        /* Sticky Multi-Court Grid Table Header (Internal scroll) */
+        #multi-court-grid-table thead th {
             position: sticky;
-            top: 80px; /* below the sticky main navbar */
-            background: #ffffff !important;
-            z-index: 105 !important;
-            margin-bottom: 0 !important;
-            padding: 12px 0 !important;
-        }
-
-        /* Sticky Date selector for Multi-Court view */
-        #multi-court-calendar-container > .flex {
-            position: sticky;
-            top: 80px;
-            z-index: 105;
-            background: #ffffff !important;
-            margin-bottom: 16px !important;
-            padding: 12px !important;
-            border-radius: 1rem;
-        }
-
-        /* Sticky Calendar Day Headers & Multi-Court Table Headers */
-        @media (min-width: 1024px) {
-            .fc .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
-                top: 140px !important; /* 80px navbar + 60px toolbar */
-                background: #f8fafc !important;
-                z-index: 100 !important;
-            }
-            #multi-court-grid-table thead th {
-                position: sticky;
-                top: 148px !important; /* 80px navbar + 68px date selector */
-                z-index: 20;
-                background: #f8fafc !important;
-                box-shadow: inset 0 -2px 0 #e2e8f0;
-            }
-        }
-        
-        @media (max-width: 1023px) {
-            .fc .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
-                top: 190px !important; /* Taller wrapped toolbar on mobile/tablet */
-                background: #f8fafc !important;
-                z-index: 100 !important;
-            }
-            #multi-court-grid-table thead th {
-                position: sticky;
-                top: 198px !important;
-                z-index: 20;
-                background: #f8fafc !important;
-                box-shadow: inset 0 -2px 0 #e2e8f0;
-            }
+            top: 0;
+            z-index: 20;
+            background: #f8fafc !important;
+            box-shadow: inset 0 -2px 0 #e2e8f0;
         }
         
         /* Event Styling */
@@ -547,7 +504,7 @@
                         </div>
                         
                         <!-- Grid container -->
-                        <div class="overflow-x-auto border border-slate-200 rounded-2xl bg-white shadow-sm">
+                        <div class="overflow-x-auto overflow-y-auto max-h-[600px] border border-slate-200 rounded-2xl bg-white shadow-sm">
                             <table class="w-full border-collapse min-w-[600px]" id="multi-court-grid-table">
                                 <!-- Generated Dynamically -->
                             </table>
@@ -3842,7 +3799,7 @@
                 slotMinTime: '06:00:00', // start day at 6 AM
                 slotMaxTime: '24:00:00', // end day at midnight
                 allDaySlot: true,
-                height: 'auto',
+                height: 'calc(100vh - 280px)',
                 events: calendarEvents,
                 selectable: true,
                 selectMirror: true,
